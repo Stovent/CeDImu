@@ -1,0 +1,7 @@
+# Exclude everything except .C .C++ headers and Makefile
+/*
+
+!.gitignore
+!Makefile
+
+!/src
