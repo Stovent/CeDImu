@@ -3,7 +3,7 @@
 
 class GamePanel;
 
-#include <wx/wx.h>
+#include <wx/panel.h>
 
 #include "../CeDImu.hpp"
 #include "MainFrame.hpp"

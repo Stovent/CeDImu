@@ -10,11 +10,26 @@ wxIPath = C:\wxWidgets-3.0.4\include
 wxIMSWU = C:\wxWidgets-3.0.4\lib\gcc_lib\mswu
 
 
-obj = bin/obj/Main.o bin/obj/CeDImu.o bin/obj/MainFrame.o bin/obj/GamePanel.o
+obj = bin/obj/Main.o bin/obj/CeDImu.o \
+bin/obj/MainFrame.o bin/obj/GamePanel.o \
+bin/obj/SCC68070.o bin/obj/SCC66470.o bin/obj/Interpreter.o
 
+GUI:
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o
+	$(CXX) -L$(wxLibPath) -o bin/CeDImu.exe $(obj) bin/obj/ressource.res $(linkerFLAGS) $(wxLib)
 
-CeDImu.exe :
+Cores:
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/SCC68070.cpp -o bin/obj/SCC68070.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/Interpreter.cpp -o bin/obj/Interpreter.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC66470/SCC66470.cpp -o bin/obj/SCC66470.o
+	$(CXX) -L$(wxLibPath) -o bin/CeDImu.exe $(obj) bin/obj/ressource.res $(linkerFLAGS) $(wxLib)
+
+CeDImu :
 	windres.exe -I$(wxIPath) -I$(wxIMSWU) -J rc -O coff -i Ressources/ressource.rc -o bin/obj/ressource.res
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/SCC68070.cpp -o bin/obj/SCC68070.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/Interpreter.cpp -o bin/obj/Interpreter.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC66470/SCC66470.cpp -o bin/obj/SCC66470.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/CeDImu.cpp -o bin/obj/CeDImu.o

@@ -3,33 +3,16 @@
 
 class MainFrame;
 
-#include <wx/wx.h>
+#include <wx/frame.h>
 
 #include "../CeDImu.hpp"
 #include "GamePanel.hpp"
 
 enum
 {
-    IDFileOpenROM = wxID_LAST + 1,
-    IDFileCloseROM,
-    IDFileOpenMovie,
-    IDFileSaveStateAs,
-    IDFileLoadStateFrom,
-
-    IDToolsDisassembler,
-    IDToolsCPUViewer,
-    IDToolsRAMSearch,
-    IDToolsRAMWatch,
-
-    IDCdiDiskLabel,
-    IDCdiExport,
-    IDCdiExportDiskSectorsInfo,
-    IDCdiExportFiles,
-    IDCdiExportAudio,
-    IDCdiExportVideo,
-
-    IDHelpWebsite,
-    IDHelpAbout,
+    IDOnOpenROM = wxID_LAST + 1,
+    IDOnCloseROM,
+    IDOnAbout,
 };
 
 class MainFrame : public wxFrame
@@ -44,8 +27,8 @@ private:
 
     void OnAbout(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
-    void OnOpenMovie(wxCommandEvent& event);
     void OnOpenROM(wxCommandEvent& event);
+    void OnCloseROM(wxCommandEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 };
