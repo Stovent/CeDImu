@@ -1,6 +1,6 @@
 #include "SCC68070.hpp"
 
-SCC68070::SCC68070()
+SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu) : app(cedimu), vdsc(gpu)
 {
     Execute = Interpreter;
 }

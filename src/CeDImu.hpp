@@ -7,12 +7,17 @@ class CeDImu;
 
 #include <wx/app.h>
 
+#include "Cores/VDSC.hpp"
+#include "GUI/MainFrame.hpp"
 #include "Cores/SCC68070/SCC68070.hpp"
 
 class CeDImu : public wxApp
 {
 public:
+    VDSC* vdsc;
     SCC68070* cpu;
+
+    MainFrame* mainFrame;
 
     virtual bool OnInit();
     void StartGameThread();

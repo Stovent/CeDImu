@@ -8,8 +8,6 @@ void SCC68070::Interpreter()
 
 uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
 {
-    if((opcode & 0xF1F0) == 0xC100)
-        return ABCD;
     if((opcode & 0xF000) == 0xD000)
         return ADD;
     if((opcode & 0xF0C0) == 0xD0C0)
@@ -70,8 +68,8 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return EORI;
     if(((opcode & 0xF130) == 0xC100) && ((opcode & 0xF1F8) != 0xC100))
         return EXG;
-    if((opcode & 0xFEB8) == 0x4880)
-        return EXT;
+    if((opcode & 0xF1F0) == 0xC100)
+        return ABCD;
     if((opcode & 0xFFC0) == 0x4EC0)
         return JMP;
     if((opcode & 0xFFC0) == 0x4E80)
@@ -98,6 +96,8 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return MOVEA;
     if(((opcode & 0xFB80) == 0x4880) && ((opcode & 0xFBB8) != 0x4880))
         return MOVEM;
+    if((opcode & 0xFEB8) == 0x4880)
+        return EXT;
     if((opcode & 0xF108) == 0x0108)
         return MOVEP;
     if((opcode & 0xF100) == 0x7000)

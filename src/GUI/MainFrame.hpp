@@ -26,9 +26,9 @@ private:
     GamePanel* gamePanel;
 
     void OnAbout(wxCommandEvent& event);
+    void OnCloseROM(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnOpenROM(wxCommandEvent& event);
-    void OnCloseROM(wxCommandEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 };

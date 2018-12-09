@@ -1,7 +1,12 @@
 #ifndef SCC68070_HPP
 #define SCC68070_HPP
 
+class SCC68070;
+
 #include <cstdint>
+
+#include "../../CeDImu.hpp"
+#include "../SCC66470/SCC66470.hpp"
 
 #define UNCHANGED 2
 #define OPCODESNBR 79
@@ -116,9 +121,12 @@ enum CC // Conditional Tests
 class SCC68070
 {
 public:
-    bool run;
+    CeDImu& app;
+    VDSC& vdsc;
 
+    bool run;
     SCC68070();
+    SCC68070(CeDImu& cedimu, VDSC& gpu);
     void Run();
 
 private:
@@ -155,6 +163,15 @@ private:
     uint8_t GetS();
 
     void Exception(const uint8_t& vec);
+
+    // Direct Memory Access
+    int8_t GetByte(const uint32_t& addr);
+    int16_t GetWord(const uint32_t& addr);
+    int32_t GetLong(const uint32_t& addr);
+
+    void SetByte(const uint32_t& addr, const int8_t& data);
+    void SetWord(const uint32_t& addr, const int16_t& data);
+    void SetLong(const uint32_t& addr, const int32_t& data);
 
     // Conditional Codes
     bool T();

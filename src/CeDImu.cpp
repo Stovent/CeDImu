@@ -1,5 +1,4 @@
 #include "CeDImu.hpp"
-#include "GUI/MainFrame.hpp"
 
 void launchGameThread(CeDImu* app)
 {
@@ -8,10 +7,10 @@ void launchGameThread(CeDImu* app)
 
 bool CeDImu::OnInit()
 {
-//    gameThread = nullptr;
-    cpu = new SCC68070();
+    vdsc = new SCC66470();
+    cpu = new SCC68070(*this, *vdsc);
 
-    MainFrame* mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
+    mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
     mainFrame->Show(true);
     return true;
 }

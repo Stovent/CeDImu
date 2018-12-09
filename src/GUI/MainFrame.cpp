@@ -44,14 +44,14 @@ void MainFrame::OnAbout(wxCommandEvent& event)
     wxMessageBox("CeDImu is an open-source Philips CD-I emulator created by Stovent.", "About CeDImu", wxOK );
 }
 
-void MainFrame::OnExit(wxCommandEvent& event)
-{
-    Close(true);
-}
-
 void MainFrame::OnCloseROM(wxCommandEvent& event)
 {
     app->StopGameThread();
+}
+
+void MainFrame::OnExit(wxCommandEvent& event)
+{
+    Close(true);
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
