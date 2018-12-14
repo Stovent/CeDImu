@@ -12,7 +12,7 @@ class SCC68070;
 #define OPCODESNBR 79
 #define MEMORYSIZE 1048576
 
-class SCC68070;
+#define INTERNAL 0x80000000
 
 enum SCC68070InstructionSet
 {
@@ -125,7 +125,7 @@ public:
     VDSC& vdsc;
 
     bool run;
-    SCC68070();
+
     SCC68070(CeDImu& cedimu, VDSC& gpu);
     void Run();
 
@@ -134,6 +134,8 @@ private:
     int32_t A[8];
     uint32_t PC;
     uint16_t SR;
+
+    int8_t* internal;
 
     uint16_t currentOpcode;
     uint32_t lastAddress;
@@ -162,12 +164,35 @@ private:
     void SetS(const uint8_t S = 1);
     uint8_t GetS();
 
-    void Exception(const uint8_t& vec);
+    void Exception(const uint8_t& vectorNumber);
+
+    // Addressing modes
+    int32_t GetIndexRegister(const uint16_t& bew);
+
+    uint32_t AddressRegisterIndirectWithPostincrement(const uint8_t& reg, const uint8_t& sizeInByte);
+    uint32_t AddressRegisterIndirectWithPredecrement(const uint8_t& reg, const uint8_t& sizeInByte);
+    uint32_t AddressRegisterIndirectWithDisplacement(const uint8_t& reg);
+    uint32_t AddressRegisterIndirectWithIndex8(const uint8_t& reg);
+
+    uint32_t ProgramCounterIndirectWithDisplacement();
+    uint32_t ProgramCounterIndirectWithIndex8();
+
+    uint32_t AbsoluteShortAddressing();
+    uint32_t AbsoluteLongAddressing();
+
+    // Addrssing modes memory access
+    int8_t GetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
+    int16_t GetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
+    int32_t GetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
+
+    void SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int8_t& data);
+    void SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int16_t& data);
+    void SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int32_t& data);
 
     // Direct Memory Access
-    int8_t GetByte(const uint32_t& addr);
-    int16_t GetWord(const uint32_t& addr);
-    int32_t GetLong(const uint32_t& addr);
+    int8_t GetByte(const uint32_t& addr) const;
+    int16_t GetWord(const uint32_t& addr) const;
+    int32_t GetLong(const uint32_t& addr) const;
 
     void SetByte(const uint32_t& addr, const int8_t& data);
     void SetWord(const uint32_t& addr, const int16_t& data);
@@ -387,9 +412,37 @@ private:
 #define PCIWD() ProgramCounterIndirectWithDisplacement()
 #define PCIWI8() ProgramCounterIndirectWithIndex8()
 
-#define AM7(register) AddressingMode7(register)
+//#define AM7(register) AddressingMode7(register)
 
 #define ASA() AbsoluteShortAddressing()
 #define ALA() AbsoluteLongAddressing()
+
+// IT(Instruction Timing) + Addressing mode macro + size
+#define ITREG 0 // register
+#define ITARIBW 4 // Addres Register Indirect (ARI)
+#define ITARIL 8
+
+#define ITARIWPoBW 4 // ARI with postincrement
+#define ITARIWPoL 8
+#define ITARIWPrBW 7 // ARI with predecrement
+#define ITARIWPrL 11
+
+#define ITARIWDBW 11 // ARI with displacement
+#define ITARIWDL 15
+#define ITARIWI8BW 14 // ARI with index 8
+#define ITARIWI8L 18
+
+#define ITPCIWDBW 11 // PC with displacement
+#define ITPCIWDL 15
+#define ITPCIWI8BW 14 // PC with index 8
+#define ITPCIWI8L 18
+
+#define ITASBW 8 // Absolute short
+#define ITASL 12
+#define ITALBW 12 // Absolute long
+#define ITALL 16
+
+#define ITIBW 4 // immediate
+#define ITIL 8
 
 #endif // SCC68070_HPP

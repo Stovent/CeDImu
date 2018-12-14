@@ -19,12 +19,12 @@ class MainFrame : public wxFrame
 {
 public:
     MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size);
-    void CreateMenuBar();
 
 private:
     CeDImu* app;
     GamePanel* gamePanel;
 
+    void CreateMenuBar();
     void OnAbout(wxCommandEvent& event);
     void OnCloseROM(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);

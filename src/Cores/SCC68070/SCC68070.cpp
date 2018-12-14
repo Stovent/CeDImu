@@ -3,6 +3,7 @@
 SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu) : app(cedimu), vdsc(gpu)
 {
     Execute = Interpreter;
+    internal = new int8_t[0xBFFFFFFF-INTERNAL];
 }
 
 void SCC68070::Run()
@@ -13,9 +14,16 @@ void SCC68070::Run()
     }
 }
 
+void SCC68070::Exception(const uint8_t& vectorNumber)
+{
+
+}
+
 uint16_t SCC68070::GetNextOpcode()
 {
-    return 0;
+    uint16_t opcode = vdsc.GetWord(PC);
+    PC += 2;
+    return opcode;
 }
 
 void SCC68070::SetCCR(const uint8_t X, const uint8_t N, const uint8_t Z, const uint8_t V, const uint8_t C) // use the define UNCHANGED to not change the value of a bit

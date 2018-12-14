@@ -17,9 +17,11 @@ bool CeDImu::OnInit()
 
 void CeDImu::StartGameThread()
 {
-    cpu->run = true;
     if(gameThread == nullptr)
+    {
+        cpu->run = true;
         gameThread = new std::thread(launchGameThread, this);
+    }
 }
 
 void CeDImu::StopGameThread()

@@ -1,0 +1,440 @@
+#include "SCC68070.hpp"
+
+int8_t SCC68070::GetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime)
+{
+    if(mode == 0)
+    {
+        lastAddress = 0;
+        return D[reg] & 0x000000FF;
+    }
+    else if(mode == 1)
+    {
+        lastAddress = 0;
+        return A[reg] & 0x000000FF;
+    }
+    else if(mode == 2)
+    {
+        lastAddress = A[reg];
+        calcTime += ITARIBW;
+    }
+    else if(mode == 3)
+    {
+        lastAddress = ARIWPo(reg, 1);
+        calcTime += ITARIWPoBW;
+    }
+    else if(mode == 4)
+    {
+        lastAddress = ARIWPr(reg, 1);
+        calcTime += ITARIWPrBW;
+    }
+    else if(mode == 5)
+    {
+        lastAddress = ARIWD(reg);
+        calcTime += ITARIWDBW;
+    }
+    else if(mode == 6)
+    {
+        lastAddress = ARIWI8(reg);
+        calcTime += ITARIWI8BW;
+    }
+    else if(mode == 7)
+    {
+        if(reg == 0)
+        {
+            lastAddress = ASA();
+            calcTime += ITASBW;
+        }
+        else if(reg == 1)
+        {
+            lastAddress = ALA();
+            calcTime += ITALBW;
+        }
+        else if(reg == 2)
+        {
+            lastAddress = PCIWD();
+            calcTime += ITPCIWDBW;
+        }
+        else if(reg == 3)
+        {
+            lastAddress = PCIWI8();
+            calcTime += ITPCIWI8BW;
+        }
+        else if(reg == 4)
+        {
+            calcTime += ITIBW;
+            return GetNextWord() & 0x00FF;
+        }
+    }
+    return GetByte(lastAddress);
+}
+
+int16_t SCC68070::GetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime)
+{
+    if(mode == 0)
+    {
+        lastAddress = 0;
+        return D[reg] & 0x0000FFFF;
+    }
+    else if(mode == 1)
+    {
+        lastAddress = 0;
+        return A[reg] & 0x0000FFFF;
+    }
+    else if(mode == 2)
+    {
+        lastAddress = A[reg];
+        calcTime += ITARIBW;
+    }
+    else if(mode == 3)
+    {
+        lastAddress = ARIWPo(reg, 2);
+        calcTime += ITARIWPoBW;
+    }
+    else if(mode == 4)
+    {
+        lastAddress = ARIWPr(reg, 2);
+        calcTime += ITARIWPrBW;
+    }
+    else if(mode == 5)
+    {
+        lastAddress = ARIWD(reg);
+        calcTime += ITARIWDBW;
+    }
+    else if(mode == 6)
+    {
+        lastAddress = ARIWI8(reg);
+        calcTime += ITARIWI8BW;
+    }
+    else if(mode == 7)
+    {
+        if(reg == 0)
+        {
+            lastAddress = ASA();
+            calcTime += ITASBW;
+        }
+        else if(reg == 1)
+        {
+            lastAddress = ALA();
+            calcTime += ITALBW;
+        }
+        else if(reg == 2)
+        {
+            lastAddress = PCIWD();
+            calcTime += ITPCIWDBW;
+        }
+        else if(reg == 3)
+        {
+            lastAddress = PCIWI8();
+            calcTime += ITPCIWI8BW;
+        }
+        else if(reg == 4)
+        {
+            calcTime += ITIBW;
+            return GetNextWord();
+        }
+    }
+    return GetWord(lastAddress);
+}
+
+int32_t SCC68070::GetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime)
+{
+    if(mode == 0)
+    {
+        lastAddress = 0;
+        return D[reg];
+    }
+    else if(mode == 1)
+    {
+        lastAddress = 0;
+        return A[reg];
+    }
+    else if(mode == 2)
+    {
+        lastAddress = A[reg];
+        calcTime += ITARIL;
+    }
+    else if(mode == 3)
+    {
+        lastAddress = ARIWPo(reg, 4);
+        calcTime += ITARIWPoL;
+    }
+    else if(mode == 4)
+    {
+        lastAddress = ARIWPr(reg, 4);
+        calcTime += ITARIWPrL;
+    }
+    else if(mode == 5)
+    {
+        lastAddress = ARIWD(reg);
+        calcTime += ITARIWDL;
+    }
+    else if(mode == 6)
+    {
+        lastAddress = ARIWI8(reg);
+        calcTime += ITARIWI8L;
+    }
+    else if(mode == 7)
+    {
+        if(reg == 0)
+        {
+            lastAddress = ASA();
+            calcTime += ITASL;
+        }
+        else if(reg == 1)
+        {
+            lastAddress = ALA();
+            calcTime += ITALL;
+        }
+        else if(reg == 2)
+        {
+            lastAddress = PCIWD();
+            calcTime += ITPCIWDL;
+        }
+        else if(reg == 3)
+        {
+            lastAddress = PCIWI8();
+            calcTime += ITPCIWI8L;
+        }
+        else if(reg == 4)
+        {
+            calcTime += ITIL;
+            return GetNextWord() << 16 | GetNextWord();
+        }
+    }
+    return GetLong(lastAddress);
+}
+
+void SCC68070::SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int8_t& data)
+{
+    if(mode == 0)
+    {
+        lastAddress = 0;
+        D[reg] &= 0xFFFFFF00;
+        D[reg] |= data;
+        return;
+    }
+    else if(mode == 1)
+    {
+        lastAddress = 0;
+        A[reg] &= 0xFFFFFF00;
+        A[reg] |= data;
+        return;
+    }
+    else if(mode == 2)
+    {
+        lastAddress = A[reg];
+        calcTime += ITARIBW;
+    }
+    else if(mode == 3)
+    {
+        lastAddress = ARIWPo(reg, 1);
+        calcTime += ITARIWPoBW;
+    }
+    else if(mode == 4)
+    {
+        lastAddress = ARIWPr(reg, 1);
+        calcTime += ITARIWPrBW;
+    }
+    else if(mode == 5)
+    {
+        lastAddress = ARIWD(reg);
+        calcTime += ITARIWDBW;
+    }
+    else if(mode == 6)
+    {
+        lastAddress = ARIWI8(reg);
+        calcTime += ITARIWI8BW;
+    }
+    else if(mode == 7)
+    {
+        if(reg == 0)
+        {
+            lastAddress = ASA();
+            calcTime += ITASBW;
+        }
+        else if(reg == 1)
+        {
+            lastAddress = ALA();
+            calcTime += ITALBW;
+        }
+        else if(reg == 2)
+        {
+            lastAddress = PCIWD();
+            calcTime += ITPCIWDBW;
+        }
+        else if(reg == 3)
+        {
+            lastAddress = PCIWI8();
+            calcTime += ITPCIWI8BW;
+        }
+    }
+    SetByte(lastAddress, data);
+}
+
+void SCC68070::SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int16_t& data)
+{
+    if(mode == 0)
+    {
+        lastAddress = 0;
+        D[reg] &= 0xFFFF0000;
+        D[reg] |= data;
+        return;
+    }
+    else if(mode == 1)
+    {
+        lastAddress = 0;
+        A[reg] &= 0xFFFF0000;
+        A[reg] |= data;
+        return;
+    }
+    else if(mode == 2)
+    {
+        lastAddress = A[reg];
+        calcTime += ITARIBW;
+    }
+    else if(mode == 3)
+    {
+        lastAddress = ARIWPo(reg, 2);
+        calcTime += ITARIWPoBW;
+    }
+    else if(mode == 4)
+    {
+        lastAddress = ARIWPr(reg, 2);
+        calcTime += ITARIWPrBW;
+    }
+    else if(mode == 5)
+    {
+        lastAddress = ARIWD(reg);
+        calcTime += ITARIWDBW;
+    }
+    else if(mode == 6)
+    {
+        lastAddress = ARIWI8(reg);
+        calcTime += ITARIWI8BW;
+    }
+    else if(mode == 7)
+    {
+        if(reg == 0)
+        {
+            lastAddress = ASA();
+            calcTime += ITASBW;
+        }
+        else if(reg == 1)
+        {
+            lastAddress = ALA();
+            calcTime += ITALBW;
+        }
+        else if(reg == 2)
+        {
+            lastAddress = PCIWD();
+            calcTime += ITPCIWDBW;
+        }
+        else if(reg == 3)
+        {
+            lastAddress = PCIWI8();
+            calcTime += ITPCIWI8BW;
+        }
+    }
+    SetWord(lastAddress, data);
+}
+
+void SCC68070::SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int32_t& data)
+{
+    if(mode == 0)
+    {
+        lastAddress = 0;
+        D[reg] = data;
+        return;
+    }
+    else if(mode == 1)
+    {
+        lastAddress = 0;
+        A[reg] = data;
+        return;
+    }
+    else if(mode == 2)
+    {
+        lastAddress = A[reg];
+        calcTime += ITARIL;
+    }
+    else if(mode == 3)
+    {
+        lastAddress = ARIWPo(reg, 4);
+        calcTime += ITARIWPoL;
+    }
+    else if(mode == 4)
+    {
+        lastAddress = ARIWPr(reg, 4);
+        calcTime += ITARIWPrL;
+    }
+    else if(mode == 5)
+    {
+        lastAddress = ARIWD(reg);
+        calcTime += ITARIWDL;
+    }
+    else if(mode == 6)
+    {
+        lastAddress = ARIWI8(reg);
+        calcTime += ITARIWI8L;
+    }
+    else if(mode == 7)
+    {
+        if(reg == 0)
+        {
+            lastAddress = ASA();
+            calcTime += ITASL;
+        }
+        else if(reg == 1)
+        {
+            lastAddress = ALA();
+            calcTime += ITALL;
+        }
+        else if(reg == 2)
+        {
+            lastAddress = PCIWD();
+            calcTime += ITPCIWDL;
+        }
+        else if(reg == 3)
+        {
+            lastAddress = PCIWI8();
+            calcTime += ITPCIWI8L;
+        }
+    }
+    SetLong(lastAddress, data);
+}
+
+int8_t SCC68070::GetByte(const uint32_t& addr) const
+{
+    if(addr < 0x80000000 || addr >= 0xC0000000)
+        return vdsc.GetByte(addr);
+}
+
+int16_t SCC68070::GetWord(const uint32_t& addr) const
+{
+    if(addr < 0x80000000 || addr >= 0xC0000000)
+        return vdsc.GetWord(addr);
+}
+
+int32_t SCC68070::GetLong(const uint32_t& addr) const
+{
+    if(addr < 0x80000000 || addr >= 0xC0000000)
+        return vdsc.GetLong(addr);
+}
+
+void SCC68070::SetByte(const uint32_t& addr, const int8_t& data)
+{
+    if(addr < 0x80000000 || addr >= 0xC0000000)
+        vdsc.SetByte(addr, data);
+}
+
+void SCC68070::SetWord(const uint32_t& addr, const int16_t& data)
+{
+    if(addr < 0x80000000 || addr >= 0xC0000000)
+        vdsc.SetWord(addr, data);
+}
+
+void SCC68070::SetLong(const uint32_t& addr, const int32_t& data)
+{
+    if(addr < 0x80000000 || addr >= 0xC0000000)
+        vdsc.SetLong(addr, data);
+}
