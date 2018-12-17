@@ -1,5 +1,7 @@
 #include "SCC68070.hpp"
 
+#include "../../utils.h"
+
 void SCC68070::Exception(const uint8_t& vec)
 {
     uint16_t sr = SR;

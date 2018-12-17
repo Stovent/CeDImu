@@ -204,7 +204,7 @@ int32_t SCC68070::GetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& cal
     return GetLong(lastAddress);
 }
 
-void SCC68070::SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int8_t& data)
+void SCC68070::SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint8_t& data)
 {
     if(mode == 0)
     {
@@ -271,7 +271,7 @@ void SCC68070::SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTi
     SetByte(lastAddress, data);
 }
 
-void SCC68070::SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int16_t& data)
+void SCC68070::SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint16_t& data)
 {
     if(mode == 0)
     {
@@ -338,7 +338,7 @@ void SCC68070::SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTi
     SetWord(lastAddress, data);
 }
 
-void SCC68070::SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int32_t& data)
+void SCC68070::SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint32_t& data)
 {
     if(mode == 0)
     {

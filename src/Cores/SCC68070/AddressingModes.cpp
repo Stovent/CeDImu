@@ -36,8 +36,8 @@ uint32_t SCC68070::AddressRegisterIndirectWithDisplacement(const uint8_t& reg)
 
 uint32_t SCC68070::AddressRegisterIndirectWithIndex8(const uint8_t& reg)
 {
-    int32_t bew = GetNextWord();
-    return A[reg] + GetIndexRegister(bew) + (bew & 0x00FF);
+    uint16_t bew = GetNextWord();
+    return A[reg] + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
 }
 
 uint32_t SCC68070::ProgramCounterIndirectWithDisplacement()
@@ -47,8 +47,8 @@ uint32_t SCC68070::ProgramCounterIndirectWithDisplacement()
 
 uint32_t SCC68070::ProgramCounterIndirectWithIndex8()
 {
-    int32_t bew = GetNextWord();
-    return PC + GetIndexRegister(bew) + (bew & 0x00FF);
+    uint16_t bew = GetNextWord();
+    return PC + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
 }
 
 uint32_t SCC68070::AbsoluteShortAddressing()
@@ -58,5 +58,5 @@ uint32_t SCC68070::AbsoluteShortAddressing()
 
 uint32_t SCC68070::AbsoluteLongAddressing()
 {
-    return GetNextWord() << 24 | GetNextWord();
+    return GetNextWord() << 16 | GetNextWord();
 }
