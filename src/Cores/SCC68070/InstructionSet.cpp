@@ -2,53 +2,64 @@
 
 #include "../../utils.h"
 
-void SCC68070::Exception(const uint8_t& vec)
+void SCC68070::Exception(const uint8_t& vectorNumber)
 {
     uint16_t sr = SR;
     SetS();
 
+    SetWord(ARIWPr(7, 2), (uint16_t)vectorNumber << 2);
     SetLong(ARIWPr(7, 4), PC);
     SetWord(ARIWPr(7, 2), sr);
 
-    PC = GetLong(vec * 4);
+    PC = GetLong(vectorNumber * 4);
     SetS(0);
 }
 
 uint16_t SCC68070::UnknownInstruction()
 {
-#ifdef LOG_OPCODE
-    errorLog("Unknow instruction");
-    logln("Unknow instruction");
-#endif // LOG_OPCODE
     return 0;
 }
 
 uint16_t SCC68070::Abcd()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ABCD";
-#endif // LOG_OPCODE
     uint8_t Rx = (currentOpcode & 0x0E00) >> 9;
     uint8_t Ry = (currentOpcode & 0x0007);
-    uint8_t result = 0;
+    uint8_t result;
+    uint16_t calcTime;
+    uint8_t x = GetX();
 
     if(currentOpcode & 0x0008) // R/M = 1 : Memory to Memory
     {
-        int32_t src = ARIWPr(Ry, 1);
-        int32_t dst = ARIWPr(Rx, 1);
-        SetByte(dst, convertPBCD(GetByte(src)) + convertPBCD(GetByte((dst)) + GetX()));
+        uint8_t src = GetByte(ARIWPr(Ry, 1));
+        uint8_t dst = GetByte(ARIWPr(Rx, 1));
+        if((src & 0x0F) + (dst & 0x0F) > 9)
+            SetXC();
+        if(((src & 0xF0) >> 4) + ((dst & 0xF0) >> 4) > 9)
+            SetXC();
+
+        result = convertPBCD(src) + convertPBCD(dst) + x;
+        SetByte(lastAddress, result);
+        calcTime = 31;
     }
     else // R/M = 0 : Data register to Data register
-        result = convertPBCD(D[Rx] & 0xFF) + convertPBCD(D[Ry] & 0xFF) + GetX();
+    {
+        uint8_t src = D[Ry] & 0x000000FF;
+        uint8_t dst = D[Rx] & 0x000000FF;
+        if((src & 0x0F) + (dst & 0x0F) > 9)
+            SetXC();
+        if(((src & 0xF0) >> 4) + ((dst & 0xF0) >> 4) > 9)
+            SetXC();
 
-    if(result > 99)
-        SetXC(1);
-    else
-        SetXC(0);
-    if((D[Rx] = result) != 0)
+        result = convertPBCD(src) + convertPBCD(dst) + x;
+        D[Rx] &= 0xFFFFFF00;
+        D[Rx] |= result;
+        calcTime = 10;
+    }
+
+    if(result != 0)
         SetZ(0);
 
-    return 14;
+    return calcTime;
 }
 
 uint16_t SCC68070::Add()
@@ -801,9 +812,44 @@ uint16_t SCC68070::Rts() // Program Control
 
 uint16_t SCC68070::Sbcd()
 {
+    uint8_t Ry = (currentOpcode & 0x0E00) >> 9;
+    uint8_t Rx = (currentOpcode & 0x0007);
+    uint8_t result = 0;
+    uint16_t calcTime;
+    uint8_t x = GetX();
 
+    if(currentOpcode & 0x0008) // memory to memory
+    {
+        uint8_t src = GetByte(ARIWPr(Rx, 1));
+        uint8_t dst = GetByte(ARIWPr(Ry, 1));
+        if((dst & 0x0F) > (src & 0x0F))
+            SetXC();
+        if(((dst & 0xF0) >> 4) > ((src & 0xF0) >> 4))
+            SetXC();
 
+        result = convertPBCD(dst) - convertPBCD(src) - x;
+        SetByte(lastAddress, result);
+        calcTime = 31;
+    }
+    else
+    {
+        uint8_t src = D[Rx] & 0x000000FF;
+        uint8_t dst = D[Ry] & 0x000000FF;
+        if((dst & 0x0F) > (src & 0x0F))
+            SetXC();
+        if(((dst & 0xF0) >> 4) > ((src & 0xF0) >> 4))
+            SetXC();
 
+        result = convertPBCD(dst) - convertPBCD(src) - x;
+        D[Ry] &= 0xFFFFFF00;
+        D[Ry] |= result;
+        calcTime = 10;
+    }
+
+    if(result != 0)
+        SetZ(0);
+
+    return calcTime;
 }
 
 uint16_t SCC68070::SCC() // Program Control

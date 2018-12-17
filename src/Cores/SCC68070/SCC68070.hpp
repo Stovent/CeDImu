@@ -185,9 +185,9 @@ private:
     int16_t GetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
     int32_t GetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
 
-    void SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int8_t& data);
-    void SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int16_t& data);
-    void SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const int32_t& data);
+    void SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint8_t& data);
+    void SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint16_t& data);
+    void SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint32_t& data);
 
     // Direct Memory Access
     int8_t GetByte(const uint32_t& addr) const;
