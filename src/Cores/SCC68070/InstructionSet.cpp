@@ -511,11 +511,104 @@ uint16_t SCC68070::Addx()
 
 uint16_t SCC68070::And()
 {
-#ifdef LOG_OPCODE
-    log("AND ");
-#endif // LOG_OPCODE
-    uint16_t calcTime = 0;
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
+    if(opmode == 0)
+    {
+        uint8_t src = GetByte(eamode, eareg, calcTime);
+        uint8_t dst = D[reg] & 0x000000FF;
+        uint8_t res = src & dst;
+
+        if(res & 0x80) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        D[reg] &= 0xFFFFFF00;
+        D[reg] |= res;
+    }
+    else if(opmode == 1)
+    {
+        uint16_t src = GetWord(eamode, eareg, calcTime);
+        uint16_t dst = D[reg] & 0x0000FFFF;
+        uint16_t res = src & dst;
+
+        if(res & 0x8000) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        D[reg] &= 0xFFFF0000;
+        D[reg] |= res;
+    }
+    else if(opmode == 2)
+    {
+        uint32_t src = GetLong(eamode, eareg, calcTime);
+        uint32_t dst = D[reg];
+        uint32_t res = src & dst;
+
+        if(res & 0x80000000) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        D[reg] = res;
+    }
+    else if(opmode == 3)
+    {
+        uint8_t src = D[reg] & 0x000000FF;
+        uint8_t dst = GetByte(eamode, eareg, calcTime);
+        uint8_t res = src & dst;
+
+        if(res & 0x80) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        SetByte(lastAddress, res);
+
+        calcTime += 4;
+    }
+    else if(opmode == 4)
+    {
+        uint16_t src = D[reg] & 0x0000FFFF;
+        uint16_t dst = GetWord(eamode, eareg, calcTime);
+        uint16_t res = src & dst;
+
+        if(res & 0x8000) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        SetWord(lastAddress, res);
+
+        calcTime += 4;
+    }
+    else
+    {
+        uint32_t src = D[reg];
+        uint32_t dst = GetLong(eamode, eareg, calcTime);
+        uint32_t res = src & dst;
+
+        if(res & 0x80000000) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        SetLong(lastAddress, res);
+
+        calcTime += 8;
+    }
 
     SetC(0);
     SetV(0);
@@ -524,65 +617,66 @@ uint16_t SCC68070::And()
 
 uint16_t SCC68070::Andi()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ANDI";
-#endif // LOG_OPCODE
-    uint8_t SIZE = (currentOpcode & 0x00C0) >> 6;
-    uint8_t MODE = (currentOpcode & 0x0038) >> 3;
-    uint8_t EREG = (currentOpcode & 0x0007);
-    if(SIZE == 0) // byte
-    {
-        int8_t data = GetNextWord() & 0xFF;
-        if(MODE == 0)
-        {
-            uint8_t low = D[EREG] & 0xFF;
-            D[EREG] &= 0xFFFFFF00;
-            D[EREG] |= (D[EREG] & low) & 0xFF;
-            if(D[EREG] & 0x80)
-                SetN(1);
-            else
-                SetN(0);
-            if(D[EREG] == 0)
-                SetZ(1);
-            else
-                SetZ(0);
-        }
-        else if(MODE == 1)
-        {
-#ifdef DEBUG_OPCODE
-            // errorLog("Cannot use EA mode 1 in instruction ANDI");
-#endif // DEBUG_OPCODE
-        }
-        else if(MODE == 2)
-        {
-            int8_t result = data & GetByte(A[EREG]);
-            SetByte(A[EREG], result);
-            if(result == 0)
-                SetZ(1);
-            else
-                SetZ(0);
-            if(result & 0x80)
-                SetN(1);
-            else
-                SetN(0);
-        }
-    }
-    else if(SIZE == 1) // word
-    {
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 14;
 
-    }
-    else if(SIZE == 2) // long
+    if(size == 0)
     {
+        uint8_t data = GetNextWord() & 0xFF;
+        uint8_t  dst = GetByte(eamode, eareg, calcTime);
+        uint8_t  res = data & dst;
 
+        if(res & 0x80) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(eamode)
+        {   SetByte(lastAddress, res); calcTime += 4; }
+        else
+        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= res; }
     }
-#ifdef DEBUG_OPCODE
+    else if(size == 1)
+    {
+        uint16_t data = GetNextWord();
+        uint16_t  dst = GetWord(eamode, eareg, calcTime);
+        uint16_t  res = data & dst;
+
+        if(res & 0x8000) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(eamode)
+        {   SetWord(lastAddress, res); calcTime += 4; }
+        else
+        {   D[eareg] &= 0xFFFF0000; D[eareg] |= res; }
+    }
     else
-        // errorLog("Wrong size in instruction ANDI");
-#endif // DEBUG_OPCODE
+    {
+        uint32_t data = GetNextWord();
+        uint32_t  dst = GetWord(eamode, eareg, calcTime);
+        uint32_t  res = data & dst;
+
+        if(res & 0x80000000) SetN();
+        else SetN(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(eamode)
+        {   SetWord(lastAddress, res); calcTime += 10; }
+        else
+        {   D[eareg] = res; calcTime += 4; }
+    }
+
     SetV(0);
     SetC(0);
-
-    return 14;
+    return calcTime;
 }
 
 uint16_t SCC68070::AsM()
