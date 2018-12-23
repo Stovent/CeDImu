@@ -407,18 +407,24 @@ int8_t SCC68070::GetByte(const uint32_t& addr) const
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc.GetByte(addr);
+    else
+        return 0;
 }
 
 int16_t SCC68070::GetWord(const uint32_t& addr) const
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc.GetWord(addr);
+    else
+        return 0;
 }
 
 int32_t SCC68070::GetLong(const uint32_t& addr) const
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc.GetLong(addr);
+    else
+        return 0;
 }
 
 void SCC68070::SetByte(const uint32_t& addr, const int8_t& data)

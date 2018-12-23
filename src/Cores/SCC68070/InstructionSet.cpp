@@ -64,79 +64,449 @@ uint16_t SCC68070::Abcd()
 
 uint16_t SCC68070::Add()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ADD";
-#endif // LOG_OPCODE
     uint8_t REGISTER = (currentOpcode & 0x0E00) >> 9;
     uint8_t   OPMODE = (currentOpcode & 0x01C0) >> 6;
     uint8_t   EAMODE = (currentOpcode & 0x0038) >> 3;
     uint8_t    EAREG = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
-    if(OPMODE){}
+    if(OPMODE == 0)
+    {
+        int8_t src = GetByte(EAMODE, EAREG, calcTime);
+        int8_t dst = D[REGISTER] & 0x000000FF;
+        int16_t res = src + dst;
+        uint16_t ures = (uint8_t)src + (uint8_t)dst;
 
-#ifdef DEBUG_OPCODE
+        if(ures & 0x100) SetXC();
+        else SetXC(0);
+
+        if(res > INT8_MAX || res < INT8_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        D[REGISTER] &= 0xFFFFFF00;
+        D[REGISTER] |= (res & 0xFF);
+
+    }
+    else if(OPMODE == 1)
+    {
+        int16_t src = GetWord(EAMODE, EAREG, calcTime);
+        int16_t dst = D[REGISTER] & 0x0000FFFF;
+        int32_t res = src + dst;
+        uint32_t ures = (uint16_t)src + (uint16_t)dst;
+
+        if(ures & 0x10000) SetXC();
+        else SetXC(0);
+
+        if(res > INT16_MAX || res < INT16_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        D[REGISTER] &= 0xFFFF0000;
+        D[REGISTER] |= (res & 0xFFFF);
+    }
+    else if(OPMODE == 2)
+    {
+        int32_t src = GetLong(EAMODE, EAREG, calcTime);
+        int32_t dst = D[REGISTER];
+        int64_t res = src + dst;
+        uint64_t ures = (uint32_t)src + (uint32_t)dst;
+
+        if(ures & 0x100000000) SetXC();
+        else SetXC(0);
+
+        if(res > INT32_MAX || res < INT32_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        D[REGISTER] = res;
+    }
+    else if(OPMODE == 4)
+    {
+        int8_t src = D[REGISTER] & 0x000000FF;
+        int8_t dst = GetByte(EAMODE, EAREG, calcTime);
+        int16_t res = src + dst;
+        uint16_t ures = (uint8_t)src + (uint8_t)dst;
+
+        if(ures & 0x100) SetXC();
+        else SetXC(0);
+
+        if(res > INT8_MAX || res < INT8_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        SetByte(lastAddress, res);
+
+        calcTime += 4;
+    }
+    else if(OPMODE == 5)
+    {
+        int16_t src = D[REGISTER] & 0x0000FFFF;
+        int16_t dst = GetWord(EAMODE, EAREG, calcTime);
+        int32_t res = src + dst;
+        uint32_t ures = (uint16_t)src + (uint16_t)dst;
+
+        if(ures & 0x10000) SetXC();
+        else SetXC(0);
+
+        if(res > INT16_MAX || res < INT16_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        SetWord(lastAddress, res);
+
+        calcTime += 4;
+    }
     else
-        errorLog("Wrong OPMODE in instruction ADD");
-#endif // DEBUG_OPCODE
+    {
+        int32_t src = D[REGISTER];
+        int32_t dst = GetLong(EAMODE, EAREG, calcTime);
+        int64_t res = src + dst;
+        uint64_t ures = (uint32_t)src + (uint32_t)dst;
 
-    return 14;
+        if(ures & 0x100000000) SetXC();
+        else SetXC(0);
+
+        if(res > INT32_MAX || res < INT32_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        SetLong(lastAddress, res);
+
+        calcTime += 8;
+    }
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Adda()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ADDA";
-#endif // LOG_OPCODE
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t   size = (currentOpcode & 0x0100) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
-    return 14;
+    if(size) // Long
+    {
+        int32_t src = GetLong(eamode, eareg, calcTime);
+        A[reg] += src;
+    }
+    else // Word
+    {
+        int16_t src = GetWord(eamode, eareg, calcTime);
+        int16_t dst = A[reg] & 0x0000FFFF;
+        A[reg] = src + dst;
+    }
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Addi()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ADDI";
-#endif // LOG_OPCODE
-    uint8_t     SIZE = (currentOpcode & 0b0000000011000000) >> 6;/*
-    uint8_t     MODE = (currentOpcode & 0b0000000000111000) >> 3;
-    uint8_t REGISTER = (currentOpcode & 0b0000000000000111);*/
-    if(SIZE == 0) // Byte
-    {
-    }
-    else if(SIZE == 1) // Word
-    {
-    }
-    else if(SIZE == 2) // Long
-    {
-    }
-#ifdef DEBUG_OPCODE
-    else
-        std::cout << " WARNING: ADDI opcode " << std::hex << currentOpcode << ": SIZE doesn't match anything, instruction not executed";
-#endif // DEBUG_OPCODE
+    uint8_t   size = (currentOpcode & 0b0000000011000000) >> 6;
+    uint8_t eamode = (currentOpcode & 0b0000000000111000) >> 3;
+    uint8_t  eareg = (currentOpcode & 0b0000000000000111);
+    uint16_t calcTime = 14;
 
-    return 14;
+    if(size == 0) // Byte
+    {
+        int8_t src = GetNextWord() & 0x00FF;
+        int8_t dst = GetByte(eamode, eareg, calcTime);
+        int16_t res = src + dst;
+        uint16_t ures = (uint8_t)src + (uint8_t)dst;
+
+        if(ures & 0x100) SetXC();
+        else SetXC(0);
+
+        if(res > INT8_MAX || res < INT8_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(eamode == 0)
+        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= (res & 0xFF); }
+        else
+        {   SetByte(lastAddress, res); calcTime += 4; }
+    }
+    else if(size == 1) // Word
+    {
+        int16_t src = GetNextWord();
+        int16_t dst = GetWord(eamode, eareg, calcTime);
+        int32_t res = src + dst;
+        uint32_t ures = (uint16_t)src + (uint16_t)dst;
+
+        if(ures & 0x10000) SetXC();
+        else SetXC(0);
+
+        if(res > INT16_MAX || res < INT16_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(eamode == 0)
+        {   D[eareg] &= 0xFFFF0000; D[eareg] |= (res & 0xFFFF); }
+        else
+        {   SetWord(lastAddress, res); calcTime += 4; }
+    }
+    else if(size == 2) // Long
+    {
+        int32_t src = (GetNextWord() << 16) | GetNextWord();
+        int32_t dst = GetLong(eamode, eareg, calcTime);
+        int64_t res = src + dst;
+        uint64_t ures = (uint32_t)src + (uint32_t)dst;
+
+        if(ures & 0x100) SetXC();
+        else SetXC(0);
+
+        if(res > INT32_MAX || res < INT32_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(eamode == 0)
+        {   D[eareg] = res; calcTime += 4; }
+        else
+        {   SetLong(lastAddress, res); calcTime += 12; }
+    }
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Addq()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ADDQ";
-#endif // LOG_OPCODE
+    uint8_t   doto = (currentOpcode & 0x0E00) >> 9;
+    uint8_t   data = doto ? doto : 8;
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
-    return 14;
+    if(eamode == 1)
+    {
+        if(size == 1)
+        {
+            int16_t dst = A[eareg] & 0x0000FFFF;
+            A[eareg] = data + dst;
+        }
+        else
+            A[eareg] += data;
+    }
+    else if(size == 0)
+    {
+        int8_t dst = GetByte(eamode, eareg, calcTime);
+        int16_t res = data + dst;
+        uint16_t ures = data + (uint8_t)dst;
+
+        if(ures & 0x100) SetXC();
+        else SetXC(0);
+
+        if(res > INT8_MAX || res < INT8_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(eamode == 0)
+        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= (res & 0xFF); }
+        else
+        {   SetByte(lastAddress, res); calcTime += 4; }
+    }
+    else if(size == 1)
+    {
+        int16_t dst = GetWord(eamode, eareg, calcTime);
+        int32_t res = data + dst;
+        uint32_t ures = data + (uint16_t)dst;
+
+        if(ures & 0x10000) SetXC();
+        else SetXC(0);
+
+        if(res > INT16_MAX || res < INT16_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(eamode == 0)
+        {   D[eareg] &= 0xFFFF0000; D[eareg] |= (res & 0xFFFF); }
+        else
+        {   SetByte(lastAddress, res); calcTime += 4; }
+    }
+    else
+    {
+        int32_t dst = GetLong(eamode, eareg, calcTime);
+        int64_t res = data + dst;
+        uint64_t ures = data + (uint32_t)dst;
+
+        if(ures & 0x100000000) SetXC();
+        else SetXC(0);
+
+        if(res > INT32_MAX || res < INT32_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(eamode == 0)
+            D[eareg] = res;
+        else
+        {   SetByte(lastAddress, res); calcTime += 8; }
+    }
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Addx()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ADDX";
-#endif // LOG_OPCODE
-/*
-    uint8_t     Rx = (currentOpcode & 0x0E00) >> 9;
-    uint8_t   SIZE = (currentOpcode & 0x00C0) >> 6;
-    uint8_t     Ry = (currentOpcode & 0x0007);
-    int32_t result = 0;*/
+    uint8_t   Rx = (currentOpcode & 0x0E00) >> 9;
+    uint8_t   Ry = (currentOpcode & 0x0007);
+    uint8_t size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t   rm = (currentOpcode & 0x0008) >> 3;
+    uint16_t calcTime = 7;
 
-    return 14;
+    if(size == 0)
+    {
+        int8_t src; int8_t dst;
+        if(rm)
+        {   src = GetByte(ARIWPr(Ry, 1));
+            dst = GetByte(ARIWPr(Rx, 1)); calcTime += 2 * ITARIWPrBW + 21; }
+        else
+        {   src = D[Ry] & 0x000000FF;
+            dst = D[Rx] & 0x000000FF; }
+
+        int16_t res = src + dst + GetX();
+        uint16_t ures = (uint8_t)src + (uint8_t)dst + GetX();
+
+        if(ures & 0x100) SetXC();
+        else SetXC(0);
+
+        if(res > INT8_MAX || res < INT8_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(rm)
+            SetByte(lastAddress, res);
+        else
+        {   D[Rx] &= 0xFFFFFF00; D[Rx] |= (res & 0xFF); }
+    }
+    else if(size == 1)
+    {
+        int16_t src; int16_t dst;
+        if(rm)
+        {   src = GetWord(ARIWPr(Ry, 2));
+            dst = GetWord(ARIWPr(Rx, 2)); calcTime += 2 * ITARIWPrBW + 21; }
+        else
+        {   src = D[Ry] & 0x0000FFFF;
+            dst = D[Rx] & 0x0000FFFF; }
+
+        int32_t res = src + dst + GetX();
+        uint32_t ures = (uint16_t)src + (uint16_t)dst + GetX();
+
+        if(ures & 0x10000) SetXC();
+        else SetXC(0);
+
+        if(res > INT16_MAX || res < INT16_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(rm)
+            SetWord(lastAddress, res);
+        else
+        {   D[Rx] &= 0xFFFF0000; D[Rx] |= (res & 0xFFFF); }
+    }
+    else
+    {
+        int32_t src; int32_t dst;
+        if(rm)
+        {   src = GetLong(ARIWPr(Ry, 4));
+            dst = GetLong(ARIWPr(Rx, 4)); calcTime += 2 * ITARIWPrL + 33; }
+        else
+        {   src = D[Ry];
+            dst = D[Rx]; }
+
+        int64_t res = src + dst + GetX();
+        uint64_t ures = (uint32_t)src + (uint32_t)dst + GetX();
+
+        if(ures & 0x100000000) SetXC();
+        else SetXC(0);
+
+        if(res > INT32_MAX || res < INT32_MIN) SetV();
+        else SetV(0);
+
+        if(res == 0) SetZ();
+        else SetZ(0);
+
+        if(res < 0) SetN();
+        else SetN(0);
+
+        if(rm)
+            SetLong(lastAddress, res);
+        else
+            D[Rx] = res;
+    }
+
+    return calcTime;
 }
 
 uint16_t SCC68070::And()
@@ -180,7 +550,7 @@ uint16_t SCC68070::Andi()
         else if(MODE == 1)
         {
 #ifdef DEBUG_OPCODE
-            errorLog("Cannot use EA mode 1 in instruction ANDI");
+            // errorLog("Cannot use EA mode 1 in instruction ANDI");
 #endif // DEBUG_OPCODE
         }
         else if(MODE == 2)
@@ -207,7 +577,7 @@ uint16_t SCC68070::Andi()
     }
 #ifdef DEBUG_OPCODE
     else
-        errorLog("Wrong size in instruction ANDI");
+        // errorLog("Wrong size in instruction ANDI");
 #endif // DEBUG_OPCODE
     SetV(0);
     SetC(0);
@@ -239,7 +609,7 @@ uint16_t SCC68070::BCC() // Program Control
 
     if(condition < 2) // True and False aren't available in Bcc
     {
-        errorLog("Wrong condition in Bcc");
+        // errorLog("Wrong condition in Bcc");
         return 14;
     }
 
@@ -460,7 +830,7 @@ uint16_t SCC68070::Jmp() // Program Control
 #endif // LOG_OPCODE
     uint8_t MODE = (currentOpcode & 0x0038) >> 3;
     uint8_t REGISTER = currentOpcode & 0x0007;
-    uint16_t calcTime = 14; // arbitrary, only if errorLog macro is used
+    uint16_t calcTime = 14; // arbitrary, only if // errorLog macro is used
 
     if(MODE == 2)
     {   PC = A[REGISTER]; calcTime = 7; }
@@ -470,7 +840,7 @@ uint16_t SCC68070::Jmp() // Program Control
     {   PC = ARIWI8(REGISTER); calcTime = 17; }
     else if(MODE == 7)
     {
-        PC = AM7(REGISTER);
+        //PC = AM7(REGISTER);
         if(REGISTER == 0)
             calcTime = 14;
         else if(REGISTER == 1)
@@ -481,7 +851,7 @@ uint16_t SCC68070::Jmp() // Program Control
             calcTime = 17;
     }
     else
-        errorLog("Wrong addressing mode in JMP instruction");
+        // errorLog("Wrong addressing mode in JMP instruction");
 
     return calcTime;
 }
@@ -494,7 +864,7 @@ uint16_t SCC68070::Jsr() // Program Control
     uint8_t MODE = (currentOpcode & 0x0038) >> 3;
     uint8_t REGISTER = currentOpcode & 0x0007;
     uint32_t addr = ARIWPr(7, 4);
-    uint16_t calcTime = 26; // arbitrary, only if errorLog macro is used
+    uint16_t calcTime = 26; // arbitrary, only if // errorLog macro is used
 
     if(MODE == 2)
     {   PC = A[REGISTER]; calcTime = 18; }
@@ -504,7 +874,7 @@ uint16_t SCC68070::Jsr() // Program Control
     {   PC = ARIWI8(REGISTER); calcTime = 28; }
     else if(MODE == 7)
     {
-        PC = AM7(REGISTER);
+//        PC = AM7(REGISTER);
         if(REGISTER == 0)
             calcTime = 25;
         else if(REGISTER == 1)
@@ -515,7 +885,7 @@ uint16_t SCC68070::Jsr() // Program Control
             calcTime = 28;
     }
     else
-        errorLog("Wrong addressing mode in JMP instruction");
+        // errorLog("Wrong addressing mode in JMP instruction");
 
     SetLong(addr, PC);
 
@@ -631,9 +1001,29 @@ uint16_t SCC68070::Mulu()
 
 uint16_t SCC68070::Nbcd()
 {
+    uint8_t mode = (currentOpcode & 0x0038) >> 3;
+    uint8_t reg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 14;
+    uint8_t x = GetX();
+    uint8_t data = GetByte(mode, reg, calcTime);
+    uint8_t result = 0 - convertPBCD(data);
 
+    if(!(data & 0x0F))
+        SetXC();
 
+    result -= x;
 
+    if(result != 0)
+        SetZ(0);
+
+    if(mode == 0)
+    {
+        D[reg] &= 0xFFFFFF00;
+        D[reg] |= result;
+        return 10;
+    }
+    SetByte(lastAddress, result);
+    return calcTime - 4;
 }
 
 uint16_t SCC68070::Neg()
@@ -914,10 +1304,9 @@ uint16_t SCC68070::SCC() // Program Control
             calcTime = 17 + ITARIBW;
         }
         else
-            errorLog("Wrong Regsiter for addressing mode 7 in Scc " << REGISTER);
+            // errorLog("Wrong Regsiter for addressing mode 7 in Scc " << REGISTER);
     break;
-    default:
-        errorLog("Wrong addressing mode for Scc : " << MODE);
+        // errorLog("Wrong addressing mode for Scc : " << MODE);
     }
 
     return calcTime;

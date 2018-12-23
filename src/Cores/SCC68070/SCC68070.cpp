@@ -14,11 +14,6 @@ void SCC68070::Run()
     }
 }
 
-void SCC68070::Exception(const uint8_t& vectorNumber)
-{
-
-}
-
 uint16_t SCC68070::GetNextOpcode()
 {
     uint16_t opcode = vdsc.GetWord(PC);

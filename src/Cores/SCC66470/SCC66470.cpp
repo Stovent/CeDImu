@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "SCC66470.hpp"
 
 SCC66470::SCC66470()
