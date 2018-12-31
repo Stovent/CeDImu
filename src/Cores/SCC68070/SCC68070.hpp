@@ -164,7 +164,7 @@ private:
     void SetS(const uint8_t S = 1);
     uint8_t GetS();
 
-    void Exception(const uint8_t& vectorNumber);
+    void Exception(const uint8_t& vectorNumber, uint16_t& calcTime, bool longFormat = false);
 
     // Addressing modes
     int32_t GetIndexRegister(const uint16_t& bew);

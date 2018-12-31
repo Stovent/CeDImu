@@ -2,14 +2,48 @@
 
 #include "../../utils.h"
 
-void SCC68070::Exception(const uint8_t& vectorNumber)
+void SCC68070::Exception(const uint8_t& vectorNumber, uint16_t& calcTime, bool longFormat)
 {
     uint16_t sr = SR;
     SetS();
 
-    SetWord(ARIWPr(7, 2), (uint16_t)vectorNumber << 2);
+    if(longFormat) // TODO: implement long Stack format (please fix it)
+    {
+        int32_t last = lastAddress;
+        SetWord(ARIWPr(7, 2), 0); // internal information
+        SetWord(ARIWPr(7, 2), currentOpcode); // IRC
+        SetWord(ARIWPr(7, 2), currentOpcode); // IR
+        SetLong(ARIWPr(7, 4), 0); // DBIN
+        SetLong(ARIWPr(7, 4), last); // TPF
+        SetLong(ARIWPr(7, 4), 0); // TPD
+        SetWord(ARIWPr(7, 2), 0); // internal information
+        SetWord(ARIWPr(7, 2), 0); // internal information
+        SetWord(ARIWPr(7, 2), 0); // MM
+        SetWord(ARIWPr(7, 2), 0); // SSW
+        SetWord(ARIWPr(7, 2), 0xF000 | ((uint16_t)vectorNumber << 2));
+    }
+    else
+        SetWord(ARIWPr(7, 2), (uint16_t)vectorNumber << 2);
+
     SetLong(ARIWPr(7, 4), PC);
     SetWord(ARIWPr(7, 2), sr);
+
+    switch(vectorNumber) // handle Exception Processing Clock Periods
+    {
+    case 2: case 3:
+        calcTime += 158; break;
+    case 4: case 8: case 9:
+        calcTime += 55; break;
+    case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39:
+    case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
+        calcTime += 52; break;
+    case 5:
+        calcTime += 64; break;
+    default:
+        if(vectorNumber == 15 || (vectorNumber >= 24 && vectorNumber < 32) || vectorNumber >= 57)
+            calcTime += 65;
+    break;
+    }
 
     PC = GetLong(vectorNumber * 4);
     SetS(0);
@@ -693,35 +727,24 @@ uint16_t SCC68070::AsR()
     return 14;
 }
 
-uint16_t SCC68070::BCC() // Program Control
+uint16_t SCC68070::BCC()
 {
-#ifdef LOG_OPCODE
-    std::cout << "Bcc ";
-#endif // LOG_OPCODE
-    uint16_t calcTime;
     uint8_t condition = (currentOpcode & 0x0F00) >> 8;
+    int8_t       disp = (currentOpcode & 0x00FF);
+    uint16_t calcTime;
 
-    if(condition < 2) // True and False aren't available in Bcc
+    if(disp) // 8-bit
     {
-        // errorLog("Wrong condition in Bcc");
-        return 14;
+        calcTime = 13;
+        if((this->*ConditionalTests[condition])())
+            PC += disp;
     }
-
-    if((this->*ConditionalTests[condition])())
-        if(currentOpcode & 0x00FF)
-        {
-            int8_t a = currentOpcode & 0x00FF;
-            PC += a;
-            calcTime = 13;
-        }
-        else
-        {
-            int16_t a = GetNextWord();
-            PC += a;
-            calcTime = 14;
-        }
-    else
+    else // 16 bit
+    {
         calcTime = 14;
+        if((this->*ConditionalTests[condition])())
+            PC += (int16_t)GetNextWord();
+    }
 
     return calcTime;
 }
@@ -747,24 +770,22 @@ uint16_t SCC68070::Bclr()
 
 }
 
-uint16_t SCC68070::Bra() // Program Control
+uint16_t SCC68070::Bra()
 {
-#ifdef LOG_OPCODE
-    std::cout << "BRA ";
-#endif // LOG_OPCODE
+    int8_t disp = currentOpcode & 0x00FF;
     uint16_t calcTime;
-    int8_t a = currentOpcode & 0x00FF;
-    if(a)
+
+    if(disp)
     {
-        PC += a;
+        PC += disp;
         calcTime = 13;
     }
     else
     {
-        int16_t b = GetNextWord();
-        PC += b;
+        PC += (int16_t)GetNextWord();
         calcTime = 14;
     }
+
     return calcTime;
 }
 
@@ -775,24 +796,25 @@ uint16_t SCC68070::Bset()
 
 }
 
-uint16_t SCC68070::Bsr() // Program Control
+uint16_t SCC68070::Bsr()
 {
-#ifdef LOG_OPCODE
-    std::cout << "Bsr ";
-#endif // LOG_OPCODE
-    int32_t addr = ARIWPr(7, 4);
-    int8_t a = currentOpcode & 0x00FF;
-    if(a)
+    int8_t disp = currentOpcode & 0x00FF;
+    uint16_t calcTime;
+
+    if(disp)
     {
-        SetLong(addr, PC);
-        PC += a;
+        SetLong(ARIWPr(7, 4), PC);
+        PC += disp;
+        calcTime = 21;
     }
     else
     {
-        int16_t b = GetNextWord();
-        SetLong(addr, PC + 2);
-        PC += b;
+        int16_t dsp = GetNextWord();
+        SetLong(ARIWPr(7, 4), PC);
+        PC += dsp;
+        calcTime = 25;
     }
+
     return 14;
 }
 
@@ -1463,119 +1485,97 @@ uint16_t SCC68070::Subx()
 
 }
 
-uint16_t SCC68070::Swap() // ok
+uint16_t SCC68070::Swap()
 {
-#ifdef LOG_OPCODE
-    log("SWAP ");
-#endif // LOG_OPCODE
-    uint8_t REGISTER = currentOpcode & 0x0007;
-    uint32_t tmp = (D[REGISTER] & 0x0000FFFF) << 16;
-    D[REGISTER] >>= 16;
-    D[REGISTER] |= tmp;
+    uint8_t reg = currentOpcode & 0x0007;
 
-    if(D[REGISTER]== 0)
-        SetZ();
-    else
-        SetZ(0);
-    if(D[REGISTER] & 0x80000000)
+    uint16_t tmp = (D[reg] & 0xFFFF0000) >> 16;
+    D[reg] <<= 16;
+    D[reg] |= tmp;
+
+    if(D[reg] == 0)
         SetZ();
     else
         SetZ(0);
 
+    if(D[reg] & 0x80000000)
+        SetN();
+    else
+        SetN(0);
+
+    SetV(0);
+    SetC(0);
     return 7;
 }
 
-uint16_t SCC68070::Tas() // ok
+uint16_t SCC68070::Tas()
 {
-#ifdef LOG_OPCODE
-    log("TAS ");
-#endif // LOG_OPCODE
-    uint8_t MODE = (currentOpcode & 0x0038) >> 3;
-    uint8_t REGISTER = currentOpcode & 0x0007;
-    uint16_t calcTime;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 10;
+
+    uint8_t data = GetByte(eamode, eareg, calcTime);
+    if(data == 0)
+        SetZ();
+    else
+        SetZ(0);
+
+    if(data & 0x80)
+        SetN();
+    else
+    {   SetZ(0); data |= 0x80; }
+
     SetV(0);
     SetC(0);
 
-    if(!MODE)
-    {
-        calcTime = 10;
-        if((D[REGISTER] & 0x000000FF) == 0)
-            SetZ();
-        else
-            SetZ(0);
-        if((D[REGISTER] & 0x00000080))
-            SetN();
-        else
-            SetN(0);
-        D[REGISTER] |= 0x00000080;
-    }
+    if(eamode)
+    {   calcTime++; SetByte(lastAddress, data); }
     else
-    {
-        calcTime = 15;
-        int8_t data = GetByte(MODE, REGISTER, calcTime);
-        if(data == 0)
-            SetZ();
-        else
-            SetZ(0);
-        if(data & 0x80)
-            SetN();
-        else
-            SetN(0);
-        data |= 0x80;
-        SetByte(lastAddress, data);
-        calcTime -= 4;
-    }
+    {   D[eareg] &= 0xFFFFFF00; D[eareg] |= data; }
     return calcTime;
 }
 
-uint16_t SCC68070::Trap() // ok
+uint16_t SCC68070::Trap()
 {
-#ifdef LOG_OPCODE
-    log("TRAP ");
-#endif // LOG_OPCODE
-    uint8_t vec = (currentOpcode & 0x000F) + 32;
-    Exception(vec);
-    return 52; // Theorical, Exception processing clock periods
+    uint8_t vec = currentOpcode & 0x000F;
+    uint16_t calcTime = 0;
+    Exception(32 + vec, calcTime);
+    return calcTime;
 }
 
-uint16_t SCC68070::Trapv() // ok
+uint16_t SCC68070::Trapv()
 {
-#ifdef LOG_OPCODE
-    log("TRAPV ");
-#endif // LOG_OPCODE
+    uint16_t calcTime = 0;
+
     if(GetV())
-    {
-        Exception(7);
-        return 55;
-    }
+        Exception(7, calcTime);
     else
-        return 10;
+        calcTime = 10;
+
+    return calcTime;
 }
 
-uint16_t SCC68070::Tst() // ok
+uint16_t SCC68070::Tst()
 {
-#ifdef LOG_OPCODE
-    log("TST ");
-#endif // LOG_OPCODE
 #define COMPARE if(!data) SetZ(); else SetZ(0); if(data < 0) SetN(); else SetN(0);
-    uint8_t size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t MODE = (currentOpcode & 0x0038) >> 3;
-    uint8_t REGISTER = currentOpcode & 0x0007;
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
     uint16_t calcTime = 7;
 
     if(size == 0)
     {
-        int8_t data = GetByte(MODE, REGISTER, calcTime);
+        int8_t data = GetByte(eamode, eareg, calcTime);
         COMPARE
     }
     else if(size == 1)
     {
-        int16_t data = GetWord(MODE, REGISTER, calcTime);
+        int16_t data = GetWord(eamode, eareg, calcTime);
         COMPARE
     }
     else
     {
-        int32_t data = GetLong(MODE, REGISTER, calcTime);
+        int32_t data = GetLong(eamode, eareg, calcTime);
         COMPARE
     }
 
@@ -1584,14 +1584,10 @@ uint16_t SCC68070::Tst() // ok
     return calcTime;
 }
 
-uint16_t SCC68070::Unlk() // ok
+uint16_t SCC68070::Unlk()
 {
-#ifdef LOG_OPCODE
-    std::cout << "UNLK ";
-#endif // LOG_OPCODE
-    uint8_t REGISTER = currentOpcode & 0x0007;
-    SP = A[REGISTER];
-    A[REGISTER] = GetLong(SP);
-    SP += 4;
+    uint8_t reg = currentOpcode & 0x0007;
+    SP = A[reg];
+    A[reg] = GetLong(ARIWPo(7, 4));
     return 15;
 }

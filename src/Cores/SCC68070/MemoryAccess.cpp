@@ -1,4 +1,5 @@
 #include "SCC68070.hpp"
+#include "../../utils.h"
 
 int8_t SCC68070::GetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime)
 {
@@ -213,13 +214,6 @@ void SCC68070::SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTi
         D[reg] |= data;
         return;
     }
-    else if(mode == 1)
-    {
-        lastAddress = 0;
-        A[reg] &= 0xFFFFFF00;
-        A[reg] |= data;
-        return;
-    }
     else if(mode == 2)
     {
         lastAddress = A[reg];
@@ -283,8 +277,7 @@ void SCC68070::SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTi
     else if(mode == 1)
     {
         lastAddress = 0;
-        A[reg] &= 0xFFFF0000;
-        A[reg] |= data;
+        A[reg] = signExtend16(data);
         return;
     }
     else if(mode == 2)
