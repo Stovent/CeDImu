@@ -815,7 +815,7 @@ uint16_t SCC68070::Bsr()
         calcTime = 25;
     }
 
-    return 14;
+    return calcTime;
 }
 
 uint16_t SCC68070::BtstD()
@@ -881,20 +881,22 @@ uint16_t SCC68070::Cmpm()
     return (SIZE <= 1) ? 18 : 26;
 }
 
-uint16_t SCC68070::DbCC() // Program Control
+uint16_t SCC68070::DbCC()
 {
-#ifdef LOG_OPCODE
-    log("DBcc");
-#endif // LOG_OPCODE
-    uint16_t calcTime;
-    uint8_t CONDITION = (currentOpcode & 0x0F00) >> 8;
-    uint8_t REGISTER = currentOpcode & 0x0007;
-    uint32_t pc = PC;
-    int16_t displacement = GetNextWord();
+    uint8_t condition = (currentOpcode & 0x0F00) >> 12;
+    uint8_t reg = (currentOpcode & 0x0007);
+    int16_t disp = GetNextWord();
 
+    if((this->*ConditionalTests[condition])())
+       return 14;
 
+    int16_t data = D[reg] & 0x0000FFFF;
+    if(--data == -1)
+        return 17;
 
-    return calcTime;
+    PC += signExtend16(disp) - 2;
+
+    return 17;
 }
 
 uint16_t SCC68070::Divs()
@@ -939,71 +941,60 @@ uint16_t SCC68070::Ext()
 
 }
 
-uint16_t SCC68070::Jmp() // Program Control
+uint16_t SCC68070::Jmp()
 {
-#ifdef LOG_OPCODE
-    std::cout << "JMP ";
-#endif // LOG_OPCODE
-    uint8_t MODE = (currentOpcode & 0x0038) >> 3;
-    uint8_t REGISTER = currentOpcode & 0x0007;
-    uint16_t calcTime = 14; // arbitrary, only if // errorLog macro is used
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime;
 
-    if(MODE == 2)
-    {   PC = A[REGISTER]; calcTime = 7; }
-    else if(MODE == 5)
-    {   PC = ARIWD(REGISTER); calcTime = 14; }
-    else if(MODE == 6)
-    {   PC = ARIWI8(REGISTER); calcTime = 17; }
-    else if(MODE == 7)
+    if(eamode == 2)
+    {   PC = A[eareg]; calcTime = 7; }
+    else if(eamode == 5)
+    {   PC = ARIWD(eareg); calcTime = 14; }
+    else if(eamode == 6)
+    {   PC = ARIWI8(eareg); calcTime = 17; }
+    else if(eamode == 7)
     {
-        //PC = AM7(REGISTER);
-        if(REGISTER == 0)
+        if(eareg == 0)
             calcTime = 14;
-        else if(REGISTER == 1)
+        else if(eareg == 1)
             calcTime = 18;
-        else if(REGISTER == 2)
+        else if(eareg == 2)
             calcTime = 14;
         else
             calcTime = 17;
     }
-    else
-        // errorLog("Wrong addressing mode in JMP instruction");
 
     return calcTime;
 }
 
-uint16_t SCC68070::Jsr() // Program Control
+uint16_t SCC68070::Jsr()
 {
-#ifdef LOG_OPCODE
-    std::cout << "JSR ";
-#endif // LOG_OPCODE
-    uint8_t MODE = (currentOpcode & 0x0038) >> 3;
-    uint8_t REGISTER = currentOpcode & 0x0007;
-    uint32_t addr = ARIWPr(7, 4);
-    uint16_t calcTime = 26; // arbitrary, only if // errorLog macro is used
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint32_t pc;
+    uint16_t calcTime;
 
-    if(MODE == 2)
-    {   PC = A[REGISTER]; calcTime = 18; }
-    else if(MODE == 5)
-    {   PC = ARIWD(REGISTER); calcTime = 25; }
-    else if(MODE == 6)
-    {   PC = ARIWI8(REGISTER); calcTime = 28; }
-    else if(MODE == 7)
-    {
-//        PC = AM7(REGISTER);
-        if(REGISTER == 0)
-            calcTime = 25;
-        else if(REGISTER == 1)
-            calcTime = 29;
-        else if(REGISTER == 2)
-            calcTime = 25;
-        else
-            calcTime = 28;
-    }
+    if(eamode == 2)
+    {   pc = A[eareg]; calcTime = 18; }
+    else if(eamode == 5)
+    {   pc = ARIWD(eareg); calcTime = 25; }
+    else if(eamode == 6)
+    {   pc = ARIWI8(eareg); calcTime = 28; }
     else
-        // errorLog("Wrong addressing mode in JMP instruction");
+    {
+        if(eareg == 0)
+        {   pc = ASA(); calcTime = 25; }
+        else if(eareg == 1)
+        {   pc = ALA(); calcTime = 29; }
+        else if(eareg == 2)
+        {   pc = PCIWD(); calcTime = 25; }
+        else
+        {   pc = PCIWI8(); calcTime = 28; }
+    }
 
-    SetLong(addr, PC);
+    SetLong(ARIWPr(7, 4), PC);
+    PC = pc;
 
     return calcTime;
 }
@@ -1156,9 +1147,9 @@ uint16_t SCC68070::Negx()
 
 }
 
-uint16_t SCC68070::Nop() // ok
+uint16_t SCC68070::Nop()
 {
-    return 14; // I love this instruction :D
+    return 7; // I love this instruction :D
 }
 
 uint16_t SCC68070::Not() // ok
@@ -1167,13 +1158,13 @@ uint16_t SCC68070::Not() // ok
     log("NOT ");
 #endif // LOG_OPCODE
     uint8_t size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t MODE = (currentOpcode & 0x0038) >> 3;
-    uint8_t REGISTER = currentOpcode & 0x0007;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 0; // arbitrary, set as default
 
     if(size == 0) // Byte
     {
-        int8_t data = GetByte(MODE, REGISTER, calcTime);
+        int8_t data = GetByte(eamode,  eareg, calcTime);
         int8_t res = ~data;
         SetByte(lastAddress, res);
 
@@ -1188,7 +1179,7 @@ uint16_t SCC68070::Not() // ok
     }
     else if(size == 1) // Word
     {
-        int16_t data = GetWord(MODE, REGISTER, calcTime);
+        int16_t data = GetWord(eamode,  eareg, calcTime);
         int16_t res = ~data;
         SetWord(lastAddress, res);
 
@@ -1203,7 +1194,7 @@ uint16_t SCC68070::Not() // ok
     }
     else // long
     {
-        int32_t data = GetLong(MODE, REGISTER, calcTime);
+        int32_t data = GetLong(eamode,  eareg, calcTime);
         int32_t res = ~data;
         SetLong(lastAddress, res);
 
@@ -1218,7 +1209,7 @@ uint16_t SCC68070::Not() // ok
     }
     SetVC(0);
 
-    if(MODE <= 1)
+    if(eamode <= 1)
         calcTime += 7;
     else
         if(size <= 1)
@@ -1358,14 +1349,11 @@ uint16_t SCC68070::Sbcd()
     return calcTime;
 }
 
-uint16_t SCC68070::SCC() // Program Control
+uint16_t SCC68070::SCC()
 {
-#ifdef LOG_OPCODE
-    log("Scc ");
-#endif // LOG_OPCODE
     uint8_t condition = (currentOpcode & 0x0F00) >> 8;
-    uint8_t MODE      = (currentOpcode & 0x0038) >> 3;
-    uint8_t REGISTER  = (currentOpcode & 0x0007);
+    uint8_t    eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t     eareg = (currentOpcode & 0x0007);
     uint8_t data;
     uint32_t addr = 0;
     uint16_t calcTime = 14; // in case of default:
@@ -1375,65 +1363,16 @@ uint16_t SCC68070::SCC() // Program Control
     else
         data = 0x00;
 
-    switch(MODE)
-    {
-    case 0:
-        D[REGISTER] &= 0xFFFFFF00;
-        D[REGISTER] |= data;
-        calcTime = 13;
-    break;
-    case 2:
-        SetByte(A[REGISTER], data);
-        calcTime = 17 + ITARIBW;
-    break;
-    case 3:
-        addr = ARIWPo(REGISTER, 1);
-        SetByte(addr, data);
-        calcTime = 17 + ITARIBW;
-    break;
-    case 4:
-        addr = ARIWPr(REGISTER, 1);
-        SetByte(addr, data);
-        calcTime = 17 + ITARIBW;
-    break;
-    case 5:
-        addr = ARIWD(REGISTER);
-        SetByte(addr, data);
-        calcTime = 17 + ITARIBW;
-    break;
-    case 6:
-        addr = ARIWI8(REGISTER);
-        SetByte(addr, data);
-        calcTime = 17 + ITARIBW;
-    break;
-    case 7:
-        if(!REGISTER)
-        {
-            addr = AbsoluteShortAddressing();
-            SetByte(addr, data);
-        calcTime = 17 + ITARIBW;
-        }
-        else if(REGISTER == 1)
-        {
-            addr = AbsoluteLongAddressing();
-            SetByte(addr, data);
-            calcTime = 17 + ITARIBW;
-        }
-        else
-            // errorLog("Wrong Regsiter for addressing mode 7 in Scc " << REGISTER);
-    break;
-        // errorLog("Wrong addressing mode for Scc : " << MODE);
-    }
+    SetByte(eamode, eareg, calcTime, data);
 
     return calcTime;
 }
 
-uint16_t SCC68070::Stop() // ok
+uint16_t SCC68070::Stop() // Not fully emulated
 {
-#ifdef LOG_OPCODE
-    log("STOP ");
-#endif // LOG_OPCODE
-    uint16_t data = GetNextWord(); PC += 2;
+    uint16_t data = GetNextWord();
+    uint16_t calcTime = 17;
+
     if(GetS())
     {
         SR = data;
@@ -1441,13 +1380,19 @@ uint16_t SCC68070::Stop() // ok
             SetZ();
         else
             SetZ(0);
+
         if(data & 0x8000)
             SetN();
         else
             SetN(0);
-    }
 
-    return 17;
+        SetV(0);
+        SetC(0);
+    }
+    else
+        Exception(8, calcTime);
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Sub()
@@ -1505,6 +1450,7 @@ uint16_t SCC68070::Swap()
 
     SetV(0);
     SetC(0);
+
     return 7;
 }
 
