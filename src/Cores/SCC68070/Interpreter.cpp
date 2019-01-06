@@ -28,11 +28,9 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return ASr;
     if(((opcode & 0xF000) == 0x6000) && ((opcode & 0xFF00) != 0x6000))
         return Bcc;
-    if((opcode & 0xF1C0) == 0x0140)
-        return BCHGd;
-    if((opcode & 0xFFC0) == 0x0840)
-        return BCHGs;
-    if((opcode & 0xF0C0) == 0x0080)
+    if((opcode & 0xF1C0) == 0x0140 || (opcode & 0xFFC0) == 0x0840)
+        return BCHG;
+    if((opcode & 0xF1C0) == 0x0180 || (opcode & 0xFFC0) == 0x0880)
         return BCLR;
     if((opcode & 0xFF00) == 0x6000)
         return BRA;

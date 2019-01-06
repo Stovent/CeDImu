@@ -895,25 +895,92 @@ uint16_t SCC68070::BCC()
     return calcTime;
 }
 
-uint16_t SCC68070::BchgD()
+uint16_t SCC68070::Bchg()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime;
+    uint8_t shift;
+    if(currentOpcode & 0x0100)
+    {   shift = D[reg] % 32; calcTime = 10; }
+    else
+    {   shift = (GetNextWord() & 0x00FF) % 8; calcTime = 17; }
 
+    if(eamode == 0)
+    {
+        uint32_t data = D[eareg];
+        uint32_t mask = 1 << shift;
+        if(data & mask)
+        {
+            SetZ(0);
+            data &= ~(mask);
+        }
+        else
+        {
+            SetZ();
+            data |= mask;
+        }
+        D[eareg] = data;
+    }
+    else
+    {
+        calcTime += 4;
+        uint8_t data = GetByte(eamode, eareg, calcTime);
+        uint8_t mask = 1 << shift;
+        if(data & mask)
+        {
+            SetZ(0);
+            data &= ~(mask);
+        }
+        else
+        {
+            SetZ();
+            data |= mask;
+        }
+        SetByte(lastAddress, data);
+    }
 
-    return 0;
-}
-
-uint16_t SCC68070::BchgS()
-{
-
-
-    return 0;
+    return calcTime;
 }
 
 uint16_t SCC68070::Bclr()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime;
+    uint8_t shift;
+    if(currentOpcode & 0x0100)
+    {   shift = D[reg] % 32; calcTime = 10; }
+    else
+    {   shift = (GetNextWord() & 0x00FF) % 8; calcTime = 17; }
 
+    if(eamode == 0)
+    {
+        uint32_t data = D[eareg];
+        uint32_t mask = 1 << shift;
+        if(data & mask)
+            SetZ(0);
+        else
+            SetZ();
+        data &= ~(mask);
+        D[eareg] = data;
+    }
+    else
+    {
+        calcTime += 4;
+        uint8_t data = GetByte(eamode, eareg, calcTime);
+        uint8_t mask = 1 << shift;
+        if(data & mask)
+            SetZ(0);
+        else
+            SetZ();
+        data &= ~(mask);
+        SetByte(lastAddress, data);
+    }
 
-    return 0;
+    return calcTime;
 }
 
 uint16_t SCC68070::Bra()

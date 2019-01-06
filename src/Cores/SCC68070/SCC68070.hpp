@@ -9,7 +9,7 @@ class SCC68070;
 #include "../SCC66470/SCC66470.hpp"
 
 #define UNCHANGED 2
-#define OPCODESNBR 79
+#define OPCODESNBR 78
 #define MEMORYSIZE 1048576
 
 #define INTERNAL 0x80000000
@@ -28,8 +28,7 @@ enum SCC68070InstructionSet
     ASm, // Arithmetic Shift Memory
     ASr, // Arithmetic Shift Register
     Bcc, // Branch Conditionally
-    BCHGd, // Test Bit and Change Dynamic
-    BCHGs, // Test Bit and Change Static
+    BCHG, // Test Bit and Change
     BCLR, // Test Bit and Clear
     BRA, // Branch Always
     BSET, // Test a Bit and Set
@@ -247,8 +246,7 @@ private:
     uint16_t AsM();
     uint16_t AsR();
     uint16_t BCC();
-    uint16_t BchgD();
-    uint16_t BchgS();
+    uint16_t Bchg();
     uint16_t Bclr();
     uint16_t Bra();
     uint16_t Bset();
@@ -328,8 +326,7 @@ private:
         AsM,
         AsR,
         BCC,
-        BchgD,
-        BchgS,
+        Bchg,
         Bclr,
         Bra,
         Bset,
