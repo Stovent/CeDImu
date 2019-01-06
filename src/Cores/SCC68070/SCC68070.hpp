@@ -9,7 +9,7 @@ class SCC68070;
 #include "../SCC66470/SCC66470.hpp"
 
 #define UNCHANGED 2
-#define OPCODESNBR 78
+#define OPCODESNBR 77
 #define MEMORYSIZE 1048576
 
 #define INTERNAL 0x80000000
@@ -33,8 +33,7 @@ enum SCC68070InstructionSet
     BRA, // Branch Always
     BSET, // Test a Bit and Set
     BSR, // Branch to Subroutine
-    BTSTd,  // Test a Bit Dynamic
-    BTSTs,  // Test a Bit Static
+    BTST,  // Test a Bit
     CHK, // Check Register Against Bound
     CLR, // Clear an Operand
     CMP, // Compare
@@ -251,8 +250,7 @@ private:
     uint16_t Bra();
     uint16_t Bset();
     uint16_t Bsr();
-    uint16_t BtstD();
-    uint16_t BtstS();
+    uint16_t Btst();
     uint16_t Chk();
     uint16_t Clr();
     uint16_t Cmp();
@@ -331,8 +329,7 @@ private:
         Bra,
         Bset,
         Bsr,
-        BtstD,
-        BtstS,
+        Btst,
         Chk,
         Clr,
         Cmp,
