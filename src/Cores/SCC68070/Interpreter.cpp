@@ -22,7 +22,7 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return AND;
     if((opcode & 0xFF00) == 0x0200)
         return ANDI;
-    if((opcode & 0xF1C0) == 0xE0C0)
+    if((opcode & 0xFEC0) == 0xE0C0)
         return ASm;
     if((opcode & 0xF018) == 0xE000)
         return ASr;

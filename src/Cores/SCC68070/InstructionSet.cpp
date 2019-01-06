@@ -715,16 +715,162 @@ uint16_t SCC68070::Andi()
 
 uint16_t SCC68070::AsM()
 {
+    uint8_t     dr = (currentOpcode & 0x0100) >> 8;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 14;
+    uint16_t data = GetWord(eamode, eareg, calcTime);
 
+    bool b = false;
+    if(dr) // left
+    {
+        uint8_t a = data & 0x8000;
+        SetXC(a);
+        data <<= 1;
+        if(a != (data & 0x8000))
+            b = true;
+    }
+    else // right
+    {
+        uint8_t msb = data & 0x8000;
+        uint8_t a = data & 0x0001;
+        SetXC(a);
+        data >>= 1;
+        data |= msb;
+    }
 
-    return 14;
+    if(data & 0x8000) SetN(); else SetN(0);
+    if(data == 0) SetZ(); else SetZ(0);
+    if(b) SetV(); else SetV(0);
+
+    SetWord(lastAddress, data);
+
+    return calcTime;
 }
 
 uint16_t SCC68070::AsR()
 {
+    uint8_t count = (currentOpcode & 0x0E00) >> 9;
+    uint8_t    dr = (currentOpcode & 0x0100) >> 8;
+    uint8_t  size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t    ir = (currentOpcode & 0x0020) >> 5;
+    uint8_t   reg = (currentOpcode & 0x0007);
+    uint8_t shift;
+    if(ir)
+        shift = D[reg] % 64;
+    else
+        shift = (count) ? count : 8;
 
+    if(!shift)
+    {
+        SetV(0);
+        SetC(0);
+        return 13;
+    }
 
-    return 14;
+    bool b = false;
+    if(size == 0) // byte
+    {
+        uint8_t data = D[reg] & 0x000000FF;
+        if(dr)
+        {
+            uint8_t old = data & 0x80;
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x80;
+                SetXC(a);
+                data <<= 1;
+                if(a != old)
+                    b = true;
+            }
+        }
+        else
+        {
+            uint8_t msb = data & 0x80;
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x01;
+                SetXC(a);
+                data >>= 1;
+                data |= msb;
+            }
+        }
+
+        if(data & 0x80) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] &= 0xFFFFFF00;
+        D[reg] |= data;
+    }
+    else if(size == 1) // word
+    {
+        uint16_t data = D[reg] & 0x0000FFFF;
+        if(dr)
+        {
+            uint8_t old = data & 0x8000;
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x8000;
+                SetXC(a);
+                data <<= 1;
+                if(a != old)
+                    b = true;
+            }
+        }
+        else
+        {
+            uint8_t msb = data & 0x8000;
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x0001;
+                SetXC(a);
+                data >>= 1;
+                data |= msb;
+            }
+        }
+
+        if(data & 0x8000) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] &= 0xFFFF0000;
+        D[reg] |= data;
+    }
+    else // long
+    {
+        uint32_t data = D[reg];
+        if(dr)
+        {
+            uint8_t old = data & 0x80000000;
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x80000000;
+                SetXC(a);
+                data <<= 1;
+                if(a != old)
+                    b = true;
+            }
+        }
+        else
+        {
+            uint8_t msb = data & 0x80000000;
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x00000001;
+                SetXC(a);
+                data >>= 1;
+                data |= msb;
+            }
+        }
+
+        if(data & 0x80000000) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] = data;
+    }
+
+    if(b)
+        SetV();
+    else
+        SetV(0);
+
+    return 13 + 3 * shift;
 }
 
 uint16_t SCC68070::BCC()
@@ -753,21 +899,21 @@ uint16_t SCC68070::BchgD()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::BchgS()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Bclr()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Bra()
@@ -793,7 +939,7 @@ uint16_t SCC68070::Bset()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Bsr()
@@ -822,49 +968,49 @@ uint16_t SCC68070::BtstD()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::BtstS()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Chk()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Clr()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Cmp()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Cmpa()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Cmpi()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Cmpm()
@@ -903,42 +1049,42 @@ uint16_t SCC68070::Divs()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Divu()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Eor()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Eori()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Exg()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Ext()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Jmp()
@@ -953,16 +1099,16 @@ uint16_t SCC68070::Jmp()
     {   PC = ARIWD(eareg); calcTime = 14; }
     else if(eamode == 6)
     {   PC = ARIWI8(eareg); calcTime = 17; }
-    else if(eamode == 7)
+    else
     {
         if(eareg == 0)
-            calcTime = 14;
+        {   PC = ASA(); calcTime = 14; }
         else if(eareg == 1)
-            calcTime = 18;
+        {   PC = ALA(); calcTime = 18; }
         else if(eareg == 2)
-            calcTime = 14;
+        {   PC = PCIWD(); calcTime = 14; }
         else
-            calcTime = 17;
+        {   PC = PCIWI8(); calcTime = 17; }
     }
 
     return calcTime;
@@ -1003,49 +1149,49 @@ uint16_t SCC68070::Lea()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Link()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::LsM()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::LsR()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Move()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Moveccr()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Movesr()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::MoveFsr()
@@ -1054,56 +1200,56 @@ uint16_t SCC68070::MoveFsr()
     std::cout << "MOVEfSR may not be used"; // According to the Green Book Chapter VI.2.2.2
 #endif // LOG_OPCODE
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Moveusp()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Movea()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Movem()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Movep()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Moveq()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Muls()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Mulu()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Nbcd()
@@ -1137,14 +1283,14 @@ uint16_t SCC68070::Neg()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Negx()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Nop()
@@ -1224,21 +1370,21 @@ uint16_t SCC68070::Or()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Ori()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Pea()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Reset()
@@ -1254,14 +1400,14 @@ uint16_t SCC68070::RoM()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::RoR()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::RoxM()
@@ -1270,7 +1416,7 @@ uint16_t SCC68070::RoxM()
     std::cout << "ROXm";
 #endif // LOG_OPCODE
 
-
+    return 0;
 }
 
 uint16_t SCC68070::RoxR()
@@ -1279,14 +1425,14 @@ uint16_t SCC68070::RoxR()
     std::cout << "ROXr";
 #endif // LOG_OPCODE
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Rte()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Rtr() // Program Control
@@ -1319,9 +1465,9 @@ uint16_t SCC68070::Sbcd()
     {
         uint8_t src = GetByte(ARIWPr(Rx, 1));
         uint8_t dst = GetByte(ARIWPr(Ry, 1));
-        if((dst & 0x0F) > (src & 0x0F))
+        if((dst & 0x0F) < (src & 0x0F))
             SetXC();
-        if(((dst & 0xF0) >> 4) > ((src & 0xF0) >> 4))
+        if(((dst & 0xF0) >> 4) < ((src & 0xF0) >> 4))
             SetXC();
 
         result = convertPBCD(dst) - convertPBCD(src) - x;
@@ -1332,9 +1478,9 @@ uint16_t SCC68070::Sbcd()
     {
         uint8_t src = D[Rx] & 0x000000FF;
         uint8_t dst = D[Ry] & 0x000000FF;
-        if((dst & 0x0F) > (src & 0x0F))
+        if((dst & 0x0F) < (src & 0x0F))
             SetXC();
-        if(((dst & 0xF0) >> 4) > ((src & 0xF0) >> 4))
+        if(((dst & 0xF0) >> 4) < ((src & 0xF0) >> 4))
             SetXC();
 
         result = convertPBCD(dst) - convertPBCD(src) - x;
@@ -1355,7 +1501,6 @@ uint16_t SCC68070::SCC()
     uint8_t    eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t     eareg = (currentOpcode & 0x0007);
     uint8_t data;
-    uint32_t addr = 0;
     uint16_t calcTime = 14; // in case of default:
 
     if((this->*ConditionalTests[condition])())
@@ -1399,35 +1544,35 @@ uint16_t SCC68070::Sub()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Suba()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Subi()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Subq()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Subx()
 {
 
 
-
+    return 0;
 }
 
 uint16_t SCC68070::Swap()
