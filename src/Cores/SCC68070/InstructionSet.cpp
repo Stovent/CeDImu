@@ -1,6 +1,6 @@
 #include "SCC68070.hpp"
 
-#include "../../utils.h"
+#include "../../utils.hpp"
 
 void SCC68070::Exception(const uint8_t& vectorNumber, uint16_t& calcTime, bool longFormat)
 {

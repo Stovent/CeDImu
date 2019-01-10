@@ -1,5 +1,5 @@
 #include "SCC68070.hpp"
-#include "../../utils.h"
+#include "../../utils.hpp"
 
 int8_t SCC68070::GetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime)
 {
