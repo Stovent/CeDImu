@@ -127,11 +127,13 @@ public:
     SCC68070(CeDImu& cedimu, VDSC& gpu);
     void Run();
 
-private:
     int32_t D[8];
     int32_t A[8];
     uint32_t PC;
     uint16_t SR;
+
+    void ResetCore();
+private:
 
     int8_t* internal;
 

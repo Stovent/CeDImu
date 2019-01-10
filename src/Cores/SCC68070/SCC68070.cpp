@@ -4,6 +4,18 @@ SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu) : app(cedimu), vdsc(gpu)
 {
     Execute = Interpreter;
     internal = new int8_t[0xBFFFFFFF-INTERNAL];
+    ResetCore();
+}
+
+void SCC68070::ResetCore()
+{
+    PC = 0;
+    SR = 0;
+    for(uint8_t i = 0; i < 8; i++)
+    {
+        D[i] = 0;
+        A[i] = 0;
+    }
 }
 
 void SCC68070::Run()
