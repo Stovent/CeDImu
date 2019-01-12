@@ -19,7 +19,7 @@ std::string toBinString(uint32_t value, uint8_t lengthInBits)
 {
     std::string tmp;
     for(int i = 0; i < lengthInBits; i++)
-        if(value & (1 << (7-i)))
+        if(value & (1 << (lengthInBits-i)))
             tmp += "1";
         else
             tmp +="0";

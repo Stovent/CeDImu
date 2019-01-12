@@ -1,10 +1,5 @@
 #include "CeDImu.hpp"
 
-void launchGameThread(CeDImu* app)
-{
-    app->cpu->Run();
-}
-
 bool CeDImu::OnInit()
 {
     vdsc = new SCC66470();
@@ -20,7 +15,7 @@ void CeDImu::StartGameThread()
     if(gameThread == nullptr)
     {
         cpu->run = true;
-        gameThread = new std::thread(launchGameThread, this);
+        gameThread = new std::thread(&SCC68070::Run, cpu);
     }
 }
 

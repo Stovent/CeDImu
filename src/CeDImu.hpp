@@ -27,6 +27,4 @@ private:
     std::thread* gameThread;
 };
 
-void launchGameThread(CeDImu* app);
-
 #endif // CEDIMU_HPP
