@@ -3,8 +3,10 @@
 
 class DisassemblerFrame;
 
+#include <wx/textctrl.h>
 #include <wx/frame.h>
 #include <wx/sizer.h>
+#include <wx/timer.h>
 
 #include "../Cores/SCC68070/SCC68070.hpp"
 #include "MainFrame.hpp"
@@ -15,12 +17,11 @@ public:
     DisassemblerFrame(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~DisassemblerFrame();
 
-private:
     SCC68070& cpu;
     MainFrame* mainFrame;
     wxPanel* registersPanel;
     wxTextCtrl* disassembler;
-    wxBoxSizer* sizer;
+    wxTimer* renderTimer;
 
     wxTextCtrl* d0; wxTextCtrl* a0;
     wxTextCtrl* d1; wxTextCtrl* a1;
@@ -32,15 +33,12 @@ private:
     wxTextCtrl* d7; wxTextCtrl* a7;
     wxTextCtrl* pc; wxTextCtrl* sr;
 
+    void OnClose(wxCloseEvent& event);
     void PaintEvent(wxPaintEvent& event);
+    void PaintEvent();
+    void RefreshLoop(wxTimerEvent& event);
 
-private:
-    static const wxEventTableEntry sm_eventTableEntries[];
-protected:
-    static const wxEventTable        sm_eventTable;
-    virtual const wxEventTable*      GetEventTable() const;
-    static wxEventHashTable          sm_eventHashTable;
-    virtual wxEventHashTable&        GetEventHashTable() const;
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif // DISASSEMBLERFRAME_HPP

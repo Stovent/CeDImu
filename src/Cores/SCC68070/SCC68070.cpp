@@ -11,6 +11,7 @@ void SCC68070::ResetCore()
 {
     PC = 0;
     SR = 0;
+    executionTime = 0;
     for(uint8_t i = 0; i < 8; i++)
     {
         D[i] = 0;

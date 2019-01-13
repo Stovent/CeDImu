@@ -1498,7 +1498,7 @@ uint16_t SCC68070::Ori()
 {
 
 
-    return 0;
+    return 1;
 }
 
 uint16_t SCC68070::Pea()

@@ -2,8 +2,17 @@
 
 void SCC68070::Interpreter()
 {
+    if(executionTime > 1000)
+    {
+        executionTime = 0;
+        if(app.mainFrame->disassemblerFrame)
+            app.mainFrame->disassemblerFrame->disassembler->SetLabelText("");
+    }
     currentOpcode = GetNextOpcode();
     executionTime += (this->*instructions[GetInstructionIf(currentOpcode)])();
+
+    if(app.mainFrame->disassemblerFrame)
+        app.mainFrame->disassemblerFrame->disassembler->AppendText("a\n");
 }
 
 uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)

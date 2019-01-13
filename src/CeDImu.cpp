@@ -4,6 +4,7 @@ bool CeDImu::OnInit()
 {
     vdsc = new SCC66470();
     cpu = new SCC68070(*this, *vdsc);
+    gameThread = nullptr;
 
     mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
     mainFrame->Show(true);

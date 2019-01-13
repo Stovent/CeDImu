@@ -2,20 +2,21 @@
 
 #include <wx/msgdlg.h>
 #include <wx/dcclient.h>
-#include <wx/textctrl.h>
 
 #include "DisassemblerFrame.hpp"
 #include "../utils.hpp"
 
 wxBEGIN_EVENT_TABLE(DisassemblerFrame, wxFrame)
+    EVT_TIMER(wxID_ANY, DisassemblerFrame::RefreshLoop)
     EVT_PAINT(DisassemblerFrame::PaintEvent)
+    EVT_CLOSE(DisassemblerFrame::OnClose)
 wxEND_EVENT_TABLE()
 
 DisassemblerFrame::DisassemblerFrame(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "SCC68070 Disassembler", pos, size), cpu(core)
 {
     mainFrame = parent;
 
-    disassembler = new wxTextCtrl(this, wxID_ANY, "abc", wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxTE_MULTILINE);
+    disassembler = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxTE_MULTILINE);
 
     registersPanel = new wxPanel(this);
     d0 = new wxTextCtrl(registersPanel, IDDisassemblerd0, "", wxPoint(0, 00), wxDefaultSize, wxTE_READONLY);   a0 = new wxTextCtrl(registersPanel, IDDisassemblera0, "", wxPoint(111, 00), wxDefaultSize, wxTE_READONLY);
@@ -37,18 +38,33 @@ DisassemblerFrame::DisassemblerFrame(SCC68070& core, MainFrame* parent, const wx
     d7->SetBackgroundColour(*wxWHITE); d7->SetLabelText("D7: " + std::to_string(cpu.D[7])); a7->SetBackgroundColour(*wxWHITE); a7->SetLabelText("A7: " + std::to_string(cpu.A[7]));
     pc->SetBackgroundColour(*wxWHITE); d7->SetLabelText("PC: " + std::to_string(cpu.PC));   sr->SetBackgroundColour(*wxWHITE); sr->SetLabelText("SR: " + std::to_string(cpu.SR));
 
-    sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(disassembler, 1, wxEXPAND);
     sizer->Add(registersPanel, 1);
     SetSizer(sizer);
+
+    renderTimer = new wxTimer(this);
+    renderTimer->Start(16);
 }
 
 DisassemblerFrame::~DisassemblerFrame()
 {
     mainFrame->disassemblerFrame = nullptr;
+    delete renderTimer;
+}
+
+void DisassemblerFrame::OnClose(wxCloseEvent& event)
+{
+    renderTimer->Stop();
+    Destroy();
 }
 
 void DisassemblerFrame::PaintEvent(wxPaintEvent& event)
+{
+    PaintEvent();
+}
+
+void DisassemblerFrame::PaintEvent()
 {
     d0->SetLabelText("D0: " + std::to_string(cpu.D[0])); a0->SetLabelText("A0: " + std::to_string(cpu.A[0]));
     d1->SetLabelText("D1: " + std::to_string(cpu.D[1])); a1->SetLabelText("A1: " + std::to_string(cpu.A[1]));
@@ -60,6 +76,11 @@ void DisassemblerFrame::PaintEvent(wxPaintEvent& event)
     d7->SetLabelText("D7: " + std::to_string(cpu.D[7])); a7->SetLabelText("A7: " + std::to_string(cpu.A[7]));
     pc->SetLabelText("PC: " + std::to_string(cpu.PC));   sr->SetLabelText("SR: " + toBinString(cpu.SR, 16));
 
-    wxPaintDC dc(this);
+    wxClientDC dc(this);
     dc.DrawText(std::to_string(cpu.run), 50, 50);
+}
+
+void DisassemblerFrame::RefreshLoop(wxTimerEvent& event)
+{
+    PaintEvent();
 }
