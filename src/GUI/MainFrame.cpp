@@ -2,12 +2,17 @@
 
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
+#include <wx/filedlg.h>
 #include <wx/position.h>
+
+#include <cstdio>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnOpenROM,   MainFrame::OnOpenROM)
     EVT_MENU(IDOnCloseROM,   MainFrame::OnCloseROM)
     EVT_MENU(wxID_EXIT,  MainFrame::OnExit)
+    EVT_MENU(IDOnPause, MainFrame::OnPause)
+    EVT_MENU(IDOnRebootCore, MainFrame::OnRebootCore)
     EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
     EVT_MENU(IDOnAbout, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
@@ -32,6 +37,11 @@ void MainFrame::CreateMenuBar()
     file->Append(IDOnCloseROM, "Close ROM\tCtrl+Maj+O", "Close the ROM currently playing");
     file->Append(wxID_EXIT);
 
+    wxMenu* emulation = new wxMenu;
+    pause = emulation->AppendCheckItem(IDOnPause, "Pause");
+    emulation->AppendSeparator();
+    emulation->Append(IDOnRebootCore, "Reboot Core\tCtrl+R");
+
     wxMenu* tools = new wxMenu;
     tools->Append(IDOnDisassembler, "Disassembler\tCtrl+D");
 
@@ -40,6 +50,7 @@ void MainFrame::CreateMenuBar()
 
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(file, "File");
+    menuBar->Append(emulation, "Emulation");
     menuBar->Append(tools, "Tools");
     menuBar->Append(help, "Help");
 
@@ -48,7 +59,21 @@ void MainFrame::CreateMenuBar()
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
-    app->StartGameThread();
+    wxFileDialog openFileDialog(this, _("Open ROM"), "", "", "Binary files (*.bin)|*.bin", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+        return;
+
+    FILE* f = fopen(openFileDialog.GetPath().ToStdString().data(), "rb");
+    if(f == NULL)
+        wxMessageBox("Could not open ROM!");
+
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    uint8_t* s = new uint8_t[size];
+    fseek(f, 0, SEEK_SET);
+    fread(s, 1, size, f);
+    app->vdsc->PutDataInMemory(s, size, 0);
+    app->cpu->RebootCore();
 }
 
 void MainFrame::OnCloseROM(wxCommandEvent& event)
@@ -59,6 +84,24 @@ void MainFrame::OnCloseROM(wxCommandEvent& event)
 void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
     Close(true);
+}
+
+void MainFrame::OnRebootCore(wxCommandEvent& event)
+{
+    app->cpu->RebootCore();
+}
+
+void MainFrame::OnPause(wxCommandEvent& event)
+{
+    OnPause();
+}
+
+void MainFrame::OnPause()
+{
+    if(pause->IsChecked())
+        app->StopGameThread();
+    else
+        app->StartGameThread();
 }
 
 void MainFrame::OnDisassembler(wxCommandEvent& event)

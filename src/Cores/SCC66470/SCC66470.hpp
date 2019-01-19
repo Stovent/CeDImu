@@ -15,6 +15,7 @@ public:
     ~SCC66470();
 
     void LoadBIOS(std::string filename) override;
+    virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) override;
 
     virtual int8_t  GetByte(const uint32_t& addr) const override;
     virtual int16_t GetWord(const uint32_t& addr) const override;

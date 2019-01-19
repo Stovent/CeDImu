@@ -8,7 +8,7 @@ class VDSC;
 class VDSC
 {
 protected:
-    int8_t* memory;
+    uint8_t* memory;
     uint16_t lineNumber;
 
 public:
@@ -16,6 +16,7 @@ public:
     virtual ~VDSC() {}
 
     virtual void LoadBIOS(std::string filename) = 0;
+    virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) = 0;
 
     virtual int8_t  GetByte(const uint32_t& addr) const = 0;
     virtual int16_t GetWord(const uint32_t& addr) const = 0;

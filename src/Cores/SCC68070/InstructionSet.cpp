@@ -51,6 +51,7 @@ void SCC68070::Exception(const uint8_t& vectorNumber, uint16_t& calcTime, bool l
 
 uint16_t SCC68070::UnknownInstruction()
 {
+    instructionsBuffer += "Unknown instruction";
     return 0;
 }
 
@@ -1231,6 +1232,8 @@ uint16_t SCC68070::Jmp()
         else
         {   PC = PCIWI8(); calcTime = 17; }
     }
+
+    instructionsBuffer += "JMP;";
 
     return calcTime;
 }

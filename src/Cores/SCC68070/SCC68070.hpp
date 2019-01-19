@@ -123,6 +123,8 @@ public:
     VDSC& vdsc;
 
     bool run;
+    std::string instructionsBuffer;
+    bool instructionsBufferChanged;
 
     SCC68070(CeDImu& cedimu, VDSC& gpu);
     void Run();
@@ -132,7 +134,8 @@ public:
     uint32_t PC;
     uint16_t SR;
 
-    void ResetCore();
+    void RebootCore();
+    void SingleStep();
 private:
 
     int8_t* internal;

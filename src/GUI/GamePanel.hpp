@@ -16,6 +16,10 @@ public:
 private:
     CeDImu* app;
     MainFrame* mainFrame;
+
+    void OnKeyDown(wxKeyEvent& event);
+
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif // GAMEPANEL_HPP

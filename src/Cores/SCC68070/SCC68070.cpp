@@ -1,13 +1,13 @@
 #include "SCC68070.hpp"
 
-SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu) : app(cedimu), vdsc(gpu)
+SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu) : app(cedimu), vdsc(gpu), instructionsBuffer("")
 {
     Execute = Interpreter;
     internal = new int8_t[0xBFFFFFFF-INTERNAL];
-    ResetCore();
+    RebootCore();
 }
 
-void SCC68070::ResetCore()
+void SCC68070::RebootCore()
 {
     PC = 0;
     SR = 0;
@@ -17,6 +17,13 @@ void SCC68070::ResetCore()
         D[i] = 0;
         A[i] = 0;
     }
+    instructionsBuffer = "";
+    instructionsBufferChanged = true;
+}
+
+void SCC68070::SingleStep()
+{
+    (this->*Execute)();
 }
 
 void SCC68070::Run()

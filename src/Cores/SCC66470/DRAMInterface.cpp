@@ -11,7 +11,7 @@ int8_t SCC66470::GetByte(const uint32_t& addr) const
 int16_t SCC66470::GetWord(const uint32_t& addr) const
 {
     if((addr < 0x100000 || addr > 0x17FFFF) && addr < 0x200000)
-        return memory[addr+1] << 8 | memory[addr];
+        return memory[addr] << 8 | memory[addr+1];
     else
         return 0;
 }
@@ -19,7 +19,7 @@ int16_t SCC66470::GetWord(const uint32_t& addr) const
 int32_t SCC66470::GetLong(const uint32_t& addr) const
 {
     if((addr < 0x100000 || addr > 0x17FFFF) && addr < 0x200000)
-        return memory[addr+3] << 24 | memory[addr+2] << 16 | memory[addr+1] << 8 | memory[addr];
+        return memory[addr] << 24 | memory[addr+1] << 16 | memory[addr+2] << 8 | memory[addr+3];
     else
         return 0;
 }

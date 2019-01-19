@@ -20,9 +20,9 @@ public:
     SCC68070& cpu;
     MainFrame* mainFrame;
     wxPanel* registersPanel;
-    wxTextCtrl* disassembler;
     wxTimer* renderTimer;
 
+    wxTextCtrl* disassembler;
     wxTextCtrl* d0; wxTextCtrl* a0;
     wxTextCtrl* d1; wxTextCtrl* a1;
     wxTextCtrl* d2; wxTextCtrl* a2;

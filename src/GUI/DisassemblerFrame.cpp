@@ -76,6 +76,10 @@ void DisassemblerFrame::PaintEvent()
     d7->SetLabelText("D7: " + std::to_string(cpu.D[7])); a7->SetLabelText("A7: " + std::to_string(cpu.A[7]));
     pc->SetLabelText("PC: " + std::to_string(cpu.PC));   sr->SetLabelText("SR: " + toBinString(cpu.SR, 16));
 
+    if(cpu.instructionsBufferChanged)
+        disassembler->SetLabelText(cpu.instructionsBuffer);
+    cpu.instructionsBufferChanged = false;
+
     wxClientDC dc(this);
     dc.DrawText(std::to_string(cpu.run), 50, 50);
 }

@@ -2,8 +2,15 @@
 
 void SCC68070::Interpreter()
 {
+    if(executionTime > 1000)
+    {
+        instructionsBuffer = "";
+        executionTime = 0;
+    }
+
     currentOpcode = GetNextOpcode();
     executionTime += (this->*instructions[GetInstructionIf(currentOpcode)])();
+    instructionsBufferChanged = true;
 }
 
 uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
