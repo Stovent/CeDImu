@@ -9,8 +9,11 @@ void SCC68070::Interpreter()
     }
 
     currentOpcode = GetNextOpcode();
-    executionTime += (this->*instructions[GetInstructionIf(currentOpcode)])();
+    uint16_t opcode = GetInstructionIf(currentOpcode);
+    instructionsBuffer += " " + std::to_string(opcode) + " ";
+    executionTime += (this->*instructions[opcode])();
     instructionsBufferChanged = true;
+    count++;
 }
 
 uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
@@ -33,7 +36,7 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return ASm;
     if((opcode & 0xF018) == 0xE000)
         return ASr;
-    if(((opcode & 0xF000) == 0x6000) && ((opcode & 0xFF00) != 0x6000))
+    if(((opcode & 0xF000) == 0x6000) && ((opcode & 0xFF00) != 0x6000) && ((opcode & 0xFF00) != 0x6100))
         return Bcc;
     if((opcode & 0xF1C0) == 0x0140 || (opcode & 0xFFC0) == 0x0840)
         return BCHG;

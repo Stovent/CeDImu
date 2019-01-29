@@ -5,6 +5,7 @@ SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu) : app(cedimu), vdsc(gpu), instruct
     Execute = Interpreter;
     internal = new int8_t[0xBFFFFFFF-INTERNAL];
     RebootCore();
+    count = 0;
 }
 
 void SCC68070::RebootCore()

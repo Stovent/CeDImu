@@ -3,7 +3,7 @@ CXXFLAGS = -Wall -std=c++11 -pipe -mthreads
 linkerFLAGS = -static-libstdc++ -static-libgcc -static -mthreads
 
 defines = -D__GNUWIN32__ -D__WXMSW__ -DWXUSINGDLL -DwxUSE_UNICODE
-wxLib = -lwxmsw30u_core -lwxbase30u -lwxpng -lwxzlib -lole32 -luuid -loleaut32 -lwinspool -lcomctl32 -mwindows
+wxLib = -lwxmsw30u_adv -lwxmsw30u_core -lwxbase30u -lwxpng -lwxzlib -lole32 -luuid -loleaut32 -lwinspool -lcomctl32 -mwindows
 
 wxLibPath = C:\wxWidgets-3.0.4\lib\gcc_lib
 wxIPath = C:\wxWidgets-3.0.4\include
@@ -11,7 +11,7 @@ wxIMSWU = C:\wxWidgets-3.0.4\lib\gcc_lib\mswu
 
 
 obj = bin/obj/Main.o bin/obj/CeDImu.o bin/obj/utils.o \
-bin/obj/MainFrame.o bin/obj/DisassemblerFrame.o bin/obj/GamePanel.o \
+bin/obj/MainFrame.o bin/obj/DisassemblerFrame.o bin/obj/GamePanel.o bin/obj/RAMWatchFrame.o \
 bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/InstructionSet.o bin/obj/AddressingModes.o bin/obj/MemoryAccess.o \
 bin/obj/SCC66470.o bin/obj/DRAMInterface.o
 
@@ -19,6 +19,7 @@ GUI:
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/DisassemblerFrame.cpp -o bin/obj/DisassemblerFrame.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/RAMWatchFrame.cpp -o bin/obj/RAMWatchFrame.o
 	$(CXX) -L$(wxLibPath) -o bin/CeDImu.exe $(obj) bin/obj/ressource.res $(linkerFLAGS) $(wxLib)
 
 Cores:
@@ -45,6 +46,7 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC66470/SCC66470.cpp -o bin/obj/SCC66470.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/RAMWatchFrame.cpp -o bin/obj/RAMWatchFrame.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/DisassemblerFrame.cpp -o bin/obj/DisassemblerFrame.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/CeDImu.cpp -o bin/obj/CeDImu.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Main.cpp -o bin/obj/Main.o

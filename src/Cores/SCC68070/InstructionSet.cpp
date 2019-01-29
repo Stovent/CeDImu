@@ -1,6 +1,7 @@
 #include "SCC68070.hpp"
 
 #include "../../utils.hpp"
+#include <wx/msgdlg.h>
 
 void SCC68070::Exception(const uint8_t& vectorNumber, uint16_t& calcTime, bool longFormat)
 {
@@ -51,7 +52,7 @@ void SCC68070::Exception(const uint8_t& vectorNumber, uint16_t& calcTime, bool l
 
 uint16_t SCC68070::UnknownInstruction()
 {
-    instructionsBuffer += "Unknown instruction";
+    instructionsBuffer += "Unknown instruction;\n";
     return 0;
 }
 
@@ -121,7 +122,7 @@ uint16_t SCC68070::Add()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80) SetN();
         else SetN(0);
 
         D[REGISTER] &= 0xFFFFFF00;
@@ -144,7 +145,7 @@ uint16_t SCC68070::Add()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x8000) SetN();
         else SetN(0);
 
         D[REGISTER] &= 0xFFFF0000;
@@ -166,7 +167,7 @@ uint16_t SCC68070::Add()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80000000) SetN();
         else SetN(0);
 
         D[REGISTER] = res;
@@ -187,7 +188,7 @@ uint16_t SCC68070::Add()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80) SetN();
         else SetN(0);
 
         SetByte(lastAddress, res);
@@ -210,7 +211,7 @@ uint16_t SCC68070::Add()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x8000) SetN();
         else SetN(0);
 
         SetWord(lastAddress, res);
@@ -233,7 +234,7 @@ uint16_t SCC68070::Add()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80000000) SetN();
         else SetN(0);
 
         SetLong(lastAddress, res);
@@ -290,7 +291,7 @@ uint16_t SCC68070::Addi()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80) SetN();
         else SetN(0);
 
         if(eamode == 0)
@@ -314,7 +315,7 @@ uint16_t SCC68070::Addi()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x8000) SetN();
         else SetN(0);
 
         if(eamode == 0)
@@ -338,7 +339,7 @@ uint16_t SCC68070::Addi()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80000000) SetN();
         else SetN(0);
 
         if(eamode == 0)
@@ -346,6 +347,8 @@ uint16_t SCC68070::Addi()
         else
         {   SetLong(lastAddress, res); calcTime += 12; }
     }
+
+    instructionsBuffer += "ADDI;\n";
 
     return calcTime;
 }
@@ -384,7 +387,7 @@ uint16_t SCC68070::Addq()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80) SetN();
         else SetN(0);
 
         if(eamode == 0)
@@ -407,7 +410,7 @@ uint16_t SCC68070::Addq()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x8000) SetN();
         else SetN(0);
 
         if(eamode == 0)
@@ -430,7 +433,7 @@ uint16_t SCC68070::Addq()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80000000) SetN();
         else SetN(0);
 
         if(eamode == 0)
@@ -438,6 +441,8 @@ uint16_t SCC68070::Addq()
         else
         {   SetByte(lastAddress, res); calcTime += 8; }
     }
+
+    instructionsBuffer += "ADDQ; ";
 
     return calcTime;
 }
@@ -472,7 +477,7 @@ uint16_t SCC68070::Addx()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80) SetN();
         else SetN(0);
 
         if(rm)
@@ -502,7 +507,7 @@ uint16_t SCC68070::Addx()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x8000) SetN();
         else SetN(0);
 
         if(rm)
@@ -532,7 +537,7 @@ uint16_t SCC68070::Addx()
         if(res == 0) SetZ();
         else SetZ(0);
 
-        if(res < 0) SetN();
+        if(res & 0x80000000) SetN();
         else SetN(0);
 
         if(rm)
@@ -779,7 +784,7 @@ uint16_t SCC68070::AsR()
             for(uint8_t i = 0; i < shift; i++)
             {
                 uint8_t a = data & 0x80;
-                SetXC(a);
+                SetXC(a ? 1 : 0);
                 data <<= 1;
                 if(a != old)
                     b = true;
@@ -811,7 +816,7 @@ uint16_t SCC68070::AsR()
             for(uint8_t i = 0; i < shift; i++)
             {
                 uint8_t a = data & 0x8000;
-                SetXC(a);
+                SetXC(a ? 1 : 0);
                 data <<= 1;
                 if(a != old)
                     b = true;
@@ -843,7 +848,7 @@ uint16_t SCC68070::AsR()
             for(uint8_t i = 0; i < shift; i++)
             {
                 uint8_t a = data & 0x80000000;
-                SetXC(a);
+                SetXC(a ? 1 : 0);
                 data <<= 1;
                 if(a != old)
                     b = true;
@@ -892,6 +897,8 @@ uint16_t SCC68070::BCC()
         if((this->*ConditionalTests[condition])())
             PC += (int16_t)GetNextWord();
     }
+
+    instructionsBuffer += "BCC; ";
 
     return calcTime;
 }
@@ -1000,6 +1007,8 @@ uint16_t SCC68070::Bra()
         calcTime = 14;
     }
 
+    instructionsBuffer += "BRA; ";
+
     return calcTime;
 }
 
@@ -1057,9 +1066,11 @@ uint16_t SCC68070::Bsr()
     {
         int16_t dsp = GetNextWord();
         SetLong(ARIWPr(7, 4), PC);
-        PC += dsp;
+        PC += dsp - 2;
         calcTime = 25;
     }
+
+    instructionsBuffer += "BSR; ";
 
     return calcTime;
 }
@@ -1137,16 +1148,45 @@ uint16_t SCC68070::Cmpi()
 
 uint16_t SCC68070::Cmpm()
 {
-#ifdef DEBUG_OPCODE
-    log("CMPM ");
-#endif // DEBUG_OPCODE
-    uint8_t SIZE = (currentOpcode & 0x00C0) >> 6;
+    uint8_t size = (currentOpcode & 0x00C0) >> 6;
     uint8_t Ax = (currentOpcode & 0x0E00) >> 9;
-    uint8_t Bx = (currentOpcode & 0x0007);
+    uint8_t Ay = (currentOpcode & 0x0007);
 
+    if(size == 0) // byte
+    {
+        int8_t src = GetByte(ARIWPo(Ay, 1));
+        int8_t dst = GetByte(ARIWPo(Ax, 1));
+        int16_t res = dst - src;
 
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res < 0) SetN(); else SetZ(0);
+        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+        if((dst < src) ^ (((dst ^ src) >= 0) == false)) SetC(); else SetC(0); // From bizhawk : C = ((a < b) ^ ((a ^ b) >= 0) == false);
+    }
+    else if(size == 1) // word
+    {
+        int16_t src = GetWord(ARIWPo(Ay, 2));
+        int16_t dst = GetWord(ARIWPo(Ax, 2));
+        int32_t res = dst - src;
 
-    return (SIZE <= 1) ? 18 : 26;
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res < 0) SetN(); else SetZ(0);
+        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+        if((dst < src) ^ (((dst ^ src) >= 0) == false)) SetC(); else SetC(0);
+    }
+    else // long
+    {
+        int32_t src = GetLong(ARIWPo(Ay, 4));
+        int32_t dst = GetLong(ARIWPo(Ax, 4));
+        int64_t res = dst - src;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res < 0) SetN(); else SetZ(0);
+        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+        if((dst < src) ^ (((dst ^ src) >= 0) == false)) SetC(); else SetC(0);
+    }
+
+    return (size == 2) ? 26 : 18;
 }
 
 uint16_t SCC68070::DbCC()
@@ -1559,21 +1599,19 @@ uint16_t SCC68070::Rte()
     return 0;
 }
 
-uint16_t SCC68070::Rtr() // Program Control
+uint16_t SCC68070::Rtr()
 {
-#ifdef LOG_OPCODE
-    log("RTR ");
-#endif // LOG_OPCODE
-
+    SR &= 0xFFE0;
+    SR |= GetWord(ARIWPo(7, 2)) & 0x001F;
+    PC = GetLong(ARIWPo(7, 4));
+    instructionsBuffer += "RTR; ";
     return 22;
 }
 
-uint16_t SCC68070::Rts() // Program Control
+uint16_t SCC68070::Rts()
 {
-#ifdef LOG_OPCODE
-    log("RTS ");
-#endif // LOG_OPCODE
-
+    PC = GetLong(ARIWPo(7, 4));
+    instructionsBuffer += "RTS; ";
     return 15;
 }
 

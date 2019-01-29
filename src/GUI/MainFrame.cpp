@@ -14,6 +14,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnPause, MainFrame::OnPause)
     EVT_MENU(IDOnRebootCore, MainFrame::OnRebootCore)
     EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
+    EVT_MENU(IDOnRAMWatch, MainFrame::OnRAMWatch)
     EVT_MENU(IDOnAbout, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
 
@@ -22,6 +23,7 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
     app = appp;
     gamePanel = new GamePanel(this, appp);
     disassemblerFrame = nullptr;
+    ramWatchFrame = nullptr;
 
     CreateMenuBar();
 
@@ -44,6 +46,7 @@ void MainFrame::CreateMenuBar()
 
     wxMenu* tools = new wxMenu;
     tools->Append(IDOnDisassembler, "Disassembler\tCtrl+D");
+    tools->Append(IDOnRAMWatch, "RAM Watch\tCtrl+W");
 
     wxMenu* help = new wxMenu;
     help->Append(IDOnAbout, "About");
@@ -72,8 +75,12 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
     uint8_t* s = new uint8_t[size];
     fseek(f, 0, SEEK_SET);
     fread(s, 1, size, f);
+    fclose(f);
     app->vdsc->PutDataInMemory(s, size, 0);
     app->cpu->RebootCore();
+
+    if(!pause->IsChecked())
+        app->StartGameThread();
 }
 
 void MainFrame::OnCloseROM(wxCommandEvent& event)
@@ -109,6 +116,13 @@ void MainFrame::OnDisassembler(wxCommandEvent& event)
     if(disassemblerFrame == nullptr)
         disassemblerFrame = new DisassemblerFrame(*(app->cpu), this, this->GetPosition() + wxPoint(0, 50), wxSize(600, 400));
     disassemblerFrame->Show();
+}
+
+void MainFrame::OnRAMWatch(wxCommandEvent& event)
+{
+    if(ramWatchFrame == nullptr)
+        ramWatchFrame = new RAMWatchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(300, 700));
+    ramWatchFrame->Show();
 }
 
 void MainFrame::OnAbout(wxCommandEvent& event)

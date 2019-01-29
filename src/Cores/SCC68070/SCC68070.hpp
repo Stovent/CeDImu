@@ -136,6 +136,7 @@ public:
 
     void RebootCore();
     void SingleStep();
+    unsigned long long count;
 private:
 
     int8_t* internal;

@@ -18,10 +18,15 @@ int32_t signExtend16(const int16_t data)
 std::string toBinString(uint32_t value, uint8_t lengthInBits)
 {
     std::string tmp;
-    for(int i = 0; i < lengthInBits; i++)
-        if(value & (1 << (lengthInBits-i)))
+    uint32_t mask = 1 << (lengthInBits-1);
+    while(lengthInBits)
+    {
+        if(value & mask)
             tmp += "1";
         else
-            tmp +="0";
+            tmp += "0";
+        value <<= 1;
+        lengthInBits--;
+    }
     return tmp;
 }

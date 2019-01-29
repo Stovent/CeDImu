@@ -66,22 +66,20 @@ void DisassemblerFrame::PaintEvent(wxPaintEvent& event)
 
 void DisassemblerFrame::PaintEvent()
 {
-    d0->SetLabelText("D0: " + std::to_string(cpu.D[0])); a0->SetLabelText("A0: " + std::to_string(cpu.A[0]));
-    d1->SetLabelText("D1: " + std::to_string(cpu.D[1])); a1->SetLabelText("A1: " + std::to_string(cpu.A[1]));
-    d2->SetLabelText("D2: " + std::to_string(cpu.D[2])); a2->SetLabelText("A2: " + std::to_string(cpu.A[2]));
-    d3->SetLabelText("D3: " + std::to_string(cpu.D[3])); a3->SetLabelText("A3: " + std::to_string(cpu.A[3]));
-    d4->SetLabelText("D4: " + std::to_string(cpu.D[4])); a4->SetLabelText("A4: " + std::to_string(cpu.A[4]));
-    d5->SetLabelText("D5: " + std::to_string(cpu.D[5])); a5->SetLabelText("A5: " + std::to_string(cpu.A[5]));
-    d6->SetLabelText("D6: " + std::to_string(cpu.D[6])); a6->SetLabelText("A6: " + std::to_string(cpu.A[6]));
-    d7->SetLabelText("D7: " + std::to_string(cpu.D[7])); a7->SetLabelText("A7: " + std::to_string(cpu.A[7]));
-    pc->SetLabelText("PC: " + std::to_string(cpu.PC));   sr->SetLabelText("SR: " + toBinString(cpu.SR, 16));
-
     if(cpu.instructionsBufferChanged)
+    {
+        d0->SetLabelText("D0: " + std::to_string(cpu.D[0])); a0->SetLabelText("A0: " + std::to_string(cpu.A[0]));
+        d1->SetLabelText("D1: " + std::to_string(cpu.D[1])); a1->SetLabelText("A1: " + std::to_string(cpu.A[1]));
+        d2->SetLabelText("D2: " + std::to_string(cpu.D[2])); a2->SetLabelText("A2: " + std::to_string(cpu.A[2]));
+        d3->SetLabelText("D3: " + std::to_string(cpu.D[3])); a3->SetLabelText("A3: " + std::to_string(cpu.A[3]));
+        d4->SetLabelText("D4: " + std::to_string(cpu.D[4])); a4->SetLabelText("A4: " + std::to_string(cpu.A[4]));
+        d5->SetLabelText("D5: " + std::to_string(cpu.D[5])); a5->SetLabelText("A5: " + std::to_string(cpu.A[5]));
+        d6->SetLabelText("D6: " + std::to_string(cpu.D[6])); a6->SetLabelText("A6: " + std::to_string(cpu.A[6]));
+        d7->SetLabelText("D7: " + std::to_string(cpu.D[7])); a7->SetLabelText("A7: " + std::to_string(cpu.A[7]));
+        pc->SetLabelText("PC: " + std::to_string(cpu.PC));   sr->SetLabelText(toBinString(cpu.SR, 16));
         disassembler->SetLabelText(cpu.instructionsBuffer);
+    }
     cpu.instructionsBufferChanged = false;
-
-    wxClientDC dc(this);
-    dc.DrawText(std::to_string(cpu.run), 50, 50);
 }
 
 void DisassemblerFrame::RefreshLoop(wxTimerEvent& event)

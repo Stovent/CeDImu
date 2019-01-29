@@ -9,6 +9,7 @@ class MainFrame;
 #include "../CeDImu.hpp"
 #include "GamePanel.hpp"
 #include "DisassemblerFrame.hpp"
+#include "RAMWatchFrame.hpp"
 
 enum
 {
@@ -18,6 +19,7 @@ enum
     IDOnPause,
     IDOnRebootCore,
     IDOnDisassembler,
+    IDOnRAMWatch,
 
     IDDisassemblerOnClose,
 
@@ -39,6 +41,7 @@ public:
 
     MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size);
     DisassemblerFrame* disassemblerFrame;
+    RAMWatchFrame* ramWatchFrame;
 
     void OnPause();
 
@@ -55,6 +58,7 @@ private:
     void OnRebootCore(wxCommandEvent& event);
 
     void OnDisassembler(wxCommandEvent& event);
+    void OnRAMWatch(wxCommandEvent& event);
 
     void OnAbout(wxCommandEvent& event);
 
