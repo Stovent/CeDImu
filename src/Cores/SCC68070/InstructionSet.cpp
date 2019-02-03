@@ -1131,7 +1131,7 @@ uint16_t SCC68070::Chk()
     if(data < 0 || data > source)
     {
         calcTime += 45;
-        Exception(6, calcTime, false);
+        Exception(6, calcTime);
         if(data < 0) SetN();
         if(data > source) SetN(0);
     }
