@@ -62,6 +62,7 @@ void MainFrame::CreateMenuBar()
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
+    app->vdsc->ResetMemory();
     wxFileDialog openFileDialog(this, _("Open ROM"), "", "", "Binary files (*.bin)|*.bin", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;

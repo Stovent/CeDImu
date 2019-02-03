@@ -1,4 +1,5 @@
 #include <fstream>
+#include <cstring>
 
 #include "SCC66470.hpp"
 
@@ -24,6 +25,11 @@ void SCC66470::LoadBIOS(std::string filename) // only CD-I 205, it should be 523
 void SCC66470::PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position)
 {
     memcpy(&memory[position], s, size);
+}
+
+void SCC66470::ResetMemory()
+{
+    memset(memory, 0, 1024 * 1024);
 }
 
 void SCC66470::DisplayLine()

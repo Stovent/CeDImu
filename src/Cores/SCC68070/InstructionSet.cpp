@@ -956,6 +956,8 @@ uint16_t SCC68070::Bchg()
         SetByte(lastAddress, data);
     }
 
+    instructionsBuffer += "BCHG;\n ";
+
     return calcTime;
 }
 
@@ -1714,8 +1716,8 @@ uint16_t SCC68070::Neg()
 
         if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
 
-        if(data == 0) SetZ(); else SetZ(0);
-        if(data & 0x80) SetN(); else SetN(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
 
         if(eamode)
         {
@@ -1738,8 +1740,8 @@ uint16_t SCC68070::Neg()
 
         if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
 
-        if(data == 0) SetZ(); else SetZ(0);
-        if(data & 0x8000) SetN(); else SetN(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
 
         if(eamode)
         {
@@ -1762,8 +1764,8 @@ uint16_t SCC68070::Neg()
 
         if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
 
-        if(data == 0) SetZ(); else SetZ(0);
-        if(data & 0x80000000) SetN(); else SetN(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
 
         if(eamode)
         {
