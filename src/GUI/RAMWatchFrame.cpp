@@ -39,6 +39,6 @@ void RAMWatchFrame::RefreshLoop(wxTimerEvent& event)
 
 void RAMWatchFrame::PaintEvent()
 {
-    for(int i = 0; i < 32; i++)
+    for(int i = 0; i < 128; i++)
         grid->SetCellValue(std::to_string(vdsc->GetByte(i)), i, 1);
 }
