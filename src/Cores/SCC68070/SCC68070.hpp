@@ -419,7 +419,7 @@ private:
 
 // IT(Instruction Timing) + Addressing mode macro + size
 #define ITREG 0 // register
-#define ITARIBW 4 // Addres Register Indirect (ARI)
+#define ITARIBW 4 // Address Register Indirect (ARI)
 #define ITARIL 8
 
 #define ITARIWPoBW 4 // ARI with postincrement

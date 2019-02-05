@@ -1,7 +1,6 @@
 #include "SCC68070.hpp"
 
 #include "../../utils.hpp"
-#include <wx/msgdlg.h>
 
 void SCC68070::Exception(const uint8_t& vectorNumber, uint16_t& calcTime)
 {
@@ -1374,16 +1373,25 @@ uint16_t SCC68070::Jsr()
 
 uint16_t SCC68070::Lea()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 0;
 
-
-    return 0;
+    GetLong(eamode, eareg, calcTime);
+    A[reg] = lastAddress;
+    if(eamode == 7 && eareg <= 1)
+        calcTime += 2;
+    return calcTime;
 }
 
 uint16_t SCC68070::Link()
 {
-
-
-    return 0;
+    uint8_t reg = (currentOpcode & 0x0007);
+    SetLong(ARIWPr(7, 4), A[reg]);
+    A[reg] = SP;
+    SP += signExtend16(GetNextWord());
+    return 25;
 }
 
 uint16_t SCC68070::LsM()
@@ -1703,7 +1711,7 @@ uint16_t SCC68070::Neg()
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t calcTime = 0;
+    uint16_t calcTime = 7;
 
     if(size == 0) // byte
     {
@@ -1722,6 +1730,7 @@ uint16_t SCC68070::Neg()
         if(eamode)
         {
             SetByte(lastAddress, res);
+            calcTime += 4;
         }
         else
         {
@@ -1746,6 +1755,7 @@ uint16_t SCC68070::Neg()
         if(eamode)
         {
             SetWord(lastAddress, res);
+            calcTime += 4;
         }
         else
         {
@@ -1770,6 +1780,7 @@ uint16_t SCC68070::Neg()
         if(eamode)
         {
             SetLong(lastAddress, res);
+            calcTime += 8;
         }
         else
         {
@@ -1784,9 +1795,89 @@ uint16_t SCC68070::Neg()
 
 uint16_t SCC68070::Negx()
 {
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
+    if(size == 0) // byte
+    {
+        int8_t data = GetByte(eamode, eareg, calcTime);
 
-    return 0;
+        int16_t res = 0 - data - GetX();
+        uint16_t ures = (uint8_t)0 - (uint8_t)data - (uint8_t)GetX();
+
+        if(ures & 0x100) SetXC(); else SetXC(0);
+
+        if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        if(eamode)
+        {
+            SetByte(lastAddress, res);
+            calcTime += 4;
+        }
+        else
+        {
+            D[eareg] &= 0xFFFFFF00;
+            D[eareg] |= res & 0xFF;
+        }
+    }
+    else if(size == 1) // word
+    {
+        int16_t data = GetWord(eamode, eareg, calcTime);
+
+        int32_t res = 0 - data - GetX();
+        uint32_t ures = (uint16_t)0 - (uint16_t)data - (uint16_t)GetX();
+
+        if(ures & 0x10000) SetXC(); else SetXC(0);
+
+        if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        if(eamode)
+        {
+            SetWord(lastAddress, res);
+            calcTime += 4;
+        }
+        else
+        {
+            D[eareg] &= 0xFFFF0000;
+            D[eareg] |= res & 0xFFFF;
+        }
+    }
+    else // long
+    {
+        int32_t data = GetLong(eamode, eareg, calcTime);
+
+        int64_t res = 0 - data - GetX();
+        uint64_t ures = (uint32_t)0 - (uint32_t)data - (uint32_t)GetX();
+
+        if(ures & 0x100000000) SetXC(); else SetXC(0);
+
+        if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        if(eamode)
+        {
+            SetLong(lastAddress, res);
+            calcTime += 8;
+        }
+        else
+        {
+            D[eareg] = res;
+        }
+    }
+
+    instructionsBuffer += "NEGX;\n ";
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Nop()
@@ -1794,27 +1885,25 @@ uint16_t SCC68070::Nop()
     return 7; // I love this instruction :D
 }
 
-uint16_t SCC68070::Not() // ok
+uint16_t SCC68070::Not()
 {
-#ifdef LOG_OPCODE
-    log("NOT ");
-#endif // LOG_OPCODE
-    uint8_t size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = currentOpcode & 0x0007;
-    uint16_t calcTime = 0; // arbitrary, set as default
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7; // arbitrary, set as default
 
     if(size == 0) // Byte
     {
         int8_t data = GetByte(eamode,  eareg, calcTime);
         int8_t res = ~data;
         SetByte(lastAddress, res);
+        calcTime += 4;
 
         if(res == 0)
             SetZ();
         else
             SetZ(0);
-        if(res < 0)
+        if(res & 0x80)
             SetN();
         else
             SetN(0);
@@ -1824,12 +1913,13 @@ uint16_t SCC68070::Not() // ok
         int16_t data = GetWord(eamode,  eareg, calcTime);
         int16_t res = ~data;
         SetWord(lastAddress, res);
+        calcTime += 4;
 
         if(res == 0)
             SetZ();
         else
             SetZ(0);
-        if(res < 0)
+        if(res & 0x8000)
             SetN();
         else
             SetN(0);
@@ -1839,25 +1929,18 @@ uint16_t SCC68070::Not() // ok
         int32_t data = GetLong(eamode,  eareg, calcTime);
         int32_t res = ~data;
         SetLong(lastAddress, res);
+        calcTime += 8;
 
         if(res == 0)
             SetZ();
         else
             SetZ(0);
-        if(res < 0)
+        if(res & 0x80000000)
             SetN();
         else
             SetN(0);
     }
     SetVC(0);
-
-    if(eamode <= 1)
-        calcTime += 7;
-    else
-        if(size <= 1)
-            calcTime += 11;
-        else
-            calcTime += 15;
 
     return calcTime;
 }
@@ -1878,9 +1961,14 @@ uint16_t SCC68070::Ori()
 
 uint16_t SCC68070::Pea()
 {
-
-
-    return 0;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 11;
+    GetLong(eamode, eareg, calcTime);
+    SetLong(ARIWPr(7, 4), lastAddress);
+    if(eamode == 7 && eareg <= 1)
+        calcTime += 2;
+    return calcTime;
 }
 
 uint16_t SCC68070::Reset()
