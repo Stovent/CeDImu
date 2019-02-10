@@ -2,6 +2,8 @@
 
 void SCC68070::Interpreter()
 {
+    if(!stop)
+        return;
     if(executionTime > 1000)
     {
         instructionsBuffer = "";
@@ -28,7 +30,11 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return ADDQ;
     if((opcode & 0xF130) == 0xD100)
         return ADDX;
-    if((opcode & 0xF000) == 0xC000)
+    if(((opcode & 0xF130) == 0xC100) && ((opcode & 0xF1F8) != 0xC100))
+        return EXG;
+    if((opcode & 0xF1F0) == 0xC100)
+        return ABCD;
+    if((opcode & 0xF008) == 0xC000)
         return AND;
     if((opcode & 0xFF00) == 0x0200)
         return ANDI;
@@ -72,10 +78,6 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return EOR;
     if((opcode & 0xFF00) == 0x0A00)
         return EORI;
-    if(((opcode & 0xF130) == 0xC100) && ((opcode & 0xF1F8) != 0xC100))
-        return EXG;
-    if((opcode & 0xF1F0) == 0xC100)
-        return ABCD;
     if((opcode & 0xFFC0) == 0x4EC0)
         return JMP;
     if((opcode & 0xFFC0) == 0x4E80)
@@ -118,17 +120,17 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return NEG;
     if((opcode & 0xFF00) == 0x4000)
         return NEGX;
-    if((opcode & 0xFFFF) == 0x4871)
+    if(opcode == 0x4871)
         return NOP;
     if((opcode & 0xFF00) == 0x4600)
         return NOT;
-    if((opcode & 0xF000) == 0x8000)
-        return OR;
+//    if((opcode & 0xF008) == 0x8000)
+//        return OR;
     if((opcode & 0xFF00) == 0x0000)
         return ORI;
     if(((opcode & 0xFFC0) == 0x4840) && ((opcode & 0xFFF8) != 0x4840))
         return PEA;
-    if((opcode & 0xFFFF) == 0x4E70)
+    if(opcode == 0x4E70)
         return RESET;
     if((opcode & 0xF1C0) == 0xE6C0)
         return ROm;
@@ -138,17 +140,17 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return ROXm;
     if((opcode & 0xF018) == 0xE010)
         return ROXr;
-    if((opcode & 0xFFFF) == 0x4E73)
+    if(opcode == 0x4E73)
         return RTE;
-    if((opcode & 0xFFFF) == 0x4E77)
+    if(opcode == 0x4E77)
         return RTR;
-    if((opcode & 0xFFFF) == 0x4E75)
+    if(opcode == 0x4E75)
         return RTS;
-    if((opcode & 0xF10F) == 0x8100)
+    if((opcode & 0xF1F0) == 0x8100)
         return SBCD;
     if((opcode & 0xF0C0) == 0x50C0)
         return Scc;
-    if((opcode & 0xFFFF) == 0x4E72)
+    if(opcode == 0x4E72)
         return STOP;
     if((opcode & 0xF000) == 0x9000)
         return SUB;
@@ -166,7 +168,7 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return TAS;
     if((opcode & 0xFFF0) == 0x4E40)
         return TRAP;
-    if((opcode & 0xFFFF) == 0x4E76)
+    if(opcode == 0x4E76)
         return TRAPV;
     if((opcode & 0xFF00) == 0x4A00)
         return TST;

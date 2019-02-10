@@ -133,6 +133,9 @@ public:
     int32_t A[8];
     uint32_t PC;
     uint16_t SR;
+    uint32_t USP;
+    uint32_t SSP;
+    bool stop;
 
     void RebootCore();
     void SingleStep();

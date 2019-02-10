@@ -20,6 +20,7 @@ void SCC68070::RebootCore()
     }
     instructionsBuffer = "";
     instructionsBufferChanged = true;
+    stop = false;
 }
 
 void SCC68070::SingleStep()
@@ -125,6 +126,17 @@ uint8_t SCC68070::GetC()
 
 void SCC68070::SetS(const uint8_t S)
 {
+    if(S == GetS()) return; // From bizhawk
+    if(S) // entering supervisor mode
+    {
+        USP = A[7];
+        A[7] = SSP;
+    }
+    else
+    { // exiting supervisor mode
+        SSP = A[7];
+        A[7] = USP;
+    }
     SR &= 0b1101111111111111;
     SR |= (S << 13);
 }
