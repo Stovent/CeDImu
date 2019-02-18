@@ -36,7 +36,7 @@ void SCC68070::Run()
     }
 }
 
-uint16_t SCC68070::GetNextOpcode()
+uint16_t SCC68070::GetNextWord()
 {
     uint16_t opcode = vdsc.GetWord(PC);
     PC += 2;

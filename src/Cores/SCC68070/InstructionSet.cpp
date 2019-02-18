@@ -1724,14 +1724,98 @@ uint16_t SCC68070::Movea()
 
 uint16_t SCC68070::Movem()
 {
+    uint8_t     dr = (currentOpcode & 0x0400) >> 10;
+    uint8_t   size = (currentOpcode & 0x0040) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t mask = GetNextWord();
+    uint16_t calcTime;
+    bool type = false;
 
+    GetByte(eamode, eareg, calcTime);
 
-    return 0;
+    uint8_t n = 0;
+    uint8_t mod = 0;
+    if(dr) // Memory to register
+    {
+        if(eamode == 3)
+            lastAddress -= (size) ? 4 : 2;
+        for(uint8_t i = 0; i < 16; i++)
+        {
+            if(mask & 1)
+            {
+                if(size) // long
+                {
+                    if(type) // address
+                        A[mod] = GetLong(lastAddress);
+                    else // data
+                        D[mod] = GetLong(lastAddress);
+                }
+                else // word
+                {
+                    if(type) // address
+                        A[mod] = signExtend16(GetWord(lastAddress));
+                    else // data
+                    {
+                        D[mod] &= 0xFFFF0000;
+                        D[mod] |= (uint16_t)GetWord(lastAddress);
+                    }
+                }
+                n++;
+                lastAddress += (size) ? 4 : 2;
+            }
+            mask >>= 1;
+            mod++;
+            mod %= 8;
+            if(mod == 0)
+                type = true; // false means data; true means address
+        }
+    }
+    else // Register to memory
+    {
+        if(eamode == 4)
+            lastAddress += (size) ? 4 : 2;
+        for(uint8_t i = 0; i < 16; i++)
+        {
+            if(mask & 1)
+            {
+                lastAddress -= (size) ? 4 : 2;
+                if(size) // long
+                {
+                    if(type) // address
+                        SetLong(lastAddress, A[mod]);
+                    else // data
+                        SetLong(lastAddress, D[mod]);
+                }
+                else // word
+                {
+                    if(type) // address
+                        SetWord(lastAddress, A[mod]);
+                    else // data
+                        SetWord(lastAddress, D[mod]);
+                }
+                n++;
+            }
+            mask >>= 1;
+            mod++;
+            mod %= 8;
+            if(mod == 0)
+                type = true; // true means data; false means address
+        }
+    }
+
+    instructionsBuffer += "MOVEM;\n ";
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Movep()
 {
+    uint8_t   dreg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t opmode = (currentOpcode & 0x00C0) >> 6;
+    uint8_t   areg = (currentOpcode & 0x0007);
 
+    instructionsBuffer += "MOVEP;\n ";
 
     return 0;
 }
@@ -1750,16 +1834,42 @@ uint16_t SCC68070::Moveq()
 
 uint16_t SCC68070::Muls()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 76;
 
+    int16_t src = GetWord(eamode, eareg, calcTime);
+    int16_t dst = D[reg] & 0x0000FFFF;
 
-    return 0;
+    int32_t res = src * dst;
+    if(res == 0) SetZ(); else SetZ(0);
+    if(res & 0x80000000) SetN(); else SetN(0);
+    SetVC(0);
+
+    D[reg] = res;
+    instructionsBuffer += "MULS;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Mulu()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 76;
 
+    uint16_t src = GetWord(eamode, eareg, calcTime);
+    uint16_t dst = D[reg] & 0x0000FFFF;
 
-    return 0;
+    uint32_t res = src * dst;
+    if(res == 0) SetZ(); else SetZ(0);
+    if(res & 0x80000000) SetN(); else SetN(0);
+    SetVC(0);
+
+    D[reg] = res;
+    instructionsBuffer += "MULU;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Nbcd()

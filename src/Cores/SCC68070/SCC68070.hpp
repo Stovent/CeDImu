@@ -152,7 +152,7 @@ private:
     void (SCC68070::*Execute)() = nullptr;
     void Interpreter();
     uint16_t GetInstructionIf(const uint16_t& opcode);
-    uint16_t GetNextOpcode();
+    uint16_t GetNextWord();
 
     // Conditional Codes
     void SetCCR(const uint8_t X, const uint8_t N, const uint8_t Z, const uint8_t V, const uint8_t C);
@@ -402,7 +402,6 @@ private:
     };
 };
 
-#define GetNextWord() GetNextOpcode()
 #define SP (A[7])
 
 /* shorts for addressing modes */

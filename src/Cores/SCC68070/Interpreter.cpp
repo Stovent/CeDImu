@@ -2,7 +2,7 @@
 
 void SCC68070::Interpreter()
 {
-    if(!stop)
+    if(stop)
         return;
     if(executionTime > 1000)
     {
@@ -10,7 +10,7 @@ void SCC68070::Interpreter()
         executionTime = 0;
     }
 
-    currentOpcode = GetNextOpcode();
+    currentOpcode = GetNextWord();
     uint16_t opcode = GetInstructionIf(currentOpcode);
     instructionsBuffer += " " + std::to_string(opcode) + " ";
     executionTime += (this->*instructions[opcode])();
@@ -106,7 +106,7 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
         return MOVEM;
     if((opcode & 0xFEB8) == 0x4880)
         return EXT;
-    if((opcode & 0xF108) == 0x0108)
+    if((opcode & 0xF138) == 0x0108)
         return MOVEP;
     if((opcode & 0xF100) == 0x7000)
         return MOVEQ;
