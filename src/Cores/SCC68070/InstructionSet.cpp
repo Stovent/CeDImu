@@ -1729,17 +1729,16 @@ uint16_t SCC68070::Movem()
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
     uint16_t mask = GetNextWord();
-    uint16_t calcTime;
+    uint16_t calcTime = 0;
     bool type = false;
 
     GetByte(eamode, eareg, calcTime);
 
     uint8_t n = 0;
-    uint8_t mod = 0;
+    int8_t mod;
     if(dr) // Memory to register
     {
-        if(eamode == 3)
-            lastAddress -= (size) ? 4 : 2;
+        mod = 0;
         for(uint8_t i = 0; i < 16; i++)
         {
             if(mask & 1)
@@ -1770,9 +1769,14 @@ uint16_t SCC68070::Movem()
             if(mod == 0)
                 type = true; // false means data; true means address
         }
+        if(eamode < 4 || (eamode == 7 && eareg < 2))
+            calcTime += 22;
+        else
+            calcTime += 19;
     }
     else // Register to memory
     {
+        mod = 7;
         if(eamode == 4)
             lastAddress += (size) ? 4 : 2;
         for(uint8_t i = 0; i < 16; i++)
@@ -1783,30 +1787,35 @@ uint16_t SCC68070::Movem()
                 if(size) // long
                 {
                     if(type) // address
-                        SetLong(lastAddress, A[mod]);
-                    else // data
                         SetLong(lastAddress, D[mod]);
+                    else // data
+                        SetLong(lastAddress, A[mod]);
                 }
                 else // word
                 {
                     if(type) // address
-                        SetWord(lastAddress, A[mod]);
-                    else // data
                         SetWord(lastAddress, D[mod]);
+                    else // data
+                        SetWord(lastAddress, A[mod]);
                 }
                 n++;
             }
             mask >>= 1;
-            mod++;
-            mod %= 8;
-            if(mod == 0)
+            mod--;
+            if(mod < 0)
+            {
                 type = true; // true means data; false means address
+                mod = 7;
+            }
         }
+        if(eamode > 3 && eamode < 7)
+            calcTime += 16;
+        else
+            calcTime += 19;
     }
 
     instructionsBuffer += "MOVEM;\n ";
-
-    return calcTime;
+    return calcTime + n * (size) ? 11 : 7;
 }
 
 uint16_t SCC68070::Movep()
