@@ -708,8 +708,8 @@ uint16_t SCC68070::Andi()
     }
     else
     {
-        uint32_t data = GetNextWord();
-        uint32_t  dst = GetWord(eamode, eareg, calcTime);
+        uint32_t data = (GetNextWord() << 16) | GetNextWord();
+        uint32_t  dst = GetLong(eamode, eareg, calcTime);
         uint32_t  res = data & dst;
 
         if(res & 0x80000000) SetN();
@@ -2362,16 +2362,185 @@ uint16_t SCC68070::Subi()
 
 uint16_t SCC68070::Subq()
 {
+    uint8_t   doto = (currentOpcode & 0x0E00) >> 9;
+    uint8_t   data = doto ? doto : 8;
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
+    if(size == 0) // byte
+    {
+        int8_t dst = GetByte(eamode, eareg, calcTime);
+        int16_t res = dst - data;
+        uint16_t ures = (uint8_t)dst - data;
 
-    return 0;
+        if(ures & 0x100) SetXC(); else SetXC(0);
+        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        if(eamode == 0)
+        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= (uint8_t)res; }
+        else
+        {   SetByte(lastAddress, res); calcTime += 4; }
+    }
+    else if(size == 1) // word
+    {
+        int16_t dst = GetByte(eamode, eareg, calcTime);
+        int32_t res = dst - data;
+        uint32_t ures = (uint16_t)dst - data;
+
+        if(eamode != 1)
+        {
+            if(ures & 0x10000) SetXC(); else SetXC(0);
+            if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+            if(res == 0) SetZ(); else SetZ(0);
+            if(res & 0x8000) SetN(); else SetN(0);
+        }
+
+        if(eamode == 0)
+        {   D[eareg] &= 0xFFFF0000; D[eareg] |= (uint16_t)res; }
+        else if(eamode == 1)
+            A[eareg] = signExtend16(res);
+        else
+        {   SetWord(lastAddress, res); calcTime += 4; }
+    }
+    else // long
+    {
+        int32_t dst = GetByte(eamode, eareg, calcTime);
+        int64_t res = dst - data;
+        uint64_t ures = (uint32_t)dst - data;
+
+        if(eamode != 1)
+        {
+            if(ures & 0x100000000) SetXC(); else SetXC(0);
+            if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+            if(res == 0) SetZ(); else SetZ(0);
+            if(res & 0x80000000) SetN(); else SetN(0);
+        }
+
+        if(eamode == 0)
+            D[eareg] = res;
+        else if(eamode == 1)
+            A[eareg] = res;
+        else
+        {   SetLong(lastAddress, res); calcTime += 8; }
+    }
+
+    instructionsBuffer += "SUBQ;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Subx()
 {
+    uint8_t   ry = (currentOpcode & 0x0E00) >> 9;
+    uint8_t size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t   rm = (currentOpcode & 0x0008) >> 3;
+    uint8_t   rx = (currentOpcode & 0x0007);
+    uint16_t calcTime;
 
+    if(rm) // memory to memory
+    {
+        if(size == 0) // byte
+        {
+            int8_t src = GetByte(ARIWPr(rx, 1));
+            int8_t dst = GetByte(ARIWPr(ry, 1));
+            int16_t res = dst - src - GetX();
+            uint16_t ures = (uint8_t)dst - (uint8_t)src - GetX();
 
-    return 0;
+            if(ures & 0x100) SetXC(); else SetXC(0);
+            if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+            if(res == 0) SetZ(); else SetZ(0);
+            if(res & 0x80) SetN(); else SetN(0);
+
+            SetByte(lastAddress, res);
+            calcTime = 28;
+        }
+        else if(size == 1) // word
+        {
+            int16_t src = GetWord(ARIWPr(rx, 2));
+            int16_t dst = GetWord(ARIWPr(ry, 2));
+            int32_t res = dst - src - GetX();
+            uint32_t ures = (uint16_t)dst - (uint16_t)src - GetX();
+
+            if(ures & 0x10000) SetXC(); else SetXC(0);
+            if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+            if(res == 0) SetZ(); else SetZ(0);
+            if(res & 0x8000) SetN(); else SetN(0);
+
+            SetWord(lastAddress, res);
+            calcTime = 28;
+        }
+        else // long
+        {
+            int32_t src = GetLong(ARIWPr(rx, 4));
+            int32_t dst = GetLong(ARIWPr(ry, 4));
+            int64_t res = dst - src - GetX();
+            uint64_t ures = (uint32_t)dst - (uint32_t)src - GetX();
+
+            if(ures & 0x100000000) SetXC(); else SetXC(0);
+            if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+            if(res == 0) SetZ(); else SetZ(0);
+            if(res & 0x80000000) SetN(); else SetN(0);
+
+            SetLong(lastAddress, res);
+            calcTime = 40;
+        }
+    }
+    else // data reg to data reg
+    {
+        if(size == 0) // byte
+        {
+            int8_t src = D[rx] & 0x000000FF;
+            int8_t dst = D[ry] & 0x000000FF;
+            int16_t res = dst - src - GetX();
+            uint16_t ures = (uint8_t)dst - (uint8_t)src - GetX();
+
+            if(ures & 0x100) SetXC(); else SetXC(0);
+            if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+            if(res == 0) SetZ(); else SetZ(0);
+            if(res & 0x80) SetN(); else SetN(0);
+
+            D[ry] &= 0xFFFFFF00;
+            D[ry] |= (uint8_t)res;
+            calcTime = 7;
+        }
+        else if(size == 1) // word
+        {
+            int16_t src = D[rx] & 0x0000FFFF;
+            int16_t dst = D[ry] & 0x0000FFFF;
+            int32_t res = dst - src - GetX();
+            uint32_t ures = (uint16_t)dst - (uint16_t)src - GetX();
+
+            if(ures & 0x10000) SetXC(); else SetXC(0);
+            if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+            if(res == 0) SetZ(); else SetZ(0);
+            if(res & 0x8000) SetN(); else SetN(0);
+
+            D[ry] &= 0xFFFF0000;
+            D[ry] |= (uint16_t)res;
+            calcTime = 7;
+        }
+        else // long
+        {
+            int32_t src = D[rx];
+            int32_t dst = D[ry];
+            int64_t res = dst - src - GetX();
+            uint64_t ures = (uint32_t)dst - (uint32_t)src - GetX();
+
+            if(ures & 0x100000000) SetXC(); else SetXC(0);
+            if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+            if(res == 0) SetZ(); else SetZ(0);
+            if(res & 0x80000000) SetN(); else SetN(0);
+
+            D[ry] = (int32_t)res;
+            calcTime = 7;
+        }
+    }
+
+    instructionsBuffer += "SUBX;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Swap()
