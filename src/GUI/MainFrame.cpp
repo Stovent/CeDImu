@@ -3,17 +3,18 @@
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/filedlg.h>
-#include <wx/position.h>
 
 #include <cstdio>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnOpenROM,   MainFrame::OnOpenROM)
+    EVT_MENU(IDOnOpenBinary,   MainFrame::OnOpenBinary)
     EVT_MENU(IDOnCloseROM,   MainFrame::OnCloseROM)
     EVT_MENU(wxID_EXIT,  MainFrame::OnExit)
     EVT_MENU(IDOnPause, MainFrame::OnPause)
     EVT_MENU(IDOnRebootCore, MainFrame::OnRebootCore)
     EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
+    EVT_MENU(IDOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDOnRAMWatch, MainFrame::OnRAMWatch)
     EVT_MENU(IDOnAbout, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
@@ -35,6 +36,7 @@ void MainFrame::CreateMenuBar()
 {
     wxMenu* file = new wxMenu;
     file->Append(IDOnOpenROM, "Open ROM\tCtrl+O", "Choose the ROM to load");
+    file->Append(IDOnOpenBinary, "Open Binary File\t", "Open m68k binary file");
     file->AppendSeparator();
     file->Append(IDOnCloseROM, "Close ROM\tCtrl+Maj+O", "Close the ROM currently playing");
     file->Append(wxID_EXIT);
@@ -43,6 +45,11 @@ void MainFrame::CreateMenuBar()
     pause = emulation->AppendCheckItem(IDOnPause, "Pause");
     emulation->AppendSeparator();
     emulation->Append(IDOnRebootCore, "Reboot Core\tCtrl+R");
+
+    wxMenu* cdi = new wxMenu;
+    wxMenu* cdiexport = new wxMenu;
+    cdiexport->Append(IDOnExportFiles, "Files");
+    cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
     tools->Append(IDOnDisassembler, "Disassembler\tCtrl+D");
@@ -54,6 +61,7 @@ void MainFrame::CreateMenuBar()
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(file, "File");
     menuBar->Append(emulation, "Emulation");
+    menuBar->Append(cdi, "CD-I");
     menuBar->Append(tools, "Tools");
     menuBar->Append(help, "Help");
 
@@ -63,7 +71,25 @@ void MainFrame::CreateMenuBar()
 void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
     app->vdsc->ResetMemory();
-    wxFileDialog openFileDialog(this, _("Open ROM"), "", "", "Binary files (*.bin)|*.bin", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    wxFileDialog openFileDialog(this, _("Open ROM"), "", "", "All files (*.*)|*.*|Binary files (*.bin)|*.bin|.CUE File (*.cue)|*.cue", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+        return;
+
+    if(!app->cdi->OpenROM(openFileDialog.GetFilename().ToStdString(), openFileDialog.GetDirectory().ToStdString() + "/"))
+    {
+        wxMessageBox("Could not open ROM!");
+        return;
+    }
+
+    app->cpu->RebootCore();
+    if(!pause->IsChecked())
+        app->StartGameThread();
+}
+
+void MainFrame::OnOpenBinary(wxCommandEvent& event)
+{
+    app->vdsc->ResetMemory();
+    wxFileDialog openFileDialog(this, _("Open ROM"), "", "", "Binary files (*.bin)|*.bin|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
 
@@ -124,6 +150,11 @@ void MainFrame::OnRAMWatch(wxCommandEvent& event)
     if(ramWatchFrame == nullptr)
         ramWatchFrame = new RAMWatchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(300, 700));
     ramWatchFrame->Show();
+}
+
+void MainFrame::OnExportFiles(wxCommandEvent& event)
+{
+    app->cdi->ExportFiles();
 }
 
 void MainFrame::OnAbout(wxCommandEvent& event)

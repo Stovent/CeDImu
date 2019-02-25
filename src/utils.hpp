@@ -9,5 +9,6 @@ int32_t signExtend8(const int8_t data);
 int16_t signExtend816(const int8_t data);
 int32_t signExtend16(const int16_t data);
 std::string toBinString(uint32_t value, uint8_t lengthInBits);
+bool isEven(int number);
 
 #endif // UTILS_HPP

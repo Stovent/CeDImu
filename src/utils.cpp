@@ -35,3 +35,11 @@ std::string toBinString(uint32_t value, uint8_t lengthInBits)
     }
     return tmp;
 }
+
+bool isEven(int number)
+{
+    if(number & 1)
+        return false;
+    else
+        return true;
+}
