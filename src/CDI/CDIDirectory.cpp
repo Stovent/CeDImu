@@ -52,8 +52,6 @@ void CDIDirectory::LoadSubDirectories(std::ifstream& disk)
         disk.seekg(4, std::ios::cur);
         disk.get(c); attr |= (uint8_t)c; // I only retrieves the high order byte...
         disk.seekg(5, std::ios::cur);
-            std::ofstream out(dirname);
-            out << "LBN: " << lbn << " " << relOffset;
 
         if(attr & 0x80) // ...So I only have to compare with 0x80 and not 0x8000
         {

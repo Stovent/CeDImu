@@ -240,6 +240,7 @@ private:
         GT,
         LE
     };
+    std::string DisassembleConditionalCode(uint8_t cc);
 
     // Instruction Set
     uint16_t UnknownInstruction();
