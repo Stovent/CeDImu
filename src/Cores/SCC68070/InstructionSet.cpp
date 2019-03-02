@@ -1,3 +1,5 @@
+#include <wx/msgdlg.h>
+
 #include "SCC68070.hpp"
 
 #include "../../utils.hpp"
@@ -1239,6 +1241,8 @@ uint16_t SCC68070::DbCC()
     uint8_t reg = (currentOpcode & 0x0007);
     int16_t disp = GetNextWord();
 
+    instructionsBuffer += "DBcc D" + std::to_string(reg) + ", " + DisassembleConditionalCode(condition) + ";\n ";
+
     if((this->*ConditionalTests[condition])())
        return 14;
 
@@ -1247,8 +1251,6 @@ uint16_t SCC68070::DbCC()
         return 17;
 
     PC += signExtend16(disp) - 2;
-
-    instructionsBuffer += "DBcc;\n ";
 
     return 17;
 }
@@ -1473,6 +1475,11 @@ uint16_t SCC68070::LsR()
     else
         shift = (count) ? count : 8;
 
+    if(dr)
+        instructionsBuffer += "LSL;\n ";
+    else
+        instructionsBuffer += "LSR;\n ";
+
     if(!shift)
     {
         SetV(0);
@@ -1575,11 +1582,6 @@ uint16_t SCC68070::LsR()
         SetV();
     else
         SetV(0);
-
-    if(dr)
-        instructionsBuffer += "LSL;\n ";
-    else
-        instructionsBuffer += "LSR;\n ";
 
     return 13 + 3 * shift;
 }
@@ -1820,9 +1822,7 @@ uint16_t SCC68070::Movem()
 
 uint16_t SCC68070::Movep()
 {
-    uint8_t   dreg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t opmode = (currentOpcode & 0x00C0) >> 6;
-    uint8_t   areg = (currentOpcode & 0x0007);
+    wxMessageBox("Warning: MOVEP not supported yet");
 
     instructionsBuffer += "MOVEP;\n ";
 
@@ -2150,16 +2150,145 @@ uint16_t SCC68070::Not()
 
 uint16_t SCC68070::Or()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t opmode = (currentOpcode & 0x001C) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 0;
 
+    if(opmode == 0)
+    {
+        uint8_t src = GetByte(eamode, eareg, calcTime);
+        uint8_t dst = D[reg] & 0x000000FF;
+        uint8_t res = src | dst;
 
-    return 0;
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        calcTime += 7;
+        D[reg] &= 0xFFFFFF00;
+        D[reg] |= res;
+    }
+    else if(opmode == 1)
+    {
+        uint16_t src = GetWord(eamode, eareg, calcTime);
+        uint16_t dst = D[reg] & 0x0000FFFF;
+        uint16_t res = src | dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        calcTime += 7;
+        D[reg] &= 0xFFFF0000;
+        D[reg] |= res;
+    }
+    else if(opmode == 2)
+    {
+        uint32_t src = GetLong(eamode, eareg, calcTime);
+        uint32_t dst = D[reg];
+        uint32_t res = src | dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        calcTime += 7;
+        D[reg] = res;
+    }
+    else if(opmode == 4)
+    {
+        uint8_t src = D[reg] & 0x000000FF;
+        uint8_t dst = GetByte(eamode, eareg, calcTime);
+        uint8_t res = src | dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        calcTime += 11;
+        SetByte(lastAddress, res);
+    }
+    else if(opmode == 5)
+    {
+        uint16_t src = D[reg] & 0x0000FFFF;
+        uint16_t dst = GetWord(eamode, eareg, calcTime);
+        uint16_t res = src | dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        calcTime += 11;
+        SetWord(lastAddress, res);
+    }
+    else
+    {
+        uint32_t src = D[reg];
+        uint32_t dst = GetLong(eamode, eareg, calcTime);
+        uint32_t res = src | dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        calcTime += 15;
+        SetLong(lastAddress, res);
+    }
+    SetVC(0);
+
+    instructionsBuffer += "OR;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Ori()
 {
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 0;
 
+    if(size == 0) // Byte
+    {
+        uint8_t data = GetNextWord() & 0x00FF;
+        uint8_t dst = GetByte(eamode, eareg, calcTime);
+        uint8_t res = data | dst;
 
-    return 1;
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetByte(lastAddress, res); calcTime += 18; }
+        else
+        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= res; calcTime = 14; }
+    }
+    else if(size == 1) // Word
+    {
+        uint16_t data = GetNextWord();
+        uint16_t dst = GetWord(eamode, eareg, calcTime);
+        uint16_t res = data | dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetWord(lastAddress, res); calcTime += 18; }
+        else
+        {   D[eareg] &= 0xFFFF0000; D[eareg] |= res; calcTime = 14; }
+    }
+    else // Long
+    {
+        uint32_t data = (GetNextWord() << 16) | GetNextWord();
+        uint32_t dst = GetLong(eamode, eareg, calcTime);
+        uint32_t res = data | dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetLong(lastAddress, res); calcTime += 26; }
+        else
+        {   D[eareg] = res; calcTime = 18; }
+    }
+    SetVC(0);
+
+    instructionsBuffer += "ORI;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Pea()
@@ -2341,23 +2470,188 @@ uint16_t SCC68070::Stop() // Not fully emulated
 
 uint16_t SCC68070::Sub()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 0;
 
+    if(opmode == 0)
+    {
+        int8_t dst = D[reg] & 0x000000FF;
+        int8_t src = GetByte(eamode, eareg, calcTime);
+        int16_t res = dst - src;
+        uint16_t ures = (uint8_t)dst - (uint8_t)res;
 
-    return 0;
+        if(ures & 0x100) SetXC(); else SetXC(0);
+        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        calcTime += 7;
+        D[reg] &= 0xFFFFFF00;
+        D[reg] |= (uint8_t)res;
+    }
+    else if(opmode == 1)
+    {
+        int16_t dst = D[reg] & 0x0000FFFF;
+        int16_t src = GetWord(eamode, eareg, calcTime);
+        int32_t res = dst - src;
+        uint32_t ures = (uint16_t)dst - (uint16_t)res;
+
+        if(ures & 0x10000) SetXC(); else SetXC(0);
+        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        calcTime += 7;
+        D[reg] &= 0xFFFF0000;
+        D[reg] |= (uint16_t)res;
+    }
+    else if(opmode == 2)
+    {
+        int32_t dst = D[reg];
+        int32_t src = GetLong(eamode, eareg, calcTime);
+        int64_t res = dst - src;
+        uint64_t ures = (uint32_t)dst - (uint32_t)res;
+
+        if(ures & 0x100000000) SetXC(); else SetXC(0);
+        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        calcTime += 7;
+        D[reg] = res;
+    }
+    else if(opmode == 4)
+    {
+        int8_t dst = GetByte(eamode, eareg, calcTime);
+        int8_t src = D[reg] & 0x000000FF;
+        int16_t res = dst - src;
+        uint16_t ures = (uint8_t)dst - (uint8_t)src;
+
+        if(ures & 0x100) SetXC(); else SetXC(0);
+        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        calcTime += 11;
+        SetByte(lastAddress, res);
+    }
+    else if(opmode == 5)
+    {
+        int16_t dst = GetByte(eamode, eareg, calcTime);
+        int16_t src = D[reg] & 0x0000FFFF;
+        int32_t res = dst - src;
+        uint32_t ures = (uint16_t)dst - (uint16_t)src;
+
+        if(ures & 0x10000) SetXC(); else SetXC(0);
+        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        calcTime += 11;
+        SetWord(lastAddress, res);
+    }
+    else
+    {
+        int32_t dst = GetLong(eamode, eareg, calcTime);
+        int32_t src = D[reg];
+        int64_t res = dst - src;
+        uint64_t ures = (uint32_t)dst - (uint32_t)src;
+
+        if(ures & 0x100000000) SetXC(); else SetXC(0);
+        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        calcTime += 15;
+        SetLong(lastAddress, res);
+    }
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Suba()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t opmode = (currentOpcode & 0x0100) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
+    int32_t src;
 
+    if(opmode) // Long
+        src = GetLong(eamode, eareg, calcTime);
+    else // Word
+        src = signExtend16(GetWord(eamode, eareg, calcTime));
 
-    return 0;
+    A[reg] -= src;
+    instructionsBuffer += "SUBA;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Subi()
 {
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 0;
 
+    if(size == 0) // Byte
+    {
+        int8_t data = GetNextWord() & 0x00FF;
+        int8_t dst = GetByte(eamode, eareg, calcTime);
+        int16_t res = dst - data;
+        uint16_t ures = (uint8_t)dst - (uint8_t)data;
 
-    return 0;
+        if(ures & 0x100) SetXC(); else SetXC(0);
+        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetByte(lastAddress, res); calcTime += 18; }
+        else
+        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= (uint8_t)res; calcTime = 14; }
+    }
+    else if(size == 1) // Word
+    {
+        int16_t data = GetNextWord();
+        int16_t dst = GetWord(eamode, eareg, calcTime);
+        int32_t res = dst - data;
+        uint32_t ures = (uint16_t)dst - (uint16_t)data;
+
+        if(ures & 0x10000) SetXC(); else SetXC(0);
+        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetWord(lastAddress, res); calcTime += 18; }
+        else
+        {   D[eareg] &= 0xFFFF0000; D[eareg] |= (uint16_t)res; calcTime = 14; }
+    }
+    else // Long
+    {
+        int32_t data = (GetNextWord() << 16) | GetNextWord();
+        int32_t dst = GetLong(eamode, eareg, calcTime);
+        int64_t res = dst - data;
+        uint64_t ures = (uint32_t)dst - (uint32_t)data;
+
+        if(ures & 0x100000000) SetXC(); else SetXC(0);
+        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetLong(lastAddress, res); calcTime += 26; }
+        else
+        {   D[eareg] = (int32_t)res; calcTime = 18; }
+    }
+
+    instructionsBuffer += "SUBI;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Subq()
