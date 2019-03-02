@@ -1164,30 +1164,155 @@ uint16_t SCC68070::Chk()
 
 uint16_t SCC68070::Clr()
 {
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
+    if(size == 0) // Byte
+        SetByte(eamode, eareg, calcTime, 0);
+    else if(size == 1) // Word
+        SetWord(eamode, eareg, calcTime, 0);
+    else // Long
+        SetLong(eamode, eareg, calcTime, 0);
 
-    return 0;
+    SetN(0);
+    SetZ();
+    SetVC(0);
+    instructionsBuffer += "CLR;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Cmp()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
+    if(opmode == 0) // Byte
+    {
+        int8_t dst = D[reg] &= 0x000000FF;
+        int8_t src = GetByte(eamode, eareg, calcTime);
+        int16_t res = dst - src;
+        uint16_t ures = (uint8_t)dst - (uint8_t)src;
 
-    return 0;
+        if(ures & 0x100) SetC(); else SetC(0);
+        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+    }
+    else if(opmode == 1) // Word
+    {
+        int16_t dst = D[reg] &= 0x0000FFFF;
+        int16_t src = GetWord(eamode, eareg, calcTime);
+        int32_t res = dst - src;
+        uint32_t ures = (uint16_t)dst - (uint16_t)src;
+
+        if(ures & 0x10000) SetC(); else SetC(0);
+        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+    }
+    else // Long
+    {
+        int32_t dst = D[reg];
+        int32_t src = GetLong(eamode, eareg, calcTime);
+        int64_t res = dst - src;
+        uint64_t ures = (uint32_t)dst - (uint32_t)src;
+
+        if(ures & 0x100000000) SetC(); else SetC(0);
+        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+    }
+    instructionsBuffer += "CMP;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Cmpa()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t opmode = (currentOpcode & 0x0100) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 7;
 
+    if(opmode) // Long
+    {
+        int32_t dst = D[reg];
+        int32_t src = GetLong(eamode, eareg, calcTime);
+        int64_t res = dst - src;
+        uint64_t ures = (uint32_t)dst - (uint32_t)src;
 
-    return 0;
+        if(ures & 0x100000000) SetC(); else SetC(0);
+        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+    }
+    else // Word
+    {
+        int16_t dst = D[reg] &= 0x0000FFFF;
+        int16_t src = signExtend16(GetWord(eamode, eareg, calcTime));
+        int32_t res = dst - src;
+        uint32_t ures = (uint16_t)dst - (uint16_t)src;
+
+        if(ures & 0x10000) SetC(); else SetC(0);
+        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+    }
+    instructionsBuffer += "CMPA;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Cmpi()
 {
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 14;
 
+    if(size == 0) // Byte
+    {
+        int8_t data = GetNextWord() & 0x00FF;
+        int8_t dst = GetByte(eamode, eareg, calcTime);
+        int16_t res = dst - data;
+        uint16_t ures = (uint8_t)dst - (uint8_t)data;
 
-    return 0;
+        if(ures & 0x100) SetC(); else SetC(0);
+        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+    }
+    else if(size == 1) // Word
+    {
+        int16_t data = GetNextWord();
+        int16_t dst = GetWord(eamode, eareg, calcTime);
+        int32_t res = dst - data;
+        uint32_t ures = (uint16_t)dst - (uint16_t)data;
+
+        if(ures & 0x10000) SetC(); else SetC(0);
+        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+    }
+    else // Long
+    {
+        int32_t data = (GetNextWord() << 16) | GetNextWord();
+        int32_t dst = GetByte(eamode, eareg, calcTime);
+        int64_t res = dst - data;
+        uint64_t ures = (uint32_t)dst - (uint32_t)data;
+
+        if(ures & 0x100000000) SetC(); else SetC(0);
+        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+    }
+
+    instructionsBuffer += "CMPI;\n ";
+    return (size == 2) ? calcTime + 4 : calcTime;
 }
 
 uint16_t SCC68070::Cmpm()
@@ -1271,16 +1396,107 @@ uint16_t SCC68070::Divu()
 
 uint16_t SCC68070::Eor()
 {
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t opmode = (currentOpcode & 0x001C) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 0;
 
+    if(opmode == 4)
+    {
+        uint8_t src = D[reg] & 0x000000FF;
+        uint8_t dst = GetByte(eamode, eareg, calcTime);
+        uint8_t res = src ^ dst;
 
-    return 0;
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        calcTime += 11;
+        SetByte(lastAddress, res);
+    }
+    else if(opmode == 5)
+    {
+        uint16_t src = D[reg] & 0x0000FFFF;
+        uint16_t dst = GetWord(eamode, eareg, calcTime);
+        uint16_t res = src ^ dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        calcTime += 11;
+        SetWord(lastAddress, res);
+    }
+    else
+    {
+        uint32_t src = D[reg];
+        uint32_t dst = GetLong(eamode, eareg, calcTime);
+        uint32_t res = src ^ dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        calcTime += 15;
+        SetLong(lastAddress, res);
+    }
+    SetVC(0);
+
+    instructionsBuffer += "EOR;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Eori()
 {
+    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 0;
 
+    if(size == 0) // Byte
+    {
+        uint8_t data = GetNextWord() & 0x00FF;
+        uint8_t dst = GetByte(eamode, eareg, calcTime);
+        uint8_t res = data ^ dst;
 
-    return 0;
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetByte(lastAddress, res); calcTime += 18; }
+        else
+        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= res; calcTime = 14; }
+    }
+    else if(size == 1) // Word
+    {
+        uint16_t data = GetNextWord();
+        uint16_t dst = GetWord(eamode, eareg, calcTime);
+        uint16_t res = data ^ dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x8000) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetWord(lastAddress, res); calcTime += 18; }
+        else
+        {   D[eareg] &= 0xFFFF0000; D[eareg] |= res; calcTime = 14; }
+    }
+    else // Long
+    {
+        uint32_t data = (GetNextWord() << 16) | GetNextWord();
+        uint32_t dst = GetLong(eamode, eareg, calcTime);
+        uint32_t res = data ^ dst;
+
+        if(res == 0) SetZ(); else SetZ(0);
+        if(res & 0x80000000) SetN(); else SetN(0);
+
+        if(eamode)
+        {   SetLong(lastAddress, res); calcTime += 26; }
+        else
+        {   D[eareg] = res; calcTime = 18; }
+    }
+    SetVC(0);
+
+    instructionsBuffer += "EORI;\n ";
+    return calcTime;
 }
 
 uint16_t SCC68070::Exg()
