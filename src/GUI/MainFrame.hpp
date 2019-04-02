@@ -13,8 +13,9 @@ class MainFrame;
 
 enum
 {
-    IDOnOpenROM = wxID_LAST + 1,
+    IDOnOpenROM = wxID_HIGHEST + 1,
     IDOnOpenBinary,
+    IDOnLoadBIOS,
     IDOnCloseROM,
     IDOnPause,
     IDOnRebootCore,
@@ -54,6 +55,7 @@ private:
     void CreateMenuBar();
     void OnOpenROM(wxCommandEvent& event);
     void OnOpenBinary(wxCommandEvent& event);
+    void OnLoadBIOS(wxCommandEvent& event);
     void OnCloseROM(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
 

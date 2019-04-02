@@ -15,7 +15,7 @@ public:
     VDSC() : memory(nullptr), lineNumber(0) {}
     virtual ~VDSC() {}
 
-    virtual void LoadBIOS(std::string filename) = 0;
+    virtual bool LoadBIOS(std::string filename) = 0;
     virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) = 0;
     virtual void ResetMemory() = 0;
 

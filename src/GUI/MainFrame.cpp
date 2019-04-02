@@ -9,6 +9,7 @@
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnOpenROM,   MainFrame::OnOpenROM)
     EVT_MENU(IDOnOpenBinary,   MainFrame::OnOpenBinary)
+    EVT_MENU(IDOnLoadBIOS,   MainFrame::OnLoadBIOS)
     EVT_MENU(IDOnCloseROM,   MainFrame::OnCloseROM)
     EVT_MENU(wxID_EXIT,  MainFrame::OnExit)
     EVT_MENU(IDOnPause, MainFrame::OnPause)
@@ -37,6 +38,7 @@ void MainFrame::CreateMenuBar()
     wxMenu* file = new wxMenu;
     file->Append(IDOnOpenROM, "Open ROM\tCtrl+O", "Choose the ROM to load");
     file->Append(IDOnOpenBinary, "Open Binary File\t", "Open m68k binary file");
+    file->Append(IDOnLoadBIOS, "Load BIOS\t", "Load a CD-I BIOS");
     file->AppendSeparator();
     file->Append(IDOnCloseROM, "Close ROM\tCtrl+Maj+O", "Close the ROM currently playing");
     file->Append(wxID_EXIT);
@@ -108,6 +110,16 @@ void MainFrame::OnOpenBinary(wxCommandEvent& event)
 
     if(!pause->IsChecked())
         app->StartGameThread();
+}
+
+void MainFrame::OnLoadBIOS(wxCommandEvent& event)
+{
+    wxFileDialog openFileDialog(this, _("Load BIOS"), "", "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+        return;
+
+    if(!app->vdsc->LoadBIOS(openFileDialog.GetPath().ToStdString().data()))
+        wxMessageBox("Could not load BIOS");
 }
 
 void MainFrame::OnCloseROM(wxCommandEvent& event)

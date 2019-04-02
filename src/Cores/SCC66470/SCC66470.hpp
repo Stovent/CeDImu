@@ -14,7 +14,7 @@ public:
     SCC66470();
     ~SCC66470();
 
-    void LoadBIOS(std::string filename) override;
+    virtual bool LoadBIOS(std::string filename) override;
     virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) override;
     virtual void ResetMemory() override;
 
