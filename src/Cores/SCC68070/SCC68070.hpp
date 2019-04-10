@@ -4,6 +4,7 @@
 class SCC68070;
 
 #include <cstdint>
+#include <vector>
 
 #include "../../CeDImu.hpp"
 #include "../SCC66470/SCC66470.hpp"
@@ -123,7 +124,7 @@ public:
     VDSC& vdsc;
 
     bool run;
-    std::string instructionsBuffer;
+    std::vector<std::string> instructionsBuffer;
     bool instructionsBufferChanged;
 
     SCC68070(CeDImu& cedimu, VDSC& gpu);

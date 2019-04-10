@@ -4,15 +4,19 @@ void SCC68070::Interpreter()
 {
     if(stop)
         return;
-    if(executionTime > 1000)
+    if(executionTime > 5000)
     {
-        instructionsBuffer = "";
+        if(app.mainFrame->disassemblerFrame != nullptr)
+        {
+            app.mainFrame->disassemblerFrame->disassembler->SetLabelText("");
+            app.mainFrame->disassemblerFrame->currentRow = 0;
+        }
+        instructionsBuffer.clear();
         executionTime = 0;
     }
 
     currentOpcode = GetNextWord();
     uint16_t opcode = GetInstructionIf(currentOpcode);
-    instructionsBuffer += " " + std::to_string(opcode) + " ";
     executionTime += (this->*instructions[opcode])();
     instructionsBufferChanged = true;
     count++;

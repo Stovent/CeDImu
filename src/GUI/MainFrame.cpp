@@ -153,7 +153,7 @@ void MainFrame::OnPause()
 void MainFrame::OnDisassembler(wxCommandEvent& event)
 {
     if(disassemblerFrame == nullptr)
-        disassemblerFrame = new DisassemblerFrame(*(app->cpu), this, this->GetPosition() + wxPoint(0, 50), wxSize(600, 400));
+        disassemblerFrame = new DisassemblerFrame(*(app->cpu), this, this->GetPosition() + wxPoint(0, 50), wxSize(600, 460));
     disassemblerFrame->Show();
 }
 

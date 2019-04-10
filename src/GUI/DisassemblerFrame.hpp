@@ -14,23 +14,18 @@ class DisassemblerFrame;
 class DisassemblerFrame : public wxFrame
 {
 public:
+    uint32_t currentRow;
+
     DisassemblerFrame(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~DisassemblerFrame();
 
     SCC68070& cpu;
     MainFrame* mainFrame;
-    wxPanel* registersPanel;
     wxTimer* renderTimer;
 
     wxTextCtrl* disassembler;
-    wxTextCtrl* d0; wxTextCtrl* a0;
-    wxTextCtrl* d1; wxTextCtrl* a1;
-    wxTextCtrl* d2; wxTextCtrl* a2;
-    wxTextCtrl* d3; wxTextCtrl* a3;
-    wxTextCtrl* d4; wxTextCtrl* a4;
-    wxTextCtrl* d5; wxTextCtrl* a5;
-    wxTextCtrl* d6; wxTextCtrl* a6;
-    wxTextCtrl* d7; wxTextCtrl* a7;
+    wxTextCtrl* d[8]; wxTextCtrl* a[8];
+
     wxTextCtrl* pc; wxTextCtrl* sr;
 
     void OnClose(wxCloseEvent& event);

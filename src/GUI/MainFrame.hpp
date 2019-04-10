@@ -34,7 +34,7 @@ enum
     IDDisassemblerd5, IDDisassemblera5,
     IDDisassemblerd6, IDDisassemblera6,
     IDDisassemblerd7, IDDisassemblera7,
-    IDDisassemblerdpc, IDDisassemblerasr,
+    IDDisassemblerpc, IDDisassemblersr,
 };
 
 class MainFrame : public wxFrame
