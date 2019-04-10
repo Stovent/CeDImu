@@ -140,6 +140,7 @@ public:
 
     void RebootCore();
     void SingleStep();
+    void ResetCpu();
     unsigned long long count;
 private:
 

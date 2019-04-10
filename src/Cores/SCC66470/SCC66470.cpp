@@ -14,7 +14,11 @@ SCC66470::~SCC66470()
     delete[] memory;
 }
 
-void SCC66470::LoadBIOS(std::string filename) // only CD-I 205, it should be 523 264 bytes long
+void SCC66470::MemorySwap()
+{
+    memorySwapCount = 0;
+}
+
 bool SCC66470::LoadBIOS(std::string filename) // only CD-I 205, it should be 523 264 bytes long
 {
     char* c = new char[0x7FBFF];

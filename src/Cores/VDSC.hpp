@@ -18,14 +18,15 @@ public:
     virtual bool LoadBIOS(std::string filename) = 0;
     virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) = 0;
     virtual void ResetMemory() = 0;
+    virtual void MemorySwap();
 
-    virtual int8_t  GetByte(const uint32_t& addr) const = 0;
-    virtual int16_t GetWord(const uint32_t& addr) const = 0;
-    virtual int32_t GetLong(const uint32_t& addr) const = 0;
+    virtual uint8_t  GetByte(const uint32_t& addr) const = 0;
+    virtual uint16_t GetWord(const uint32_t& addr) = 0;
+    virtual uint32_t GetLong(const uint32_t& addr) = 0;
 
-    virtual void SetByte(const uint32_t& addr, const int8_t& data) = 0;
-    virtual void SetWord(const uint32_t& addr, const int16_t& data) = 0;
-    virtual void SetLong(const uint32_t& addr, const int32_t& data) = 0;
+    virtual void SetByte(const uint32_t& addr, const uint8_t& data) = 0;
+    virtual void SetWord(const uint32_t& addr, const uint16_t& data) = 0;
+    virtual void SetLong(const uint32_t& addr, const uint32_t& data) = 0;
 
     virtual void DisplayLine() = 0;
 };
