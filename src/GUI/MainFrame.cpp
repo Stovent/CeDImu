@@ -83,9 +83,18 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
         return;
     }
 
-    app->cpu->RebootCore();
-    if(!pause->IsChecked())
-        app->StartGameThread();
+    if(!app->vdsc->biosLoaded)
+    {
+        wxMessageBox("The BIOS has not been loaded yet, please choose one.");
+        OnLoadBIOS(event);
+    }
+
+    if(app->vdsc->biosLoaded)
+    {
+        app->cpu->RebootCore();
+        if(!pause->IsChecked())
+            app->StartGameThread();
+    }
 }
 
 void MainFrame::OnOpenBinary(wxCommandEvent& event)

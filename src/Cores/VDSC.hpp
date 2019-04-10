@@ -12,6 +12,8 @@ protected:
     uint16_t lineNumber;
 
 public:
+    bool biosLoaded;
+
     VDSC() : memory(nullptr), lineNumber(0) {}
     virtual ~VDSC() {}
 
