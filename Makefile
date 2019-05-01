@@ -12,7 +12,8 @@ wxIMSWU = C:\wxWidgets-3.0.4\lib\gcc_lib\mswu
 obj = bin/obj/Main.o bin/obj/CeDImu.o bin/obj/utils.o \
 bin/obj/MainFrame.o bin/obj/DisassemblerFrame.o bin/obj/GamePanel.o bin/obj/RAMWatchFrame.o \
 bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/InstructionSet.o bin/obj/AddressingModes.o bin/obj/MemoryAccess.o \
-bin/obj/SCC66470.o bin/obj/DRAMInterface.o \
+bin/obj/SCC66470.o bin/obj/SCC66470DRAMInterface.o \
+bin/obj/MCD212.o bin/obj/MCD212DRAMInterface.o \
 bin/obj/CDI.o bin/obj/CDIDirectory.o bin/obj/CDIFile.o bin/obj/Export.o
 
 CeDImu :
@@ -28,8 +29,10 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/InstructionSet.cpp -o bin/obj/InstructionSet.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/AddressingModes.cpp -o bin/obj/AddressingModes.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/ConditionalTests.cpp -o bin/obj/ConditionalTests.o
-	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC66470/DRAMInterface.cpp -o bin/obj/DRAMInterface.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC66470/DRAMInterface.cpp -o bin/obj/SCC66470DRAMInterface.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC66470/SCC66470.cpp -o bin/obj/SCC66470.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/MCD212/DRAMInterface.cpp -o bin/obj/MCD212DRAMInterface.o
+	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/MCD212/MCD212.cpp -o bin/obj/MCD212.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
 	$(CXX) $(CXXFLAGS) -O3 -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/GUI/RAMWatchFrame.cpp -o bin/obj/RAMWatchFrame.o

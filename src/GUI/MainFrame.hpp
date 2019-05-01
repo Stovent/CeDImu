@@ -20,20 +20,13 @@ enum
     IDOnPause,
     IDOnRebootCore,
     IDOnExportFiles,
+    IDOnExportAudio,
     IDOnDisassembler,
     IDOnRAMWatch,
     IDOnAbout,
 
     IDDisassemblerOnClose,
 
-    IDDisassemblerd0, IDDisassemblera0,
-    IDDisassemblerd1, IDDisassemblera1,
-    IDDisassemblerd2, IDDisassemblera2,
-    IDDisassemblerd3, IDDisassemblera3,
-    IDDisassemblerd4, IDDisassemblera4,
-    IDDisassemblerd5, IDDisassemblera5,
-    IDDisassemblerd6, IDDisassemblera6,
-    IDDisassemblerd7, IDDisassemblera7,
     IDDisassemblerpc, IDDisassemblersr,
 };
 
@@ -66,6 +59,7 @@ private:
     void OnRAMWatch(wxCommandEvent& event);
 
     void OnExportFiles(wxCommandEvent& event);
+    void OnExportAudio(wxCommandEvent& event);
 
     void OnAbout(wxCommandEvent& event);
 

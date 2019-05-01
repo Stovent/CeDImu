@@ -7,15 +7,16 @@
 #include <cstdio>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-    EVT_MENU(IDOnOpenROM,   MainFrame::OnOpenROM)
-    EVT_MENU(IDOnOpenBinary,   MainFrame::OnOpenBinary)
-    EVT_MENU(IDOnLoadBIOS,   MainFrame::OnLoadBIOS)
-    EVT_MENU(IDOnCloseROM,   MainFrame::OnCloseROM)
-    EVT_MENU(wxID_EXIT,  MainFrame::OnExit)
+    EVT_MENU(IDOnOpenROM, MainFrame::OnOpenROM)
+    EVT_MENU(IDOnOpenBinary, MainFrame::OnOpenBinary)
+    EVT_MENU(IDOnLoadBIOS, MainFrame::OnLoadBIOS)
+    EVT_MENU(IDOnCloseROM, MainFrame::OnCloseROM)
+    EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDOnPause, MainFrame::OnPause)
     EVT_MENU(IDOnRebootCore, MainFrame::OnRebootCore)
     EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
     EVT_MENU(IDOnExportFiles, MainFrame::OnExportFiles)
+    EVT_MENU(IDOnExportAudio, MainFrame::OnExportAudio)
     EVT_MENU(IDOnRAMWatch, MainFrame::OnRAMWatch)
     EVT_MENU(IDOnAbout, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
@@ -51,6 +52,7 @@ void MainFrame::CreateMenuBar()
     wxMenu* cdi = new wxMenu;
     wxMenu* cdiexport = new wxMenu;
     cdiexport->Append(IDOnExportFiles, "Files");
+    cdiexport->Append(IDOnExportAudio, "Audio");
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
@@ -176,6 +178,11 @@ void MainFrame::OnRAMWatch(wxCommandEvent& event)
 void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
     app->cdi->ExportFiles();
+}
+
+void MainFrame::OnExportAudio(wxCommandEvent& event)
+{
+    app->cdi->ExportAudio();
 }
 
 void MainFrame::OnAbout(wxCommandEvent& event)
