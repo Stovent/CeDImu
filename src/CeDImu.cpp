@@ -1,9 +1,13 @@
 #include "CeDImu.hpp"
 
+#include "Cores/SCC66470/SCC66470.hpp"
+#include "Cores/MCD212/MCD212.hpp"
+
 bool CeDImu::OnInit()
 {
     cdi = new CDI(this);
     vdsc = new SCC66470();
+//    vdsc = new MCD212();
     cpu = new SCC68070(*this, *vdsc);
     gameThread = nullptr;
 
