@@ -25,7 +25,9 @@ struct CDIDirectory
     void LoadSubDirectories(std::ifstream& disk);
     void LoadFiles(std::ifstream& disk);
     std::stringstream ExportInfo() const;
-    void Export(CDI& cdi, std::string basePath) const;
+
+    void ExportFiles(CDI& cdi, std::string basePath) const;
+    void ExportAudio(CDI& cdi, std::string basePath) const;
 };
 
 #endif // CDIDIRECTORY_HPP

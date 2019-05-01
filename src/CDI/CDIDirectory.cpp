@@ -132,35 +132,42 @@ std::stringstream CDIDirectory::ExportInfo() const
     return ss;
 }
 
-void CDIDirectory::Export(CDI& cdi, std::string basePath) const
+void CDIDirectory::ExportAudio(CDI& cdi, std::string basePath) const
 {
-    uint32_t pos = cdi.disk.tellg();
-    for(std::pair<std::string, CDIFile> val : files)
+    if(name != "/")
+        basePath += name + "/";
+
+    if(!wxDirExists(basePath))
+        if(!wxMkdir(basePath))
+            return;
+
+    for(std::pair<std::string, CDIFile> file : files)
     {
-        const CDIFile& file = val.second;
-        std::ofstream out(basePath + file.name, std::ios::binary);
-        int64_t size = file.size;
-        char s[2324];
-        cdi.disk.seekg(file.LBN + 24);
-        while(size > 0)
-        {
-            uint16_t sectorSize = (cdi.subheader.Submode & cdiform) ? 2324 : 2048;
-            uint16_t dtr = (size > sectorSize) ? sectorSize : size; // data to retrieve
-            cdi.disk.read(s, dtr);
-            out.write(s, dtr);
-            size -= dtr;
-            cdi.GotoNextSector();
-        }
-        out.close();
+        file.second.ExportAudio(cdi, basePath);
+    }
+
+    for(std::pair<std::string, CDIDirectory> dir : subDirectories)
+    {
+        dir.second.ExportAudio(cdi, basePath);
+    }
+}
+
+void CDIDirectory::ExportFiles(CDI& cdi, std::string basePath) const
+{
+    if(name != "/")
+        basePath += name + "/";
+
+    if(!wxDirExists(basePath))
+        if(!wxMkdir(basePath))
+            return;
+
+    for(std::pair<std::string, CDIFile> file : files)
+    {
+        file.second.ExportFile(cdi, basePath);
     }
 
     for(std::pair<std::string, CDIDirectory> value : subDirectories)
     {
-        std::string dirPath = basePath + name + "/";
-        if(!wxDirExists(dirPath))
-            if(!wxMkdir(dirPath))
-                return;
-        value.second.Export(cdi, dirPath);
+        value.second.ExportFiles(cdi, basePath);
     }
-    cdi.disk.seekg(pos);
 }

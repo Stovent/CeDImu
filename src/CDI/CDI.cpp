@@ -25,10 +25,10 @@ bool CDI::OpenROM(std::string file, std::string path)
         this->romName = file;
         this->romPath = path;
         LoadFiles();
-        return true;
+        return romOpened = true;
     }
     else
-        return false;
+        return romOpened = false;
 }
 
 void CDI::LoadFiles()
@@ -91,9 +91,9 @@ bool CDI::CloseROM()
         disk.close();
 
     if(disk.is_open())
-        return false;
+        return romOpened = false;
     else
-        return true;
+        return romOpened = true;
 }
 
 uint16_t CDI::GetWord(const uint32_t& addr, bool stay = false)
@@ -128,26 +128,40 @@ uint32_t CDI::GetPosition()
     return position;
 }
 
-bool CDI::GotoNextSector(uint8_t mask)
+bool CDI::GotoNextSector(uint8_t submodeMask, bool includingCurrentSector)
 {
     position = disk.tellg();
-    position = position - (position % 2352) + 2376;
-    disk.seekg(position);
-    UpdateSectorInfo();
-    if(mask)
+    position -= position % 2352;
+
+    if(submodeMask)
     {
-        while(disk.good())
+        disk.seekg(position);
+        if(includingCurrentSector)
         {
-            if(subheader.Submode & mask)
-                return true;
-            position = position - (position % 2352) + 2376;
-            disk.seekg(position);
-            UpdateSectorInfo();
+            while(!(subheader.Submode & submodeMask))
+            {
+                disk.seekg(2352, std::ios_base::seekdir::_S_cur);
+                UpdateSectorInfo();
+            }
+        }
+        else
+        {
+            do
+            {
+                disk.seekg(2352, std::ios_base::seekdir::_S_cur);
+                UpdateSectorInfo();
+            } while(!(subheader.Submode & submodeMask));
         }
     }
     else
+    {
+        disk.seekg(position + 2352);
+        UpdateSectorInfo();
+    }
+    if(disk.good())
         return true;
-    return false;
+    else
+        return false;
 }
 
 bool CDI::GotoLBN(uint32_t lbn, uint32_t offset)
@@ -166,9 +180,9 @@ void CDI::UpdateSectorInfo()
     char byte;
     uint32_t tmp = disk.tellg();
     disk.seekg(tmp - (tmp % 2352) + 12);
-    disk.get(byte); header.Minutes = byte;
-    disk.get(byte); header.Seconds = byte;
-    disk.get(byte); header.Sectors = byte;
+    disk.get(byte); header.Minutes = convertPBCD(byte);
+    disk.get(byte); header.Seconds = convertPBCD(byte);
+    disk.get(byte); header.Sectors = convertPBCD(byte);
     disk.get(byte); header.Mode = byte;
     disk.get(byte); subheader.FileNumber = byte;
     disk.get(byte); subheader.ChannelNumber = byte;
@@ -179,19 +193,8 @@ void CDI::UpdateSectorInfo()
 
 bool CDI::IsEmptySector()
 {
-    uint32_t tmp = disk.tellg();
-    char s[2048];
-    disk.seekg(tmp - (tmp % 2352) + 24);
-    disk.read(s, 2048);
-    disk.seekg(tmp);
-
-    if((subheader.Submode & 0x0E) == 0)
-    {
-        for(uint16_t i = 0; i < 2048; i++)
-            if(s[i] != 0)
-                return false;
-    }
+    if(!(subheader.Submode & 0x0E) && subheader.ChannelNumber == 0 && subheader.CodingInformation == 0)
+        return true;
     else
         return false;
-    return true;
 }

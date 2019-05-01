@@ -4,57 +4,54 @@
 
 #include "CDI.hpp"
 
+bool CDI::ExportAudio()
+{
+    ExportAudioInfo();
+    bool bol = true;
+
+    std::string currentPath = romPath + "exports/";
+    if(!wxDirExists(currentPath))
+        if(!wxMkdir(currentPath))
+            return false;
+
+    currentPath += "audio/";
+    if(!wxDirExists(currentPath))
+        if(!wxMkdir(currentPath))
+            return false;
+
+    rootDirectory.ExportAudio(*this, currentPath);
+
+    return bol;
+}
+
+void CDI::ExportAudioInfo()
+{
+    if(!wxDirExists(romPath + "exports"))
+        if(!wxMkdir(romPath + "exports"))
+            return;
+
+    std::ofstream out(romPath + "exports/audio_info.txt");
+    out.close();
+}
+
 bool CDI::ExportFiles()
 {
+    ExportSectorsInfo();
     ExportFilesInfo();
     bool bol = true;
-    uint32_t pos = disk.tellg();
-    std::string currentPath = romPath + "exports";
-    if(!wxDirExists(currentPath))
-        if(!wxMkdir(currentPath))
-            return false;
-    currentPath += "/files/";
+
+    std::string currentPath = romPath + "exports/";
     if(!wxDirExists(currentPath))
         if(!wxMkdir(currentPath))
             return false;
 
-    for(auto value : rootDirectory.subDirectories)
-    {
-        const CDIDirectory& dir = value.second;
-        std::string path = currentPath;
-        if(dir.name != "/")
-        {
-            path += dir.name + "/";
-        }
-        if(!wxDirExists(path))
-            if(!wxMkdir(path))
-                return false;
-        dir.Export(*this, path);
-    }
+    currentPath += "files/";
+    if(!wxDirExists(currentPath))
+        if(!wxMkdir(currentPath))
+            return false;
 
-    for(std::pair<std::string, CDIFile> val : rootDirectory.files)
-    {
-        const CDIFile& file = val.second;
-        std::ofstream out(currentPath + file.name, std::ios::binary);
-        int64_t size = file.size;
-        char s[2324];
-        if(!GotoLBN(file.LBN))
-            { bol = false; break; }
-        while(size > 0)
-        {
-            if(!disk.good())
-                { bol = false; break; }
-            uint16_t sectorSize = (subheader.Submode & cdiform) ? 2324 : 2048;
-            uint16_t dtr = (size > sectorSize) ? sectorSize : size; // data to retrieve
-            disk.read(s, dtr);
-            out.write(s, dtr);
-            size -= dtr;
-            GotoNextSector();
-        }
-        out.close();
-    }
+    rootDirectory.ExportFiles(*this, currentPath);
 
-    disk.seekg(pos);
     return bol;
 }
 
@@ -63,9 +60,11 @@ void CDI::ExportFilesInfo()
     if(!wxDirExists(romPath + "exports"))
         if(!wxMkdir(romPath + "exports"))
             return;
+
     std::ofstream out(romPath + "exports/files_info.txt");
     out << "Dir: " << rootDirectory.name << std::endl;
     out << "LBN: " << rootDirectory.LBN << std::endl;
+
     for(std::pair<std::string, CDIDirectory> dir : rootDirectory.subDirectories)
     {
         std::stringstream ss = dir.second.ExportInfo();
@@ -74,6 +73,7 @@ void CDI::ExportFilesInfo()
             str += "    " + tmp + "\n";
         out << str;
     }
+
     for(std::pair<std::string, CDIFile> file : rootDirectory.files)
     {
         std::stringstream ss;
@@ -82,5 +82,35 @@ void CDI::ExportFilesInfo()
         ss << "    LBN : " << file.second.LBN << std::endl << std::endl;
         out << ss.str();
     }
+
     out.close();
+}
+
+void CDI::ExportSectorsInfo()
+{
+    if(!wxDirExists(romPath + "exports"))
+        if(!wxMkdir(romPath + "exports"))
+            return;
+
+    uint32_t pos = disk.tellg();
+    disk.seekg(0);
+    std::ofstream out(romPath + "exports/sectors.txt");
+
+    out << "LBN  Min secs sect mode file channel submode  codingInfo" << std::endl;
+    uint32_t LBN = 0;
+    while(disk.good())
+    {
+        out << std::to_string(LBN++) << "   " << std::to_string(header.Minutes) << "   " << std::to_string(header.Seconds) << "   " << std::to_string(header.Sectors) << "   " << std::to_string(header.Mode) << "    ";
+        out << std::to_string(subheader.FileNumber) << "    " << std::to_string(subheader.ChannelNumber) << " " << toBinString(subheader.Submode, 8) << " " << toBinString(subheader.CodingInformation, 8) << std::endl;
+        GotoNextSector();
+        if(!disk.good()) // end of disk reached
+        {
+            disk.clear();
+            disk.seekg(0);
+            break;
+        }
+    }
+
+    out.close();
+    disk.seekg(pos);
 }

@@ -41,13 +41,15 @@ enum AudioCodingInformation
 {
     emphasis = 0b01000000,
     bps      = 0b00110000, // bits per sample
-    fs       = 0b00001100, // sampling frequency
+    sf       = 0b00001100, // sampling frequency
     ms       = 0b00000011  // mono/stereo
 };
 
 class CDI
 {
 public:
+    bool romOpened;
+
     CDI(CeDImu* appp);
     ~CDI();
 
@@ -62,12 +64,15 @@ public:
     // Export functions
     bool ExportFiles();
     void ExportFilesInfo();
+    bool ExportAudio();
+    void ExportAudioInfo();
+    void ExportSectorsInfo();
 
     void SetPosition(const uint32_t& pos);
 
     void UpdateSectorInfo();
     bool CheckPosition();
-    bool GotoNextSector(uint8_t mask = 0);
+    bool GotoNextSector(uint8_t submodeMask = 0, bool includingCurrentSector = false);
     bool GotoLBN(uint32_t lbn, uint32_t offset = 0);
     bool IsEmptySector();
 
