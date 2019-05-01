@@ -8,13 +8,13 @@ class VDSC;
 class VDSC
 {
 protected:
-    uint8_t* memory;
     uint16_t lineNumber;
 
 public:
+    uint16_t* memory;
     bool biosLoaded;
 
-    VDSC() : memory(nullptr), lineNumber(0) {}
+    VDSC() : lineNumber(0), memory(nullptr) {}
     virtual ~VDSC() {}
 
     virtual bool LoadBIOS(std::string filename) = 0;

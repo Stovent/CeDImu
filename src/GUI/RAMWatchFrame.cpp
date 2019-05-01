@@ -1,4 +1,5 @@
 #include "RAMWatchFrame.hpp"
+#include <wx/msgdlg.h>
 
 wxBEGIN_EVENT_TABLE(RAMWatchFrame, wxFrame)
     EVT_TIMER(wxID_ANY, RAMWatchFrame::RefreshLoop)
@@ -9,11 +10,17 @@ RAMWatchFrame::RAMWatchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos, c
 {
     vdsc = vds;
     mainFrame = parent;
+
     grid = new wxGrid(this, wxID_ANY);
-    grid->CreateGrid(1024, 2);
+    grid->CreateGrid(1024*1024, 2);
+    grid->SetColLabelValue(0, "Address");
+    grid->SetColLabelValue(1, "Value");
     grid->EnableEditing(false);
-    for(int i = 0; i < 1024; i++)
+    for(int i = 0; i < 1024*1024; i++)
+    {
         grid->SetCellValue(std::to_string(i), i, 0);
+        grid->SetCellValue(std::to_string(vdsc->memory[i]), i, 1);
+    }
 
     renderTimer = new wxTimer(this);
     renderTimer->Start(16);
@@ -39,6 +46,5 @@ void RAMWatchFrame::RefreshLoop(wxTimerEvent& event)
 
 void RAMWatchFrame::PaintEvent()
 {
-    for(int i = 0; i < 128; i++)
-        grid->SetCellValue(std::to_string(vdsc->GetByte(i)), i, 1);
+
 }
