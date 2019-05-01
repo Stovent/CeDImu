@@ -6,8 +6,9 @@ class SCC68070;
 #include <cstdint>
 #include <vector>
 
+#include <wx/msgdlg.h>
+
 #include "../../CeDImu.hpp"
-#include "../SCC66470/SCC66470.hpp"
 
 #define UNCHANGED 2
 #define OPCODESNBR 77

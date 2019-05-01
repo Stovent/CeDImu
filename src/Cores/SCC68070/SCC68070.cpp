@@ -10,7 +10,6 @@ SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu) : app(cedimu), vdsc(gpu), instruct
 void SCC68070::RebootCore()
 {
     SetS();
-    ResetCpu();
     executionTime = 0;
     for(uint8_t i = 0; i < 8; i++)
     {
@@ -18,6 +17,7 @@ void SCC68070::RebootCore()
         A[i] = 0;
     }
     instructionsBuffer.clear();
+    ResetCpu();
     instructionsBufferChanged = true;
     stop = false;
 }
