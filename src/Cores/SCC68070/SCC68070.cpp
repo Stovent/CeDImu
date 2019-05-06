@@ -17,12 +17,12 @@ void SCC68070::RebootCore()
         A[i] = 0;
     }
     instructionsBuffer.clear();
-    ResetCpu();
+    InitSSPPC();
     instructionsBufferChanged = true;
     stop = false;
 }
 
-void SCC68070::ResetCpu()
+void SCC68070::InitSSPPC()
 {
     PC = 0;
     vdsc.MemorySwap();
@@ -135,7 +135,7 @@ uint8_t SCC68070::GetC()
 
 void SCC68070::SetS(const uint8_t S)
 {
-    if(S == GetS()) return; // From bizhawk
+    if(S == GetS()) return; // From Bizhawk
     if(S) // entering supervisor mode
     {
         USP = A[7];

@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "utils.hpp"
 
 uint8_t convertPBCD(uint8_t data)
@@ -20,6 +22,22 @@ int32_t signExtend16(const int16_t data)
     return data;
 }
 
+bool isEven(int number)
+{
+    if(number & 1)
+        return false;
+    else
+        return true;
+}
+
+std::string toHex(uint32_t number)
+{
+    std::stringstream ss;
+    ss << std::hex << number;
+    return ss.str();
+}
+
+
 std::string toBinString(uint32_t value, uint8_t lengthInBits)
 {
     std::string tmp;
@@ -34,12 +52,4 @@ std::string toBinString(uint32_t value, uint8_t lengthInBits)
         lengthInBits--;
     }
     return tmp;
-}
-
-bool isEven(int number)
-{
-    if(number & 1)
-        return false;
-    else
-        return true;
 }

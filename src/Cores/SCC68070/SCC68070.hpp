@@ -141,7 +141,7 @@ public:
 
     void RebootCore();
     void SingleStep();
-    void ResetCpu();
+    void InitSSPPC();
     unsigned long long count;
 private:
 

@@ -1386,7 +1386,7 @@ uint16_t SCC68070::Cmpm()
 uint16_t SCC68070::DbCC()
 {
     uint32_t pc = PC-2;
-    uint8_t condition = (currentOpcode & 0x0F00) >> 12;
+    uint8_t condition = (currentOpcode & 0x0F00) >> 8;
     uint8_t reg = (currentOpcode & 0x0007);
     int16_t disp = GetNextWord();
 
