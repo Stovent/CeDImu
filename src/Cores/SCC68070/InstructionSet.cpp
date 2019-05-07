@@ -1175,7 +1175,7 @@ uint16_t SCC68070::Chk()
         if(data > source) SetN(0);
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tCHK");
+    instructionsBuffer.push_back(toHex(pc) + "\tCHK " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg));
 
     return calcTime;
 }

@@ -190,6 +190,8 @@ private:
     uint32_t AbsoluteShortAddressing();
     uint32_t AbsoluteLongAddressing();
 
+    std::string DisassembleAddressingMode(uint32_t extWordAddress, uint8_t eamode, uint8_t eareg, uint8_t size);
+
     // Addrssing modes memory access
     int8_t GetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
     int16_t GetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
