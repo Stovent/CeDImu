@@ -10,6 +10,8 @@ class SCC66470;
 
 class SCC66470 : public VDSC
 {
+    uint8_t memorySwapCount;
+
 public:
     SCC66470();
     ~SCC66470();

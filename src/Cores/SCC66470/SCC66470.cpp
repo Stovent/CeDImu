@@ -5,8 +5,11 @@
 
 SCC66470::SCC66470()
 {
-    memory = new uint8_t[0x200000 * 2];
+    biosLoaded = false;
+    memory = new uint8_t[0x2FFFFF];
     lineNumber = 0;
+    allocatedMemory = 0x300000;
+    memorySwapCount = 0;
 }
 
 SCC66470::~SCC66470()
@@ -21,13 +24,13 @@ void SCC66470::MemorySwap()
 
 bool SCC66470::LoadBIOS(std::string filename) // only CD-I 205, it should be 523 264 bytes long
 {
-    char* c = new char[0x7FBFF];
+    biosLoaded = false;
     FILE* f = fopen(filename.c_str(), "rb");
     if(f == NULL)
         return false;
-    fread(c, 1, 0x7FBFF, f);
-    memcpy(memory + 0x180000, c, 0x7FBFF);
-    return true;
+    fread(memory + 0x180000, 1, 523264, f);
+    fclose(f);
+    return biosLoaded = true;
 }
 
 void SCC66470::PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position)
