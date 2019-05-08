@@ -11,10 +11,11 @@ protected:
     uint16_t lineNumber;
 
 public:
-    uint16_t* memory;
+    uint8_t* memory;
     bool biosLoaded;
+    uint32_t allocatedMemory;
 
-    VDSC() : lineNumber(0), memory(nullptr) {}
+    VDSC() : lineNumber(0), memory(nullptr), allocatedMemory(0) {}
     virtual ~VDSC() {}
 
     virtual bool LoadBIOS(std::string filename) = 0;

@@ -7,7 +7,7 @@ class MCD212;
 
 class MCD212 : public VDSC
 {
-    uint8_t memorySwap;
+    uint8_t memorySwapCount;
 
 public:
     MCD212();

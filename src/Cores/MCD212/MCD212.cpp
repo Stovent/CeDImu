@@ -4,8 +4,9 @@
 
 MCD212::MCD212() // TD = 0
 {
-    memory = new uint16_t[0x4FFFFF];
-    memorySwap = 0;
+    memory = new uint8_t[0x500000];
+    memorySwapCount = 0;
+    allocatedMemory = 1024*1024*2;
 }
 
 MCD212::~MCD212()
@@ -15,22 +16,19 @@ MCD212::~MCD212()
 
 bool MCD212::LoadBIOS(std::string filename)
 {
+    biosLoaded = false;
     FILE* f = fopen(filename.c_str(), "rb");
     if(f == NULL)
         return false;
 
     fseek(f, 0, SEEK_END);
-    long size = ftell(f);
+    long size = ftell(f); // should be 512ko
     fseek(f, 0, SEEK_SET);
 
-    fread(&memory[0x400000], 2, size/2, f);
+    fread(&memory[0x400000], 1, size, f);
 
     fclose(f);
-
-    f = fopen("D:\\mem.bin", "wb");
-    fwrite(memory, 2, 0x500000, f);
-    fclose(f);
-    return true;
+    return biosLoaded = true;
 }
 
 void MCD212::PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position)
@@ -45,7 +43,7 @@ void MCD212::ResetMemory()
 
 void MCD212::MemorySwap()
 {
-    memorySwap = 0;
+    memorySwapCount = 0;
 }
 
 void MCD212::DisplayLine()
