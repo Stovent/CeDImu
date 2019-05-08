@@ -6,8 +6,8 @@
 bool CeDImu::OnInit()
 {
     cdi = new CDI(this);
-    vdsc = new SCC66470();
-//    vdsc = new MCD212();
+//    vdsc = new SCC66470();
+    vdsc = new MCD212();
     cpu = new SCC68070(*this, *vdsc);
     gameThread = nullptr;
 
