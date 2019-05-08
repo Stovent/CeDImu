@@ -70,8 +70,8 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
     if((opcode & 0xFFF8) == 0x4E50) return LINK;
     if((opcode & 0xF018) == 0xE008) return LSr;
     if((opcode & 0xFEC0) == 0xE2C0) return LSm;
-    if((opcode & 0xC000) == 0x0000 && (opcode & 0xF000) != 0x0000) return MOVE;
     if((opcode & 0xE1C0) == 0x2040) return MOVEA;
+    if((opcode & 0xC000) == 0x0000 && (opcode & 0xF000) != 0x0000) return MOVE;
     if((opcode & 0xFFC0) == 0x44C0) return MOVECCR;
     if((opcode & 0xFFC0) == 0x40C0) return MOVEfSR;
     if((opcode & 0xFFC0) == 0x46C0) return MOVESR;

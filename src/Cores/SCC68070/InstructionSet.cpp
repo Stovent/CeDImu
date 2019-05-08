@@ -99,7 +99,7 @@ uint16_t SCC68070::Abcd()
     if(result != 0)
         SetZ(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tABCD");
+    instructionsBuffer.push_back(toHex(pc) + "\tABCD");
 
     return calcTime;
 }
@@ -249,7 +249,7 @@ uint16_t SCC68070::Add()
         calcTime += 8;
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tADD");
+    instructionsBuffer.push_back(toHex(pc) + "\tADD");
 
     return calcTime;
 }
@@ -275,7 +275,7 @@ uint16_t SCC68070::Adda()
         A[reg] = src + dst;
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tADDA");
+    instructionsBuffer.push_back(toHex(pc) + "\tADDA");
 
     return calcTime;
 }
@@ -361,7 +361,7 @@ uint16_t SCC68070::Addi()
         {   SetLong(lastAddress, res); calcTime += 12; }
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tADDI");
+    instructionsBuffer.push_back(toHex(pc) + "\tADDI");
 
     return calcTime;
 }
@@ -456,7 +456,7 @@ uint16_t SCC68070::Addq()
         {   SetByte(lastAddress, res); calcTime += 8; }
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tADDQ");
+    instructionsBuffer.push_back(toHex(pc) + "\tADDQ");
 
     return calcTime;
 }
@@ -561,7 +561,7 @@ uint16_t SCC68070::Addx()
             D[Rx] = res;
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tADDX");
+    instructionsBuffer.push_back(toHex(pc) + "\tADDX");
 
     return calcTime;
 }
@@ -670,7 +670,7 @@ uint16_t SCC68070::And()
 
     SetC(0);
     SetV(0);
-    instructionsBuffer.push_back(std::to_string(pc) + "\tAND");
+    instructionsBuffer.push_back(toHex(pc) + "\tAND");
     return calcTime;
 }
 
@@ -736,7 +736,7 @@ uint16_t SCC68070::Andi()
 
     SetV(0);
     SetC(0);
-    instructionsBuffer.push_back(std::to_string(pc) + "\tANDI");
+    instructionsBuffer.push_back(toHex(pc) + "\tANDI");
     return calcTime;
 }
 
@@ -757,7 +757,7 @@ uint16_t SCC68070::AsM()
         data <<= 1;
         if(a != (data & 0x8000))
             b = true;
-        instructionsBuffer.push_back(std::to_string(pc) + "\tASL");
+        instructionsBuffer.push_back(toHex(pc) + "\tASL");
     }
     else // right
     {
@@ -766,7 +766,7 @@ uint16_t SCC68070::AsM()
         SetXC(a);
         data >>= 1;
         data |= msb;
-        instructionsBuffer.push_back(std::to_string(pc) + "\tASR");
+        instructionsBuffer.push_back(toHex(pc) + "\tASR");
     }
 
     if(data & 0x8000) SetN(); else SetN(0);
@@ -902,9 +902,9 @@ uint16_t SCC68070::AsR()
         SetV(0);
 
     if(dr)
-        instructionsBuffer.push_back(std::to_string(pc) + "\tASL");
+        instructionsBuffer.push_back(toHex(pc) + "\tASL");
     else
-        instructionsBuffer.push_back(std::to_string(pc) + "\tASR");
+        instructionsBuffer.push_back(toHex(pc) + "\tASR");
 
     return 13 + 3 * shift;
 }
@@ -929,7 +929,7 @@ uint16_t SCC68070::BCC()
             PC += (int16_t)GetNextWord() - 2;
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tBCC");
+    instructionsBuffer.push_back(toHex(pc) + "\tBCC");
 
     return calcTime;
 }
@@ -981,7 +981,7 @@ uint16_t SCC68070::Bchg()
         SetByte(lastAddress, data);
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tBCHG");
+    instructionsBuffer.push_back(toHex(pc) + "\tBCHG");
 
     return calcTime;
 }
@@ -1023,7 +1023,7 @@ uint16_t SCC68070::Bclr()
         SetByte(lastAddress, data);
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tBCLR");
+    instructionsBuffer.push_back(toHex(pc) + "\tBCLR");
 
     return calcTime;
 }
@@ -1045,7 +1045,7 @@ uint16_t SCC68070::Bra()
         calcTime = 14;
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tBRA");
+    instructionsBuffer.push_back(toHex(pc) + "\tBRA");
 
     return calcTime;
 }
@@ -1087,7 +1087,7 @@ uint16_t SCC68070::Bset()
         SetByte(lastAddress, data);
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tBSET");
+    instructionsBuffer.push_back(toHex(pc) + "\tBSET");
 
     return calcTime;
 }
@@ -1112,7 +1112,7 @@ uint16_t SCC68070::Bsr()
         calcTime = 25;
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tBSR");
+    instructionsBuffer.push_back(toHex(pc) + "\tBSR");
 
     return calcTime;
 }
@@ -1151,7 +1151,7 @@ uint16_t SCC68070::Btst()
         SetByte(lastAddress, data);
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tBTST");
+    instructionsBuffer.push_back(toHex(pc) + "\tBTST");
 
     return calcTime;
 }
@@ -1198,7 +1198,7 @@ uint16_t SCC68070::Clr()
     SetN(0);
     SetZ();
     SetVC(0);
-    instructionsBuffer.push_back(std::to_string(pc) + "\tCLR");
+    instructionsBuffer.push_back(toHex(pc) + "\tCLR");
     return calcTime;
 }
 
@@ -1247,7 +1247,7 @@ uint16_t SCC68070::Cmp()
         if(res == 0) SetZ(); else SetZ(0);
         if(res & 0x80000000) SetN(); else SetN(0);
     }
-    instructionsBuffer.push_back(std::to_string(pc) + "\tCMP");
+    instructionsBuffer.push_back(toHex(pc) + "\tCMP");
     return calcTime;
 }
 
@@ -1284,7 +1284,7 @@ uint16_t SCC68070::Cmpa()
         if(res == 0) SetZ(); else SetZ(0);
         if(res & 0x8000) SetN(); else SetN(0);
     }
-    instructionsBuffer.push_back(std::to_string(pc) + "\tCMPA");
+    instructionsBuffer.push_back(toHex(pc) + "\tCMPA");
     return calcTime;
 }
 
@@ -1333,7 +1333,7 @@ uint16_t SCC68070::Cmpi()
         if(res & 0x80000000) SetN(); else SetN(0);
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tCMPI");
+    instructionsBuffer.push_back(toHex(pc) + "\tCMPI");
     return (size == 2) ? calcTime + 4 : calcTime;
 }
 
@@ -1378,7 +1378,7 @@ uint16_t SCC68070::Cmpm()
         if((dst < src) ^ (((dst ^ src) >= 0) == false)) SetC(); else SetC(0);
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tCMPM");
+    instructionsBuffer.push_back(toHex(pc) + "\tCMPM");
 
     return (size == 2) ? 26 : 18;
 }
@@ -1390,7 +1390,7 @@ uint16_t SCC68070::DbCC()
     uint8_t reg = (currentOpcode & 0x0007);
     int16_t disp = GetNextWord();
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tDBcc D" + std::to_string(reg) + ", " + DisassembleConditionalCode(condition));
+    instructionsBuffer.push_back(toHex(pc) + "\tDBcc D" + std::to_string(reg) + ", " + DisassembleConditionalCode(condition));
 
     if((this->*ConditionalTests[condition])())
        return 14;
@@ -1467,7 +1467,7 @@ uint16_t SCC68070::Eor()
     }
     SetVC(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tEOR");
+    instructionsBuffer.push_back(toHex(pc) + "\tEOR");
     return calcTime;
 }
 
@@ -1523,7 +1523,7 @@ uint16_t SCC68070::Eori()
     }
     SetVC(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tEORI");
+    instructionsBuffer.push_back(toHex(pc) + "\tEORI");
     return calcTime;
 }
 
@@ -1555,7 +1555,7 @@ uint16_t SCC68070::Exg()
         A[Ry] = tmp;
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tEXG");
+    instructionsBuffer.push_back(toHex(pc) + "\tEXG");
 
     return 13;
 }
@@ -1582,7 +1582,7 @@ uint16_t SCC68070::Ext()
     }
 
     SetVC(0);
-    instructionsBuffer.push_back(std::to_string(pc) + "\tEXT");
+    instructionsBuffer.push_back(toHex(pc) + "\tEXT");
     return 7;
 }
 
@@ -1611,7 +1611,7 @@ uint16_t SCC68070::Jmp()
         {   PC = PCIWI8(); calcTime = 17; }
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tJMP " + std::to_string(PC));
+    instructionsBuffer.push_back(toHex(pc) + "\tJMP " + toHex(pc));
 
     return calcTime;
 }
@@ -1643,10 +1643,10 @@ uint16_t SCC68070::Jsr()
     }
 
     SetLong(ARIWPr(7, 4), _pc+2);
-
-    instructionsBuffer.push_back(std::to_string(_pc) + "\tJSR " + std::to_string(pc));
-
     PC = pc;
+
+    instructionsBuffer.push_back(std::to_string(_pc) + "\tJSR " + DisassembleAddressingMode(_pc+2, eamode, eareg, 4));
+
     return calcTime;
 }
 
@@ -1662,7 +1662,7 @@ uint16_t SCC68070::Lea()
     A[reg] = lastAddress;
     if(eamode == 7 && eareg <= 1)
         calcTime += 2;
-    instructionsBuffer.push_back(std::to_string(pc) + "\tLEA");
+    instructionsBuffer.push_back(toHex(pc) + "\tLEA " + DisassembleAddressingMode(pc+2, eamode, eareg, 4));
     return calcTime;
 }
 
@@ -1672,8 +1672,9 @@ uint16_t SCC68070::Link()
     uint8_t reg = (currentOpcode & 0x0007);
     SetLong(ARIWPr(7, 4), A[reg]);
     A[reg] = SP;
-    SP += signExtend16(GetNextWord());
-    instructionsBuffer.push_back(std::to_string(pc) + "\tLINK");
+    int16_t disp = GetNextWord();
+    SP += signExtend16(disp);
+    instructionsBuffer.push_back(toHex(pc) + "\tLINK A" + std::to_string(reg) + ", #" + std::to_string(disp));
     return 25;
 }
 
@@ -1694,14 +1695,14 @@ uint16_t SCC68070::LsM()
         data <<= 1;
         if(a != (data & 0x8000))
             b = true;
-        instructionsBuffer.push_back(std::to_string(pc) + "\tLSL");
+        instructionsBuffer.push_back(toHex(pc) + "\tLSL");
     }
     else // right
     {
         uint8_t a = data & 0x0001;
         SetXC(a);
         data >>= 1;
-        instructionsBuffer.push_back(std::to_string(pc) + "\tLSR");
+        instructionsBuffer.push_back(toHex(pc) + "\tLSR");
     }
 
     if(data & 0x8000) SetN(); else SetN(0);
@@ -1728,9 +1729,9 @@ uint16_t SCC68070::LsR()
         shift = (count) ? count : 8;
 
     if(dr)
-        instructionsBuffer.push_back(std::to_string(pc) + "\tLSL");
+        instructionsBuffer.push_back(toHex(pc) + "\tLSL");
     else
-        instructionsBuffer.push_back(std::to_string(pc) + "\tLSR");
+        instructionsBuffer.push_back(toHex(pc) + "\tLSR");
 
     if(!shift)
     {
@@ -1848,31 +1849,38 @@ uint16_t SCC68070::Move()
     uint8_t  srcreg = (currentOpcode & 0x0007);
     uint16_t calcTime = 7;
 
+    std::string srcEA, dstEA;
     if(size == 1) // byte
     {
+        srcEA = DisassembleAddressingMode(PC, srcmode, srcreg, 1);
         uint8_t src = GetByte(srcmode, srcreg, calcTime);
         if(src == 0) SetZ(); else SetZ(0);
         if(src & 0x80) SetN(); else SetN(0);
+        srcEA = DisassembleAddressingMode(PC, dstmode, dstreg, 1);
         SetByte(dstmode, dstreg, calcTime, src);
     }
     else if(size == 3) // word
     {
+        srcEA = DisassembleAddressingMode(PC, srcmode, srcreg, 2);
         uint16_t src = GetWord(srcmode, srcreg, calcTime);
         if(src == 0) SetZ(); else SetZ(0);
         if(src & 0x8000) SetN(); else SetN(0);
+        srcEA = DisassembleAddressingMode(PC, dstmode, dstreg, 2);
         SetWord(dstmode, dstreg, calcTime, src);
     }
     else // long
     {
+        srcEA = DisassembleAddressingMode(PC, srcmode, srcreg, 4);
         uint32_t src = GetLong(srcmode, srcreg, calcTime);
         if(src == 0) SetZ(); else SetZ(0);
         if(src & 0x80000000) SetN(); else SetN(0);
+        srcEA = DisassembleAddressingMode(PC, dstmode, dstreg, 4);
         SetLong(dstmode, dstreg, calcTime, src);
     }
 
     SetVC(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVE");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVE." + ((size == 1) ? "B " : (size == 3) ? "W " : "L ") + srcEA + ", " + dstEA);
 
     return calcTime;
 }
@@ -1888,7 +1896,7 @@ uint16_t SCC68070::Moveccr()
     SR &= 0xFF00;
     SR |= data;
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVECCR");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVECCR");
 
     return calcTime;
 }
@@ -1912,7 +1920,7 @@ uint16_t SCC68070::Movesr()
     else
         Exception(8, calcTime);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVESR");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVESR");
 
     return calcTime;
 }
@@ -1933,7 +1941,7 @@ uint16_t SCC68070::MoveFsr() // Should not be used according to the Green Book C
     else
         Exception(8, calcTime);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVEfSR");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVEfSR");
 
     return calcTime;
 }
@@ -1953,7 +1961,7 @@ uint16_t SCC68070::Moveusp()
     else
         Exception(8, calcTime);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVEUSP");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVEUSP");
 
     return calcTime;
 }
@@ -1977,7 +1985,7 @@ uint16_t SCC68070::Movea()
         A[reg] = GetWord(eamode, eareg, calcTime);
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVEA");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVEA " + DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", A" + std::to_string(reg));
 
     return calcTime;
 }
@@ -2075,7 +2083,7 @@ uint16_t SCC68070::Movem()
             calcTime += 19;
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVEM");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVEM");
     return calcTime + n * (size) ? 11 : 7;
 }
 
@@ -2084,7 +2092,7 @@ uint16_t SCC68070::Movep()
     uint32_t pc = PC-2;
     wxMessageBox("Warning: MOVEP not supported yet");
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVEP");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVEP");
 
     return 0;
 }
@@ -2098,7 +2106,7 @@ uint16_t SCC68070::Moveq()
     if(data == 0) SetZ(); else SetZ(0);
     SetVC(0);
     D[reg] = signExtend8(data);
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMOVEQ");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVEQ");
     return 7;
 }
 
@@ -2119,7 +2127,7 @@ uint16_t SCC68070::Muls()
     SetVC(0);
 
     D[reg] = res;
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMULS");
+    instructionsBuffer.push_back(toHex(pc) + "\tMULS");
     return calcTime;
 }
 
@@ -2140,7 +2148,7 @@ uint16_t SCC68070::Mulu()
     SetVC(0);
 
     D[reg] = res;
-    instructionsBuffer.push_back(std::to_string(pc) + "\tMULU");
+    instructionsBuffer.push_back(toHex(pc) + "\tMULU");
     return calcTime;
 }
 
@@ -2159,7 +2167,7 @@ uint16_t SCC68070::Nbcd()
     if(result != 0)
         SetZ(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tNBCD");
+    instructionsBuffer.push_back(toHex(pc) + "\tNBCD");
     if(mode == 0)
     {
         D[reg] &= 0xFFFFFF00;
@@ -2253,7 +2261,7 @@ uint16_t SCC68070::Neg()
         }
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tNEG");
+    instructionsBuffer.push_back(toHex(pc) + "\tNEG");
 
     return calcTime;
 }
@@ -2341,7 +2349,7 @@ uint16_t SCC68070::Negx()
         }
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tNEGX");
+    instructionsBuffer.push_back(toHex(pc) + "\tNEGX");
 
     return calcTime;
 }
@@ -2410,7 +2418,7 @@ uint16_t SCC68070::Not()
     }
     SetVC(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tNOT");
+    instructionsBuffer.push_back(toHex(pc) + "\tNOT");
 
     return calcTime;
 }
@@ -2500,7 +2508,7 @@ uint16_t SCC68070::Or()
     }
     SetVC(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tOR");
+    instructionsBuffer.push_back(toHex(pc) + "\tOR");
     return calcTime;
 }
 
@@ -2556,7 +2564,7 @@ uint16_t SCC68070::Ori()
     }
     SetVC(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tORI");
+    instructionsBuffer.push_back(toHex(pc) + "\tORI");
     return calcTime;
 }
 
@@ -2570,7 +2578,7 @@ uint16_t SCC68070::Pea()
     SetLong(ARIWPr(7, 4), lastAddress);
     if(eamode == 7 && eareg <= 1)
         calcTime += 2;
-    instructionsBuffer.push_back(std::to_string(pc) + "\tPEA");
+    instructionsBuffer.push_back(toHex(pc) + "\tPEA");
     return calcTime;
 }
 
@@ -2633,7 +2641,7 @@ uint16_t SCC68070::Rte()
     else
         Exception(8, calcTime);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tRTE");
+    instructionsBuffer.push_back(toHex(pc) + "\tRTE");
 
     return calcTime;
 }
@@ -2644,7 +2652,7 @@ uint16_t SCC68070::Rtr()
     SR &= 0xFFE0;
     SR |= GetWord(ARIWPo(7, 2)) & 0x001F;
     PC = GetLong(ARIWPo(7, 4));
-    instructionsBuffer.push_back(std::to_string(pc) + "\tRTR");
+    instructionsBuffer.push_back(toHex(pc) + "\tRTR");
     return 22;
 }
 
@@ -2652,7 +2660,7 @@ uint16_t SCC68070::Rts()
 {
     uint32_t pc = PC-2;
     PC = GetLong(ARIWPo(7, 4));
-    instructionsBuffer.push_back(std::to_string(pc) + "\tRTS");
+    instructionsBuffer.push_back(toHex(pc) + "\tRTS");
     return 15;
 }
 
@@ -2688,7 +2696,7 @@ uint16_t SCC68070::Sbcd()
     if(result != 0)
         SetZ(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tSBCD");
+    instructionsBuffer.push_back(toHex(pc) + "\tSBCD");
 
     return calcTime;
 }
@@ -2709,7 +2717,7 @@ uint16_t SCC68070::SCC()
 
     SetByte(eamode, eareg, calcTime, data);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tSCC");
+    instructionsBuffer.push_back(toHex(pc) + "\tSCC");
 
     return calcTime;
 }
@@ -2740,7 +2748,7 @@ uint16_t SCC68070::Stop() // Not fully emulated
     else
         Exception(8, calcTime);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tSTOP");
+    instructionsBuffer.push_back(toHex(pc) + "\tSTOP");
 
     return calcTime;
 }
@@ -2866,7 +2874,7 @@ uint16_t SCC68070::Suba()
         src = signExtend16(GetWord(eamode, eareg, calcTime));
 
     A[reg] -= src;
-    instructionsBuffer.push_back(std::to_string(pc) + "\tSUBA");
+    instructionsBuffer.push_back(toHex(pc) + "\tSUBA");
     return calcTime;
 }
 
@@ -2930,7 +2938,7 @@ uint16_t SCC68070::Subi()
         {   D[eareg] = (int32_t)res; calcTime = 18; }
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tSUBI");
+    instructionsBuffer.push_back(toHex(pc) + "\tSUBI");
     return calcTime;
 }
 
@@ -3003,7 +3011,7 @@ uint16_t SCC68070::Subq()
         {   SetLong(lastAddress, res); calcTime += 8; }
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tSUBQ");
+    instructionsBuffer.push_back(toHex(pc) + "\tSUBQ");
     return calcTime;
 }
 
@@ -3115,7 +3123,7 @@ uint16_t SCC68070::Subx()
         }
     }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tSUBX");
+    instructionsBuffer.push_back(toHex(pc) + "\tSUBX");
     return calcTime;
 }
 
@@ -3141,7 +3149,7 @@ uint16_t SCC68070::Swap()
     SetV(0);
     SetC(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tSWAP");
+    instructionsBuffer.push_back(toHex(pc) + "\tSWAP");
 
     return 7;
 }
@@ -3172,7 +3180,7 @@ uint16_t SCC68070::Tas()
     else
     {   D[eareg] &= 0xFFFFFF00; D[eareg] |= data; }
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tTAS");
+    instructionsBuffer.push_back(toHex(pc) + "\tTAS");
 
     return calcTime;
 }
@@ -3183,7 +3191,7 @@ uint16_t SCC68070::Trap()
     uint8_t vec = currentOpcode & 0x000F;
     uint16_t calcTime = 0;
     Exception(32 + vec, calcTime);
-    instructionsBuffer.push_back(std::to_string(pc) + "\tTRAP");
+    instructionsBuffer.push_back(toHex(pc) + "\tTRAP");
     return calcTime;
 }
 
@@ -3196,7 +3204,7 @@ uint16_t SCC68070::Trapv()
         Exception(7, calcTime);
     else
         calcTime = 10;
-    instructionsBuffer.push_back(std::to_string(pc) + "\tTRAPV");
+    instructionsBuffer.push_back(toHex(pc) + "\tTRAPV");
     return calcTime;
 }
 
@@ -3228,7 +3236,7 @@ uint16_t SCC68070::Tst()
     SetC(0);
     SetV(0);
 
-    instructionsBuffer.push_back(std::to_string(pc) + "\tTST");
+    instructionsBuffer.push_back(toHex(pc) + "\tTST");
 
     return calcTime;
 }
@@ -3239,6 +3247,6 @@ uint16_t SCC68070::Unlk()
     uint8_t reg = currentOpcode & 0x0007;
     SP = A[reg];
     A[reg] = GetLong(ARIWPo(7, 4));
-    instructionsBuffer.push_back(std::to_string(pc) + "\tUNLK");
+    instructionsBuffer.push_back(toHex(pc) + "\tUNLK");
     return 15;
 }
