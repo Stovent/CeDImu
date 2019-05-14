@@ -97,11 +97,11 @@ std::string SCC68070::DisassembleAddressingMode(uint32_t extWordAddress, uint8_t
     {
         if(eareg == 0)
         {
-            mode = "(" + std::to_string(vdsc.GetWord(extWordAddress)) + ").W";
+            mode = "(" + toHex(vdsc.GetWord(extWordAddress)) + ").W";
         }
         else if(eareg == 1)
         {
-            mode = "(" + std::to_string(vdsc.GetLong(extWordAddress)) + ").L";
+            mode = "(" + toHex(vdsc.GetLong(extWordAddress)) + ").L";
         }
         else if(eareg == 2)
         {
@@ -114,7 +114,7 @@ std::string SCC68070::DisassembleAddressingMode(uint32_t extWordAddress, uint8_t
         }
         else if(eareg == 4)
         {
-            mode = "#" + (size == 1) ? std::to_string(vdsc.GetWord(extWordAddress) & 0x00FF) : (size == 2) ? std::to_string(vdsc.GetWord(extWordAddress)) : (size == 3) ? std::to_string(vdsc.GetLong(extWordAddress)) : "ERROR";
+            mode = "#" + ((size == 1) ? std::to_string(vdsc.GetWord(extWordAddress) & 0x00FF) : (size == 2) ? std::to_string(vdsc.GetWord(extWordAddress)) : (size == 4) ? std::to_string(vdsc.GetLong(extWordAddress)) : "ERROR");
         }
         else
             mode = "Wrong register for mode 7";

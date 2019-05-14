@@ -1397,7 +1397,10 @@ uint16_t SCC68070::DbCC()
        return 14;
 
     int16_t data = D[reg] & 0x0000FFFF;
-    if(--data == -1)
+    --data;
+    D[reg] &= 0xFFFF0000;
+    D[reg] |= (uint16_t)data;
+    if(data == -1)
         return 17;
 
     PC += signExtend16(disp) - 2;
@@ -1990,10 +1993,10 @@ uint16_t SCC68070::Movea()
     }
     else // long
     {
-        A[reg] = GetWord(eamode, eareg, calcTime);
+        A[reg] = GetLong(eamode, eareg, calcTime);
     }
 
-    instructionsBuffer.push_back(toHex(pc) + "\tMOVEA " + DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", A" + std::to_string(reg));
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVEA " + DisassembleAddressingMode(pc+2, eamode, eareg, size == 3 ? 2 : 4) + ", A" + std::to_string(reg));
 
     return calcTime;
 }

@@ -39,7 +39,7 @@ void MainFrame::CreateMenuBar()
     wxMenu* file = new wxMenu;
     file->Append(IDOnOpenROM, "Open ROM\tCtrl+O", "Choose the ROM to load");
     file->Append(IDOnOpenBinary, "Open Binary File\t", "Open m68k binary file");
-    file->Append(IDOnLoadBIOS, "Load BIOS\t", "Load a CD-I BIOS");
+    file->Append(IDOnLoadBIOS, "Load BIOS\tCtrl+B", "Load a CD-I BIOS");
     file->AppendSeparator();
     file->Append(IDOnCloseROM, "Close ROM\tCtrl+Maj+O", "Close the ROM currently playing");
     file->Append(wxID_EXIT);
