@@ -14,7 +14,7 @@ class SCC66470 : public VDSC
 
 public:
     SCC66470();
-    ~SCC66470();
+    virtual ~SCC66470();
 
     virtual bool LoadBIOS(std::string filename) override;
     virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) override;
