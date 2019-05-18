@@ -7,6 +7,7 @@ MCD212::MCD212() // TD = 0
     memory = new uint8_t[0x500000];
     memorySwapCount = 0;
     allocatedMemory = 1024*1024*2;
+    biosLoaded = false;
 }
 
 MCD212::~MCD212()

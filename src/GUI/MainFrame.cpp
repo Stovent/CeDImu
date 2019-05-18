@@ -74,10 +74,11 @@ void MainFrame::CreateMenuBar()
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
-    app->vdsc->ResetMemory();
     wxFileDialog openFileDialog(this, _("Open ROM"), "", "", "All files (*.*)|*.*|Binary files (*.bin)|*.bin|.CUE File (*.cue)|*.cue", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
+
+    app->vdsc->ResetMemory();
 
     if(!app->cdi->OpenROM(openFileDialog.GetFilename().ToStdString(), openFileDialog.GetDirectory().ToStdString() + "/"))
     {
@@ -93,7 +94,6 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 
     if(app->vdsc->biosLoaded)
     {
-        app->cpu->RebootCore();
         if(!pause->IsChecked())
             app->StartGameThread();
     }
@@ -131,6 +131,8 @@ void MainFrame::OnLoadBIOS(wxCommandEvent& event)
 
     if(!app->vdsc->LoadBIOS(openFileDialog.GetPath().ToStdString().data()))
         wxMessageBox("Could not load BIOS");
+
+    app->cpu->InitSSPPC();
 }
 
 void MainFrame::OnCloseROM(wxCommandEvent& event)

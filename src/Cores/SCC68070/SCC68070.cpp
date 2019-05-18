@@ -24,12 +24,10 @@ void SCC68070::RebootCore()
 
 void SCC68070::InitSSPPC()
 {
-    PC = 0;
     vdsc.MemorySwap();
-    SSP = vdsc.GetLong(PC);
+    SSP = vdsc.GetLong(0);
     A[7] = SSP;
-    PC += 4;
-    PC = vdsc.GetLong(PC);
+    PC = vdsc.GetLong(4);
 }
 
 void SCC68070::SingleStep()
