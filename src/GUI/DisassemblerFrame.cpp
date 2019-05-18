@@ -66,9 +66,9 @@ void DisassemblerFrame::PaintEvent()
         for(uint8_t i = 0; i < 8; i++)
         {
             d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(cpu.D[i]));
-            a[i]->SetLabelText("A" + std::to_string(i) + ": " + toHex(cpu.A[i]));
+            a[i]->SetLabelText("A" + std::to_string(i) + ": 0x" + toHex(cpu.A[i]));
         }
-        pc->SetLabelText("PC: " + toHex(cpu.PC));
+        pc->SetLabelText("PC: 0x" + toHex(cpu.PC));
         sr->SetLabelText("SR: " + toBinString(cpu.SR, 16));
 
         if(cpu.app.mainFrame->pause->IsChecked())
