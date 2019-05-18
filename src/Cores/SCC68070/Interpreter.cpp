@@ -4,13 +4,9 @@ void SCC68070::Interpreter()
 {
     if(stop)
         return;
-    if(executionTime > 5000)
+
+    if(executionTime > 20000)
     {
-        if(app.mainFrame->disassemblerFrame != nullptr)
-        {
-            app.mainFrame->disassemblerFrame->disassembler->SetLabelText("");
-            app.mainFrame->disassemblerFrame->currentRow = 0;
-        }
         instructionsBuffer.clear();
         executionTime = 0;
     }
