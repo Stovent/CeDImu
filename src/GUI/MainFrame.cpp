@@ -13,6 +13,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnCloseROM, MainFrame::OnCloseROM)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDOnPause, MainFrame::OnPause)
+    EVT_MENU(IDOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
     EVT_MENU(IDOnRebootCore, MainFrame::OnRebootCore)
     EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
     EVT_MENU(IDOnExportFiles, MainFrame::OnExportFiles)
@@ -46,6 +47,7 @@ void MainFrame::CreateMenuBar()
 
     wxMenu* emulation = new wxMenu;
     pause = emulation->AppendCheckItem(IDOnPause, "Pause");
+    emulation->Append(IDOnExecuteXInstructions, "Execute 100 instructions\tCtrl+X");
     emulation->AppendSeparator();
     emulation->Append(IDOnRebootCore, "Reboot Core\tCtrl+R");
 
@@ -132,7 +134,7 @@ void MainFrame::OnLoadBIOS(wxCommandEvent& event)
     if(!app->vdsc->LoadBIOS(openFileDialog.GetPath().ToStdString().data()))
         wxMessageBox("Could not load BIOS");
 
-    app->cpu->InitSSPPC();
+    app->cpu->RebootCore();
 }
 
 void MainFrame::OnCloseROM(wxCommandEvent& event)
@@ -143,11 +145,6 @@ void MainFrame::OnCloseROM(wxCommandEvent& event)
 void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
     Close(true);
-}
-
-void MainFrame::OnRebootCore(wxCommandEvent& event)
-{
-    app->cpu->RebootCore();
 }
 
 void MainFrame::OnPause(wxCommandEvent& event)
@@ -161,6 +158,19 @@ void MainFrame::OnPause()
         app->StopGameThread();
     else
         app->StartGameThread();
+}
+
+void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
+{
+    for(int i = 0; i < 100; i++)
+    {
+        app->cpu->SingleStep();
+    }
+}
+
+void MainFrame::OnRebootCore(wxCommandEvent& event)
+{
+    app->cpu->RebootCore();
 }
 
 void MainFrame::OnDisassembler(wxCommandEvent& event)

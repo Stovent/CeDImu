@@ -18,6 +18,7 @@ enum
     IDOnLoadBIOS,
     IDOnCloseROM,
     IDOnPause,
+    IDOnExecuteXInstructions,
     IDOnRebootCore,
     IDOnExportFiles,
     IDOnExportAudio,
@@ -53,6 +54,7 @@ private:
     void OnExit(wxCommandEvent& event);
 
     void OnPause(wxCommandEvent& event);
+    void OnExecuteXInstructions(wxCommandEvent& event);
     void OnRebootCore(wxCommandEvent& event);
 
     void OnDisassembler(wxCommandEvent& event);

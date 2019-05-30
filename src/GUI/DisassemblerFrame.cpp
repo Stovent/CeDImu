@@ -82,6 +82,6 @@ void DisassemblerFrame::PaintEvent()
             for(; currentRow < cpu.instructionsBuffer.size(); currentRow++)
                 disassembler->AppendText(cpu.instructionsBuffer[currentRow] + "\n");
         }
+        cpu.instructionsBufferChanged = false;
     }
-    cpu.instructionsBufferChanged = false;
 }

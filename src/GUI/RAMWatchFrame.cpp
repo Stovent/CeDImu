@@ -18,7 +18,7 @@ RAMWatchFrame::RAMWatchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos, c
     grid->EnableEditing(false);
     for(int i = 0; i < 1024*1024; i++)
     {
-        grid->SetCellValue(std::to_string(i), i, 0);
+        grid->SetCellValue(toHex(i), i, 0);
         grid->SetCellValue(std::to_string(vdsc->memory[i]), i, 1);
     }
 
