@@ -457,7 +457,7 @@ uint16_t SCC68070::Addq()
         {   SetByte(lastAddress, res); calcTime += 8; }
     }
 
-    instructionsBuffer.push_back(toHex(pc) + "\tADDQ");
+    instructionsBuffer.push_back(toHex(pc) + "\tADDQ #" + std::to_string(data) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size == 0 ? 1 : (size == 1 ? 2 : 4)));
 
     return calcTime;
 }
@@ -1972,7 +1972,7 @@ uint16_t SCC68070::Moveusp()
     else
         Exception(8, calcTime);
 
-    instructionsBuffer.push_back(toHex(pc) + "\tMOVEUSP");
+    instructionsBuffer.push_back(toHex(pc) + "\tMOVE " + (dr ? "USP, A" + std::to_string(reg) : "A" + std::to_string(reg) + ", USP"));
 
     return calcTime;
 }
