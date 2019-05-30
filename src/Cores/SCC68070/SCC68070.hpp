@@ -125,6 +125,7 @@ public:
     VDSC& vdsc;
 
     bool run;
+    std::ofstream out;
     std::vector<std::string> instructionsBuffer;
     bool instructionsBufferChanged;
 
@@ -143,8 +144,9 @@ public:
     void SingleStep();
     void InitSSPPC();
     unsigned long long count;
-private:
+    long double clockPeriod;
 
+private:
     int8_t* internal;
 
     uint16_t currentOpcode;

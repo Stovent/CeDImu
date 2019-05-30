@@ -5,17 +5,23 @@ void SCC68070::Interpreter()
     if(stop)
         return;
 
-    if(executionTime > 20000)
+//    if((long double)executionTime > ((long double)vdsc.GetLineDisplayTime() / clockPeriod))
+    if(executionTime > 2000)
     {
         instructionsBuffer.clear();
         executionTime = 0;
+//        vdsc.DisplayLine();
     }
+
+    if(PC == 0)
+        stop = 1;
 
     currentOpcode = GetNextWord();
     uint16_t opcode = GetInstructionIf(currentOpcode);
     executionTime += (this->*instructions[opcode])();
     instructionsBufferChanged = true;
     count++;
+    out << *--instructionsBuffer.end() << std::endl;
 }
 
 uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)

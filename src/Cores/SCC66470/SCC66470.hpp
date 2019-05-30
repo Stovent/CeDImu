@@ -24,11 +24,13 @@ public:
     virtual uint8_t  GetByte(const uint32_t& addr) const override;
     virtual uint16_t GetWord(const uint32_t& addr) override;
     virtual uint32_t GetLong(const uint32_t& addr) override;
+
     virtual void SetByte(const uint32_t& addr, const uint8_t& data) override;
     virtual void SetWord(const uint32_t& addr, const uint16_t& data) override;
     virtual void SetLong(const uint32_t& addr, const uint32_t& data) override;
 
-    void DisplayLine() override;
+    virtual void DisplayLine() override;
+    virtual uint32_t GetLineDisplayTime() override;
 };
 
 #endif // SCC66470_HPP

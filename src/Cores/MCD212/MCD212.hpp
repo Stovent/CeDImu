@@ -3,6 +3,8 @@
 
 class MCD212;
 
+#include <iostream>
+
 #include "../VDSC.hpp"
 
 class MCD212 : public VDSC
@@ -26,7 +28,8 @@ public:
     virtual void SetWord(const uint32_t& addr, const uint16_t& data) override;
     virtual void SetLong(const uint32_t& addr, const uint32_t& data) override;
 
-    virtual void DisplayLine();
+    virtual void DisplayLine() override;
+    virtual uint32_t GetLineDisplayTime() override;
 };
 
 #endif // MCD212_HPP

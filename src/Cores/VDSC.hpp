@@ -32,6 +32,7 @@ public:
     virtual void SetLong(const uint32_t& addr, const uint32_t& data) = 0;
 
     virtual void DisplayLine() = 0;
+    virtual uint32_t GetLineDisplayTime() = 0;
 };
 
 #endif // VDSC_HPP

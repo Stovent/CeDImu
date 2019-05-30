@@ -1,12 +1,13 @@
 #include "MCD212.hpp"
 
 #include <cstring>
+#include <wx/msgdlg.h>
 
 MCD212::MCD212() // TD = 0
 {
     memory = new uint8_t[0x500000];
     memorySwapCount = 0;
-    allocatedMemory = 1024*1024*2;
+    allocatedMemory = 0x500000;
     biosLoaded = false;
 }
 
@@ -49,5 +50,10 @@ void MCD212::MemorySwap()
 
 void MCD212::DisplayLine()
 {
+    wxMessageBox("Display");
+}
 
+uint32_t MCD212::GetLineDisplayTime()
+{
+    return 700;
 }

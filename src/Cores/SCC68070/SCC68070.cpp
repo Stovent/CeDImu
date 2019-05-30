@@ -5,10 +5,13 @@ SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu) : app(cedimu), vdsc(gpu), instruct
     Execute = Interpreter;
     internal = new int8_t[0xBFFFFFFF-INTERNAL];
     count = 0;
+    clockPeriod = 1.0L / 15000000L;
+    out.open("instructions.txt");
 }
 
 void SCC68070::RebootCore()
 {
+    SR = 0;
     SetS();
     executionTime = 0;
     for(uint8_t i = 0; i < 8; i++)
