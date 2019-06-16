@@ -3,8 +3,9 @@
 
 #include "SCC66470.hpp"
 
-SCC66470::SCC66470()
+SCC66470::SCC66470(CeDImu* appp) : VDSC(appp)
 {
+    app = appp;
     biosLoaded = false;
     memory = new uint8_t[0x2FFFFF];
     lineNumber = 0;

@@ -13,6 +13,9 @@ class MCD212 : public VDSC
 
 public:
     MCD212();
+    std::ofstream out;
+
+    MCD212(CeDImu* appp);
     virtual ~MCD212();
 
     virtual bool LoadBIOS(std::string filename) override;
@@ -20,7 +23,7 @@ public:
     virtual void ResetMemory() override;
     virtual void MemorySwap() override;
 
-    virtual uint8_t  GetByte(const uint32_t& addr) const override;
+    virtual uint8_t  GetByte(const uint32_t& addr) override;
     virtual uint16_t GetWord(const uint32_t& addr) override;
     virtual uint32_t GetLong(const uint32_t& addr) override;
 

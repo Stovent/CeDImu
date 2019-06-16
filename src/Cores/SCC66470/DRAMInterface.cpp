@@ -1,6 +1,6 @@
 #include "SCC66470.hpp"
 
-uint8_t SCC66470::GetByte(const uint32_t& addr) const
+uint8_t SCC66470::GetByte(const uint32_t& addr)
 {
     if((addr < 0x100000 || addr > 0x17FFFF) && addr < 0x200000)
         return memory[addr];

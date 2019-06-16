@@ -5,17 +5,20 @@ class VDSC;
 
 #include <string>
 
+#include "../CeDImu.hpp"
+
 class VDSC
 {
 protected:
     uint16_t lineNumber;
 
 public:
+    CeDImu* app;
     uint8_t* memory;
     bool biosLoaded;
     uint32_t allocatedMemory;
 
-    VDSC() : lineNumber(0), memory(nullptr), allocatedMemory(0) {}
+    VDSC(CeDImu* appp) : lineNumber(0), memory(nullptr), allocatedMemory(0) { app = appp; }
     virtual ~VDSC() {}
 
     virtual bool LoadBIOS(std::string filename) = 0;
@@ -23,7 +26,7 @@ public:
     virtual void ResetMemory() = 0;
     virtual void MemorySwap() = 0;
 
-    virtual uint8_t  GetByte(const uint32_t& addr) const = 0;
+    virtual uint8_t  GetByte(const uint32_t& addr) = 0;
     virtual uint16_t GetWord(const uint32_t& addr) = 0;
     virtual uint32_t GetLong(const uint32_t& addr) = 0;
 

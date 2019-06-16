@@ -3,8 +3,9 @@
 #include <cstring>
 #include <wx/msgdlg.h>
 
-MCD212::MCD212() // TD = 0
+MCD212::MCD212(CeDImu* appp) : VDSC(appp), out("MCD212.txt") // TD = 0
 {
+    app = appp;
     memory = new uint8_t[0x500000];
     memorySwapCount = 0;
     allocatedMemory = 0x500000;

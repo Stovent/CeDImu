@@ -1,7 +1,7 @@
 #include "MCD212.hpp"
 #include "../../utils.hpp"
 
-uint8_t MCD212::GetByte(const uint32_t& addr) const
+uint8_t MCD212::GetByte(const uint32_t& addr)
 {
     if(addr <= 0x4FFFFF)
         return memory[addr];
