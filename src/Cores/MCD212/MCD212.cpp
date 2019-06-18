@@ -6,9 +6,10 @@
 MCD212::MCD212(CeDImu* appp) : VDSC(appp), out("MCD212.txt") // TD = 0
 {
     app = appp;
+    registers = new uint16_t[32];
     memory = new uint8_t[0x500000];
-    memorySwapCount = 0;
     allocatedMemory = 0x500000;
+    memorySwapCount = 0;
     biosLoaded = false;
 }
 
@@ -41,7 +42,7 @@ void MCD212::PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int p
 
 void MCD212::ResetMemory()
 {
-    memset(memory, 0, 0x7FFFF);
+    memset(memory, 0, 0x500000);
 }
 
 void MCD212::MemorySwap()

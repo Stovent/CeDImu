@@ -3,16 +3,47 @@
 
 class MCD212;
 
-#include <iostream>
+#include <fstream>
 
 #include "../VDSC.hpp"
+
+enum MCD212Registers
+{
+    CSR2W = 0x00,
+    CSR2R = 0x01,
+    DCR2  = 0x02,
+    VSR2  = 0x04,
+    DDR2  = 0x08,
+    DCP2  = 0x0A,
+    CSR1W = 0x10,
+    CSR1R = 0x11,
+    DCR1  = 0x12,
+    VSR1  = 0x14,
+    DDR1  = 0x18,
+    DCP1  = 0x1A,
+};
 
 class MCD212 : public VDSC
 {
     uint8_t memorySwapCount;
 
+    // registers and bits
+    uint16_t GetCSR1R();
+    uint16_t GetCSR1W();
+    uint16_t GetDCR1();
+    uint16_t GetVSR1();
+    uint16_t GetDDR1();
+    uint16_t GetDCP1();
+
+    uint16_t GetCSR2R();
+    uint16_t GetCSR2W();
+    uint16_t GetDCR2();
+    uint16_t GetVSR2();
+    uint16_t GetDDR2();
+    uint16_t GetDCP2();
+
 public:
-    MCD212();
+    uint16_t* registers;
     std::ofstream out;
 
     MCD212(CeDImu* appp);
