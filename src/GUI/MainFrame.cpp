@@ -2,9 +2,12 @@
 
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
+#include <wx/button.h>
 #include <wx/filedlg.h>
 
 #include <cstdio>
+
+#include "GenericFrame.hpp"
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnOpenROM, MainFrame::OnOpenROM)
@@ -47,7 +50,7 @@ void MainFrame::CreateMenuBar()
 
     wxMenu* emulation = new wxMenu;
     pause = emulation->AppendCheckItem(IDOnPause, "Pause");
-    emulation->Append(IDOnExecuteXInstructions, "Execute 100 instructions\tCtrl+X");
+    emulation->Append(IDOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
     emulation->AppendSeparator();
     emulation->Append(IDOnRebootCore, "Reboot Core\tCtrl+R");
 
@@ -162,10 +165,22 @@ void MainFrame::OnPause()
 
 void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 {
-    for(int i = 0; i < 100; i++)
-    {
-        app->cpu->SingleStep();
-    }
+    GenericFrame* genericFrame = new GenericFrame(this, "Execute instructions", GetPosition(), wxSize(200, 60));
+    wxTextCtrl* input = new wxTextCtrl(genericFrame, wxID_ANY);
+    wxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxButton* button = new wxButton(genericFrame, wxID_ANY, "Execute");
+
+    button->Bind(wxEVT_BUTTON, [this, genericFrame, input] (wxEvent& event) {
+        for(int i = 0; i < stoi(input->GetValue().ToStdString()); i++)
+            this->app->cpu->SingleStep();
+        genericFrame->Close();
+    });
+
+    sizer->Add(input, 1, wxEXPAND);
+    sizer->Add(button, 0, wxALIGN_RIGHT);
+
+    genericFrame->SetSizer(sizer);
+    genericFrame->Show();
 }
 
 void MainFrame::OnRebootCore(wxCommandEvent& event)
