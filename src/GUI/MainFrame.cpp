@@ -163,7 +163,6 @@ void MainFrame::OnPause()
 
 void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 {
-//    GenericFrame* genericFrame = new GenericFrame(this, "Execute instructions", GetPosition(), wxSize(200, 60));
     wxFrame* genericFrame = new wxFrame(this, wxID_ANY, "Execute instructions", GetPosition(), wxSize(200, 60));
     wxTextCtrl* input = new wxTextCtrl(genericFrame, wxID_ANY);
     wxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -172,7 +171,6 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
     button->Bind(wxEVT_BUTTON, [this, genericFrame, input] (wxEvent& event) {
         for(int i = 0; i < stoi(input->GetValue().ToStdString()); i++)
             this->app->cpu->SingleStep();
-        genericFrame->Close();
     });
 
     sizer->Add(input, 1, wxEXPAND);
