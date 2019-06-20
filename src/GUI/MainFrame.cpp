@@ -7,8 +7,6 @@
 
 #include <cstdio>
 
-#include "GenericFrame.hpp"
-
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnOpenROM, MainFrame::OnOpenROM)
     EVT_MENU(IDOnOpenBinary, MainFrame::OnOpenBinary)
@@ -165,7 +163,8 @@ void MainFrame::OnPause()
 
 void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 {
-    GenericFrame* genericFrame = new GenericFrame(this, "Execute instructions", GetPosition(), wxSize(200, 60));
+//    GenericFrame* genericFrame = new GenericFrame(this, "Execute instructions", GetPosition(), wxSize(200, 60));
+    wxFrame* genericFrame = new wxFrame(this, wxID_ANY, "Execute instructions", GetPosition(), wxSize(200, 60));
     wxTextCtrl* input = new wxTextCtrl(genericFrame, wxID_ANY);
     wxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     wxButton* button = new wxButton(genericFrame, wxID_ANY, "Execute");
