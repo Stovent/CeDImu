@@ -53,3 +53,13 @@ std::string toBinString(uint32_t value, uint8_t lengthInBits)
     }
     return tmp;
 }
+
+uint32_t binStringToInt(std::string s)
+{
+    uint32_t ret = 0;
+    uint32_t base = 1 << (s.length()-1);
+    for(uint8_t i = 0; i < s.length(); i++)
+        if(s[i] == '1')
+            ret |= base >> i;
+    return ret;
+}

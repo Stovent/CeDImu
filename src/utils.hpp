@@ -11,5 +11,6 @@ int32_t signExtend16(const int16_t data);
 bool isEven(int number);
 std::string toHex(uint32_t number);
 std::string toBinString(uint32_t value, uint8_t lengthInBits);
+uint32_t binStringToInt(std::string s);
 
 #endif // UTILS_HPP
