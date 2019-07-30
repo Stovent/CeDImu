@@ -1139,7 +1139,6 @@ uint16_t SCC68070::Btst()
             SetZ(0);
         else
             SetZ();
-        D[eareg] = data;
     }
     else
     {
@@ -1149,7 +1148,6 @@ uint16_t SCC68070::Btst()
             SetZ(0);
         else
             SetZ();
-        SetByte(lastAddress, data);
     }
 
     instructionsBuffer.push_back(toHex(pc) + "\tBTST");
