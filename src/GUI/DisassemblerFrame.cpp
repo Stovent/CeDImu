@@ -14,6 +14,7 @@ wxEND_EVENT_TABLE()
 
 DisassemblerFrame::DisassemblerFrame(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "SCC68070 Disassembler", pos, size), cpu(core)
 {
+    cpu.disassemble = true;
     currentRow = 0;
     mainFrame = parent;
 
@@ -47,6 +48,7 @@ void DisassemblerFrame::OnClose(wxCloseEvent& event)
 {
     renderTimer->Stop();
     Destroy();
+    cpu.disassemble = false;
 }
 
 void DisassemblerFrame::PaintEvent(wxPaintEvent& event)

@@ -34,6 +34,7 @@ enum
 class MainFrame : public wxFrame
 {
 public:
+    GamePanel* gamePanel;
     wxMenuItem* pause;
 
     MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size);
@@ -44,7 +45,6 @@ public:
 
 private:
     CeDImu* app;
-    GamePanel* gamePanel;
 
     void CreateMenuBar();
     void OnOpenROM(wxCommandEvent& event);

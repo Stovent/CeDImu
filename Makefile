@@ -11,7 +11,7 @@ wxIMSWU = C:\wxWidgets-3.0.4\lib\gcc_lib\mswu
 
 obj = bin/obj/Main.o bin/obj/CeDImu.o bin/obj/utils.o \
 bin/obj/MainFrame.o bin/obj/DisassemblerFrame.o bin/obj/GamePanel.o bin/obj/RAMWatchFrame.o \
-bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/InstructionSet.o bin/obj/AddressingModes.o bin/obj/MemoryAccess.o \
+bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/Disassembler.o bin/obj/InstructionSet.o bin/obj/AddressingModes.o bin/obj/MemoryAccess.o \
 bin/obj/SCC66470.o bin/obj/SCC66470DRAMInterface.o \
 bin/obj/MCD212.o bin/obj/MCD212Registers.o bin/obj/MCD212DRAMInterface.o \
 bin/obj/CDI.o bin/obj/CDIDirectory.o bin/obj/CDIFile.o bin/obj/Export.o
@@ -26,6 +26,7 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/SCC68070.cpp -o bin/obj/SCC68070.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/Interpreter.cpp -o bin/obj/Interpreter.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/MemoryAccess.cpp -o bin/obj/MemoryAccess.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/Disassembler.cpp -o bin/obj/Disassembler.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/InstructionSet.cpp -o bin/obj/InstructionSet.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/AddressingModes.cpp -o bin/obj/AddressingModes.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) $(wxLib) -c src/Cores/SCC68070/ConditionalTests.cpp -o bin/obj/ConditionalTests.o

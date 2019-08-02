@@ -1,9 +1,56 @@
 #include "SCC68070.hpp"
 
+void SCC68070::Interpreter() // 4006d6	MOVE.L A7, D7
+{
+    if(stop) return;
+
+    if(executionTime > 2000)
+    {
+        instructionsBuffer.clear();
+        executionTime = 0;
+//        vdsc.DisplayLine();
+    }
+
+    if(PC == 0)
+        stop = true;
+
+    currentPC = PC;
+    currentOpcode = GetNextWord();
+    std::map<uint16_t, SCC68070InstructionSet>::iterator it = ILUT.find(currentOpcode);
+
+    if(it == ILUT.end())
+    {
+        UnknownInstruction();
+        if(disassemble)
+        {
+            DisassembleUnknownInstruction(currentPC);
+            instruction << *--instructionsBuffer.end() << std::endl;
+        }
+    }
+    else
+    {
+        executionTime += (this->*instructions[it->second])();
+        if(disassemble)
+        {
+            (this->*Disassemble[it->second])(currentPC);
+            instruction << *--instructionsBuffer.end() << std::endl;
+        }
+    }
+
+    if(!isEven(PC))
+    {
+        instruction << "PC NOT EVEN!" << std::endl;
+        Exception(AddressError);
+    }
+
+    instructionsBufferChanged = true;
+    count++;
+}
+/*
 void SCC68070::Interpreter()
 {
-    if(stop)
-        return;
+//    if(stop)
+//        return;
 
 //    if((long double)executionTime > ((long double)vdsc.GetLineDisplayTime() / clockPeriod))
     if(executionTime > 2000)
@@ -16,12 +63,15 @@ void SCC68070::Interpreter()
     if(PC == 0)
         stop = 1;
 
+    if(!isEven(PC))
+        instruction << "PC NOT EVEN!" << std::endl;
+
     currentOpcode = GetNextWord();
     uint16_t opcode = GetInstructionIf(currentOpcode);
     executionTime += (this->*instructions[opcode])();
     instructionsBufferChanged = true;
     count++;
-    out << *--instructionsBuffer.end() << std::endl;
+    instruction << *--instructionsBuffer.end() << std::endl;
 }
 
 uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
@@ -33,6 +83,13 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
     if(opcode == 0x4E75) return RTS;
     if(opcode == 0x4E76) return TRAPV;
     if(opcode == 0x4E77) return RTR;
+    if(opcode == 0x023C) return ANDICCR;
+    if(opcode == 0x027C) return ANDISR;
+    if(opcode == 0x0A3C) return EORICCR;
+    if(opcode == 0x0A7C) return EORISR;
+    if(opcode == 0x4AFC) return ILLEGAL;
+    if(opcode == 0x003C) return ORICCR;
+    if(opcode == 0x007C) return ORISR;
     if((opcode & 0xF1F0) == 0xC100) return ABCD;
     if((opcode & 0xF0C0) == 0xD0C0) return ADDA;
     if((opcode & 0xF000) == 0xD000) return ADD;
@@ -54,7 +111,7 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
     if((opcode & 0xFFC0) == 0x08C0) return BSET;
     if((opcode & 0xF1C0) == 0x0100) return BTST;
     if((opcode & 0xFFC0) == 0x0800) return BTST;
-    if((opcode & 0xF140) == 0x4100) return CHK;
+    if((opcode & 0xF1C0) == 0x4180) return CHK;
     if((opcode & 0xFF00) == 0x4200) return CLR;
     if((opcode & 0xF100) == 0xB000) return CMP;
     if((opcode & 0xF0C0) == 0xB0C0) return CMPA;
@@ -73,12 +130,12 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
     if((opcode & 0xF018) == 0xE008) return LSr;
     if((opcode & 0xFEC0) == 0xE2C0) return LSm;
     if((opcode & 0xE1C0) == 0x2040) return MOVEA;
-    if((opcode & 0xC000) == 0x0000 && (opcode & 0xF000) != 0x0000) return MOVE;
     if((opcode & 0xFFC0) == 0x44C0) return MOVECCR;
     if((opcode & 0xFFC0) == 0x40C0) return MOVEfSR;
     if((opcode & 0xFFC0) == 0x46C0) return MOVESR;
     if((opcode & 0xFFF0) == 0x4E60) return MOVEUSP;
     if((opcode & 0xFB80) == 0x4880 && (opcode & 0xFBB8) != 0x4880) return MOVEM;
+    if((opcode & 0xC000) == 0x0000 && (opcode & 0xF000) != 0x0000) return MOVE;
     if((opcode & 0xFEB8) == 0x4880) return EXT;
     if((opcode & 0xF138) == 0x0108) return MOVEP;
     if((opcode & 0xF100) == 0x7000) return MOVEQ;
@@ -108,4 +165,4 @@ uint16_t SCC68070::GetInstructionIf(const uint16_t& opcode)
     if((opcode & 0xFF00) == 0x4A00) return TST;
     if((opcode & 0xFFF8) == 0x4E58) return UNLK;
     return UNKNOWN;
-}
+}*/
