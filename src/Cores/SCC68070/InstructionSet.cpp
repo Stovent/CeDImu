@@ -1410,23 +1410,76 @@ uint16_t SCC68070::DbCC()
 
 uint16_t SCC68070::Divs()
 {
-//    uint32_t pc = PC-2;
+    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 169; // LMAO
 
+    int32_t dst = D[reg];
+    int16_t src = GetWord(eamode, eareg, calcTime);
 
-    return 0;
+    if(src == 0)
+        return calcTime += Exception(ZeroDivide);
+
+    int32_t quotient = dst / src;
+
+    if(quotient > INT16_MAX || quotient < INT16_MIN)
+    {
+        SetV();
+        return calcTime;
+        // Considering that a quotient overflow interrupts the instruction early,
+        // the calculation time may not be accurate here
+    }
+    else
+        SetV(0);
+
+    int16_t remainder = dst % src;
+    D[reg] = (remainder << 16) & (uint16_t)quotient;
+
+    if(quotient & 0x8000) SetN(); else SetN(0);
+    if(quotient == 0) SetZ(); else SetZ(0);
+
+    SetC(0);
+    return calcTime;
 }
 
 uint16_t SCC68070::Divu()
 {
-//    uint32_t pc = PC-2;
+    const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
+    const uint8_t eamode = (currentOpcode & 0x0038) >> 6;
+    const uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 130;
 
+    uint32_t dst = D[reg];
+    uint16_t src = GetWord(eamode, eareg, calcTime);
 
-    return 0;
+    if(src == 0)
+        return calcTime + Exception(ZeroDivide);
+
+    uint32_t quotient = dst / src;
+
+    if(quotient > UINT16_MAX)
+    {
+        SetV();
+        return calcTime;
+        // Considering that a quotient overflow interrupts the instruction early,
+        // the calculation time may not be accurate here
+    }
+    else
+        SetV(0);
+
+    uint16_t remainder = dst % src;
+    D[reg] = (remainder << 16) & (uint16_t)quotient;
+
+    if(quotient & 0x8000) SetN(); else SetN(0);
+    if(quotient == 0) SetZ(); else SetZ(0);
+
+    SetC(0);
+    return calcTime;
 }
 
 uint16_t SCC68070::Eor()
 {
-    uint32_t pc = PC-2;
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x001C) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2573,55 +2626,317 @@ uint16_t SCC68070::Pea()
     SetLong(ARIWPr(7, 4), lastAddress);
     if(eamode == 7 && eareg <= 1)
         calcTime += 2;
-    instructionsBuffer.push_back(toHex(pc) + "\tPEA " + DisassembleAddressingMode(pc+2, eamode, eareg, 4));
+
     return calcTime;
 }
 
 uint16_t SCC68070::Reset() // Not fully emulated I think
 {
     uint16_t calcTime = 154;
-    instructionsBuffer.push_back(std::to_string(PC-2) + "\tRESET");
     if(!GetS())
-        Exception(8, calcTime);
+        calcTime += Exception(PrivilegeViolation);
 
     return calcTime;
 }
 
 uint16_t SCC68070::RoM()
 {
+    uint8_t     dr = (currentOpcode & 0x0100) >> 8;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 14;
+    uint16_t data = GetWord(eamode, eareg, calcTime);
 
+    if(dr) // left
+    {
+        uint8_t a = data & 0x8000;
+        data <<= 1;
+        a >>= 15;
+        data |= a;
+        SetC(a);
+    }
+    else // right
+    {
+        uint8_t a = data & 0x0001;
+        SetC(a);
+        data >>= 1;
+        a <<= 15;
+        data |= a;
+    }
 
-    return 0;
+    if(data & 0x8000) SetN(); else SetN(0);
+    if(data == 0) SetZ(); else SetZ(0);
+    SetV(0);
+
+    SetWord(lastAddress, data);
+
+    return calcTime;
 }
 
 uint16_t SCC68070::RoR()
 {
+    uint8_t count = (currentOpcode & 0x0E00) >> 9;
+    uint8_t    dr = (currentOpcode & 0x0100) >> 8;
+    uint8_t  size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t    ir = (currentOpcode & 0x0020) >> 5;
+    uint8_t   reg = (currentOpcode & 0x0007);
+    uint8_t shift;
 
+    if(ir)
+        shift = D[reg] % 64;
+    else
+        shift = (count) ? count : 8;
 
-    return 0;
+    if(!shift)
+    {
+        SetV(0);
+        SetC(0);
+        return 13;
+    }
+
+    if(size == 0) // byte
+    {
+        uint8_t data = D[reg] & 0x000000FF;
+        if(dr)
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x80;
+                data <<= 1;
+                a >>= 7;
+                data |= a;
+                SetC(a);
+            }
+        }
+        else
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x01;
+                SetC(a);
+                data >>= 1;
+                a <<= 7;
+                data |= a;
+            }
+        }
+
+        if(data & 0x80) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] &= 0xFFFFFF00;
+        D[reg] |= data;
+    }
+    else if(size == 1) // word
+    {
+        uint16_t data = D[reg] & 0x0000FFFF;
+        if(dr)
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x8000;
+                data <<= 1;
+                a >>= 15;
+                data |= a;
+                SetC(a);
+            }
+        }
+        else
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x0001;
+                SetC(a);
+                data >>= 1;
+                a <<= 15;
+                data |= a;
+            }
+        }
+
+        if(data & 0x8000) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] &= 0xFFFF0000;
+        D[reg] |= data;
+    }
+    else // long
+    {
+        uint32_t data = D[reg];
+        if(dr)
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x80000000;
+                data <<= 1;
+                a >>= 31;
+                data |= a;
+                SetC(a);
+            }
+        }
+        else
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x00000001;
+                SetC(a);
+                data >>= 1;
+                a <<= 31;
+                data |= a;
+            }
+        }
+
+        if(data & 0x80000000) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] = data;
+    }
+    SetV(0);
+
+    return 13 + 3 * shift;
 }
 
 uint16_t SCC68070::RoxM()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ROXm";
-#endif // LOG_OPCODE
+    uint8_t     dr = (currentOpcode & 0x0100) >> 8;
+    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
+    uint8_t  eareg = (currentOpcode & 0x0007);
+    uint16_t calcTime = 14;
+    uint16_t data = GetWord(eamode, eareg, calcTime);
 
-    return 0;
+    if(dr) // left
+    {
+        uint8_t a = data & 0x8000;
+        data <<= 1;
+        data |= GetX();
+        SetXC(a ? 1 : 0);
+    }
+    else // right
+    {
+        uint8_t a = data & 0x0001;
+        data >>= 1;
+        data |= GetX() << 15;
+        SetXC(a);
+    }
+
+    if(data & 0x8000) SetN(); else SetN(0);
+    if(data == 0) SetZ(); else SetZ(0);
+    SetV(0);
+
+    SetWord(lastAddress, data);
+
+    return calcTime;
 }
 
 uint16_t SCC68070::RoxR()
 {
-#ifdef LOG_OPCODE
-    std::cout << "ROXr";
-#endif // LOG_OPCODE
+    uint8_t count = (currentOpcode & 0x0E00) >> 9;
+    uint8_t    dr = (currentOpcode & 0x0100) >> 8;
+    uint8_t  size = (currentOpcode & 0x00C0) >> 6;
+    uint8_t    ir = (currentOpcode & 0x0020) >> 5;
+    uint8_t   reg = (currentOpcode & 0x0007);
+    uint8_t shift;
 
-    return 0;
+    if(ir)
+        shift = D[reg] % 64;
+    else
+        shift = (count) ? count : 8;
+
+    if(!shift)
+    {
+        SetV(0);
+        SetC(0);
+        return 13;
+    }
+
+    if(size == 0) // byte
+    {
+        uint8_t data = D[reg] & 0x000000FF;
+        if(dr)
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x80;
+                data <<= 1;
+                data |= GetX();
+                SetXC(a ? 1 : 0);
+            }
+        }
+        else
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x01;
+                data >>= 1;
+                data |= GetX() << 7;
+                SetXC(a);
+            }
+        }
+
+        if(data & 0x80) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] &= 0xFFFFFF00;
+        D[reg] |= data;
+    }
+    else if(size == 1) // word
+    {
+        uint16_t data = D[reg] & 0x0000FFFF;
+        if(dr)
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x8000;
+                data <<= 1;
+                data |= GetX();
+                SetXC(a ? 1 : 0);
+            }
+        }
+        else
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x0001;
+                data >>= 1;
+                data |= GetX() << 15;
+                SetXC(a);
+            }
+        }
+
+        if(data & 0x8000) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] &= 0xFFFF0000;
+        D[reg] |= data;
+    }
+    else // long
+    {
+        uint32_t data = D[reg];
+        if(dr)
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x80000000;
+                data <<= 1;
+                data |= GetX();
+                SetXC(a ? 1 : 0);
+            }
+        }
+        else
+        {
+            for(uint8_t i = 0; i < shift; i++)
+            {
+                uint8_t a = data & 0x00000001;
+                data >>= 1;
+                data |= GetX() << 31;
+                SetXC(a);
+            }
+        }
+
+        if(data & 0x80000000) SetN(); else SetN(0);
+        if(data == 0) SetZ(); else SetZ(0);
+        D[reg] = data;
+    }
+    SetV(0);
+
+    return 13 + 3 * shift;
 }
 
 uint16_t SCC68070::Rte()
 {
-    uint32_t pc = PC-2;
     uint16_t calcTime = 39;
     if(GetS())
     {
