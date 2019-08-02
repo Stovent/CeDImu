@@ -18,7 +18,7 @@ int32_t SCC68070::GetIndexRegister(const uint16_t& bew)
 
 uint32_t SCC68070::AddressRegisterIndirectWithPostincrement(const uint8_t& reg, const uint8_t& sizeInByte)
 {
-    int32_t addr = A[reg];
+    const int32_t addr = A[reg];
     A[reg] += (reg == 7 && sizeInByte == 1) ? 2 : sizeInByte;
     return addr;
 }
@@ -36,7 +36,7 @@ uint32_t SCC68070::AddressRegisterIndirectWithDisplacement(const uint8_t& reg)
 
 uint32_t SCC68070::AddressRegisterIndirectWithIndex8(const uint8_t& reg)
 {
-    uint16_t bew = GetNextWord();
+    const uint16_t bew = GetNextWord();
     return A[reg] + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
 }
 
@@ -47,7 +47,7 @@ uint32_t SCC68070::ProgramCounterIndirectWithDisplacement()
 
 uint32_t SCC68070::ProgramCounterIndirectWithIndex8()
 {
-    uint16_t bew = GetNextWord();
+    const uint16_t bew = GetNextWord();
     return PC + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
 }
 
@@ -61,7 +61,7 @@ uint32_t SCC68070::AbsoluteLongAddressing()
     return GetNextWord() << 16 | GetNextWord();
 }
 
-std::string SCC68070::DisassembleAddressingMode(uint32_t extWordAddress, uint8_t eamode, uint8_t eareg, uint8_t size)
+std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData)
 {
     std::string mode;
     if(eamode == 0)
@@ -97,11 +97,11 @@ std::string SCC68070::DisassembleAddressingMode(uint32_t extWordAddress, uint8_t
     {
         if(eareg == 0)
         {
-            mode = "(" + toHex(vdsc.GetWord(extWordAddress)) + ").W";
+            mode = "(0x" + toHex(vdsc.GetWord(extWordAddress)) + ").W";
         }
         else if(eareg == 1)
         {
-            mode = "(" + toHex(vdsc.GetLong(extWordAddress)) + ").L";
+            mode = "(0x" + toHex(vdsc.GetLong(extWordAddress)) + ").L";
         }
         else if(eareg == 2)
         {
@@ -114,7 +114,10 @@ std::string SCC68070::DisassembleAddressingMode(uint32_t extWordAddress, uint8_t
         }
         else if(eareg == 4)
         {
-            mode = "#" + ((size == 1) ? std::to_string(vdsc.GetWord(extWordAddress) & 0x00FF) : (size == 2) ? std::to_string(vdsc.GetWord(extWordAddress)) : (size == 4) ? std::to_string(vdsc.GetLong(extWordAddress)) : "ERROR");
+            if(hexImmediateData)
+                mode = "#0x" + ((size == 1) ? toHex(vdsc.GetWord(extWordAddress) & 0x00FF) : (size == 2) ? toHex(vdsc.GetWord(extWordAddress)) : (size == 4) ? toHex(vdsc.GetLong(extWordAddress)) : "Wrong size for immediate data");
+            else
+                mode = "#" + ((size == 1) ? std::to_string(vdsc.GetWord(extWordAddress) & 0x00FF) : (size == 2) ? std::to_string(vdsc.GetWord(extWordAddress)) : (size == 4) ? std::to_string(vdsc.GetLong(extWordAddress)) : "Wrong size for immediate data");
         }
         else
             mode = "Wrong register for mode 7";
