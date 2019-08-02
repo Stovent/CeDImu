@@ -150,6 +150,7 @@ private:
     int8_t* internal;
 
     uint16_t currentOpcode;
+    uint32_t currentPC;
     uint32_t lastAddress;
 
     unsigned int executionTime;
