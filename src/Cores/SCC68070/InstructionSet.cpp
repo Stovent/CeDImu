@@ -754,7 +754,7 @@ uint16_t SCC68070::AsM()
     if(dr) // left
     {
         uint8_t a = data & 0x8000;
-        SetXC(a);
+        SetXC(a ? 1 : 0);
         data <<= 1;
         if(a != (data & 0x8000))
             b = true;
@@ -830,6 +830,7 @@ uint16_t SCC68070::AsR()
 
         if(data & 0x80) SetN(); else SetN(0);
         if(data == 0) SetZ(); else SetZ(0);
+
         D[reg] &= 0xFFFFFF00;
         D[reg] |= data;
     }
@@ -862,6 +863,7 @@ uint16_t SCC68070::AsR()
 
         if(data & 0x8000) SetN(); else SetN(0);
         if(data == 0) SetZ(); else SetZ(0);
+
         D[reg] &= 0xFFFF0000;
         D[reg] |= data;
     }
@@ -1696,14 +1698,11 @@ uint16_t SCC68070::LsM()
     uint16_t calcTime = 14;
     uint16_t data = GetWord(eamode, eareg, calcTime);
 
-    bool b = false;
     if(dr) // left
     {
         uint8_t a = data & 0x8000;
-        SetXC(a);
+        SetXC(a ? 1 : 0);
         data <<= 1;
-        if(a != (data & 0x8000))
-            b = true;
         instructionsBuffer.push_back(toHex(pc) + "\tLSL");
     }
     else // right
@@ -1716,7 +1715,7 @@ uint16_t SCC68070::LsM()
 
     if(data & 0x8000) SetN(); else SetN(0);
     if(data == 0) SetZ(); else SetZ(0);
-    if(b) SetV(); else SetV(0);
+    SetV(0);
 
     SetWord(lastAddress, data);
 
@@ -1732,6 +1731,7 @@ uint16_t SCC68070::LsR()
     uint8_t    ir = (currentOpcode & 0x0020) >> 5;
     uint8_t   reg = (currentOpcode & 0x0007);
     uint8_t shift;
+
     if(ir)
         shift = D[reg] % 64;
     else
@@ -1749,20 +1749,16 @@ uint16_t SCC68070::LsR()
         return 13;
     }
 
-    bool b = false;
     if(size == 0) // byte
     {
         uint8_t data = D[reg] & 0x000000FF;
         if(dr)
         {
-            uint8_t old = data & 0x80;
             for(uint8_t i = 0; i < shift; i++)
             {
                 uint8_t a = data & 0x80;
                 SetXC(a ? 1 : 0);
                 data <<= 1;
-                if(a != old)
-                    b = true;
             }
         }
         else
@@ -1785,14 +1781,11 @@ uint16_t SCC68070::LsR()
         uint16_t data = D[reg] & 0x0000FFFF;
         if(dr)
         {
-            uint8_t old = data & 0x8000;
             for(uint8_t i = 0; i < shift; i++)
             {
                 uint8_t a = data & 0x8000;
                 SetXC(a ? 1 : 0);
                 data <<= 1;
-                if(a != old)
-                    b = true;
             }
         }
         else
@@ -1815,14 +1808,11 @@ uint16_t SCC68070::LsR()
         uint32_t data = D[reg];
         if(dr)
         {
-            uint8_t old = data & 0x80000000;
             for(uint8_t i = 0; i < shift; i++)
             {
                 uint8_t a = data & 0x80000000;
                 SetXC(a ? 1 : 0);
                 data <<= 1;
-                if(a != old)
-                    b = true;
             }
         }
         else
@@ -1839,11 +1829,7 @@ uint16_t SCC68070::LsR()
         if(data == 0) SetZ(); else SetZ(0);
         D[reg] = data;
     }
-
-    if(b)
-        SetV();
-    else
-        SetV(0);
+    SetV(0);
 
     return 13 + 3 * shift;
 }
