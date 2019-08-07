@@ -402,7 +402,10 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc.GetByte(addr);
     else if(addr >= 0x80000000 && addr < 0x80008080)
-        return internal[addr-INTERNAL];
+        if(GetS())
+            return internal[addr-INTERNAL];
+        else
+            return vdsc.GetByte(addr);
     else
         return 0;
 }
