@@ -34,6 +34,7 @@ uint16_t SCC68070::Exception(const uint8_t& vectorNumber)
 
     if(vectorNumber <= 1 || vectorNumber == 9 || vectorNumber == 24)
         stop = false;
+
     switch(vectorNumber) // handle Exception Processing Clock Periods
     {
     case 2: case 3:
@@ -52,7 +53,6 @@ uint16_t SCC68070::Exception(const uint8_t& vectorNumber)
     }
 
     PC = GetLong(vectorNumber * 4);
-    SetS(0);
     return calcTime;
 }
 
