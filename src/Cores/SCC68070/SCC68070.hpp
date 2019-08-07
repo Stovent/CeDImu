@@ -188,7 +188,7 @@ public:
 
     void RebootCore();
     void SingleStep();
-    void InitSSPPC();
+    void ResetOperation();
     unsigned long long count;
     long double clockPeriod;
 

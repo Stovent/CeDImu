@@ -16,8 +16,6 @@ SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu, const uint32_t clockFrequency) : a
 
 void SCC68070::RebootCore()
 {
-    SR = 0;
-    SetS();
     executionTime = 0;
     for(uint8_t i = 0; i < 8; i++)
     {
@@ -25,17 +23,20 @@ void SCC68070::RebootCore()
         A[i] = 0;
     }
     instructionsBuffer.clear();
-    InitSSPPC();
+    ResetOperation();
     instructionsBufferChanged = true;
     stop = false;
 }
 
-void SCC68070::InitSSPPC()
+void SCC68070::ResetOperation()
 {
     vdsc.MemorySwap();
     SSP = vdsc.GetLong(0);
     A[7] = SSP;
     PC = vdsc.GetLong(4);
+    SR = 0;
+    SR |= 0x0700;
+    SetS();
 }
 
 void SCC68070::SingleStep()
