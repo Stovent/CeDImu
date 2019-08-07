@@ -16,6 +16,8 @@ public:
     GamePanel(MainFrame* parent, CeDImu* appp);
     ~GamePanel();
 
+    void RefreshScreen(const wxImage* img);
+
 private:
     CeDImu* app;
     MainFrame* mainFrame;
@@ -25,7 +27,6 @@ private:
     void OnKeyDown(wxKeyEvent& event);
     void RefreshLoop(wxTimerEvent& event);
     void DrawTextInfo(wxClientDC& dc);
-    void RefreshScreen(const wxImage& img);
 
     wxDECLARE_EVENT_TABLE();
 };
