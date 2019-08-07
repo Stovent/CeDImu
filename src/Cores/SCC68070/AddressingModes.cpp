@@ -48,7 +48,7 @@ uint32_t SCC68070::ProgramCounterIndirectWithDisplacement()
 uint32_t SCC68070::ProgramCounterIndirectWithIndex8()
 {
     const uint16_t bew = GetNextWord();
-    return PC + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
+    return (PC-2) + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
 }
 
 uint32_t SCC68070::AbsoluteShortAddressing()
