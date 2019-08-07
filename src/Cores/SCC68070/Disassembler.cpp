@@ -659,7 +659,7 @@ void SCC68070::DisassembleMovem(uint32_t pc)
     const uint8_t   size = (currentOpcode & 0x0040) >> 6;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    const uint16_t mask = GetNextWord();
+    const uint16_t mask = vdsc.GetWord(pc+2);
 
     std::string list;
     list = toBinString(mask, 16);
