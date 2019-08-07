@@ -1,6 +1,7 @@
 #include "SCC68070.hpp"
 
-void SCC68070::Interpreter() // 4006d6	MOVE.L A7, D7
+void SCC68070::Interpreter() // 400af0	MOVEM.L 0000000011000000, -(A7)
+
 {
     if(stop) return;
 

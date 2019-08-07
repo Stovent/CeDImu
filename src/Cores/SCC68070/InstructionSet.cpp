@@ -2000,17 +2000,35 @@ uint16_t SCC68070::Moveusp()
 uint16_t SCC68070::Movem()
 {
     uint8_t     dr = (currentOpcode & 0x0400) >> 10;
-    const uint8_t   size = (currentOpcode & 0x0040) >> 6;
+    uint8_t   size = (currentOpcode & 0x0040) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t mask = GetNextWord();
+    uint16_t  mask = GetNextWord();
     uint16_t calcTime = 0;
-    bool type = false;
 
-    GetByte(eamode, eareg, calcTime);
+    // Prepare the lastAddress member
+    if(size)
+    {
+        GetLong(eamode, eareg, calcTime);
+        if(eamode == 3)
+            A[eareg] -= 4;
+        if(eamode == 4)
+            A[eareg] += 4;
+    }
+    else
+    {
+        GetWord(eamode, eareg, calcTime);
+        if(eamode == 3)
+            A[eareg] -= 2;
+        if(eamode == 4)
+            A[eareg] += 2;
+    }
+
+    size = size ? 4 : 2;
 
     uint8_t n = 0;
     int8_t mod;
+    bool type = false;
     if(dr) // Memory to register
     {
         mod = 0;
@@ -2018,7 +2036,7 @@ uint16_t SCC68070::Movem()
         {
             if(mask & 1)
             {
-                if(size) // long
+                if(size == 4) // long
                 {
                     if(type) // address
                         A[mod] = GetLong(lastAddress);
@@ -2036,13 +2054,15 @@ uint16_t SCC68070::Movem()
                     }
                 }
                 n++;
-                lastAddress += (size) ? 4 : 2;
+                lastAddress += size;
+                if(eamode == 3)
+                    A[eareg] += size;
             }
             mask >>= 1;
             mod++;
             mod %= 8;
             if(mod == 0)
-                type = true; // false means data; true means address
+                type = true; // false means data, true means address
         }
         if(eamode < 4 || (eamode == 7 && eareg < 2))
             calcTime += 22;
@@ -2051,36 +2071,61 @@ uint16_t SCC68070::Movem()
     }
     else // Register to memory
     {
-        mod = 7;
         if(eamode == 4)
-            lastAddress += (size) ? 4 : 2;
+            mod = 7;
+        else
+            mod = 0;
         for(uint8_t i = 0; i < 16; i++)
         {
             if(mask & 1)
             {
-                lastAddress -= (size) ? 4 : 2;
-                if(size) // long
+                if(size == 4) // long
                 {
-                    if(type) // address
-                        SetLong(lastAddress, D[mod]);
-                    else // data
-                        SetLong(lastAddress, A[mod]);
+                    if(eamode == 4) // Predecrement addressing uses a different mask
+                        if(type) // data
+                            SetLong(lastAddress, D[mod]);
+                        else // address
+                            SetLong(lastAddress, A[mod]);
+                    else
+                        if(type) // address
+                            SetLong(lastAddress, A[mod]);
+                        else // data
+                            SetLong(lastAddress, D[mod]);
                 }
                 else // word
                 {
-                    if(type) // address
-                        SetWord(lastAddress, D[mod]);
-                    else // data
-                        SetWord(lastAddress, A[mod]);
+                    if(eamode == 4) // Predecrement addressing uses a different mask
+                        if(type) // data
+                            SetWord(lastAddress, D[mod]);
+                        else // address
+                            SetWord(lastAddress, A[mod]);
+                    else
+                        if(type) // address
+                            SetWord(lastAddress, A[mod]);
+                        else // data
+                            SetWord(lastAddress, D[mod]);
                 }
                 n++;
+                if(eamode == 4)
+                {
+                    lastAddress -= size;
+                    A[eareg] -= size;
+                }
+                else
+                    lastAddress += size;
             }
             mask >>= 1;
-            mod--;
-            if(mod < 0)
+            if(eamode == 4)
+                mod--;
+            else
+                mod++;
+            if(mod < 0 || mod > 7)
             {
-                type = true; // true means data; false means address
-                mod = 7;
+                type = true; // data or address register
+                if(eamode == 4)
+                    mod = 7;
+                else
+                    mod = 0;
             }
         }
         if(eamode > 3 && eamode < 7)
@@ -2089,7 +2134,7 @@ uint16_t SCC68070::Movem()
             calcTime += 19;
     }
 
-    return calcTime + n * (size) ? 11 : 7;
+    return calcTime + n * (size == 4) ? 11 : 7;
 }
 
 uint16_t SCC68070::Movep()
