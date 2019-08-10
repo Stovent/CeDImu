@@ -6,14 +6,14 @@ int32_t SCC68070::GetIndexRegister(const uint16_t& bew)
 {
     if(bew & 0x8000)
         if(bew & 0x0800)
-            return A[bew & 0x7000];
+            return A[(bew & 0x7000) >> 12];
         else
-            return signExtend16(A[bew & 0x7000]);
+            return signExtend16(A[(bew & 0x7000) >> 12]);
     else
         if(bew & 0x0800)
-            return D[bew & 0x7000];
+            return D[(bew & 0x7000) >> 12];
         else
-            return signExtend16(D[bew & 0x7000]);
+            return signExtend16(D[(bew & 0x7000) >> 12]);
 }
 
 uint32_t SCC68070::AddressRegisterIndirectWithPostincrement(const uint8_t& reg, const uint8_t& sizeInByte)
