@@ -238,11 +238,11 @@ void SCC68070::GenerateInstructionSet()
         {0, 1, 2, 3, 4, 5, 6, 7}, // ccc
     });
 
-    GenerateInstructionOpcodes(ADD,  "1101aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    GenerateInstructionOpcodes(ADD,  "1101aaa0bb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} });
-    GenerateInstructionOpcodes(ADD,  "1101aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1, 2, 3, 4} });
-    GenerateInstructionOpcodes(ADD,  "1101aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},       {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    GenerateInstructionOpcodes(ADD,  "1101aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},/*effective mode 7*/ {0, 1} });
+    GenerateInstructionOpcodes(ADD,  "1101aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
+    GenerateInstructionOpcodes(ADD,  "1101aaabbb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} });
+    GenerateInstructionOpcodes(ADD,  "1101aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1, 2, 3, 4} });
+    GenerateInstructionOpcodes(ADD,  "1101aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},       {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
+    GenerateInstructionOpcodes(ADD,  "1101aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},/*effective mode 7*/ {0, 1} });
 
     GenerateInstructionOpcodes(ADDA, "1101aaab11cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(ADDA, "1101aaab11111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, /* effective mode 7 */ {0, 1, 2, 3, 4} });
