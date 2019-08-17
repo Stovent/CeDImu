@@ -56,6 +56,7 @@ public:
     bool OpenROM(std::string file, std::string path);
     void LoadFiles();
     bool CloseROM();
+    bool CreateSubfoldersFromROMDirectory(std::string path = "");
 
     uint16_t GetWord(const uint32_t& addr, bool stay);
     uint16_t GetNextWord();
@@ -87,6 +88,7 @@ public:
     std::string romPath;
     std::string romName;
     std::string gameName;
+    std::string gameFolder; // romPath + gameName + "/"
     CDIDirectory rootDirectory;
 };
 

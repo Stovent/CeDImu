@@ -25,6 +25,7 @@ bool CDI::OpenROM(std::string file, std::string path)
         this->romName = file;
         this->romPath = path;
         LoadFiles();
+        this->gameFolder = romPath + gameName + "/";
         return romOpened = true;
     }
     else
@@ -83,6 +84,28 @@ void CDI::LoadFiles()
     rootDirectory.LoadFiles(disk);
     rootDirectory.LoadSubDirectories(disk);
     disk.seekg(pos);
+}
+
+/**
+*   path must not start with an '/' and must end with an '/'
+*   an empty string only creates the game folder (romPath + gameName)
+**/
+bool CDI::CreateSubfoldersFromROMDirectory(std::string path)
+{
+    std::string newFolder(gameFolder);
+
+    do
+    {
+        if(!wxDirExists(newFolder))
+            if(!wxMkdir(newFolder))
+                return false;
+
+        uint32_t pos = path.find('/');
+        newFolder += path.substr(0, pos+1);
+        path = path.substr(pos+1);
+    } while(path.length() > 1);
+
+    return true;
 }
 
 bool CDI::CloseROM()

@@ -9,16 +9,10 @@ bool CDI::ExportAudio()
     ExportAudioInfo();
     bool bol = true;
 
-    std::string currentPath = romPath + "exports/";
-    if(!wxDirExists(currentPath))
-        if(!wxMkdir(currentPath))
-            return false;
+    std::string currentPath = "audio/";
+    CreateSubfoldersFromROMDirectory(currentPath);
 
-    currentPath += "audio/";
-    if(!wxDirExists(currentPath))
-        if(!wxMkdir(currentPath))
-            return false;
-
+    currentPath = gameFolder + currentPath;
     rootDirectory.ExportAudio(*this, currentPath);
 
     return bol;
@@ -26,11 +20,11 @@ bool CDI::ExportAudio()
 
 void CDI::ExportAudioInfo()
 {
-    if(!wxDirExists(romPath + "exports"))
-        if(!wxMkdir(romPath + "exports"))
-            return;
+    if(!CreateSubfoldersFromROMDirectory())
+        wxMessageBox("Could not create subfolders " + gameFolder);
 
-    std::ofstream out(romPath + "exports/audio_info.txt");
+    std::ofstream out(gameFolder + "audio_info.txt");
+
     out.close();
 }
 
@@ -40,15 +34,11 @@ bool CDI::ExportFiles()
     ExportFilesInfo();
     bool bol = true;
 
-    std::string currentPath = romPath + "exports/";
-    if(!wxDirExists(currentPath))
-        if(!wxMkdir(currentPath))
-            return false;
+    std::string currentPath = "files/";
+    if(!CreateSubfoldersFromROMDirectory(currentPath))
+        wxMessageBox("Could not create subfolders " + gameFolder);
 
-    currentPath += "files/";
-    if(!wxDirExists(currentPath))
-        if(!wxMkdir(currentPath))
-            return false;
+    currentPath = gameFolder + currentPath;
 
     rootDirectory.ExportFiles(*this, currentPath);
 
@@ -57,11 +47,11 @@ bool CDI::ExportFiles()
 
 void CDI::ExportFilesInfo()
 {
-    if(!wxDirExists(romPath + "exports"))
-        if(!wxMkdir(romPath + "exports"))
-            return;
+    if(!CreateSubfoldersFromROMDirectory())
+        wxMessageBox("Could not create subfolders " + gameFolder);
 
-    std::ofstream out(romPath + "exports/files_info.txt");
+    std::ofstream out(gameFolder + "files_info.txt");
+
     out << "Dir: " << rootDirectory.name << std::endl;
     out << "LBN: " << rootDirectory.LBN << std::endl;
 
@@ -88,13 +78,14 @@ void CDI::ExportFilesInfo()
 
 void CDI::ExportSectorsInfo()
 {
-    if(!wxDirExists(romPath + "exports"))
-        if(!wxMkdir(romPath + "exports"))
-            return;
+    if(!CreateSubfoldersFromROMDirectory())
+        wxMessageBox("Could not create subfolders " + gameFolder);
 
-    uint32_t pos = disk.tellg();
+    std::ofstream out(gameFolder + "sectors.txt");
+
+    const uint32_t pos = disk.tellg();
     disk.seekg(0);
-    std::ofstream out(romPath + "exports/sectors.txt");
+    UpdateSectorInfo();
 
     out << "LBN  Min secs sect mode file channel submode  codingInfo" << std::endl;
     uint32_t LBN = 0;

@@ -22,6 +22,7 @@ struct CDIDirectory
     std::map<std::string, CDIDirectory> subDirectories;
 
     CDIDirectory(uint8_t namesize, std::string dirname, uint32_t lbn, uint16_t parent, uint16_t offset);
+
     void LoadSubDirectories(std::ifstream& disk);
     void LoadFiles(std::ifstream& disk);
     std::stringstream ExportInfo() const;
