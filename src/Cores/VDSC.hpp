@@ -3,8 +3,6 @@
 
 class VDSC;
 
-#include <string>
-
 #include "../CeDImu.hpp"
 
 class VDSC
@@ -21,7 +19,7 @@ public:
     VDSC(CeDImu* appp) : lineNumber(0), memory(nullptr), allocatedMemory(0) { app = appp; }
     virtual ~VDSC() {}
 
-    virtual bool LoadBIOS(std::string filename) = 0;
+    virtual bool LoadBIOS(const char* filename) = 0;
     virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) = 0;
     virtual void ResetMemory() = 0;
     virtual void MemorySwap() = 0;

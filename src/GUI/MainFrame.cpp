@@ -77,22 +77,22 @@ void MainFrame::CreateMenuBar()
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
+    if(app->vdsc == nullptr || !app->vdsc->biosLoaded)
+    {
+        wxMessageBox("The BIOS has not been loaded yet, please choose one.");
+        OnLoadBIOS(event);
+    }
+
+    app->vdsc->ResetMemory();
+
     wxFileDialog openFileDialog(this, _("Open ROM"), "", "", "All files (*.*)|*.*|Binary files (*.bin)|*.bin|.CUE File (*.cue)|*.cue", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
 
-    app->vdsc->ResetMemory();
-
-    if(!app->cdi->OpenROM(openFileDialog.GetFilename().ToStdString(), openFileDialog.GetDirectory().ToStdString() + "/"))
+    if(!app->InitializeCDI(openFileDialog.GetPath().ToStdString().c_str()))
     {
         wxMessageBox("Could not open ROM!");
         return;
-    }
-
-    if(!app->vdsc->biosLoaded)
-    {
-        wxMessageBox("The BIOS has not been loaded yet, please choose one.");
-        OnLoadBIOS(event);
     }
 
     if(app->vdsc->biosLoaded)
@@ -119,6 +119,7 @@ void MainFrame::OnOpenBinary(wxCommandEvent& event)
     fseek(f, 0, SEEK_SET);
     fread(s, 1, size, f);
     fclose(f);
+
     app->vdsc->PutDataInMemory(s, size, 0);
     app->cpu->RebootCore();
 
@@ -131,6 +132,8 @@ void MainFrame::OnLoadBIOS(wxCommandEvent& event)
     wxFileDialog openFileDialog(this, _("Load BIOS"), "", "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
+
+    app->InitializeCores(openFileDialog.GetPath().ToStdString().data());
 
     if(!app->vdsc->LoadBIOS(openFileDialog.GetPath().ToStdString().data()))
         wxMessageBox("Could not load BIOS");

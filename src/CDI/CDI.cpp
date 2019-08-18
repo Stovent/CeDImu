@@ -12,18 +12,23 @@ CDI::~CDI()
         disk.close();
 }
 
-bool CDI::OpenROM(std::string file, std::string path)
+bool CDI::OpenROM(std::string rom)
 {
     if(disk.is_open())
         CloseROM();
 
-    disk.open(path + file, std::ios::binary);
+    disk.open(rom, std::ios::in | std::ios::binary);
     position = 0;
 
     if(disk.good())
     {
-        this->romName = file;
-        this->romPath = path;
+#ifdef _WIN32
+        this->romName = rom.substr(rom.rfind('\\')+1);
+        this->romPath = rom.substr(0, rom.rfind('\\')+1);
+#else
+        this->romName = rom.substr(rom.rfind('/')+1);
+        this->romPath = rom.substr(0, rom.rfind('/')+1);
+#endif
         LoadFiles();
         this->gameFolder = romPath + gameName + "/";
         return romOpened = true;
@@ -47,9 +52,9 @@ void CDI::LoadFiles()
     disk.seekg(38, std::ios_base::cur); // reserved
 
     disk.read(s, 128);
-    gameName.assign(s, 128);
-    int i = 0; for(i = 126; i >= 0; i--) { if(gameName[i] != ' ') break; }
-    if(i != 0) gameName.erase(++i);
+    int i = 127;
+    for(; s[i] == ' '; i--);
+    gameName.assign(s, i+1);
 
     GotoLBN(lbn); //go to path table
 
@@ -200,17 +205,20 @@ bool CDI::GotoLBN(uint32_t lbn, uint32_t offset)
 
 void CDI::UpdateSectorInfo()
 {
-    char byte;
-    uint32_t tmp = disk.tellg();
+    const uint32_t tmp = disk.tellg();
     disk.seekg(tmp - (tmp % 2352) + 12);
-    disk.get(byte); header.Minutes = convertPBCD(byte);
-    disk.get(byte); header.Seconds = convertPBCD(byte);
-    disk.get(byte); header.Sectors = convertPBCD(byte);
-    disk.get(byte); header.Mode = byte;
-    disk.get(byte); subheader.FileNumber = byte;
-    disk.get(byte); subheader.ChannelNumber = byte;
-    disk.get(byte); subheader.Submode = byte;
-    disk.get(byte); subheader.CodingInformation = byte;
+    char s[8];
+    disk.read(s, 8);
+
+    header.Minutes = convertPBCD(s[0]);
+    header.Seconds = convertPBCD(s[1]);
+    header.Sectors = convertPBCD(s[2]);
+    header.Mode = s[3];
+    subheader.FileNumber = s[4];
+    subheader.ChannelNumber = s[5];
+    subheader.Submode = s[6];
+    subheader.CodingInformation = s[7];
+
     disk.seekg(tmp);
 }
 

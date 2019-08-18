@@ -22,6 +22,8 @@ public:
     MainFrame* mainFrame;
 
     virtual bool OnInit();
+    void InitializeCores(const char* pathToBIOS);
+    bool InitializeCDI(const char* pathToROM);
     void StartGameThread();
     void StopGameThread();
 

@@ -53,7 +53,7 @@ public:
     CDI(CeDImu* appp);
     ~CDI();
 
-    bool OpenROM(std::string file, std::string path);
+    bool OpenROM(std::string rom);
     void LoadFiles();
     bool CloseROM();
     bool CreateSubfoldersFromROMDirectory(std::string path = "");

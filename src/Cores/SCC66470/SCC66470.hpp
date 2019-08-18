@@ -16,7 +16,7 @@ public:
     SCC66470(CeDImu* appp);
     virtual ~SCC66470();
 
-    virtual bool LoadBIOS(std::string filename) override;
+    virtual bool LoadBIOS(const char* filename) override;
     virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) override;
     virtual void ResetMemory() override;
     virtual void MemorySwap() override;

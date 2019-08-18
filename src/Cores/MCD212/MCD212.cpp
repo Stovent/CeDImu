@@ -18,10 +18,10 @@ MCD212::~MCD212()
     delete[] memory;
 }
 
-bool MCD212::LoadBIOS(std::string filename)
+bool MCD212::LoadBIOS(const char* filename)
 {
     biosLoaded = false;
-    FILE* f = fopen(filename.c_str(), "rb");
+    FILE* f = fopen(filename, "rb");
     if(f == NULL)
         return false;
 

@@ -49,7 +49,7 @@ public:
     MCD212(CeDImu* appp);
     virtual ~MCD212();
 
-    virtual bool LoadBIOS(std::string filename) override;
+    virtual bool LoadBIOS(const char* filename) override;
     virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) override;
     virtual void ResetMemory() override;
     virtual void MemorySwap() override;

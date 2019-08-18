@@ -23,10 +23,10 @@ void SCC66470::MemorySwap()
     memorySwapCount = 0;
 }
 
-bool SCC66470::LoadBIOS(std::string filename) // only CD-I 205, it should be 523 264 bytes long
+bool SCC66470::LoadBIOS(const char* filename) // only CD-I 205, it should be 523 264 bytes long
 {
     biosLoaded = false;
-    FILE* f = fopen(filename.c_str(), "rb");
+    FILE* f = fopen(filename, "rb");
     if(f == NULL)
         return false;
     fread(memory + 0x180000, 1, 523264, f);

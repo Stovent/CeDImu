@@ -31,8 +31,11 @@ void GamePanel::RefreshLoop(wxTimerEvent& event)
 
 void GamePanel::DrawTextInfo(wxClientDC& dc)
 {
-    dc.DrawText("inst per seconds: " + std::to_string(app->cpu->count - oldInstCount), wxPoint(0, 0));
-    oldInstCount = app->cpu->count;
+    if(app->cpu)
+    {
+        dc.DrawText("inst per seconds: " + std::to_string(app->cpu->count - oldInstCount), wxPoint(0, 0));
+        oldInstCount = app->cpu->count;
+    }
 }
 
 void GamePanel::RefreshScreen(const wxImage* img)
