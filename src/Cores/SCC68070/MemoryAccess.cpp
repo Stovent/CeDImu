@@ -398,53 +398,65 @@ void SCC68070::SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTi
 
 uint8_t SCC68070::GetByte(const uint32_t& addr)
 {
+#ifdef DEBUG
     out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl;
+#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        return vdsc.GetByte(addr);
+        return vdsc->GetByte(addr);
     else if(addr >= 0x80000000 && addr < 0x80008080)
         if(GetS())
             return internal[addr-INTERNAL];
         else
-            return vdsc.GetByte(addr);
+            return vdsc->GetByte(addr);
     else
         return 0;
 }
 
 uint16_t SCC68070::GetWord(const uint32_t& addr)
 {
+#ifdef DEBUG
     out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl;
+#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        return vdsc.GetWord(addr);
+        return vdsc->GetWord(addr);
     else
         return 0;
 }
 
 uint32_t SCC68070::GetLong(const uint32_t& addr)
 {
+#ifdef DEBUG
     out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl;
+#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        return vdsc.GetLong(addr);
+        return vdsc->GetLong(addr);
     else
         return 0;
 }
 
 void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
 {
+#ifdef DEBUG
     out << std::hex << currentPC << "\tSet byte: 0x" << addr << " value: " << std::to_string(data) << std::endl;
+#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc.SetByte(addr, data);
+        vdsc->SetByte(addr, data);
 }
 
 void SCC68070::SetWord(const uint32_t& addr, const uint16_t& data)
 {
+#ifdef DEBUG
     out << std::hex << currentPC << "\tSet word: 0x" << addr << " value: " << std::to_string(data) << std::endl;
+#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc.SetWord(addr, data);
+        vdsc->SetWord(addr, data);
 }
 
 void SCC68070::SetLong(const uint32_t& addr, const uint32_t& data)
 {
+#ifdef DEBUG
     out << std::hex << currentPC << "\tSet Long: 0x" << addr << " value: " << std::to_string(data) << std::endl;
+#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc.SetLong(addr, data);
+        vdsc->SetLong(addr, data);
 }

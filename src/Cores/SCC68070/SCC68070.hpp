@@ -165,8 +165,8 @@ enum ExceptionVectors
 class SCC68070
 {
 public:
-    CeDImu& app;
-    VDSC& vdsc;
+    CeDImu* app;
+    VDSC* vdsc;
 
     bool run;
     bool disassemble;
@@ -175,7 +175,7 @@ public:
     std::vector<std::string> instructionsBuffer;
     bool instructionsBufferChanged;
 
-    SCC68070(CeDImu& cedimu, VDSC& gpu, const uint32_t clockFrequency = 15000000L);
+    SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency = 15000000L);
     void Run();
 
     int32_t D[8];

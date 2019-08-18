@@ -86,38 +86,38 @@ std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, c
     }
     else if(eamode == 5)
     {
-        mode = "(" + std::to_string((int16_t)vdsc.GetWord(extWordAddress)) + ",A" + std::to_string(eareg) + ")";
+        mode = "(" + std::to_string((int16_t)vdsc->GetWord(extWordAddress)) + ",A" + std::to_string(eareg) + ")";
     }
     else if(eamode == 6)
     {
-        uint16_t bew = vdsc.GetWord(extWordAddress);
+        uint16_t bew = vdsc->GetWord(extWordAddress);
         mode = "(" + std::to_string((int8_t)bew) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + ")";
     }
     else if(eamode == 7)
     {
         if(eareg == 0)
         {
-            mode = "(0x" + toHex(vdsc.GetWord(extWordAddress)) + ").W";
+            mode = "(0x" + toHex(vdsc->GetWord(extWordAddress)) + ").W";
         }
         else if(eareg == 1)
         {
-            mode = "(0x" + toHex(vdsc.GetLong(extWordAddress)) + ").L";
+            mode = "(0x" + toHex(vdsc->GetLong(extWordAddress)) + ").L";
         }
         else if(eareg == 2)
         {
-            mode = "(" + std::to_string((int16_t)vdsc.GetWord(extWordAddress)) + ",PC)";
+            mode = "(" + std::to_string((int16_t)vdsc->GetWord(extWordAddress)) + ",PC)";
         }
         else if(eareg == 3)
         {
-            uint16_t bew = vdsc.GetWord(extWordAddress);
+            uint16_t bew = vdsc->GetWord(extWordAddress);
             mode = "(" + std::to_string((int8_t)bew) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + ")";
         }
         else if(eareg == 4)
         {
             if(hexImmediateData)
-                mode = "#0x" + ((size == 1) ? toHex(vdsc.GetWord(extWordAddress) & 0x00FF) : (size == 2) ? toHex(vdsc.GetWord(extWordAddress)) : (size == 4) ? toHex(vdsc.GetLong(extWordAddress)) : "Wrong size for immediate data");
+                mode = "#0x" + ((size == 1) ? toHex(vdsc->GetWord(extWordAddress) & 0x00FF) : (size == 2) ? toHex(vdsc->GetWord(extWordAddress)) : (size == 4) ? toHex(vdsc->GetLong(extWordAddress)) : "Wrong size for immediate data");
             else
-                mode = "#" + ((size == 1) ? std::to_string(vdsc.GetWord(extWordAddress) & 0x00FF) : (size == 2) ? std::to_string(vdsc.GetWord(extWordAddress)) : (size == 4) ? std::to_string(vdsc.GetLong(extWordAddress)) : "Wrong size for immediate data");
+                mode = "#" + ((size == 1) ? std::to_string(vdsc->GetWord(extWordAddress) & 0x00FF) : (size == 2) ? std::to_string(vdsc->GetWord(extWordAddress)) : (size == 4) ? std::to_string(vdsc->GetLong(extWordAddress)) : "Wrong size for immediate data");
         }
         else
             mode = "Wrong register for mode 7";

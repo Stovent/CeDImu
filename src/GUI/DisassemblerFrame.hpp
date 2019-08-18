@@ -16,10 +16,10 @@ class DisassemblerFrame : public wxFrame
 public:
     uint32_t currentRow;
 
-    DisassemblerFrame(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
+    DisassemblerFrame(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~DisassemblerFrame();
 
-    SCC68070& cpu;
+    SCC68070* cpu;
     MainFrame* mainFrame;
     wxTimer* renderTimer;
 

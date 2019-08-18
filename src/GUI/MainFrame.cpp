@@ -188,7 +188,7 @@ void MainFrame::OnRebootCore(wxCommandEvent& event)
 void MainFrame::OnDisassembler(wxCommandEvent& event)
 {
     if(disassemblerFrame == nullptr)
-        disassemblerFrame = new DisassemblerFrame(*(app->cpu), this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
+        disassemblerFrame = new DisassemblerFrame(app->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
     disassemblerFrame->Show();
 }
 

@@ -1,6 +1,6 @@
 #include "SCC68070.hpp"
 
-void SCC68070::Interpreter() // 400e46	MOVE.L #1073742856, (A1)
+void SCC68070::Interpreter()
 {
     if(stop) return;
 
@@ -10,9 +10,6 @@ void SCC68070::Interpreter() // 400e46	MOVE.L #1073742856, (A1)
         executionTime = 0;
 //        vdsc.DisplayLine();
     }
-
-    if(PC == 0)
-        stop = true;
 
     currentPC = PC;
     currentOpcode = GetNextWord();

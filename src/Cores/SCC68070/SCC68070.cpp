@@ -2,7 +2,7 @@
 
 #include "SCC68070.hpp"
 
-SCC68070::SCC68070(CeDImu& cedimu, VDSC& gpu, const uint32_t clockFrequency) : app(cedimu), vdsc(gpu), instructionsBuffer(), ILUT()
+SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : app(cedimu), vdsc(gpu), instructionsBuffer(), ILUT()
 {
     disassemble = false;
     Execute = Interpreter;
@@ -30,10 +30,10 @@ void SCC68070::RebootCore()
 
 void SCC68070::ResetOperation()
 {
-    vdsc.MemorySwap();
-    SSP = vdsc.GetLong(0);
+    vdsc->MemorySwap();
+    SSP = vdsc->GetLong(0);
     A[7] = SSP;
-    PC = vdsc.GetLong(4);
+    PC = vdsc->GetLong(4);
     SR = 0;
     SR |= 0x0700;
     SetS();
@@ -54,7 +54,7 @@ void SCC68070::Run()
 
 uint16_t SCC68070::GetNextWord()
 {
-    uint16_t opcode = vdsc.GetWord(PC);
+    uint16_t opcode = vdsc->GetWord(PC);
     PC += 2;
     return opcode;
 }
