@@ -190,15 +190,17 @@ void MainFrame::OnRebootCore(wxCommandEvent& event)
 
 void MainFrame::OnDisassembler(wxCommandEvent& event)
 {
-    if(disassemblerFrame == nullptr)
-        disassemblerFrame = new DisassemblerFrame(app->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
+    if(disassemblerFrame != nullptr || !app->cpu)
+        return;
+    disassemblerFrame = new DisassemblerFrame(app->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
     disassemblerFrame->Show();
 }
 
 void MainFrame::OnRAMWatch(wxCommandEvent& event)
 {
-    if(ramWatchFrame == nullptr)
-        ramWatchFrame = new RAMWatchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(300, 700));
+    if(ramWatchFrame != nullptr || !app->vdsc)
+        return;
+    ramWatchFrame = new RAMWatchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(300, 700));
     ramWatchFrame->Show();
 }
 
