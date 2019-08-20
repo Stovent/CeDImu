@@ -3,6 +3,19 @@
 #include <cmath>
 #include <fstream>
 
+#include "CDI.hpp"
+
+CDIFile::CDIFile()
+{
+    nameSize = 0;
+    name = "";
+    size = 0;
+    LBN = 0;
+    attributes = 0;
+    parent = 0;
+    fileNumber = 0;
+}
+
 CDIFile::CDIFile(uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos)
 {
     nameSize = namesize;
@@ -60,7 +73,7 @@ void CDIFile::ExportFile(CDI& cdi, std::string directoryPath)
 {
     uint32_t pos = cdi.disk.tellg();
 
-    std::ofstream out(directoryPath + name, std::ios::binary);
+    std::ofstream out(directoryPath + name, std::ios::out | std::ios::binary);
     int32_t sizeLeft = size;
     char s[2324] = {0};
     cdi.GotoLBN(LBN);

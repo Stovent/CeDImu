@@ -1,9 +1,10 @@
+#include "CDIDirectory.hpp"
+
 #include <sstream>
 
 #include <wx/filefn.h>
 
 #include "CDI.hpp"
-#include "CDIDirectory.hpp"
 
 CDIDirectory::CDIDirectory(uint8_t namesize, std::string dirname, uint32_t lbn, uint16_t parent, uint16_t offset)
 {
@@ -115,6 +116,31 @@ void CDIDirectory::LoadFiles(std::ifstream& disk)
             files.emplace(filename, CDIFile(lbn, filesize, namesize, filename, attr, filenbr, relOffset));
     }
     disk.seekg(pos);
+}
+
+bool CDIDirectory::GetFile(std::string filename, CDIFile& cdifile)
+{
+    const size_t pos = filename.find('/');
+    if(pos == std::string::npos)
+    {
+        std::map<std::string, CDIFile>::iterator it = files.find(filename);
+        if(it == files.end())
+            return false;
+
+        cdifile = it->second;
+        return true;
+    }
+    else
+    {
+        std::string dir = filename.substr(0, pos);
+        filename = filename.substr(pos+1);
+
+        std::map<std::string, CDIDirectory>::iterator it = subDirectories.find(dir);
+        if(it == subDirectories.end())
+            return false;
+
+        return it->second.GetFile(filename, cdifile);
+    }
 }
 
 std::stringstream CDIDirectory::ExportInfo() const

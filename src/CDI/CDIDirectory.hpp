@@ -25,6 +25,7 @@ struct CDIDirectory
 
     void LoadSubDirectories(std::ifstream& disk);
     void LoadFiles(std::ifstream& disk);
+    bool GetFile(std::string filename, CDIFile& cdifile);
     std::stringstream ExportInfo() const;
 
     void ExportFiles(CDI& cdi, std::string basePath) const;

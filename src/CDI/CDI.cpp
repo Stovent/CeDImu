@@ -56,6 +56,12 @@ void CDI::LoadFiles()
     for(; s[i] == ' '; i--);
     gameName.assign(s, i+1);
 
+    disk.seekg(256, std::ios_base::cur); // goto application identifier
+
+    disk.read(s, 128);
+    for(i = 127; s[i] == ' '; i--);
+    std::string mainModuleName(s, i+1);
+
     GotoLBN(lbn); //go to path table
 
     while((disk.tellg() % 2352) < 2072) // read the directories on the whole sector
@@ -88,6 +94,12 @@ void CDI::LoadFiles()
     }
     rootDirectory.LoadFiles(disk);
     rootDirectory.LoadSubDirectories(disk);
+
+    if(!rootDirectory.GetFile(mainModule.name, mainModule))
+        wxMessageBox("Could not find module " + mainModule.name);
+
+    mainModule.name = mainModuleName;
+
     disk.seekg(pos);
 }
 
@@ -98,7 +110,6 @@ void CDI::LoadFiles()
 bool CDI::CreateSubfoldersFromROMDirectory(std::string path)
 {
     std::string newFolder(gameFolder);
-
     do
     {
         if(!wxDirExists(newFolder))
@@ -124,15 +135,15 @@ bool CDI::CloseROM()
         return romOpened = true;
 }
 
-uint16_t CDI::GetWord(const uint32_t& addr, bool stay = false)
+uint16_t CDI::GetWord(const uint32_t& addr, bool stay)
 {
-    uint32_t pos = position;
+    uint32_t pos = disk.tellg();
     disk.seekg(addr);
     char a, b;
     disk.get(a);
     disk.get(b);
     if(!stay)
-        position = pos+2;
+        disk.seekg(pos);
     return (a << 8) | (uint8_t)b;
 }
 

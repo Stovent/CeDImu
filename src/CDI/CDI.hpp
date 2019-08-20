@@ -6,6 +6,7 @@ class CDI;
 #include <fstream>
 #include <string>
 
+#include "CDIFile.hpp"
 #include "CDIDirectory.hpp"
 #include "../CeDImu.hpp"
 
@@ -57,8 +58,9 @@ public:
     void LoadFiles();
     bool CloseROM();
     bool CreateSubfoldersFromROMDirectory(std::string path = "");
+    void LoadModule(std::string moduleName, uint32_t address);
 
-    uint16_t GetWord(const uint32_t& addr, bool stay);
+    uint16_t GetWord(const uint32_t& addr, bool stay = false);
     uint16_t GetNextWord();
     uint32_t GetPosition();
 
@@ -77,8 +79,6 @@ public:
     bool GotoLBN(uint32_t lbn, uint32_t offset = 0);
     bool IsEmptySector();
 
-    void LoadModule(std::string name, uint32_t address);
-
     CeDImu* app;
     CDIHeader header;
     CDISubheader subheader;
@@ -90,6 +90,7 @@ public:
     std::string gameName;
     std::string gameFolder; // romPath + gameName + "/"
     CDIDirectory rootDirectory;
+    CDIFile mainModule;
 };
 
 #endif // CDI_HPP

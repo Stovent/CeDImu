@@ -5,7 +5,7 @@ struct CDIFile;
 
 #include <string>
 
-#include "CDI.hpp"
+class CDI;
 
 struct CDIFile
 {
@@ -17,6 +17,7 @@ struct CDIFile
     uint32_t size;
     std::string name;
 
+    CDIFile();
     CDIFile(uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t fileNumber, uint16_t parentRelpos);
 
     void ExportAudio(CDI& cdi, std::string directoryPath);
