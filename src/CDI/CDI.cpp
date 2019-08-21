@@ -95,7 +95,7 @@ void CDI::LoadFiles()
     rootDirectory.LoadFiles(disk);
     rootDirectory.LoadSubDirectories(disk);
 
-    if(!rootDirectory.GetFile(mainModule.name, mainModule))
+    if(!rootDirectory.GetFile(mainModuleName, mainModule))
         wxMessageBox("Could not find module " + mainModule.name);
 
     mainModule.name = mainModuleName;
