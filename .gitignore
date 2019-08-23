@@ -3,6 +3,7 @@
 
 !.gitignore
 !Makefile
+!CMakeLists.txt
 
 !/src
 !/Ressources

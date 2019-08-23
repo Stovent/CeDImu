@@ -1,3 +1,5 @@
+#may not be useful anymore, bettre use CMake
+
 CXX = g++
 CXXFLAGS = -O3 -Wall -std=c++11 -pipe -mthreads
 linkerFLAGS = -static-libstdc++ -static-libgcc -static -mthreads
