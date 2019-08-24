@@ -5,7 +5,7 @@
 SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : app(cedimu), vdsc(gpu), instructionsBuffer(), ILUT()
 {
     disassemble = false;
-    Execute = Interpreter;
+    Execute = &SCC68070::Interpreter;
     internal = new uint8_t[0x80008080-INTERNAL];
     count = 0;
     clockPeriod = 1.0L / clockFrequency;
