@@ -9,8 +9,10 @@ SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : a
     internal = new uint8_t[0x80008080-INTERNAL];
     count = 0;
     clockPeriod = 1.0L / clockFrequency;
+#ifdef DEBUG
     out.open("SCC68070.txt");
     instruction.open("instructions.txt");
+#endif // DEBUG
     GenerateInstructionSet();
 }
 

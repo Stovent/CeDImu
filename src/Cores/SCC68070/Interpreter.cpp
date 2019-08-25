@@ -21,7 +21,9 @@ void SCC68070::Interpreter()
         if(disassemble)
         {
             DisassembleUnknownInstruction(currentPC);
+#ifdef DEBUG
             instruction << *--instructionsBuffer.end() << std::endl;
+#endif // DEBUG
         }
     }
     else
@@ -30,13 +32,17 @@ void SCC68070::Interpreter()
         if(disassemble)
         {
             (this->*Disassemble[it->second])(currentPC);
+#ifdef DEBUG
             instruction << *--instructionsBuffer.end() << std::endl;
+#endif // DEBUG
         }
     }
 
     if(!isEven(PC))
     {
+#ifdef DEBUG
         instruction << "PC NOT EVEN!" << std::endl;
+#endif // DEBUG
         Exception(AddressError);
     }
 
