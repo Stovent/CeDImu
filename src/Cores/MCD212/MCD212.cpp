@@ -3,7 +3,7 @@
 #include <cstring>
 #include <wx/msgdlg.h>
 
-MCD212::MCD212(CeDImu* appp) : VDSC(appp), out("MCD212.txt") // TD = 0
+MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
 {
     app = appp;
     registers = new uint16_t[32];
@@ -11,6 +11,9 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp), out("MCD212.txt") // TD = 0
     allocatedMemory = 0x500000;
     memorySwapCount = 0;
     biosLoaded = false;
+#ifdef DEBUG
+    out.open("MCD212.txt");
+#endif // DEBUG
 }
 
 MCD212::~MCD212()
