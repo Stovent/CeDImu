@@ -26,6 +26,13 @@ set(SRCS
 	src/CeDImu.cpp
 	src/utils.cpp
 	src/main.cpp)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
+set(CMAKE_SOURCE_DIRECTORY ".")
+
+if(UNIX)
+	set(CMAKE_GENERATOR "Unix Makefiles")
+endif()
 	
 add_executable(CeDImu ${SRCS})
 
