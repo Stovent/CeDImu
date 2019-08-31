@@ -20,7 +20,7 @@ public:
     virtual ~VDSC() {}
 
     virtual bool LoadBIOS(const char* filename) = 0;
-    virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) = 0;
+    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void ResetMemory() = 0;
     virtual void MemorySwap() = 0;
 

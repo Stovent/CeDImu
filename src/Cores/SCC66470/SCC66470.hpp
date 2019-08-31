@@ -17,7 +17,7 @@ public:
     virtual ~SCC66470();
 
     virtual bool LoadBIOS(const char* filename) override;
-    virtual void PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position) override;
+    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
     virtual void ResetMemory() override;
     virtual void MemorySwap() override;
 

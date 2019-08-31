@@ -38,7 +38,7 @@ bool MCD212::LoadBIOS(const char* filename)
     return biosLoaded = true;
 }
 
-void MCD212::PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position)
+void MCD212::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
 {
     memcpy(&memory[position], s, size);
 }

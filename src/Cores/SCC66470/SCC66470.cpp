@@ -34,7 +34,7 @@ bool SCC66470::LoadBIOS(const char* filename) // only CD-I 205, it should be 523
     return biosLoaded = true;
 }
 
-void SCC66470::PutDataInMemory(const uint8_t* s, unsigned int size, unsigned int position)
+void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
 {
     memcpy(&memory[position], s, size);
 }
