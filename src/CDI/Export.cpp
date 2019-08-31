@@ -97,7 +97,6 @@ void CDI::ExportSectorsInfo()
         if(!disk.good()) // end of disk reached
         {
             disk.clear();
-            disk.seekg(0);
             break;
         }
     }

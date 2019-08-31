@@ -71,23 +71,59 @@ void CDIFile::ExportAudio(CDI& cdi, std::string directoryPath)
 
 void CDIFile::ExportFile(CDI& cdi, std::string directoryPath)
 {
-    uint32_t pos = cdi.disk.tellg();
+    const uint32_t pos = cdi.disk.tellg();
 
     std::ofstream out(directoryPath + name, std::ios::out | std::ios::binary);
-    int32_t sizeLeft = size;
-    char s[2324] = {0};
-    cdi.GotoLBN(LBN);
 
-    while(sizeLeft > 0)
-    {
-        uint16_t sectorSize = (cdi.subheader.Submode & cdiform) ? 2324 : 2048;
-        uint16_t dtr = (sizeLeft > sectorSize) ? sectorSize : sizeLeft; // Data To Retrieve
-        cdi.disk.read(s, dtr);
-        out.write(s, dtr);
-        sizeLeft -= dtr;
-        cdi.GotoNextSector();
-    }
+    char const * const d = GetFileContent(cdi);
+    if(d)
+        out.write(d, size);
+    delete[] d;
 
     out.close();
     cdi.disk.seekg(pos);
+}
+
+char* CDIFile::GetFileContent(CDI& cdi, uint8_t mask)
+{
+    const uint32_t pos = cdi.disk.tellg();
+    cdi.GotoLBN(LBN);
+    if(mask)
+        cdi.GotoNextSector(mask, true);
+
+    uint32_t position = (size > 2048) ? 2048 : size;
+    int32_t sizeLeft = size;
+    char* data = new (std::nothrow) char[size];
+
+    if(data == nullptr)
+    {
+        wxMessageBox("Could not allocate memory to export file " + name);
+        return nullptr;
+    }
+
+    cdi.disk.read(data, position);
+
+    if(data[0] == 0x4A && data[1] == (char)0xFC && cdi.subheader.Submode & cdid) // CDI Module
+    {
+        const int16_t a = position - 72 - (isEven(nameSize) ? nameSize+2 : nameSize+1);
+        cdi.disk.seekg(-a, std::ios_base::cur);
+        cdi.disk.read(data, a);
+        position = a;
+    }
+
+    sizeLeft -= position;
+
+    while(sizeLeft > 0)
+    {
+        cdi.GotoNextSector(mask);
+        uint16_t dtr = (cdi.subheader.Submode & cdiform ? 2324 : 2048);
+        dtr = dtr > sizeLeft ? sizeLeft : dtr;
+
+        cdi.disk.read(&data[position], dtr);
+        position += dtr;
+        sizeLeft -= dtr;
+    }
+
+    cdi.disk.seekg(pos);
+    return data;
 }

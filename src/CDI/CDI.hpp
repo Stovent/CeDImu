@@ -28,14 +28,14 @@ typedef struct
 
 enum SubmodeBits
 {
-    cdieof = 0b10000000, // End of File
-    cdirt  = 0b01000000, // Real Time
-    cdiform= 0b00100000, // Form
-    cditr  = 0b00010000, // Trigger
-    cdid   = 0b00001000, // Data
-    cdia   = 0b00000100, // Audio
-    cdiv   = 0b00000010, // Video
-    cdieor = 0b00000001, // End of Record
+    cdieof  = 0b10000000, // End of File
+    cdirt   = 0b01000000, // Real Time
+    cdiform = 0b00100000, // Form
+    cditr   = 0b00010000, // Trigger
+    cdid    = 0b00001000, // Data
+    cdia    = 0b00000100, // Audio
+    cdiv    = 0b00000010, // Video
+    cdieor  = 0b00000001, // End of Record
 };
 
 enum AudioCodingInformation

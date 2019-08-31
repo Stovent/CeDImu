@@ -22,6 +22,7 @@ struct CDIFile
 
     void ExportAudio(CDI& cdi, std::string directoryPath);
     void ExportFile(CDI& cdi, std::string directoryPath);
+    char* GetFileContent(CDI& cdi, uint8_t mask = 0);
 };
 
 #endif // CDIFILE_HPP

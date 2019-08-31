@@ -31,6 +31,7 @@ bool CDI::OpenROM(std::string rom)
 #endif
         LoadFiles();
         this->gameFolder = romPath + gameName + "/";
+        app->mainFrame->SetTitle(gameName + " - CeDImu");
         return romOpened = true;
     }
     else
@@ -167,19 +168,30 @@ uint32_t CDI::GetPosition()
     return position;
 }
 
+bool CDI::GotoLBN(uint32_t lbn, uint32_t offset)
+{
+    position = lbn * 2352 + 24 + offset;
+    disk.seekg(position);
+    UpdateSectorInfo();
+    if(disk.good())
+        return true;
+    else
+        return false;
+}
+
 bool CDI::GotoNextSector(uint8_t submodeMask, bool includingCurrentSector)
 {
     position = disk.tellg();
-    position -= position % 2352;
+    position -= position % 2352 - 24;
 
-    if(submodeMask)
+    if(submodeMask & 0x0E)
     {
         disk.seekg(position);
         if(includingCurrentSector)
         {
             while(!(subheader.Submode & submodeMask))
             {
-                disk.seekg(2352, std::ios_base::seekdir::_S_cur);
+                disk.seekg(2352, std::ios_base::cur);
                 UpdateSectorInfo();
             }
         }
@@ -187,7 +199,7 @@ bool CDI::GotoNextSector(uint8_t submodeMask, bool includingCurrentSector)
         {
             do
             {
-                disk.seekg(2352, std::ios_base::seekdir::_S_cur);
+                disk.seekg(2352, std::ios_base::cur);
                 UpdateSectorInfo();
             } while(!(subheader.Submode & submodeMask));
         }
@@ -197,17 +209,7 @@ bool CDI::GotoNextSector(uint8_t submodeMask, bool includingCurrentSector)
         disk.seekg(position + 2352);
         UpdateSectorInfo();
     }
-    if(disk.good())
-        return true;
-    else
-        return false;
-}
 
-bool CDI::GotoLBN(uint32_t lbn, uint32_t offset)
-{
-    position = lbn * 2352 + 24 + offset;
-    disk.seekg(position);
-    UpdateSectorInfo();
     if(disk.good())
         return true;
     else
