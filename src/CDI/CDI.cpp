@@ -125,6 +125,19 @@ bool CDI::CreateSubfoldersFromROMDirectory(std::string path)
     return true;
 }
 
+bool CDI::LoadModuleInMemory(std::string moduleName, uint32_t address)
+{
+    CDIFile module;
+    if(!rootDirectory.GetFile(moduleName, module))
+    {
+        wxMessageBox("Could not load module " + moduleName);
+        return false;
+    }
+
+    app->vdsc->PutDataInMemory(module.GetFileContent(*this), module.size, address);
+    return true;
+}
+
 bool CDI::CloseROM()
 {
     if(disk.is_open())

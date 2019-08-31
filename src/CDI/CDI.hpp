@@ -58,7 +58,7 @@ public:
     void LoadFiles();
     bool CloseROM();
     bool CreateSubfoldersFromROMDirectory(std::string path = "");
-    void LoadModule(std::string moduleName, uint32_t address);
+    bool LoadModuleInMemory(std::string moduleName, uint32_t address);
 
     uint16_t GetWord(const uint32_t& addr, bool stay = false);
     uint16_t GetNextWord();
