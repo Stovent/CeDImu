@@ -381,8 +381,10 @@ void SCC68070::GenerateInstructionSet()
 
     GenerateInstructionOpcodes(MOVEUSP, "010011100110abbb", {{0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} });
 
-    GenerateInstructionOpcodes(MOVEM, "01001a001bcccddd", {{0, 1}, {0, 1}, {2, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    GenerateInstructionOpcodes(MOVEM, "01001a001b111ddd", {{0, 1}, {0, 1}, /* mode 7 */ {0, 1} });
+    GenerateInstructionOpcodes(MOVEM, "010010001bcccddd", {{0, 1}, {2, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
+    GenerateInstructionOpcodes(MOVEM, "010010001b111ddd", {{0, 1}, /* mode 7 */ {0, 1} });
+    GenerateInstructionOpcodes(MOVEM, "010011001bcccddd", {{0, 1}, {2, 3, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
+    GenerateInstructionOpcodes(MOVEM, "010011001b111ddd", {{0, 1}, /* mode 7 */ {0, 1, 2, 3} });
 
     GenerateInstructionOpcodes(MOVEP, "0000aaabbb001ccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6, 7}, {0, 1, 2, 3, 4, 5, 6, 7} });
 
