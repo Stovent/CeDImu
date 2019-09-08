@@ -84,7 +84,7 @@ void CDIFile::ExportFile(CDI& cdi, std::string directoryPath)
     cdi.disk.seekg(pos);
 }
 
-char* CDIFile::GetFileContent(CDI& cdi, uint8_t mask)
+char* CDIFile::GetFileContent(CDI& cdi, uint8_t mask, bool includeModuleHeader, uint32_t* dataSize)
 {
     const uint32_t pos = cdi.disk.tellg();
     cdi.GotoLBN(LBN);
@@ -93,6 +93,8 @@ char* CDIFile::GetFileContent(CDI& cdi, uint8_t mask)
 
     uint32_t position = (size > 2048) ? 2048 : size;
     int32_t sizeLeft = size;
+    if(dataSize)
+        *dataSize = size;
     char* data = new (std::nothrow) char[size];
 
     if(data == nullptr)
@@ -103,13 +105,16 @@ char* CDIFile::GetFileContent(CDI& cdi, uint8_t mask)
 
     cdi.disk.read(data, position);
 
-    if(data[0] == 0x4A && data[1] == (char)0xFC && cdi.subheader.Submode & cdid) // CDI Module
-    {
-        const int16_t a = position - 72 - (isEven(nameSize) ? nameSize+2 : nameSize+1);
-        cdi.disk.seekg(-a, std::ios_base::cur);
-        cdi.disk.read(data, a);
-        position = a;
-    }
+    if(!includeModuleHeader)
+        if(data[0] == 0x4A && data[1] == (char)0xFC && cdi.subheader.Submode & cdid) // CDI Module
+        {
+            const int16_t a = position - 72 - (isEven(nameSize) ? nameSize+2 : nameSize+1);
+            cdi.disk.seekg(-a, std::ios_base::cur);
+            cdi.disk.read(data, a);
+            position = a;
+            if(dataSize)
+                *dataSize -= a;
+        }
 
     sizeLeft -= position;
 

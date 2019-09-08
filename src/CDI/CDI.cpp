@@ -39,7 +39,7 @@ bool CDI::OpenROM(std::string rom)
 
 void CDI::LoadFiles()
 {
-    uint32_t pos = disk.tellg();
+    const uint32_t pos = disk.tellg();
     char c;
     char s[128];
     uint32_t lbn = 0;
