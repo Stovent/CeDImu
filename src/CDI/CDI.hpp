@@ -62,7 +62,6 @@ public:
 
     uint16_t GetWord(const uint32_t& addr, bool stay = false);
     uint16_t GetNextWord();
-    uint32_t GetPosition();
 
     // Export functions
     bool ExportFiles();
@@ -71,7 +70,7 @@ public:
     void ExportAudioInfo();
     void ExportSectorsInfo();
 
-    void SetPosition(const uint32_t& pos);
+    bool SetDiskPosition(const uint32_t& pos);
 
     void UpdateSectorInfo();
     bool CheckPosition();
@@ -83,7 +82,6 @@ public:
     CDIHeader header;
     CDISubheader subheader;
 
-    uint32_t position;
     std::ifstream disk;
     std::string romPath;
     std::string romName;

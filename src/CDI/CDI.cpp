@@ -18,7 +18,6 @@ bool CDI::OpenROM(std::string rom)
         CloseROM();
 
     disk.open(rom, std::ios::in | std::ios::binary);
-    position = 0;
 
     if(disk.good())
     {
@@ -169,21 +168,18 @@ uint16_t CDI::GetNextWord()
     return (a << 8) | (uint8_t)b;
 }
 
-void CDI::SetPosition(const uint32_t& pos)
+bool CDI::SetDiskPosition(const uint32_t& pos)
 {
-    position = pos;
-    disk.seekg(position);
+    disk.seekg(pos);
+    if(!disk.good())
+        return false;
     UpdateSectorInfo();
-}
-
-uint32_t CDI::GetPosition()
-{
-    return position;
+    return true;
 }
 
 bool CDI::GotoLBN(uint32_t lbn, uint32_t offset)
 {
-    position = lbn * 2352 + 24 + offset;
+    uint32_t position = lbn * 2352 + 24 + offset;
     disk.seekg(position);
     UpdateSectorInfo();
     if(disk.good())
@@ -194,7 +190,7 @@ bool CDI::GotoLBN(uint32_t lbn, uint32_t offset)
 
 bool CDI::GotoNextSector(uint8_t submodeMask, bool includingCurrentSector)
 {
-    position = disk.tellg();
+    uint32_t position = disk.tellg();
     position -= position % 2352 - 24;
 
     if(submodeMask & 0x0E)
