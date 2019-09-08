@@ -95,6 +95,20 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
         return;
     }
 
+    bool skipBios = false;
+    if(skipBios)
+    {
+        CDIFile module = app->cdi->mainModule;
+        uint32_t size;
+        char* d = module.GetFileContent(*(app->cdi), 0, false, &size);
+        if(d != nullptr && size)
+        {
+            wxMessageBox("Module " + module.name + " loaded");
+            app->vdsc->PutDataInMemory(d, size, 0);
+            app->cpu->PC = 0;
+        }
+    }
+
     if(app->vdsc->biosLoaded)
     {
         if(!pause->IsChecked())
