@@ -14,7 +14,6 @@ class MainFrame;
 enum
 {
     IDOnOpenROM = wxID_HIGHEST + 1,
-    IDOnOpenBinary,
     IDOnLoadBIOS,
     IDOnCloseROM,
     IDOnPause,
