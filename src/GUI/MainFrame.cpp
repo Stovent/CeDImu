@@ -83,8 +83,6 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
         OnLoadBIOS(event);
     }
 
-    app->vdsc->ResetMemory();
-
     wxFileDialog openFileDialog(this, _("Open ROM"), "", "", "All files (*.*)|*.*|Binary files (*.bin)|*.bin|.CUE File (*.cue)|*.cue", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
