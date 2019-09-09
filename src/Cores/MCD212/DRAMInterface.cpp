@@ -8,7 +8,12 @@ uint8_t MCD212::GetByte(const uint32_t& addr)
 #ifdef DEBUG
         out << std::hex << app->cpu->PC << "\tGet register: 0x" << addr << std::endl;
 #endif // DEBUG
-        return registers[addr-0x4FFFE0] & 0x00FF;
+        uint8_t ret = registers[addr-0x4FFFE0] & 0x00FF;
+        if(addr == 0x4FFFE1)
+        {
+            registers[CSR2R] &= 0x00FE;
+        }
+        return ret;
     }
     else if(addr <= 0x4FFFDF)
     {
