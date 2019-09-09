@@ -23,24 +23,80 @@ enum MCD212Registers
     DCP1  = 0x1A,
 };
 
+enum MCD212RegisterMap
+{
+    CLUTColor = 0x80,
+    ImageCodingMethod = 0xC0,
+    TransparencyControl,
+    PlaneOrder,
+    CLUTBank,
+    TransparentColorForPlaneA,
+    reserved1,
+    TransparentColorForPlaneB,
+    MaskColorForPlaneA,
+    reserved2,
+    MaskColorForPlaneB,
+    DYUVAbsStartValueForPlaneA,
+    DYUVAbsStartValueForPlaneB,
+    reserved3,
+    CursorPosition,
+    CursorControl,
+    CursorPattern,
+    RegionControl,
+    BackdropColor = 0xD8,
+    MosaicPixelHoldForPlaneA,
+    MosaicPixelHoldForPlaneB,
+    WeightFactorForPlaneA,
+    WeightFactorForPlaneB,
+};
+
 class MCD212 : public VDSC
 {
     uint8_t memorySwapCount;
 
-    // registers and bits
-    uint16_t GetCSR1R();
-    uint16_t GetCSR1W();
-    uint16_t GetDCR1();
-    uint16_t GetVSR1();
-    uint16_t GetDDR1();
-    uint16_t GetDCP1();
+    // registers
+    uint16_t GetCSR1RRegister();
+    uint16_t GetCSR1WRegister();
+    uint16_t GetDCR1Register();
+    uint16_t GetVSR1Register();
+    uint16_t GetDDR1Register();
+    uint16_t GetDCP1Register();
 
-    uint16_t GetCSR2R();
-    uint16_t GetCSR2W();
-    uint16_t GetDCR2();
-    uint16_t GetVSR2();
-    uint16_t GetDDR2();
-    uint16_t GetDCP2();
+    uint16_t GetCSR2RRegister();
+    uint16_t GetCSR2WRegister();
+    uint16_t GetDCR2Register();
+    uint16_t GetVSR2Register();
+    uint16_t GetDDR2Register();
+    uint16_t GetDCP2Register();
+
+    bool GetDA();
+    bool GetPA();
+    uint8_t GetIT12();
+    bool GetBE();
+    bool GetDI1();
+    uint8_t GetDD12();
+    bool GetTD();
+    bool GetDD();
+    bool GetST();
+    bool GetDI2();
+    bool GetDE();
+    bool GetCF();
+    bool GetFD();
+    bool GetSM();
+    bool GetCM1();
+    bool GetIC1();
+    bool GetDC1();
+    bool GetCM2();
+    bool GetIC2();
+    bool GetDC2();
+    uint8_t GetMF12_1();
+    uint8_t GetFT12_1();
+    uint8_t GetMF12_2();
+    uint8_t GetFT12_2();
+    uint32_t GetVSR1();
+    uint32_t GetVSR2();
+    uint32_t GetDCP1();
+    uint32_t GetDCP2();
 
 public:
     uint16_t* registers;
