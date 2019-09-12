@@ -151,6 +151,9 @@ void MainFrame::OnPause()
 
 void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 {
+    if(!app->cpu)
+        return;
+
     wxFrame* genericFrame = new wxFrame(this, wxID_ANY, "Execute instructions", GetPosition(), wxSize(200, 60));
     wxTextCtrl* input = new wxTextCtrl(genericFrame, wxID_ANY);
     wxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
