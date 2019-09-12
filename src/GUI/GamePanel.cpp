@@ -60,7 +60,8 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
             app->mainFrame->SetStatusText("Pause");
         }
         app->mainFrame->OnPause();
-        app->cpu->instructionsBufferChanged = true;
+        if(app->cpu)
+            app->cpu->instructionsBufferChanged = true;
     break;
 
     case 'E':
