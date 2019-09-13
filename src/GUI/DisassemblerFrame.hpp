@@ -15,6 +15,7 @@ class DisassemblerFrame : public wxFrame
 {
 public:
     uint32_t currentRow;
+    std::string instructions;
 
     DisassemblerFrame(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~DisassemblerFrame();

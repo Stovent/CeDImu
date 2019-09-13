@@ -73,17 +73,8 @@ void DisassemblerFrame::PaintEvent()
         pc->SetLabelText("PC: 0x" + toHex(cpu->PC));
         sr->SetLabelText("SR: " + toBinString(cpu->SR, 16));
 
-        if(cpu->app->mainFrame->pause->IsChecked())
-        {
-            if(currentRow > cpu->instructionsBuffer.size())
-            {
-                disassembler->SetLabelText("");
-                currentRow = 0;
-            }
+        disassembler->SetValue(instructions);
 
-            for(; currentRow < cpu->instructionsBuffer.size(); currentRow++)
-                disassembler->AppendText(cpu->instructionsBuffer[currentRow] + "\n");
-        }
         cpu->instructionsBufferChanged = false;
     }
 }

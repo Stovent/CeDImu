@@ -7,6 +7,8 @@ void SCC68070::Interpreter()
     if(executionTime > 2000)
     {
         instructionsBuffer.clear();
+        if(app->mainFrame->disassemblerFrame)
+            app->mainFrame->disassemblerFrame->instructions.clear();
         executionTime = 0;
 //        vdsc.DisplayLine();
     }
@@ -21,6 +23,8 @@ void SCC68070::Interpreter()
         if(disassemble)
         {
             DisassembleUnknownInstruction(currentPC);
+            if(app->mainFrame->disassemblerFrame)
+                app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
 #ifdef DEBUG
             instruction << *--instructionsBuffer.end() << std::endl;
 #endif // DEBUG
@@ -32,6 +36,8 @@ void SCC68070::Interpreter()
         if(disassemble)
         {
             (this->*Disassemble[it->second])(currentPC);
+            if(app->mainFrame->disassemblerFrame)
+                app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
 #ifdef DEBUG
             instruction << *--instructionsBuffer.end() << std::endl;
 #endif // DEBUG
