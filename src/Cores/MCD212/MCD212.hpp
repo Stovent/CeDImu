@@ -25,8 +25,8 @@ enum MCD212Registers
 
 enum MCD212RegisterMap
 {
-    CLUTColor = 0x80,
-    ImageCodingMethod = 0xC0,
+    CLUTColor = 0x00,
+    ImageCodingMethod = 0x40,
     TransparencyControl,
     PlaneOrder,
     CLUTBank,
@@ -43,7 +43,7 @@ enum MCD212RegisterMap
     CursorControl,
     CursorPattern,
     RegionControl,
-    BackdropColor = 0xD8,
+    BackdropColor = 0x58,
     MosaicPixelHoldForPlaneA,
     MosaicPixelHoldForPlaneB,
     WeightFactorForPlaneA,
@@ -52,9 +52,10 @@ enum MCD212RegisterMap
 
 class MCD212 : public VDSC
 {
+    wxImage* cursorPlane;
     uint8_t memorySwapCount;
 
-    // registers
+    // internal registers
     uint16_t GetCSR1RRegister();
     uint16_t GetCSR1WRegister();
     uint16_t GetDCR1Register();
@@ -99,11 +100,14 @@ class MCD212 : public VDSC
     uint32_t GetDCP2();
 
 public:
-    uint16_t* registers;
+    uint32_t* registers;
+    uint16_t* internalRegisters;
     std::ofstream out;
 
     MCD212(CeDImu* appp);
     virtual ~MCD212();
+
+    virtual void Reset() override;
 
     virtual bool LoadBIOS(const char* filename) override;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
@@ -118,8 +122,15 @@ public:
     virtual void SetWord(const uint32_t& addr, const uint16_t& data) override;
     virtual void SetLong(const uint32_t& addr, const uint32_t& data) override;
 
-    virtual void DisplayLine() override;
     virtual uint32_t GetLineDisplayTime() override;
+    virtual void DisplayLine() override;
+    void DisplayLine1();
+    void DisplayLine2();
+
+    void ExecuteICA1();
+    void ExecuteDCA1();
+    void ExecuteICA2();
+    void ExecuteDCA2();
 };
 
 #endif // MCD212_HPP

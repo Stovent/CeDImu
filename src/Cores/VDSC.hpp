@@ -19,6 +19,8 @@ public:
     VDSC(CeDImu* appp) : lineNumber(0), memory(nullptr), allocatedMemory(0) { app = appp; }
     virtual ~VDSC() {}
 
+    virtual void Reset() = 0;
+
     virtual bool LoadBIOS(const char* filename) = 0;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void ResetMemory() = 0;

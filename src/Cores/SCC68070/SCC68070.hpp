@@ -168,6 +168,7 @@ public:
     CeDImu* app;
     VDSC* vdsc;
 
+    uint32_t currentPC;
     bool run;
     bool disassemble;
     std::ofstream out;
@@ -196,7 +197,6 @@ private:
     uint8_t* internal;
 
     uint16_t currentOpcode;
-    uint32_t currentPC;
     uint32_t lastAddress;
 
     unsigned int executionTime;

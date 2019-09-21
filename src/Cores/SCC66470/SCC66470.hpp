@@ -16,6 +16,8 @@ public:
     SCC66470(CeDImu* appp);
     virtual ~SCC66470();
 
+    virtual void Reset() override;
+
     virtual bool LoadBIOS(const char* filename) override;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
     virtual void ResetMemory() override;
