@@ -13,19 +13,19 @@ uint8_t MCD212::GetByte(const uint32_t& addr)
     else if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tGet internal register: 0x" << addr << std::endl;
+        out << std::hex << app->cpu->currentPC << "\tGet internal register: 0x" << addr << " : 0x" << (internalRegisters[addr-0x4FFFE0] & 0x00FF) << std::endl;
 #endif // DEBUG
-        uint8_t ret = registers[addr-0x4FFFE0] & 0x00FF;
+        const uint8_t ret = internalRegisters[addr-0x4FFFE0] & 0x00FF;
         if(addr == 0x4FFFE1)
         {
-            registers[CSR2R] &= 0x00FE;
+            internalRegisters[CSR2R] &= 0x00FE;
         }
         return ret;
     }
     else if(addr <= 0x4FFFDF)
     {
 #ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tGet byte \t\t at address 0x" << addr << std::endl;
+        out << std::hex << app->cpu->currentPC << "\tGet byte \t\t at address 0x" << addr << " : " << (int8_t)memory[addr] << std::endl;
 #endif // DEBUG
         return memory[addr];
     }
@@ -57,13 +57,13 @@ uint16_t MCD212::GetWord(const uint32_t& addr)
 #ifdef DEBUG
         out << std::hex << app->cpu->currentPC << "\tWARNING: get WORD internal register: 0x" << addr << std::endl;
 #endif // DEBUG
-        return registers[addr-0x4FFFE0];
+        return internalRegisters[addr-0x4FFFE0];
     }
     else if(addr < 0x4FFFDF)
     {
 #ifdef DEBUG
         if(addr != app->cpu->currentPC)
-            out << std::hex << app->cpu->currentPC << "\tGet word \t\t at address 0x" << addr << std::endl;
+            out << std::hex << app->cpu->currentPC << "\tGet word \t\t at address 0x" << addr << " : " << (int16_t)(memory[addr] << 8 | memory[addr + 1]) << std::endl;
 #endif // DEBUG
         return memory[addr] << 8 | memory[addr + 1];
     }
@@ -95,12 +95,12 @@ uint32_t MCD212::GetLong(const uint32_t& addr)
 #ifdef DEBUG
         out << std::hex << app->cpu->currentPC << "\tWARNING: get LONG internal register: 0x" << addr << std::endl;
 #endif // DEBUG
-        return registers[addr-0x4FFFE0] << 16 | registers[addr-0x4FFFDF];
+        return internalRegisters[addr-0x4FFFE0] << 16 | internalRegisters[addr-0x4FFFDF];
     }
     else if(addr < 0x4FFFDF)
     {
 #ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tGet long \t\t at address 0x" << addr << std::endl;
+        out << std::hex << app->cpu->currentPC << "\tGet long \t\t at address 0x" << addr << " : " << (int32_t)(memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << std::endl;
 #endif // DEBUG
         return memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3];
     }

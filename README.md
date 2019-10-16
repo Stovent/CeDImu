@@ -28,16 +28,18 @@ make -j$(nproc --all)
 Find the executable in the bin folder
 
 ## TODO
-* fix potential bugs in SCC68070 emulation
+* Fix potential bugs in SCC68070 emulation
 * MCD212 and SCC66470 emulation
 * Export video 
 * Export audio
 * Sound emulation
-* TAS Tools (RAM Watch, save states, movie recording, avi recording)
+* Basic TAS Tools (RAM Watch, save states, movie recording, avi recording)
+
+Release 1.0 when this TODO list will be implemented.
 
 ### TODO later
 * MCD251 (MPEG Full Motion Video Decoder (FMV))
-* More TAS tools (TAStudio, ...)
+* Advanced TAS tools (TAStudio, ...)
 
 ### libCDI
 If I get everything listed upper (except TAS Tools) working, stable and fully functionnal, 
