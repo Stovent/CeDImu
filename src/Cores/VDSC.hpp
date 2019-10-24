@@ -16,7 +16,7 @@ public:
     bool biosLoaded;
     uint32_t allocatedMemory;
 
-    VDSC(CeDImu* appp) : lineNumber(0), memory(nullptr), allocatedMemory(0) { app = appp; }
+    VDSC(CeDImu* appp) : lineNumber(0), app(appp), memory(nullptr), biosLoaded(false), allocatedMemory(0) {}
     virtual ~VDSC() {}
 
     virtual void Reset() = 0;

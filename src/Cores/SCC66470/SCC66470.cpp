@@ -5,11 +5,9 @@
 
 SCC66470::SCC66470(CeDImu* appp) : VDSC(appp)
 {
-    app = appp;
-    biosLoaded = false;
-    memory = new uint8_t[0x2FFFFF];
+    memory = new uint8_t[0x200000];
     lineNumber = 0;
-    allocatedMemory = 0x300000;
+    allocatedMemory = 0x200000;
     memorySwapCount = 0;
 }
 

@@ -200,3 +200,43 @@ uint32_t MCD212::GetDCP2()
 {
     return (internalRegisters[DDR2] & 0x003F) << 16 | internalRegisters[DCP2];
 }
+
+void MCD212::SetIT1(const bool it)
+{
+    internalRegisters[CSR1R] &= 0x0003;
+    internalRegisters[CSR1R] |= it << 2;
+}
+
+void MCD212::SetIT2(const bool it)
+{
+    internalRegisters[CSR1R] &= 0x0005;
+    internalRegisters[CSR1R] |= it << 1;
+}
+
+void MCD212::SetDCP1(const uint32_t value)
+{
+    internalRegisters[DDR1] &= 0x0F00;
+    internalRegisters[DDR1] |= (value >> 16) & 0x3F;
+    internalRegisters[DCP1] = value;
+}
+
+void MCD212::SetVSR1(const uint32_t value)
+{
+    internalRegisters[DCR1] &= 0xFB00;
+    internalRegisters[DCR1] |= (value >> 16) & 0x3F;
+    internalRegisters[VSR1] = value;
+}
+
+void MCD212::SetDCP2(const uint32_t value)
+{
+    internalRegisters[DDR2] &= 0x0F00;
+    internalRegisters[DDR2] |= (value >> 16) & 0x3F;
+    internalRegisters[DCP2] = value;
+}
+
+void MCD212::SetVSR2(const uint32_t value)
+{
+    internalRegisters[DCR2] &= 0x0B00;
+    internalRegisters[DCR2] |= (value >> 16) & 0x3F;
+    internalRegisters[VSR2] = value;
+}

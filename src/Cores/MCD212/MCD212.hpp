@@ -23,7 +23,7 @@ enum MCD212Registers
     DCP1  = 0x1A,
 };
 
-enum MCD212RegisterMap
+enum MCD212ControlRegisterMap
 {
     CLUTColor = 0x00,
     ImageCodingMethod = 0x40,
@@ -54,6 +54,8 @@ class MCD212 : public VDSC
 {
     wxImage* cursorPlane;
     uint8_t memorySwapCount;
+
+    inline uint16_t GetVerticalResolution() { return GetFD() ? 240 : 280; }
 
     // internal registers
     uint16_t GetCSR1RRegister();
@@ -99,8 +101,16 @@ class MCD212 : public VDSC
     uint32_t GetDCP1();
     uint32_t GetDCP2();
 
+    void SetIT1(const bool it = 1);
+    void SetIT2(const bool it = 1);
+    void SetDCP1(const uint32_t value);
+    void SetVSR1(const uint32_t value);
+    void SetDCP2(const uint32_t value);
+    void SetVSR2(const uint32_t value);
+
+
 public:
-    uint32_t* registers;
+    uint32_t* controlRegisters;
     uint16_t* internalRegisters;
     std::ofstream out;
 
@@ -122,7 +132,12 @@ public:
     virtual void SetWord(const uint32_t& addr, const uint16_t& data) override;
     virtual void SetLong(const uint32_t& addr, const uint32_t& data) override;
 
-    virtual uint32_t GetLineDisplayTime() override;
+
+    virtual inline uint32_t GetLineDisplayTime() // as nano seconds
+    {
+        return GetCF() ? GetST() ? 48000 : 51200 : 51400;
+    }
+
     virtual void DisplayLine() override;
     void DisplayLine1();
     void DisplayLine2();
