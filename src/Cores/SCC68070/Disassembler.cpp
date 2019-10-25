@@ -4,7 +4,7 @@
 
 void SCC68070::DisassembleUnknownInstruction(uint32_t pc)
 {
-    instructionsBuffer.push_back(toHex(pc) + "\tUnknown instruction");
+    instructionsBuffer.push_back(toHex(pc) + "\tUnknown instruction 0x" + toHex(currentOpcode));
 }
 
 void SCC68070::DisassembleAbcd(uint32_t pc)
