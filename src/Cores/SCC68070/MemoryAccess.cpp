@@ -398,9 +398,6 @@ void SCC68070::SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTi
 
 uint8_t SCC68070::GetByte(const uint32_t& addr)
 {
-#ifdef DEBUG
-    out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl;
-#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc->GetByte(addr);
     else if(addr >= 0x80000000 && addr < 0x80008080)
@@ -408,55 +405,69 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
             return internal[addr-INTERNAL];
         else
             return vdsc->GetByte(addr);
+#ifdef DEBUG
     else
-        return 0;
+        out << "OUT OF RANGE";
+    out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl;
+#endif // DEBUG
+    return 0;
 }
 
 uint16_t SCC68070::GetWord(const uint32_t& addr)
 {
-#ifdef DEBUG
-    out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl;
-#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc->GetWord(addr);
+#ifdef DEBUG
     else
-        return 0;
+        out << "OUT OF RANGE";
+    out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl;
+#endif // DEBUG
+    return 0;
 }
 
 uint32_t SCC68070::GetLong(const uint32_t& addr)
 {
-#ifdef DEBUG
-    out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl;
-#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc->GetLong(addr);
+#ifdef DEBUG
     else
-        return 0;
+        out << "OUT OF RANGE";
+    out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl;
+#endif // DEBUG
+    return 0;
 }
 
 void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
 {
-#ifdef DEBUG
-    out << std::hex << currentPC << "\tSet byte: 0x" << addr << " value: " << std::to_string(data) << std::endl;
-#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
         vdsc->SetByte(addr, data);
+    else if(addr >= 0x80000000 || addr < 0x80008080)
+        internal[addr-INTERNAL] = data;
+#ifdef DEBUG
+        else
+            out << "OUT OF RANGE";
+    out << std::hex << currentPC << "\tSet byte: 0x" << addr << " value: " << std::to_string(data) << std::endl;
+#endif // DEBUG
 }
 
 void SCC68070::SetWord(const uint32_t& addr, const uint16_t& data)
 {
-#ifdef DEBUG
-    out << std::hex << currentPC << "\tSet word: 0x" << addr << " value: " << std::to_string(data) << std::endl;
-#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
         vdsc->SetWord(addr, data);
+#ifdef DEBUG
+    else
+        out << "OUT OF RANGE";
+    out << std::hex << currentPC << "\tSet word: 0x" << addr << " value: " << std::to_string(data) << std::endl;
+#endif // DEBUG
 }
 
 void SCC68070::SetLong(const uint32_t& addr, const uint32_t& data)
 {
-#ifdef DEBUG
-    out << std::hex << currentPC << "\tSet Long: 0x" << addr << " value: " << std::to_string(data) << std::endl;
-#endif // DEBUG
     if(addr < 0x80000000 || addr >= 0xC0000000)
         vdsc->SetLong(addr, data);
+#ifdef DEBUG
+    else
+        out << "OUT OF RANGE";
+    out << std::hex << currentPC << "\tSet Long: 0x" << addr << " value: " << std::to_string(data) << std::endl;
+#endif // DEBUG
 }

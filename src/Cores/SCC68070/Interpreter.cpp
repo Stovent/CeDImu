@@ -1,63 +1,67 @@
 #include "SCC68070.hpp"
 
-void SCC68070::Interpreter()
+void SCC68070::Interpreter(const bool loop)
 {
-    if(stop) return;
-
-    currentPC = PC;
-    currentOpcode = GetNextWord();
-    std::map<uint16_t, SCC68070InstructionSet>::iterator it = ILUT.find(currentOpcode);
-
-    if(it == ILUT.end())
+    run = loop;
+    do
     {
-        UnknownInstruction();
-        if(disassemble)
+        if(stop) return;
+
+        currentPC = PC;
+        currentOpcode = GetNextWord();
+        std::map<uint16_t, SCC68070InstructionSet>::iterator it = ILUT.find(currentOpcode);
+
+        if(it == ILUT.end())
         {
-            DisassembleUnknownInstruction(currentPC);
-            if(app->mainFrame->disassemblerFrame)
-                app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
-#ifdef DEBUG
-            instruction << *--instructionsBuffer.end() << std::endl;
-#endif // DEBUG
+            UnknownInstruction();
+            if(disassemble)
+            {
+                DisassembleUnknownInstruction(currentPC);
+                if(app->mainFrame->disassemblerFrame)
+                    app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
+    #ifdef DEBUG
+                instruction << *--instructionsBuffer.end() << std::endl;
+    #endif // DEBUG
+            }
         }
-    }
-    else
-    {
-        executionTime += (this->*instructions[it->second])();
-        if(disassemble)
+        else
         {
-            (this->*Disassemble[it->second])(currentPC);
-            if(app->mainFrame->disassemblerFrame)
-                app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
-#ifdef DEBUG
-            instruction << *--instructionsBuffer.end() << std::endl;
-#endif // DEBUG
+            executionTime += (this->*instructions[it->second])();
+            if(disassemble)
+            {
+                (this->*Disassemble[it->second])(currentPC);
+                if(app->mainFrame->disassemblerFrame)
+                    app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
+    #ifdef DEBUG
+                instruction << *--instructionsBuffer.end() << std::endl;
+    #endif // DEBUG
+            }
         }
-    }
 
-    if(!isEven(PC))
-    {
-#ifdef DEBUG
-        instruction << "PC NOT EVEN!" << std::endl;
-#endif // DEBUG
-        Exception(AddressError);
-    }
+        if(!isEven(PC))
+        {
+    #ifdef DEBUG
+            instruction << "PC NOT EVEN!" << std::endl;
+    #endif // DEBUG
+            Exception(AddressError);
+        }
 
-    instructionsBufferChanged = true;
-    count++;
+        instructionsBufferChanged = true;
+        count++;
 
-    if(executionTime >= vdsc->GetLineDisplayTime())
-//    if(executionTime * clockPeriod >= vdsc->GetLineDisplayTime())
-    {
-        instructionsBuffer.clear();
-        if(app->mainFrame->disassemblerFrame)
-            app->mainFrame->disassemblerFrame->instructions.clear();
-        executionTime = 0;
-        vdsc->DisplayLine();
-    }
+        if(executionTime >= vdsc->GetLineDisplayTime())
+    //    if(executionTime * clockPeriod >= vdsc->GetLineDisplayTime())
+        {
+            instructionsBuffer.clear();
+            if(app->mainFrame->disassemblerFrame)
+                app->mainFrame->disassemblerFrame->instructions.clear();
+            executionTime = 0;
+            vdsc->DisplayLine();
+        }
+    } while(run);
 }
 /*
-void SCC68070::Interpreter()
+void SCC68070::Interpreter(const bool loop)
 {
 //    if(stop)
 //        return;

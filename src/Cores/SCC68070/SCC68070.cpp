@@ -14,6 +14,8 @@ SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : a
     instruction.open("instructions.txt");
 #endif // DEBUG
     GenerateInstructionSet();
+
+    internal[USR] = 0x07;
 }
 
 void SCC68070::RebootCore()
@@ -43,15 +45,12 @@ void SCC68070::ResetOperation()
 
 void SCC68070::SingleStep()
 {
-    (this->*Execute)();
+    (this->*Execute)(false);
 }
 
 void SCC68070::Run()
 {
-    while(run)
-    {
-        (this->*Execute)();
-    }
+    (this->*Execute)(true);
 }
 
 uint16_t SCC68070::GetNextWord()
