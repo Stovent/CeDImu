@@ -54,8 +54,7 @@ class MCD212 : public VDSC
 {
     wxImage* cursorPlane;
     uint8_t memorySwapCount;
-
-    inline uint16_t GetVerticalResolution() { return GetFD() ? 240 : 280; }
+    bool isCA;
 
     // internal registers
     uint16_t GetCSR1RRegister();
@@ -107,6 +106,10 @@ class MCD212 : public VDSC
     void SetVSR1(const uint32_t value);
     void SetDCP2(const uint32_t value);
     void SetVSR2(const uint32_t value);
+    void ReloadDisplayParameters1(const bool dm, const uint8_t MF, const uint8_t FT);
+    void ReloadDisplayParameters2(const bool dm, const uint8_t MF, const uint8_t FT);
+
+    inline uint16_t GetVerticalResolution() { return GetFD() ? 240 : 280; }
 
 
 public:

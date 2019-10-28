@@ -8,7 +8,7 @@ class VDSC;
 class VDSC
 {
 protected:
-    uint16_t lineNumber;
+    uint16_t lineNumber; // lines starts at 0
 
 public:
     CeDImu* app;

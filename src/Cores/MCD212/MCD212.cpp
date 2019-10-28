@@ -13,6 +13,7 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
     memory = new uint8_t[0x500000];
     allocatedMemory = 0x500000;
     memorySwapCount = 0;
+    isCA = false;
 #ifdef DEBUG
     out.open("MCD212.txt");
 #endif // DEBUG
@@ -76,197 +77,258 @@ void MCD212::DisplayLine()
 
     if(GetDE())
     {
-//        DisplayLine1();
-//        DisplayLine2();
-//        wxImage* screen = new wxImage();
-//        app->mainFrame->gamePanel->RefreshScreen(screen);
+        DisplayLine1();
+        DisplayLine2();
     }
 
     if(++lineNumber >= GetVerticalResolution())
     {
         lineNumber = 0;
         UNSET_DA_BIT()
+        if(GetDE())
+        {
+//            wxImage* screen = new wxImage();
+//            app->mainFrame->gamePanel->RefreshScreen(screen);
+        }
     }
 }
 
 void MCD212::DisplayLine1()
 {
+    if(GetIC1() && GetDC1())
+        ExecuteDCA1();
 
+    if(GetIC1() && lineNumber >= GetVerticalResolution()-1)
+        ExecuteICA1();
 }
 
 void MCD212::DisplayLine2()
 {
-//    uint32_t vsr = GetVSR2();
+    if(GetIC2() && GetDC2())
+        ExecuteDCA2();
+
+    if(GetIC2() && lineNumber >= GetVerticalResolution()-1)
+        ExecuteICA2();
 }
 
 void MCD212::ExecuteICA1()
 {
+    isCA = true;
     uint32_t ica;
-    for(uint8_t i = 0; i < 10; i++) // change 10 with value in section 5.4.1
+    uint32_t addr = 0x400;
+    for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
     {
-        ica = GetLong(0x400);
+        ica = GetLong(addr + 4*i);
         switch(ica >> 28)
         {
-        case 0:
+        case 0: // STOP
             goto end_ICA1;
             break;
 
-        case 1:
+        case 1: // NOP
             break;
 
-        case 2:
+        case 2: // RELOAD DCP
             SetDCP1(ica & 0x003FFFFC);
             break;
 
-        case 3:
+        case 3: // RELOAD DCP AND STOP
             SetDCP1(ica & 0x003FFFFC);
             goto end_ICA1;
             break;
 
-        case 4:
+        case 4: // RELOAD ICA
+            addr = ica & 0x003FFFFF;
             break;
 
-        case 5:
+        case 5: // RELOAD VSR AND STOP
+            SetVSR1(ica & 0x003FFFFF);
+            goto end_ICA1;
             break;
 
-        case 6:
+        case 6: // INTERRUPT
             SetIT1();
             break;
 
-        case 7:
+        case 7: // RELOAD DISPLAY PARAMETERS
+            ReloadDisplayParameters1((ica >> 4) & 1, (ica >> 2) & 3, ica & 3);
             break;
 
-#ifdef DEBUG
         default:
-            out << "Bad ICA1: " << std::endl;
+            controlRegisters[(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
+#ifdef DEBUG
         out << "ICA1 instruction: 0x" << std::hex << ica << std::endl;
-#else
-        }
 #endif // DEBUG
     }
 end_ICA1:
+    isCA = false;
     return;
 }
 
 void MCD212::ExecuteDCA1()
 {
-    uint32_t dcp = GetDCP1();
-    switch(dcp >> 28)
+    isCA = true;
+    uint32_t dca;
+    uint32_t addr = GetDCP1() + 64*lineNumber;
+    for(uint8_t i = 0; i < 16; i++)
     {
-    case 0:
-        break;
+        dca = GetLong(addr);
+        switch(dca >> 28)
+        {
+        case 0: // STOP
+            goto end_DCA1;
+            break;
 
-    case 1:
-        break;
+        case 1: // NOP
+            break;
 
-    case 2:
-        break;
+        case 2: // RELOAD DCP
+            SetDCP1(dca & 0x003FFFFC);
+            break;
 
-    case 3:
-        break;
+        case 3: // RELOAD DCP AND STOP
+            SetDCP1(dca & 0x003FFFFC);
+            goto end_DCA1;
+            break;
 
-    case 4:
-        break;
+        case 4: // RELOAD VSR
+            SetVSR1(dca & 0x003FFFFF);
+            break;
 
-    case 5:
-        break;
+        case 5: // RELOAD VSR AND STOP
+            SetVSR1(dca & 0x003FFFFF);
+            goto end_DCA1;
+            break;
 
-    case 6:
-        break;
+        case 6: // INTERRUPT
+            SetIT1();
+            break;
 
-    case 7:
-        break;
+        case 7: // RELOAD DISPLAY PARAMETERS
+            ReloadDisplayParameters1((dca >> 4) & 1, (dca >> 2) & 3, dca & 3);
+            break;
 
+        default:
+            controlRegisters[(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
+        }
 #ifdef DEBUG
-    default:
-        out << "Bad DCA1" << std::endl;
+        out << "DCA1 instruction: 0x" << std::hex << dca << std::endl;
 #endif // DEBUG
+        addr += 4;
     }
+end_DCA1:
+    isCA = false;
+    return;
 }
 
 void MCD212::ExecuteICA2()
 {
+    isCA = true;
     uint32_t ica;
-    for(uint8_t i = 0; i < 10; i++) // change 10 with value in section 5.4.1
+    uint32_t addr = 0x200400;
+    for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
     {
-        ica = GetLong(0x200400);
+        ica = GetLong(addr + 4*i);
         switch(ica >> 28)
         {
-        case 0:
+        case 0: // STOP
             goto end_ICA2;
             break;
 
-        case 1:
+        case 1: // NOP
             break;
 
-        case 2:
+        case 2: // RELOAD DCP
             SetDCP2(ica & 0x003FFFFC);
             break;
 
-        case 3:
+        case 3: // RELOAD DCP AND STOP
             SetDCP2(ica & 0x003FFFFC);
             goto end_ICA2;
             break;
 
-        case 4:
+        case 4: // RELOAD ICA
+            addr = ica & 0x003FFFFF;
             break;
 
-        case 5:
+        case 5: // RELOAD VSR AND STOP
+            SetVSR2(ica & 0x003FFFFF);
+            goto end_ICA2;
             break;
 
-        case 6:
+        case 6: // INTERRUPT
             SetIT2();
             break;
 
-        case 7:
+        case 7: // RELOAD DISPLAY PARAMETERS
+            ReloadDisplayParameters2((ica >> 4) & 1, (ica >> 2) & 3, ica & 3);
             break;
 
-#ifdef DEBUG
         default:
-            out << "Bad ICA2: " << std::endl;
+            controlRegisters[(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
+#ifdef DEBUG
         out << "ICA2 instruction: 0x" << std::hex << ica << std::endl;
-#else
-        }
 #endif // DEBUG
     }
 end_ICA2:
+    isCA = false;
     return;
 }
 
 void MCD212::ExecuteDCA2()
 {
-    uint32_t dcp = GetDCP2();
-    switch(dcp >> 28)
+    isCA = true;
+    uint32_t dca;
+    uint32_t addr = GetDCP2() + 64*lineNumber;
+    for(uint8_t i = 0; i < 16; i++)
     {
-    case 0:
-        break;
+        dca = GetLong(addr);
+        switch(dca >> 28)
+        {
+        case 0: // STOP
+            goto end_DCA2;
+            break;
 
-    case 1:
-        break;
+        case 1: // NOP
+            break;
 
-    case 2:
-        break;
+        case 2: // RELOAD DCP
+            SetDCP2(dca & 0x003FFFFC);
+            break;
 
-    case 3:
-        break;
+        case 3: // RELOAD DCP AND STOP
+            SetDCP2(dca & 0x003FFFFC);
+            goto end_DCA2;
+            break;
 
-    case 4:
-        break;
+        case 4: // RELOAD VSR
+            SetVSR2(dca & 0x003FFFFF);
+            break;
 
-    case 5:
-        break;
+        case 5: // RELOAD VSR AND STOP
+            SetVSR2(dca & 0x003FFFFF);
+            goto end_DCA2;
+            break;
 
-    case 6:
-        break;
+        case 6: // INTERRUPT
+            SetIT2();
+            break;
 
-    case 7:
-        break;
+        case 7: // RELOAD DISPLAY PARAMETERS
+            ReloadDisplayParameters2((dca >> 4) & 1, (dca >> 2) & 3, dca & 3);
+            break;
 
+        default:
+            controlRegisters[(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
+        }
 #ifdef DEBUG
-    default:
-        out << "Bad DCA2" << std::endl;
+        out << "DCA2 instruction: 0x" << std::hex << dca << std::endl;
 #endif // DEBUG
+        addr += 4;
     }
+end_DCA2:
+    isCA = false;
+    return;
 }

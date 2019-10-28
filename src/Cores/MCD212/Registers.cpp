@@ -240,3 +240,21 @@ void MCD212::SetVSR2(const uint32_t value)
     internalRegisters[DCR2] |= (value >> 16) & 0x3F;
     internalRegisters[VSR2] = value;
 }
+
+void MCD212::ReloadDisplayParameters1(const bool CM, const uint8_t MF, const uint8_t FT)
+{
+    internalRegisters[DCR1] &= 0xF33F;
+    internalRegisters[DCR1] |= CM << 11;
+    internalRegisters[DDR1] &= 0x003F;
+    internalRegisters[DDR1] |= MF << 10;
+    internalRegisters[DDR1] |= FT << 8;
+}
+
+void MCD212::ReloadDisplayParameters2(const bool CM, const uint8_t MF, const uint8_t FT)
+{
+    internalRegisters[DCR2] &= 0x033F;
+    internalRegisters[DCR2] |= CM << 11;
+    internalRegisters[DDR2] &= 0x003F;
+    internalRegisters[DDR2] |= MF << 10;
+    internalRegisters[DDR2] |= FT << 8;
+}

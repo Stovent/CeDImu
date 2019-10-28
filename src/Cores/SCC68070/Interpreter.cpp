@@ -19,9 +19,9 @@ void SCC68070::Interpreter(const bool loop)
                 DisassembleUnknownInstruction(currentPC);
                 if(app->mainFrame->disassemblerFrame)
                     app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
-    #ifdef DEBUG
+#ifdef DEBUG
                 instruction << *--instructionsBuffer.end() << std::endl;
-    #endif // DEBUG
+#endif // DEBUG
             }
         }
         else
@@ -32,17 +32,17 @@ void SCC68070::Interpreter(const bool loop)
                 (this->*Disassemble[it->second])(currentPC);
                 if(app->mainFrame->disassemblerFrame)
                     app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
-    #ifdef DEBUG
+#ifdef DEBUG
                 instruction << *--instructionsBuffer.end() << std::endl;
-    #endif // DEBUG
+#endif // DEBUG
             }
         }
 
         if(!isEven(PC))
         {
-    #ifdef DEBUG
+#ifdef DEBUG
             instruction << "PC NOT EVEN!" << std::endl;
-    #endif // DEBUG
+#endif // DEBUG
             Exception(AddressError);
         }
 
