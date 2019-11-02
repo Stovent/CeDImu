@@ -5,6 +5,7 @@ class SCC68070;
 
 #include <cstdint>
 #include <vector>
+#include <queue>
 #include <map>
 
 #include <wx/msgdlg.h>
@@ -201,6 +202,15 @@ class SCC68070
 public:
     CeDImu* app;
     VDSC* vdsc;
+    std::queue<uint8_t> UART;
+
+    int32_t D[8];
+    int32_t A[8];
+    uint32_t PC;
+    uint16_t SR;
+    uint32_t USP;
+    uint32_t SSP;
+    bool stop;
 
     uint32_t currentPC;
     bool run;
@@ -213,19 +223,13 @@ public:
     SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency = 15000000L);
     void Run();
 
-    int32_t D[8];
-    int32_t A[8];
-    uint32_t PC;
-    uint16_t SR;
-    uint32_t USP;
-    uint32_t SSP;
-    bool stop;
-
     void RebootCore();
     void SingleStep();
     void ResetOperation();
     unsigned long long count;
     long double clockPeriod;
+
+    inline void SetUARTReceiveHoldingRegister(const uint8_t data) { internal[URHR] = data; }
 
 private:
     uint8_t* internal;

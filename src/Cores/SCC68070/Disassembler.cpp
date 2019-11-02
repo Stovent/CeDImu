@@ -662,7 +662,7 @@ void SCC68070::DisassembleMovem(uint32_t pc)
     const uint16_t mask = vdsc->GetWord(pc+2);
 
     std::string list;
-    list = toBinString(mask, 16);
+    list = toBinString(mask >> 8, 8) + " " + toBinString(mask, 8);
 
     instructionsBuffer.push_back(toHex(pc) + "\tMOVEM" + (size ? ".L " : ".W ") + (dr ? DisassembleAddressingMode(pc+4, eamode, eareg, size ? 4 : 2) + ", " + list : list + ", " + DisassembleAddressingMode(pc+4, eamode, eareg, size ? 4 : 2)));
 }
@@ -759,7 +759,7 @@ void SCC68070::DisassembleNegx(uint32_t pc)
 
 void SCC68070::DisassembleNop(uint32_t pc)
 {
-    instructionsBuffer.push_back(std::to_string(pc) + "\tNOP");
+    instructionsBuffer.push_back(toHex(pc) + "\tNOP");
 }
 
 void SCC68070::DisassembleNot(uint32_t pc)

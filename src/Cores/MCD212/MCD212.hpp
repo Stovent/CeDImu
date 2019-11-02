@@ -138,7 +138,7 @@ public:
 
     virtual inline uint32_t GetLineDisplayTime() // as nano seconds
     {
-        return GetCF() ? GetST() ? 48000 : 51200 : 51400;
+        return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
     }
 
     virtual void DisplayLine() override;

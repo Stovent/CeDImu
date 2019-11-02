@@ -40,7 +40,7 @@ inline std::string toHex(const uint32_t number)
     return ss.str();
 }
 
-inline std::string toBinString(uint32_t value, uint8_t lengthInBits)
+inline std::string toBinString(const uint32_t value, uint8_t lengthInBits)
 {
     std::string tmp;
     uint32_t mask = 1 << (lengthInBits-1);
@@ -50,7 +50,7 @@ inline std::string toBinString(uint32_t value, uint8_t lengthInBits)
             tmp += "1";
         else
             tmp += "0";
-        value <<= 1;
+        mask >>= 1;
         lengthInBits--;
     }
     return tmp;

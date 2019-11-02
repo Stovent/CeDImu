@@ -442,10 +442,14 @@ void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
     if(addr < 0x80000000 || addr >= 0xC0000000)
         vdsc->SetByte(addr, data);
     else if(addr >= 0x80000000 || addr < 0x80008080)
+    {
         internal[addr-INTERNAL] = data;
+        if(addr == 0x80002019)
+            UART.push(data);
+    }
 #ifdef DEBUG
-        else
-            out << "OUT OF RANGE";
+    else
+        out << "OUT OF RANGE";
     out << std::hex << currentPC << "\tSet byte: 0x" << addr << " value: " << std::to_string(data) << std::endl;
 #endif // DEBUG
 }
