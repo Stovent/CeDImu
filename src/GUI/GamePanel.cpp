@@ -38,10 +38,10 @@ void GamePanel::DrawTextInfo(wxClientDC& dc)
     }
 }
 
-void GamePanel::RefreshScreen(const wxImage* img)
+void GamePanel::RefreshScreen(const wxImage& img)
 {
     wxClientDC dc(this);
-    dc.DrawBitmap(wxBitmap(img->Scale(app->mainFrame->GetClientSize().x, app->mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+    dc.DrawBitmap(wxBitmap(img.Scale(app->mainFrame->GetClientSize().x, app->mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
 }
 
 void GamePanel::OnKeyDown(wxKeyEvent& event)

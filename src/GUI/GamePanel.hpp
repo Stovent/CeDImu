@@ -16,7 +16,7 @@ public:
     GamePanel(MainFrame* parent, CeDImu* appp);
     ~GamePanel();
 
-    void RefreshScreen(const wxImage* img);
+    void RefreshScreen(const wxImage& img);
 
 private:
     CeDImu* app;
