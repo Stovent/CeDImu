@@ -25,7 +25,6 @@ set(SRCS
 	src/GUI/RAMSearchList.cpp
 	src/GUI/RAMSearchFrame.cpp
 	src/CeDImu.cpp
-	src/utils.cpp
 	src/main.cpp)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
