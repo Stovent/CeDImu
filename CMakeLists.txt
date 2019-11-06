@@ -22,7 +22,8 @@ set(SRCS
 	src/GUI/DisassemblerFrame.cpp
 	src/GUI/MainFrame.cpp
 	src/GUI/GamePanel.cpp
-	src/GUI/RAMWatchFrame.cpp
+	src/GUI/RAMSearchList.cpp
+	src/GUI/RAMSearchFrame.cpp
 	src/CeDImu.cpp
 	src/utils.cpp
 	src/main.cpp)

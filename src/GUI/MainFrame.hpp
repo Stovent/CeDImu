@@ -9,7 +9,7 @@ class MainFrame;
 #include "../CeDImu.hpp"
 #include "GamePanel.hpp"
 #include "DisassemblerFrame.hpp"
-#include "RAMWatchFrame.hpp"
+#include "RAMSearchFrame.hpp"
 
 enum
 {
@@ -22,7 +22,7 @@ enum
     IDOnExportFiles,
     IDOnExportAudio,
     IDOnDisassembler,
-    IDOnRAMWatch,
+    IDOnRAMSearch,
     IDOnAbout,
 
     IDDisassemblerOnClose,
@@ -39,7 +39,7 @@ public:
 
     MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size);
     DisassemblerFrame* disassemblerFrame;
-    RAMWatchFrame* ramWatchFrame;
+    RAMSearchFrame* ramSearchFrame;
 
     void OnPause();
 
@@ -56,7 +56,7 @@ private:
     void OnRebootCore(wxCommandEvent& event);
 
     void OnDisassembler(wxCommandEvent& event);
-    void OnRAMWatch(wxCommandEvent& event);
+    void OnRAMSearch(wxCommandEvent& event);
 
     void OnExportFiles(wxCommandEvent& event);
     void OnExportAudio(wxCommandEvent& event);

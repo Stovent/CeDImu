@@ -1,11 +1,11 @@
-#include "MainFrame.hpp"
+#include <cstdio>
 
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 #include <wx/button.h>
 #include <wx/filedlg.h>
 
-#include <cstdio>
+#include "MainFrame.hpp"
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnOpenROM, MainFrame::OnOpenROM)
@@ -18,7 +18,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
     EVT_MENU(IDOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDOnExportAudio, MainFrame::OnExportAudio)
-    EVT_MENU(IDOnRAMWatch, MainFrame::OnRAMWatch)
+    EVT_MENU(IDOnRAMSearch, MainFrame::OnRAMSearch)
     EVT_MENU(IDOnAbout, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
 
@@ -27,7 +27,7 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
     app = appp;
     gamePanel = new GamePanel(this, appp);
     disassemblerFrame = nullptr;
-    ramWatchFrame = nullptr;
+    ramSearchFrame = nullptr;
 
     CreateMenuBar();
 
@@ -58,7 +58,7 @@ void MainFrame::CreateMenuBar()
 
     wxMenu* tools = new wxMenu;
     tools->Append(IDOnDisassembler, "Disassembler\tCtrl+D");
-    tools->Append(IDOnRAMWatch, "RAM Watch\tCtrl+W");
+    tools->Append(IDOnRAMSearch, "RAM Search\tCtrl+W");
 
     wxMenu* help = new wxMenu;
     help->Append(IDOnAbout, "About");
@@ -184,12 +184,12 @@ void MainFrame::OnDisassembler(wxCommandEvent& event)
     disassemblerFrame->Show();
 }
 
-void MainFrame::OnRAMWatch(wxCommandEvent& event)
+void MainFrame::OnRAMSearch(wxCommandEvent& event)
 {
-    if(ramWatchFrame != nullptr || !app->vdsc)
+    if(ramSearchFrame != nullptr || !app->vdsc)
         return;
-    ramWatchFrame = new RAMWatchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(300, 700));
-    ramWatchFrame->Show();
+    ramSearchFrame = new RAMSearchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(300, 300));
+    ramSearchFrame->Show();
 }
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)
