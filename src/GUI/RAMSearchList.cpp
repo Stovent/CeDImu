@@ -2,7 +2,7 @@
 
 RAMSearchList::RAMSearchList(RAMSearchFrame* parent) : wxListCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxLC_HRULES | wxLC_VRULES)
 {
-    mainFrame = parent;
+    ramSearchFrame = parent;
 
     wxListItem addressCol;
     addressCol.SetId(0);
@@ -16,13 +16,13 @@ RAMSearchList::RAMSearchList(RAMSearchFrame* parent) : wxListCtrl(parent, wxID_A
     valueCol.SetWidth(100);
     InsertColumn(1, valueCol);
 
-    SetItemCount(1024*1024*5);
+    SetItemCount(ramSearchFrame->mainFrame->app->vdsc->allocatedMemory);
 }
 
 wxString RAMSearchList::OnGetItemText(long item, long column) const
 {
     if(column == 1)
-        return std::to_string(mainFrame->vdsc->GetByte(item));
+        return std::to_string(ramSearchFrame->vdsc->GetByte(item));
     else
         return toHex(item);
 }

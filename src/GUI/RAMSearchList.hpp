@@ -10,7 +10,7 @@ class RAMSearchList;
 class RAMSearchList : public wxListCtrl
 {
 public:
-    RAMSearchFrame* mainFrame;
+    RAMSearchFrame* ramSearchFrame;
 
     RAMSearchList(RAMSearchFrame* parent);
     virtual wxString OnGetItemText(long item, long column) const override;

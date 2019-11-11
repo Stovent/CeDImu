@@ -205,7 +205,7 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
 {
     if(ramSearchFrame != nullptr || !app->vdsc)
         return;
-    ramSearchFrame = new RAMSearchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(300, 300));
+    ramSearchFrame = new RAMSearchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
     ramSearchFrame->Show();
 }
 
