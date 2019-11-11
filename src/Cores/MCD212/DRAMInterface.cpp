@@ -3,14 +3,7 @@
 
 uint8_t MCD212::GetByte(const uint32_t& addr)
 {
-    if(addr >= 0x80 && addr <= 0xFF)
-    {
-#ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tWARNING: get BYTE register: 0x" << addr << std::endl;
-#endif // DEBUG
-        return controlRegisters[addr-0x80];
-    }
-    else if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
         out << std::hex << app->cpu->currentPC << "\tGet internal register: 0x" << addr << " : 0x" << (internalRegisters[addr-0x4FFFE0] & 0x00FF) << std::endl;
@@ -45,14 +38,7 @@ uint16_t MCD212::GetWord(const uint32_t& addr)
         memorySwapCount++;
         return memory[addr + 0x400000] << 8 | memory[addr + 0x400001];
     }
-    if(addr >= 0x80 && addr <= 0xFF)
-    {
-#ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tWARNING: get WORD register: 0x" << addr << std::endl;
-#endif // DEBUG
-        return controlRegisters[addr-0x80];
-    }
-    else if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
         out << std::hex << app->cpu->currentPC << "\tWARNING: get WORD internal register: 0x" << addr << std::endl;
@@ -83,14 +69,7 @@ uint32_t MCD212::GetLong(const uint32_t& addr)
         memorySwapCount += 2;
         return memory[addr + 0x400000] << 24 | memory[addr + 0x400001] << 16 | memory[addr + 0x400002] << 8 | memory[addr + 0x400003];
     }
-    if(addr >= 0x80 && addr <= 0xFF)
-    {
-#ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tGet register: 0x" << addr << std::endl;
-#endif // DEBUG
-        return controlRegisters[addr-0x80];
-    }
-    else if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
         out << std::hex << app->cpu->currentPC << "\tWARNING: get LONG internal register: 0x" << addr << std::endl;
@@ -118,14 +97,7 @@ uint32_t MCD212::GetLong(const uint32_t& addr)
 
 void MCD212::SetByte(const uint32_t& addr, const uint8_t& data)
 {
-    if(addr >= 0x80 && addr <= 0xFF)
-    {
-#ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tWARNING: set BYTE register: 0x" << addr << " value 0x" << data << std::endl;
-#endif // DEBUG
-        controlRegisters[addr-0x80] = data;
-    }
-    else if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
         out << std::hex << app->cpu->currentPC << "\tWARNING: set BYTE internal register: 0x" << addr << " value 0x" << data << std::endl;
@@ -149,14 +121,7 @@ void MCD212::SetByte(const uint32_t& addr, const uint8_t& data)
 
 void MCD212::SetWord(const uint32_t& addr, const uint16_t& data)
 {
-    if(addr >= 0x80 && addr <= 0xFF)
-    {
-#ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tWARNING: set WORD register: 0x" << addr << " value 0x" << data << std::endl;
-#endif // DEBUG
-        controlRegisters[addr-0x80] = data;
-    }
-    else if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
         out << std::hex << app->cpu->currentPC << "\tSet internal register: 0x" << addr << " value 0x" << data << std::endl;
@@ -181,14 +146,7 @@ void MCD212::SetWord(const uint32_t& addr, const uint16_t& data)
 
 void MCD212::SetLong(const uint32_t& addr, const uint32_t& data)
 {
-    if(addr >= 0x80 && addr <= 0xFF)
-    {
-#ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tSet register: 0x" << addr << " value 0x" << data << std::endl;
-#endif // DEBUG
-        controlRegisters[addr-0x80] = data;
-    }
-    else if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
         out << std::hex << app->cpu->currentPC << "\tWARNING: set LONG internal register: 0x" << addr << " value 0x" << data << std::endl;
