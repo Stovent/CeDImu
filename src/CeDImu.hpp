@@ -21,7 +21,8 @@ public:
 
     MainFrame* mainFrame;
 
-    virtual bool OnInit();
+    virtual bool OnInit() override;
+    virtual int OnExit() override;
     void InitializeCores(const char* pathToBIOS);
     bool InitializeCDI(const char* pathToROM);
     void StartGameThread();

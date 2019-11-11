@@ -1,5 +1,5 @@
 #include "CeDImu.hpp"
-
+#include "Config.hpp"
 #include "Cores/SCC66470/SCC66470.hpp"
 #include "Cores/MCD212/MCD212.hpp"
 
@@ -12,7 +12,20 @@ bool CeDImu::OnInit()
 
     mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
     mainFrame->Show(true);
+
+    if(!Config::loadConfig())
+    {
+        wxMessageBox("Could not load configuration file. Loading default settings!");
+        Config::SetDefaultConfig();
+    }
+
     return true;
+}
+
+int CeDImu::OnExit()
+{
+    Config::saveConfig();
+    return 0;
 }
 
 void CeDImu::InitializeCores(const char* pathToBIOS)

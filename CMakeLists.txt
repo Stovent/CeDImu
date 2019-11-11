@@ -24,6 +24,7 @@ set(SRCS
 	src/GUI/GamePanel.cpp
 	src/GUI/RAMSearchList.cpp
 	src/GUI/RAMSearchFrame.cpp
+	src/Config.cpp
 	src/CeDImu.cpp
 	src/main.cpp)
 

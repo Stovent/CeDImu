@@ -23,6 +23,7 @@ enum
     IDOnExportAudio,
     IDOnDisassembler,
     IDOnRAMSearch,
+    IDOnSettings,
     IDOnAbout,
 
     IDDisassemblerOnClose,
@@ -60,6 +61,8 @@ private:
 
     void OnExportFiles(wxCommandEvent& event);
     void OnExportAudio(wxCommandEvent& event);
+
+    void OnSettings(wxCommandEvent& event);
 
     void OnAbout(wxCommandEvent& event);
 

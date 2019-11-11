@@ -11,7 +11,7 @@ wxLibPath = C:\wxWidgets-3.0.4\lib\gcc_lib
 wxIPath = C:\wxWidgets-3.0.4\include
 wxIMSWU = C:\wxWidgets-3.0.4\lib\gcc_lib\mswu
 
-obj = bin/obj/Main.o bin/obj/CeDImu.o \
+obj = bin/obj/main.o bin/obj/CeDImu.o bin/obj/Config.o \
 bin/obj/MainFrame.o bin/obj/DisassemblerFrame.o bin/obj/GamePanel.o bin/obj/RAMSearchFrame.o bin/obj/RAMSearchList.o \
 bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/Disassembler.o bin/obj/InstructionSet.o bin/obj/AddressingModes.o bin/obj/MemoryAccess.o \
 bin/obj/SCC66470.o bin/obj/SCC66470DRAMInterface.o \
@@ -42,6 +42,7 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/RAMSearchList.cpp -o bin/obj/RAMSearchList.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/RAMSearchFrame.cpp -o bin/obj/RAMSearchFrame.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/DisassemblerFrame.cpp -o bin/obj/DisassemblerFrame.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Config.cpp -o bin/obj/Config.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CeDImu.cpp -o bin/obj/CeDImu.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Main.cpp -o bin/obj/Main.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/main.cpp -o bin/obj/main.o
 	$(CXX) -L$(wxLibPath) -o bin/CeDImu.exe $(obj) bin/obj/ressource.res $(linkerFLAGS) $(wxLib)
