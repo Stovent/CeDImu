@@ -5,6 +5,8 @@ class RAMSearchFrame;
 
 #include <wx/frame.h>
 #include <wx/timer.h>
+#include <wx/radiobut.h>
+#include <wx/checkbox.h>
 
 #include "MainFrame.hpp"
 #include "RAMSearchList.hpp"
@@ -17,6 +19,14 @@ public:
     MainFrame* mainFrame;
     RAMSearchList* ramSearchList;
     wxTimer* renderTimer;
+
+    wxCheckBox* checkMisaligned;
+    wxRadioButton* signed_;
+    wxRadioButton* unsigned_;
+    wxRadioButton* hexadecimal_;
+    wxRadioButton* byte1;
+    wxRadioButton* byte2;
+    wxRadioButton* byte4;
 
     RAMSearchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~RAMSearchFrame();

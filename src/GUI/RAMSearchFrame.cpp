@@ -1,7 +1,5 @@
 #include <wx/msgdlg.h>
-#include <wx/radiobut.h>
 #include <wx/textctrl.h>
-#include <wx/checkbox.h>
 
 #include "RAMSearchFrame.hpp"
 
@@ -46,9 +44,9 @@ RAMSearchFrame::RAMSearchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos,
     wxBoxSizer* dataSizer = new wxBoxSizer(wxHORIZONTAL);
 
     wxStaticBoxSizer* dataSize = new wxStaticBoxSizer(wxVERTICAL, buttonsPanel, "Data display");
-    wxRadioButton* signed_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Signed", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-    wxRadioButton* unsigned_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Unsigned");
-    wxRadioButton* hexadecimal_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Hexadecimal");
+    signed_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Signed", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+    unsigned_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Unsigned");
+    hexadecimal_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Hexadecimal");
     dataSize->Add(signed_, 1, wxEXPAND, 1);
     dataSize->Add(unsigned_, 1, wxEXPAND, 1);
     dataSize->Add(hexadecimal_, 1, wxEXPAND, 1);
@@ -57,10 +55,10 @@ RAMSearchFrame::RAMSearchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos,
 
 
     wxStaticBoxSizer* dataDisplay = new wxStaticBoxSizer(wxVERTICAL, buttonsPanel, "Data size");
-    wxRadioButton* byte1 = new wxRadioButton(buttonsPanel, wxID_ANY, "1 byte", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-    wxRadioButton* byte2 = new wxRadioButton(buttonsPanel, wxID_ANY, "2 byte");
-    wxRadioButton* byte4 = new wxRadioButton(buttonsPanel, wxID_ANY, "4 byte");
-    wxCheckBox* checkMisaligned = new wxCheckBox(buttonsPanel, wxID_ANY, "Check misaligned");
+    byte1 = new wxRadioButton(buttonsPanel, wxID_ANY, "1 byte", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+    byte2 = new wxRadioButton(buttonsPanel, wxID_ANY, "2 byte");
+    byte4 = new wxRadioButton(buttonsPanel, wxID_ANY, "4 byte");
+    checkMisaligned = new wxCheckBox(buttonsPanel, wxID_ANY, "Check misaligned");
     dataDisplay->Add(byte1, 1, 0, 2);
     dataDisplay->Add(byte2, 1, 0, 2);
     dataDisplay->Add(byte4, 1, 0, 2);
@@ -119,5 +117,6 @@ void RAMSearchFrame::RefreshLoop(wxTimerEvent& event)
 
 void RAMSearchFrame::PaintEvent()
 {
-
+    if(!mainFrame->pause->IsChecked())
+        ramSearchList->Refresh();
 }
