@@ -8,7 +8,7 @@ SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : a
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[0x80008080-INTERNAL];
     count = 0;
-    clockPeriod = 1.0L / clockFrequency;
+    clockPeriod = (1.0L / clockFrequency) * 1000000000; // Time used to execute a clock cycle
 #ifdef DEBUG
     out.open("SCC68070.txt");
     instruction.open("instructions.txt");

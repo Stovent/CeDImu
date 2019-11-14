@@ -32,7 +32,10 @@ public:
     virtual void SetLong(const uint32_t& addr, const uint32_t& data) override;
 
     virtual void DisplayLine() override;
-    virtual uint32_t GetLineDisplayTime() override;
+    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override
+    {
+        return 700;
+    }
 };
 
 #endif // SCC66470_HPP

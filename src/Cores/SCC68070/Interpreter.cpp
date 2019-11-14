@@ -49,8 +49,7 @@ void SCC68070::Interpreter(const bool loop)
         instructionsBufferChanged = true;
         count++;
 
-        if(executionTime >= vdsc->GetLineDisplayTime())
-    //    if(executionTime * clockPeriod >= vdsc->GetLineDisplayTime())
+        if(executionTime * clockPeriod >= vdsc->GetLineDisplayTimeNanoSeconds())
         {
             instructionsBuffer.clear();
             if(app->mainFrame->disassemblerFrame)

@@ -51,8 +51,3 @@ void SCC66470::DisplayLine()
 {
 
 }
-
-uint32_t SCC66470::GetLineDisplayTime()
-{
-    return 700;
-}
