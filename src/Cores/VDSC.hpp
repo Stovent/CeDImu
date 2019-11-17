@@ -17,7 +17,7 @@ public:
     uint32_t allocatedMemory;
 
     VDSC(CeDImu* appp) : lineNumber(0), app(appp), memory(nullptr), biosLoaded(false), allocatedMemory(0) {}
-    virtual ~VDSC() {}
+    virtual ~VDSC() { delete[] memory; }
 
     virtual void Reset() = 0;
 

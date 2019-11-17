@@ -407,7 +407,7 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
             return vdsc->GetByte(addr);
 #ifdef DEBUG
     else
-        out << "OUT OF RANGE";
+        out << "OUT OF RANGE ";
     out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl;
 #endif // DEBUG
     return 0;
@@ -419,7 +419,7 @@ uint16_t SCC68070::GetWord(const uint32_t& addr)
         return vdsc->GetWord(addr);
 #ifdef DEBUG
     else
-        out << "OUT OF RANGE";
+        out << "OUT OF RANGE ";
     out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl;
 #endif // DEBUG
     return 0;
@@ -431,7 +431,7 @@ uint32_t SCC68070::GetLong(const uint32_t& addr)
         return vdsc->GetLong(addr);
 #ifdef DEBUG
     else
-        out << "OUT OF RANGE";
+        out << "OUT OF RANGE ";
     out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl;
 #endif // DEBUG
     return 0;
@@ -449,7 +449,7 @@ void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
     }
 #ifdef DEBUG
     else
-        out << "OUT OF RANGE";
+        out << "OUT OF RANGE ";
     out << std::hex << currentPC << "\tSet byte: 0x" << addr << " value: " << std::to_string(data) << std::endl;
 #endif // DEBUG
 }
@@ -460,7 +460,7 @@ void SCC68070::SetWord(const uint32_t& addr, const uint16_t& data)
         vdsc->SetWord(addr, data);
 #ifdef DEBUG
     else
-        out << "OUT OF RANGE";
+        out << "OUT OF RANGE ";
     out << std::hex << currentPC << "\tSet word: 0x" << addr << " value: " << std::to_string(data) << std::endl;
 #endif // DEBUG
 }
@@ -471,7 +471,7 @@ void SCC68070::SetLong(const uint32_t& addr, const uint32_t& data)
         vdsc->SetLong(addr, data);
 #ifdef DEBUG
     else
-        out << "OUT OF RANGE";
+        out << "OUT OF RANGE ";
     out << std::hex << currentPC << "\tSet Long: 0x" << addr << " value: " << std::to_string(data) << std::endl;
 #endif // DEBUG
 }

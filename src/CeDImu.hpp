@@ -23,7 +23,7 @@ public:
 
     virtual bool OnInit() override;
     virtual int OnExit() override;
-    void InitializeCores(const char* pathToBIOS);
+    bool InitializeCores(const char* pathToBIOS);
     bool InitializeCDI(const char* pathToROM);
     void StartGameThread();
     void StopGameThread();

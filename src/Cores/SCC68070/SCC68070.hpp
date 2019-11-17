@@ -210,8 +210,8 @@ public:
     uint16_t SR;
     uint32_t USP;
     uint32_t SSP;
-    bool stop;
 
+    bool stop;
     uint32_t currentPC;
     bool run;
     bool disassemble;
@@ -221,6 +221,7 @@ public:
     bool instructionsBufferChanged;
 
     SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency = 15000000L);
+    ~SCC68070();
     void Run();
 
     void RebootCore();

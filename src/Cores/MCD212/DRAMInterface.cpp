@@ -18,7 +18,7 @@ uint8_t MCD212::GetByte(const uint32_t& addr)
     else if(addr <= 0x4FFFDF)
     {
 #ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tGet byte at address 0x" << addr << " : " << (int8_t)memory[addr] << std::endl;
+        out << std::hex << app->cpu->currentPC << "\tGet byte at address 0x" << addr << " : " << std::dec << (int8_t)memory[addr] << " (0x" << std::hex << memory[addr] << ")" << std::endl;
 #endif // DEBUG
         return memory[addr];
     }
@@ -49,7 +49,7 @@ uint16_t MCD212::GetWord(const uint32_t& addr)
     {
 #ifdef DEBUG
         if(addr != app->cpu->currentPC)
-            out << std::hex << app->cpu->currentPC << "\tGet word \t\t at address 0x" << addr << " : " << (int16_t)(memory[addr] << 8 | memory[addr + 1]) << std::endl;
+            out << std::hex << app->cpu->currentPC << "\tGet word \t\t at address 0x" << addr << " : " << std::dec << (int16_t)(memory[addr] << 8 | memory[addr + 1]) << " (0x" << std::hex << (memory[addr] << 8 | memory[addr + 1]) << ")" << std::endl;
 #endif // DEBUG
         return memory[addr] << 8 | memory[addr + 1];
     }
@@ -80,9 +80,9 @@ uint32_t MCD212::GetLong(const uint32_t& addr)
     {
 #ifdef DEBUG
         if(isCA)
-            out << std::hex << " CA \tGet long \t\t at address 0x" << addr << " : " << (int32_t)(memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << std::endl;
+            out << std::hex << " CA \tGet long \t\t at address 0x" << addr << " : 0x" << (memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << std::endl;
         else
-            out << std::hex << app->cpu->currentPC << "\tGet long \t\t at address 0x" << addr << " : " << (int32_t)(memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << std::endl;
+            out << std::hex << app->cpu->currentPC << "\tGet long \t\t at address 0x" << addr << " : " << std::dec << (int32_t)(memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << " (0x" << std::hex << (memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << ")" << std::endl;
 #endif // DEBUG
         return memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3];
     }
@@ -107,7 +107,7 @@ void MCD212::SetByte(const uint32_t& addr, const uint8_t& data)
     else if(addr <= 0x4FFFDF)
     {
 #ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tSet byte " << std::to_string(data) << " \tat address 0x" << addr << std::endl;
+        out << std::hex << app->cpu->currentPC << "\tSet byte " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr] = data;
     }
@@ -131,7 +131,7 @@ void MCD212::SetWord(const uint32_t& addr, const uint16_t& data)
     else if(addr < 0x4FFFDF)
     {
 #ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tSet word " << std::to_string(data) << " \tat address 0x" << addr << std::endl;
+        out << std::hex << app->cpu->currentPC << "\tSet word " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr] = data >> 8;
         memory[addr+1] = data;
@@ -156,7 +156,7 @@ void MCD212::SetLong(const uint32_t& addr, const uint32_t& data)
     else if(addr < 0x4FFFDF)
     {
 #ifdef DEBUG
-        out << std::hex << app->cpu->currentPC << "\tSet long " << std::to_string(data) << " \tat address 0x" << addr << std::endl;
+        out << std::hex << app->cpu->currentPC << "\tSet long " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr]   = data >> 24;
         memory[addr+1] = (data & 0x00FF0000) >> 16;

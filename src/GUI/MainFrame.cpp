@@ -118,10 +118,8 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
     }
 
     if(app->vdsc->biosLoaded)
-    {
         if(!pause->IsChecked())
             app->StartGameThread();
-    }
 }
 
 void MainFrame::OnLoadBIOS(wxCommandEvent& event)
@@ -135,12 +133,9 @@ void MainFrame::OnLoadBIOS(wxCommandEvent& event)
 #else
     Config::BIOSPath = openFileDialog.GetPath().BeforeLast('/');
 #endif
-    app->InitializeCores(openFileDialog.GetPath().ToStdString().data());
 
-    if(!app->vdsc->LoadBIOS(openFileDialog.GetPath().ToStdString().data()))
+    if(!app->InitializeCores(openFileDialog.GetPath().ToStdString().data()))
         wxMessageBox("Could not load BIOS");
-
-    app->cpu->RebootCore();
 }
 
 void MainFrame::OnCloseROM(wxCommandEvent& event)

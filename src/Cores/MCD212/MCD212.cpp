@@ -15,8 +15,10 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
     memorySwapCount = 0;
     isCA = false;
 
-    memset(controlRegisters, 0, sizeof(controlRegisters));
-    memset(internalRegisters, 0, sizeof(internalRegisters));
+    memset(controlRegisters, 0, 0x80*sizeof(uint32_t));
+    memset(internalRegisters, 0, 32*sizeof(uint16_t));
+
+    Reset();
 
 #ifdef DEBUG
     out.open("MCD212.txt");
@@ -26,7 +28,8 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
 
 MCD212::~MCD212()
 {
-    delete[] memory;
+    delete[] controlRegisters;
+    delete[] internalRegisters;
 }
 
 void MCD212::Reset()
@@ -67,7 +70,7 @@ void MCD212::PutDataInMemory(const void* s, unsigned int size, unsigned int posi
 
 void MCD212::ResetMemory()
 {
-    memset(memory, 0, sizeof(memory));
+    memset(memory, 0, allocatedMemory);
 }
 
 void MCD212::MemorySwap()

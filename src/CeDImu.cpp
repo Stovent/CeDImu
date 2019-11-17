@@ -15,7 +15,7 @@ bool CeDImu::OnInit()
 
     if(!Config::loadConfig())
     {
-        wxMessageBox("Could not load configuration file. Loading default settings!");
+        wxMessageBox("Could not load configuration file. CeDImu will use default settings!");
         Config::SetDefaultConfig();
     }
 
@@ -24,13 +24,22 @@ bool CeDImu::OnInit()
 
 int CeDImu::OnExit()
 {
+    StopGameThread();
+    delete cdi;
+    delete vdsc;
+    delete cpu;
     Config::saveConfig();
     return 0;
 }
 
-void CeDImu::InitializeCores(const char* pathToBIOS)
+bool CeDImu::InitializeCores(const char* pathToBIOS)
 {
     FILE* f = fopen(pathToBIOS, "rb");
+    if(!f)
+    {
+        wxMessageBox("Could not open BIOS file!");
+        return false;
+    }
     fseek(f, 0, SEEK_END);
     long biosSize = ftell(f);
     fclose(f);
@@ -43,8 +52,11 @@ void CeDImu::InitializeCores(const char* pathToBIOS)
     else
         vdsc = new MCD212(this);
 
+    if(!vdsc->LoadBIOS(pathToBIOS))
+        return false;
+
     cpu = new SCC68070(this, vdsc);
-    vdsc->LoadBIOS(pathToBIOS);
+    return true;
 }
 
 bool CeDImu::InitializeCDI(const char* pathToROM)
