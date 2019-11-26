@@ -3260,7 +3260,7 @@ uint16_t SCC68070::Subq()
     }
     else if(size == 1) // word
     {
-        int16_t dst = GetWord()eamode, eareg, calcTime);
+        int16_t dst = GetWord(eamode, eareg, calcTime);
         int32_t res = dst - data;
         uint32_t ures = (uint16_t)dst - data;
 
