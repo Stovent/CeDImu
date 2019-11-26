@@ -2404,9 +2404,12 @@ uint16_t SCC68070::Not()
 
     if(size == 0) // Byte
     {
-        int8_t data = GetByte(eamode,  eareg, calcTime);
-        int8_t res = ~data;
-        SetByte(lastAddress, res);
+        uint8_t data = GetByte(eamode, eareg, calcTime);
+        uint8_t res = ~data;
+        if(eamode)
+            SetByte(lastAddress, res);
+        else
+        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= res; }
         calcTime += 4;
 
         if(res == 0)
@@ -2420,9 +2423,12 @@ uint16_t SCC68070::Not()
     }
     else if(size == 1) // Word
     {
-        int16_t data = GetWord(eamode,  eareg, calcTime);
-        int16_t res = ~data;
-        SetWord(lastAddress, res);
+        uint16_t data = GetWord(eamode,  eareg, calcTime);
+        uint16_t res = ~data;
+        if(eamode)
+            SetWord(lastAddress, res);
+        else
+        {   D[eareg] &= 0xFFFF0000; D[eareg] |= res; }
         calcTime += 4;
 
         if(res == 0)
@@ -2436,9 +2442,12 @@ uint16_t SCC68070::Not()
     }
     else // long
     {
-        int32_t data = GetLong(eamode,  eareg, calcTime);
-        int32_t res = ~data;
-        SetLong(lastAddress, res);
+        uint32_t data = GetLong(eamode,  eareg, calcTime);
+        uint32_t res = ~data;
+        if(eamode)
+            SetLong(lastAddress, res);
+        else
+            D[eareg] = res;
         calcTime += 8;
 
         if(res == 0)
