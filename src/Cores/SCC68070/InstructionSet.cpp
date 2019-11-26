@@ -3260,7 +3260,7 @@ uint16_t SCC68070::Subq()
     }
     else if(size == 1) // word
     {
-        int16_t dst = GetByte(eamode, eareg, calcTime);
+        int16_t dst = GetWord()eamode, eareg, calcTime);
         int32_t res = dst - data;
         uint32_t ures = (uint16_t)dst - data;
 
@@ -3281,7 +3281,7 @@ uint16_t SCC68070::Subq()
     }
     else // long
     {
-        int32_t dst = GetByte(eamode, eareg, calcTime);
+        int32_t dst = GetLong(eamode, eareg, calcTime);
         int64_t res = dst - data;
         uint64_t ures = (uint32_t)dst - data;
 
