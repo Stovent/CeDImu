@@ -21,6 +21,7 @@ enum
     IDOnRebootCore,
     IDOnExportFiles,
     IDOnExportAudio,
+    IDOnVDSCViewer,
     IDOnDisassembler,
     IDOnRAMSearch,
     IDOnSettings,
@@ -56,6 +57,7 @@ private:
     void OnExecuteXInstructions(wxCommandEvent& event);
     void OnRebootCore(wxCommandEvent& event);
 
+    void OnVDSCViewer(wxCommandEvent& event);
     void OnDisassembler(wxCommandEvent& event);
     void OnRAMSearch(wxCommandEvent& event);
 

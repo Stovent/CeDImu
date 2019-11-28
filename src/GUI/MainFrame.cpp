@@ -18,6 +18,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnPause, MainFrame::OnPause)
     EVT_MENU(IDOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
     EVT_MENU(IDOnRebootCore, MainFrame::OnRebootCore)
+    EVT_MENU(IDOnVDSCViewer, MainFrame::OnVDSCViewer)
     EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
     EVT_MENU(IDOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDOnExportAudio, MainFrame::OnExportAudio)
@@ -61,6 +62,7 @@ void MainFrame::CreateMenuBar()
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
+    tools->Append(IDOnVDSCViewer, "VDSC Viewer");
     tools->Append(IDOnDisassembler, "Disassembler\tCtrl+D");
     tools->Append(IDOnRAMSearch, "RAM Search\tCtrl+S");
 
@@ -185,7 +187,14 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
-    app->cpu->RebootCore();
+    if(app->cpu)
+        app->cpu->RebootCore();
+}
+
+void MainFrame::OnVDSCViewer(wxCommandEvent& event)
+{
+    if(app->vdsc)
+        app->vdsc->ShowViewer();
 }
 
 void MainFrame::OnDisassembler(wxCommandEvent& event)
@@ -206,12 +215,14 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
-    app->cdi->ExportFiles();
+    if(app->cdi)
+        app->cdi->ExportFiles();
 }
 
 void MainFrame::OnExportAudio(wxCommandEvent& event)
 {
-    app->cdi->ExportAudio();
+    if(app->cdi)
+        app->cdi->ExportAudio();
 }
 
 void MainFrame::OnSettings(wxCommandEvent& event)

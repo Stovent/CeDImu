@@ -339,3 +339,10 @@ end_DCA2:
     isCA = false;
     return;
 }
+
+void MCD212::ShowViewer()
+{
+    wxFrame* frame = new wxFrame(app->mainFrame, wxID_ANY, "MCD212 Viewer");
+
+    frame->Show();
+}

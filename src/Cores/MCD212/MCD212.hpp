@@ -141,6 +141,8 @@ public:
         return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
     }
 
+    virtual void ShowViewer() override;
+
     virtual void DisplayLine() override;
     void DisplayLine1();
     void DisplayLine2();

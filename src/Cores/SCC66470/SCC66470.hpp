@@ -36,6 +36,8 @@ public:
     {
         return 700;
     }
+
+    virtual void ShowViewer() override {}
 };
 
 #endif // SCC66470_HPP
