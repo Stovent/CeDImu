@@ -51,3 +51,8 @@ void SCC66470::DisplayLine()
 {
 
 }
+
+void SCC66470::OnFrameCompleted()
+{
+
+}

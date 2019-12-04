@@ -22,6 +22,7 @@ private:
     CeDImu* app;
     MainFrame* mainFrame;
     wxTimer* renderTimer;
+    wxImage screen;
     unsigned long long oldInstCount;
 
     void OnKeyDown(wxKeyEvent& event);

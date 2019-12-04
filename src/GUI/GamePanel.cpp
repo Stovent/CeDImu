@@ -9,6 +9,7 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu* appp) : wxPanel(parent)
 {
     mainFrame = parent;
     app = appp;
+    screen.Create(1, 1);
     oldInstCount = 0;
 
     renderTimer = new wxTimer(this);
@@ -25,6 +26,9 @@ void GamePanel::RefreshLoop(wxTimerEvent& event)
 {
     wxClientDC dc(this);
     dc.Clear();
+    dc.SetBrush(*wxBLACK_BRUSH);
+    dc.DrawRectangle(0, 0, app->mainFrame->GetClientSize().x, app->mainFrame->GetClientSize().y);
+    dc.DrawBitmap(wxBitmap(screen.Scale(app->mainFrame->GetClientSize().x, app->mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
     if(!app->mainFrame->pause->IsChecked())
         DrawTextInfo(dc);
 }
@@ -41,6 +45,7 @@ void GamePanel::DrawTextInfo(wxClientDC& dc)
 void GamePanel::RefreshScreen(const wxImage& img)
 {
     wxClientDC dc(this);
+    screen = img.Copy();
     dc.DrawBitmap(wxBitmap(img.Scale(app->mainFrame->GetClientSize().x, app->mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
 }
 
@@ -59,14 +64,24 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
             app->mainFrame->pause->Check(true);
             app->mainFrame->SetStatusText("Pause");
         }
-        app->mainFrame->OnPause();
         if(app->cpu)
             app->cpu->instructionsBufferChanged = true;
-    break;
+        break;
+
+    case 'Z':
+        if(!app->vdsc || !app->cpu)
+            break;
+        app->vdsc->stopOnNextCompletedFrame = true;
+        if(app->mainFrame->pause->IsChecked())
+        {
+            app->mainFrame->pause->Check(false);
+        }
+        app->mainFrame->OnPause();
+        break;
 
     case 'E':
-        if(app->mainFrame->pause->IsChecked())
+        if(app->cpu && app->mainFrame->pause->IsChecked())
             app->cpu->SingleStep();
-    break;
+        break;
     }
 }

@@ -37,6 +37,7 @@ public:
         return 700;
     }
 
+    virtual void OnFrameCompleted() override;
     virtual void ShowViewer() override {}
 };
 

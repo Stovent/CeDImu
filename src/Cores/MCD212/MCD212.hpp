@@ -52,9 +52,31 @@ enum MCD212ControlRegisterMap
 
 class MCD212 : public VDSC
 {
-    wxImage* cursorPlane;
+    wxImage planeA;
+    wxImage planeB;
+    wxImage cursorPlane;
+    wxImage backgroundPlane;
     uint8_t memorySwapCount;
     bool isCA;
+
+    void* DecodeBitmap(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm);
+    void* DecodeRunLength(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm);
+    void* DecodeMosaic(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm);
+
+    void DrawPlaneA();
+    void DrawPlaneB();
+    void DrawBackground();
+    void DrawCursor();
+
+    uint32_t GetColorFromCLUT(uint8_t address);
+
+    void DisplayLineA();
+    void DisplayLineB();
+
+    void ExecuteICA1();
+    void ExecuteDCA1();
+    void ExecuteICA2();
+    void ExecuteDCA2();
 
     // internal registers
     uint16_t GetCSR1RRegister();
@@ -109,7 +131,9 @@ class MCD212 : public VDSC
     void ReloadDisplayParameters1(const bool dm, const uint8_t MF, const uint8_t FT);
     void ReloadDisplayParameters2(const bool dm, const uint8_t MF, const uint8_t FT);
 
-    inline uint16_t GetVerticalResolution() { return GetFD() ? 240 : 280; }
+    inline uint16_t GetHorizontalResolution1() { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM1() ? a*2 : a; }
+    inline uint16_t GetHorizontalResolution2() { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }
+    inline uint16_t GetVerticalResolution() { return GetFD() ? 240 : (GetST() ? 240 : 280); }
 
 
 public:
@@ -141,16 +165,10 @@ public:
         return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
     }
 
+    virtual void OnFrameCompleted() override;
     virtual void ShowViewer() override;
 
     virtual void DisplayLine() override;
-    void DisplayLine1();
-    void DisplayLine2();
-
-    void ExecuteICA1();
-    void ExecuteDCA1();
-    void ExecuteICA2();
-    void ExecuteDCA2();
 };
 
 #endif // MCD212_HPP

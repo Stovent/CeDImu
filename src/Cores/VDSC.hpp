@@ -14,9 +14,10 @@ public:
     CeDImu* app;
     uint8_t* memory;
     bool biosLoaded;
+    bool stopOnNextCompletedFrame;
     uint32_t allocatedMemory;
 
-    VDSC(CeDImu* appp) : lineNumber(0), app(appp), memory(nullptr), biosLoaded(false), allocatedMemory(0) {}
+    VDSC(CeDImu* appp) : lineNumber(0), app(appp), memory(nullptr), biosLoaded(false), stopOnNextCompletedFrame(false), allocatedMemory(0) {}
     virtual ~VDSC() { delete[] memory; }
 
     virtual void Reset() = 0;
@@ -37,6 +38,7 @@ public:
     virtual void DisplayLine() = 0;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() { return 0; }
 
+    virtual void OnFrameCompleted() = 0;
     virtual void ShowViewer() = 0;
 };
 

@@ -79,9 +79,7 @@ uint32_t MCD212::GetLong(const uint32_t& addr)
     else if(addr < 0x4FFFDF)
     {
 #ifdef DEBUG
-        if(isCA)
-            out << std::hex << " CA \tGet long \t\t at address 0x" << addr << " : 0x" << (memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << std::endl;
-        else
+        if(!isCA)
             out << std::hex << app->cpu->currentPC << "\tGet long \t\t at address 0x" << addr << " : " << std::dec << (int32_t)(memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << " (0x" << std::hex << (memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3]) << ")" << std::endl;
 #endif // DEBUG
         return memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3];
