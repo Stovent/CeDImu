@@ -43,7 +43,7 @@ public:
     DisassemblerFrame* disassemblerFrame;
     RAMSearchFrame* ramSearchFrame;
 
-    void OnPause();
+    void Pause();
 
 private:
     void CreateMenuBar();

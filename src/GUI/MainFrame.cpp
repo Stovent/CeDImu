@@ -152,15 +152,32 @@ void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 
 void MainFrame::OnPause(wxCommandEvent& event)
 {
-    OnPause();
+    if(pause->IsChecked())
+    {
+        app->StopGameThread();
+        SetStatusText("Pause");
+    }
+    else
+    {
+        app->StartGameThread();
+        SetStatusText("Running");
+    }
 }
 
-void MainFrame::OnPause()
+void MainFrame::Pause()
 {
     if(pause->IsChecked())
-        app->StopGameThread();
-    else
+    {
         app->StartGameThread();
+        pause->Check(false);
+        SetStatusText("Running");
+    }
+    else
+    {
+        app->StopGameThread();
+        pause->Check(true);
+        SetStatusText("Pause");
+    }
 }
 
 void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
