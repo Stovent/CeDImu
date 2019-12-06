@@ -46,7 +46,7 @@ void GamePanel::RefreshScreen(const wxImage& img)
 {
     wxClientDC dc(this);
     screen = img.Copy();
-    dc.DrawBitmap(wxBitmap(img.Scale(app->mainFrame->GetClientSize().x, app->mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+    dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
 }
 
 void GamePanel::OnKeyDown(wxKeyEvent& event)
@@ -60,6 +60,10 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
         break;
 
     case 'Z':
+        if(!app->cpu) break;
+        app->vdsc->stopOnNextCompletedFrame = true;
+        if(!app->cpu->run)
+            app->StartGameThread();
         break;
 
     case 'E':

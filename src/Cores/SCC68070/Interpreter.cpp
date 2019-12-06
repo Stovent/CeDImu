@@ -7,6 +7,12 @@ void SCC68070::Interpreter(const bool loop)
     {
         if(stop) return;
 
+        if(executionTime == 0)
+        {
+            instructionsBuffer.clear();
+            if(app->mainFrame->disassemblerFrame)
+                app->mainFrame->disassemblerFrame->instructions.clear();
+        }
         currentPC = PC;
         currentOpcode = GetNextWord();
         std::map<uint16_t, SCC68070InstructionSet>::iterator it = ILUT.find(currentOpcode);
@@ -51,9 +57,6 @@ void SCC68070::Interpreter(const bool loop)
 
         if(executionTime * clockPeriod >= vdsc->GetLineDisplayTimeNanoSeconds())
         {
-            instructionsBuffer.clear();
-            if(app->mainFrame->disassemblerFrame)
-                app->mainFrame->disassemblerFrame->instructions.clear();
             executionTime = 0;
             vdsc->DisplayLine();
         }
