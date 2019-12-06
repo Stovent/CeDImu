@@ -13,7 +13,7 @@ SCC66470::SCC66470(CeDImu* appp) : VDSC(appp)
 
 SCC66470::~SCC66470()
 {
-    delete[] memory;
+
 }
 
 void SCC66470::Reset()
