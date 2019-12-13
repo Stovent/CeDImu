@@ -11,6 +11,7 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu* appp) : wxPanel(parent)
     app = appp;
     screen.Create(1, 1);
     oldInstCount = 0;
+    oldFrameCount = 0;
 
     renderTimer = new wxTimer(this);
     renderTimer->Start(1000);
@@ -35,10 +36,10 @@ void GamePanel::RefreshLoop(wxTimerEvent& event)
 
 void GamePanel::DrawTextInfo(wxClientDC& dc)
 {
-    if(app->cpu)
+    if(app->vdsc)
     {
-        dc.DrawText("inst per seconds: " + std::to_string(app->cpu->count - oldInstCount), wxPoint(0, 0));
-        oldInstCount = app->cpu->count;
+        mainFrame->SetTitleInfo(app->vdsc->totalFrameCount - oldFrameCount);
+        oldFrameCount = app->vdsc->totalFrameCount;
     }
 }
 

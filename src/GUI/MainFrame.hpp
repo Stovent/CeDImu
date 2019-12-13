@@ -44,6 +44,7 @@ public:
     RAMSearchFrame* ramSearchFrame;
 
     void Pause();
+    void SetTitleInfo(const uint16_t fps);
 
 private:
     void CreateMenuBar();

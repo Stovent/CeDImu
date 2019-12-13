@@ -16,8 +16,10 @@ public:
     bool biosLoaded;
     bool stopOnNextCompletedFrame;
     uint32_t allocatedMemory;
+    uint32_t totalFrameCount;
+    std::string biosFilename;
 
-    VDSC(CeDImu* appp) : lineNumber(0), app(appp), memory(nullptr), biosLoaded(false), stopOnNextCompletedFrame(false), allocatedMemory(0) {}
+    VDSC(CeDImu* appp) : lineNumber(0), app(appp), memory(nullptr), biosLoaded(false), stopOnNextCompletedFrame(false), allocatedMemory(0), totalFrameCount(0) {}
     virtual ~VDSC() { delete[] memory; }
 
     virtual void Reset() = 0;

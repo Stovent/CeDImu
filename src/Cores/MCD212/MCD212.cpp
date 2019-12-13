@@ -66,6 +66,12 @@ bool MCD212::LoadBIOS(const char* filename)
     fread(&memory[0x400000], 1, size, f);
 
     fclose(f);
+    std::string str(filename);
+#ifdef _WIN32
+    biosFilename = str.substr(str.rfind('\\')+1);
+#else
+    biosFilename = str.substr(str.rfind('/')+1);
+#endif // _WIN32
     return biosLoaded = true;
 }
 
@@ -110,6 +116,7 @@ void MCD212::DisplayLine()
             app->mainFrame->gamePanel->RefreshScreen(backgroundPlane);
             delete screen;
         }
+        totalFrameCount++;
         OnFrameCompleted();
     }
 }
