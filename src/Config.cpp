@@ -21,7 +21,7 @@ bool loadConfig()
     while(in.good())
     {
         std::string line;
-        in >> line;
+        std::getline(in, line);
         size_t pos;
         if((pos = line.find('=')) != std::string::npos)
         {
