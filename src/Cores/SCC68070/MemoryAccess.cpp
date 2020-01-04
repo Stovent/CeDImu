@@ -446,8 +446,26 @@ void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
     else if(addr >= 0x80000000 || addr < 0x80008080)
     {
         internal[addr-INTERNAL] = data;
-        if(addr == 0x80002019)
+        if(addr == 0x80002017) // UART Command Register
+        {
+            switch(data)
+            {
+            case 2: // reset receiver
+                break;
+            case 3: // reset transmitter
+                break;
+            case 4: // Reset error status
+                internal[USR] &= 0x0F;
+                break;
+            }
+        }
+        else if(addr == 0x80002019) // UART Transmit Holding Register
+        {
             UART.push(data);
+#ifdef DEBUG
+            uart_out.write((char*)&data, 1);
+#endif // DEBUG
+        }
     }
 #ifdef DEBUG
     else

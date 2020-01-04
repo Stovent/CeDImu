@@ -215,8 +215,11 @@ public:
     uint32_t currentPC;
     bool run;
     bool disassemble;
+#ifdef DEBUG
     std::ofstream out;
     std::ofstream instruction;
+    std::ofstream uart_out;
+#endif // DEBUG
     std::vector<std::string> instructionsBuffer;
     bool instructionsBufferChanged;
 
@@ -688,6 +691,9 @@ private:
 };
 
 #define SP (A[7])
+
+#define SET_TX_READY internal[USR] |= 0x04;
+#define SET_RX_READY internal[USR] |= 0x01;
 
 /* shorts for addressing modes */
 

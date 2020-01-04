@@ -16,11 +16,13 @@ SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : a
 #ifdef DEBUG
     out.open("SCC68070.txt");
     instruction.open("instructions.txt");
+    uart_out.open("uart_out.txt");
 #endif // DEBUG
     GenerateInstructionSet();
     RebootCore();
 
-    internal[USR] = 0x07;
+    SET_TX_READY
+    SET_RX_READY
 }
 
 SCC68070::~SCC68070()
