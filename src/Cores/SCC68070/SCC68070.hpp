@@ -202,7 +202,8 @@ class SCC68070
 public:
     CeDImu* app;
     VDSC* vdsc;
-    std::queue<uint8_t> UART;
+    std::queue<uint8_t> UART_OUT;
+    std::queue<uint8_t> UART_IN;
 
     int32_t D[8];
     int32_t A[8];

@@ -403,7 +403,15 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
     else if(addr >= 0x80000000 && addr < 0x80008080)
     {
         if(GetS())
+        {
+#ifdef DEBUG
+            if(addr == 0x8000201B)
+            {
+                out << "URHR 0x" << std::hex << currentPC << std::endl;
+            }
+#endif // DEBUG
             return internal[addr-INTERNAL];
+        }
         else
             return vdsc->GetByte(addr);
     }
@@ -461,7 +469,7 @@ void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
         }
         else if(addr == 0x80002019) // UART Transmit Holding Register
         {
-            UART.push(data);
+            UART_OUT.push(data);
 #ifdef DEBUG
             uart_out.write((char*)&data, 1);
 #endif // DEBUG

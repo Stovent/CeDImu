@@ -15,7 +15,6 @@ bool CeDImu::OnInit()
 
     if(!Config::loadConfig())
     {
-        wxMessageBox("Could not load configuration file. CeDImu will use default settings!");
         Config::SetDefaultConfig();
     }
 
