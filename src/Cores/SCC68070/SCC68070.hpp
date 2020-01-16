@@ -11,6 +11,7 @@ class SCC68070;
 #include <wx/msgdlg.h>
 
 #include "../../CeDImu.hpp"
+#include "../../utils.hpp"
 
 #define UNCHANGED 2
 #define OPCODESNBR 84

@@ -5,117 +5,120 @@
 #include <wx/filefn.h>
 
 #include "CDI.hpp"
+#include "../utils.hpp"
 
 CDIDirectory::CDIDirectory(uint8_t namesize, std::string dirname, uint32_t lbn, uint16_t parent, uint16_t offset)
 {
-    relOffset = offset;
-    LBN = lbn;
-    parentDirectory = parent;
     nameSize = namesize;
+    relOffset = offset;
+    parentDirectory = parent;
+    dirLBN = lbn;
     name = dirname;
 }
 
-void CDIDirectory::LoadSubDirectories(std::ifstream& disk)
+void CDIDirectory::LoadSubDirectories(CDIDisk& disk)
 {
-    char c;
-    uint32_t pos = disk.tellg();
+    uint8_t c;
+    uint32_t pos = disk.Tell();
 
-    disk.seekg(LBN * 2352 + 24);
-    disk.get(c);
-    disk.seekg(c-1, std::ios::cur);
-    disk.get(c);
-    disk.seekg(c-1, std::ios::cur);
+    disk.GotoLBN(dirLBN);
+    c = disk.GetByte();
+    disk.Seek(c-1, std::ios::cur); // describe the current directory, so we skip it
+    c = disk.GetByte();
+    disk.Seek(c-1, std::ios::cur); // describe the parent directory, so we skip it
 
-    while((disk.tellg() % 2352) < 2072)
+    do
     {
-        uint8_t namesize = 0, attr = 0;
-        uint32_t lbn = 0;
-        std::string dirname;
-
-        disk.seekg(6, std::ios::cur);
-        disk.get(c); lbn |= (uint8_t)c << 24;
-        disk.get(c); lbn |= (uint8_t)c << 16;
-        disk.get(c); lbn |= (uint8_t)c << 8;
-        disk.get(c); lbn |= (uint8_t)c;
-
-        disk.seekg(22, std::ios::cur);
-        disk.get(c); namesize = c;
-        if(namesize == 0)
-            break;
-        for(int i = 0; i < namesize; i++)
+        while((disk.Tell() % 2352) < 2072)
         {
-            disk.get(c);
-            dirname += (c == 0) ? '/' : c;
-        }
-        if(isEven(namesize))
-            disk.get(c);
+            uint8_t namesize = 0, attr = 0;
+            uint32_t lbn = 0;
+            std::string dirname;
 
-        disk.seekg(4, std::ios::cur);
-        disk.get(c); attr |= (uint8_t)c; // I only retrieves the high order byte...
-        disk.seekg(5, std::ios::cur);
+            c = disk.GetByte(); // record length
+            if(c == 0)
+                break;
 
-        if(attr & 0x80) // ...So I only have to compare with 0x80 and not 0x8000
-        {
-            subDirectories.emplace(dirname, CDIDirectory(namesize, dirname, lbn, relOffset, 0));
-            subDirectories.find(dirname)->second.LoadFiles(disk);
-            subDirectories.find(dirname)->second.LoadSubDirectories(disk);
+            disk.Seek(5, std::ios::cur);
+            lbn = disk.GetLong();
+
+            disk.Seek(22, std::ios::cur); // we skip filesize as it is not necessary for a directory
+
+            namesize = disk.GetByte();
+            dirname = disk.GetString(namesize);
+            if(isEven(namesize))
+                disk.GetByte();
+
+            disk.Seek(4, std::ios::cur);
+            attr = disk.GetByte(); // I only retrieves the high order byte...
+            disk.Seek(5, std::ios::cur);
+
+            if(attr & 0x80) // ...So I only have to compare with 0x80 and not 0x8000
+            {
+                subDirectories.emplace(dirname, CDIDirectory(namesize, dirname, lbn, relOffset, 0));
+                subDirectories.find(dirname)->second.LoadFiles(disk);
+                subDirectories.find(dirname)->second.LoadSubDirectories(disk);
+            }
         }
-    }
-    disk.seekg(pos);
+        break;
+        disk.GotoNextSector();
+    } while(!(disk.subheader.Submode & cdieof)); // in case the directory structure is spreaded over several sectors
+    disk.Seek(pos);
 }
 
-void CDIDirectory::LoadFiles(std::ifstream& disk)
+void CDIDirectory::LoadFiles(CDIDisk& disk)
 {
-    char c;
-    uint32_t pos = disk.tellg();
+    uint8_t c;
+    uint32_t pos = disk.Tell();
 
-    disk.seekg(LBN * 2352 + 24);
-    disk.get(c);
-    disk.seekg(c-1, std::ios::cur);
-    disk.get(c);
-    disk.seekg(c-1, std::ios::cur);
+    disk.GotoLBN(dirLBN);
+    c = disk.GetByte();
+    disk.Seek(c-1, std::ios::cur); // describe the current directory, so we skip it
+    c = disk.GetByte();
+    disk.Seek(c-1, std::ios::cur); // describe the parent directory, so we skip it
 
-    while((disk.tellg() % 2352) < 2072)
+    do
     {
-        uint8_t namesize = 0, filenbr;
-        uint16_t attr = 0;
-        uint32_t lbn = 0, filesize = 0;
-        std::string filename;
-
-        disk.seekg(6, std::ios::cur);
-        disk.get(c); lbn |= (uint8_t)c << 24;
-        disk.get(c); lbn |= (uint8_t)c << 16;
-        disk.get(c); lbn |= (uint8_t)c << 8;
-        disk.get(c); lbn |= (uint8_t)c;
-
-        disk.seekg(4, std::ios::cur);
-        disk.get(c); filesize |= (uint8_t)c << 24;
-        disk.get(c); filesize |= (uint8_t)c << 16;
-        disk.get(c); filesize |= (uint8_t)c << 8;
-        disk.get(c); filesize |= (uint8_t)c;
-
-        disk.seekg(14, std::ios::cur);
-        disk.get(c); namesize = (uint8_t)c;
-        if(namesize == 0)
-            break;
-        for(int i = 0; i < namesize; i++)
+        while((disk.Tell() % 2352) < 2072)
         {
-            disk.get(c);
-            filename += (c == 0) ? '/' : c;
+            uint8_t namesize = 0, filenbr;
+            uint16_t attributes = 0;
+            uint32_t lbn = 0, filesize = 0;
+            std::string filename;
+
+            c = disk.GetByte(); // record length
+            if(c == 0)
+                break;
+
+            disk.Seek(5, std::ios::cur);
+            lbn = disk.GetLong();
+
+            disk.Seek(4, std::ios::cur);
+            filesize = disk.GetLong();
+
+            disk.Seek(14, std::ios::cur);
+
+            namesize = disk.GetByte();
+            filename = disk.GetString(namesize);
+            if(isEven(namesize))
+                disk.GetByte();
+
+            disk.Seek(4, std::ios::cur);
+
+            attributes = disk.GetWord();
+            disk.Seek(2, std::ios::cur);
+            filenbr = disk.GetByte();
+            disk.GetByte(); // last byte is reserved
+
+            if(!(attributes & 0x8000))
+            {
+                files.emplace(filename, CDIFile(&disk, lbn, filesize, namesize, filename, attributes, filenbr, relOffset));
+            }
         }
-        if(isEven(namesize))
-            disk.get(c);
-
-        disk.seekg(4, std::ios::cur);
-        disk.get(c); attr |= (uint8_t)c << 8;
-        disk.get(c); attr |= (uint8_t)c;
-        disk.seekg(2, std::ios::cur);
-        disk.get(c); filenbr = (uint8_t)c; disk.get(c);
-
-        if(!(attr & 0x8000))
-            files.emplace(filename, CDIFile(lbn, filesize, namesize, filename, attr, filenbr, relOffset));
-    }
-    disk.seekg(pos);
+        break;
+        disk.GotoNextSector();
+    } while(!(disk.subheader.Submode & cdieof)); // in case the directory structure is spreaded over several sectors
+    disk.Seek(pos);
 }
 
 bool CDIDirectory::GetFile(std::string filename, CDIFile& cdifile)
@@ -147,18 +150,18 @@ std::stringstream CDIDirectory::ExportInfo() const
 {
     std::stringstream ss;
     ss << "Dir: " << name << "/" << std::endl;
-    ss << "LBN: " << LBN << std::endl;
+    ss << "LBN: " << dirLBN << std::endl;
     for(std::pair<std::string, CDIFile> file : files)
     {
         ss << "    file: " << file.second.name << std::endl;
-        ss << "    Size: " << file.second.size << std::endl;
-        ss << "    LBN : " << file.second.LBN << std::endl << std::endl;
+        ss << "    Size: " << file.second.filesize << std::endl;
+        ss << "    LBN : " << file.second.fileLBN << std::endl << std::endl;
     }
     ss << std::endl;
     return ss;
 }
 
-void CDIDirectory::ExportAudio(CDI& cdi, std::string basePath) const
+void CDIDirectory::ExportAudio(std::string basePath) const
 {
     if(name != "/")
         basePath += name + "/";
@@ -169,16 +172,16 @@ void CDIDirectory::ExportAudio(CDI& cdi, std::string basePath) const
 
     for(std::pair<std::string, CDIFile> file : files)
     {
-        file.second.ExportAudio(cdi, basePath);
+        file.second.ExportAudio(basePath);
     }
 
-    for(std::pair<std::string, CDIDirectory> dir : subDirectories)
+    for(std::pair<std::string, CDIDirectory> subdir : subDirectories)
     {
-        dir.second.ExportAudio(cdi, basePath);
+        subdir.second.ExportAudio(basePath);
     }
 }
 
-void CDIDirectory::ExportFiles(CDI& cdi, std::string basePath) const
+void CDIDirectory::ExportFiles(std::string basePath) const
 {
     if(name != "/")
         basePath += name + "/";
@@ -189,11 +192,17 @@ void CDIDirectory::ExportFiles(CDI& cdi, std::string basePath) const
 
     for(std::pair<std::string, CDIFile> file : files)
     {
-        file.second.ExportFile(cdi, basePath);
+        file.second.ExportFile(basePath);
     }
 
-    for(std::pair<std::string, CDIDirectory> value : subDirectories)
+    for(std::pair<std::string, CDIDirectory> subdir : subDirectories)
     {
-        value.second.ExportFiles(cdi, basePath);
+        subdir.second.ExportFiles(basePath);
     }
+}
+
+void CDIDirectory::Clear()
+{
+    files.clear();
+    subDirectories.clear();
 }

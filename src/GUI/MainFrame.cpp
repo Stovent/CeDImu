@@ -85,7 +85,7 @@ void MainFrame::CreateMenuBar()
 
 void MainFrame::SetTitleInfo(const uint16_t fps)
 {
-    SetTitle((app->cdi ? (app->cdi->romOpened ? app->cdi->romName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->vdsc->biosFilename + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps));
+    SetTitle((app->cdi ? (app->cdi->disk.IsOpen() ? app->cdi->gameName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->vdsc->biosFilename + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps));
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
@@ -114,13 +114,16 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
     if(Config::skipBIOS)
     {
         CDIFile module = app->cdi->mainModule;
-        uint32_t size;
-        char* d = module.GetFileContent(*(app->cdi), 0, false, &size);
+        uint32_t size, address = 0;
+        char* d = module.GetFileContent(true, &size);
         if(d != nullptr && size)
         {
+            app->vdsc->PutDataInMemory(d, size, address);
+            // Get the module execution offset based on the module header,
+            // assuming the loaded module will always be a program
+            app->cpu->PC = address + app->vdsc->GetLong(address + 0x30);
             wxMessageBox("Module " + module.name + " loaded");
-            app->vdsc->PutDataInMemory(d, size, 0);
-            app->cpu->PC = 0;
+
         }
     }
 
@@ -241,6 +244,8 @@ void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
     if(app->cdi)
         app->cdi->ExportFiles();
+    else
+        wxMessageBox("No ROM loaded, no file to export");
 }
 
 void MainFrame::OnExportAudio(wxCommandEvent& event)

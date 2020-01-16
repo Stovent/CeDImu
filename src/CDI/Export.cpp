@@ -3,6 +3,7 @@
 #include <wx/filefn.h>
 
 #include "CDI.hpp"
+#include "../utils.hpp"
 
 bool CDI::ExportAudio()
 {
@@ -13,7 +14,7 @@ bool CDI::ExportAudio()
     CreateSubfoldersFromROMDirectory(currentPath);
 
     currentPath = gameFolder + currentPath;
-    rootDirectory.ExportAudio(*this, currentPath);
+    rootDirectory.ExportAudio(currentPath);
 
     return bol;
 }
@@ -30,19 +31,30 @@ void CDI::ExportAudioInfo()
 
 bool CDI::ExportFiles()
 {
+    if(!disk.IsOpen())
+    {
+        wxMessageBox("No ROM loaded, no files to export");
+        return false;
+    }
+
+    cedimu->mainFrame->SetStatusText("Exporting files...");
     ExportSectorsInfo();
     ExportFilesInfo();
-    bool bol = true;
 
     std::string currentPath = "files/";
     if(!CreateSubfoldersFromROMDirectory(currentPath))
+    {
         wxMessageBox("Could not create subfolders " + gameFolder);
+        return false;
+    }
 
     currentPath = gameFolder + currentPath;
 
-    rootDirectory.ExportFiles(*this, currentPath);
+    rootDirectory.ExportFiles(currentPath);
 
-    return bol;
+    wxMessageBox("Files exported to " + currentPath);
+    cedimu->mainFrame->SetStatusText("");
+    return true;
 }
 
 void CDI::ExportFilesInfo()
@@ -53,7 +65,7 @@ void CDI::ExportFilesInfo()
     std::ofstream out(gameFolder + "files_info.txt");
 
     out << "Dir: " << rootDirectory.name << std::endl;
-    out << "LBN: " << rootDirectory.LBN << std::endl;
+    out << "LBN: " << rootDirectory.dirLBN << std::endl;
 
     for(std::pair<std::string, CDIDirectory> dir : rootDirectory.subDirectories)
     {
@@ -68,8 +80,8 @@ void CDI::ExportFilesInfo()
     {
         std::stringstream ss;
         ss << "    file: " << file.second.name << std::endl;
-        ss << "    Size: " << file.second.size << std::endl;
-        ss << "    LBN : " << file.second.LBN << std::endl << std::endl;
+        ss << "    Size: " << file.second.filesize << std::endl;
+        ss << "    LBN : " << file.second.fileLBN << std::endl << std::endl;
         out << ss.str();
     }
 
@@ -79,28 +91,26 @@ void CDI::ExportFilesInfo()
 void CDI::ExportSectorsInfo()
 {
     if(!CreateSubfoldersFromROMDirectory())
+    {
         wxMessageBox("Could not create subfolders " + gameFolder);
+        return;
+    }
 
     std::ofstream out(gameFolder + "sectors.txt");
 
-    const uint32_t pos = disk.tellg();
-    disk.seekg(0);
-    UpdateSectorInfo();
+    const uint32_t pos = disk.Tell();
+    disk.Seek(0);
 
     out << "LBN  Min secs sect mode file channel submode  codingInfo" << std::endl;
     uint32_t LBN = 0;
-    while(disk.good())
+    while(disk.Good())
     {
-        out << std::to_string(LBN++) << "   " << std::to_string(header.Minutes) << "   " << std::to_string(header.Seconds) << "   " << std::to_string(header.Sectors) << "   " << std::to_string(header.Mode) << "    ";
-        out << std::to_string(subheader.FileNumber) << "    " << std::to_string(subheader.ChannelNumber) << " " << toBinString(subheader.Submode, 8) << " " << toBinString(subheader.CodingInformation, 8) << std::endl;
-        GotoNextSector();
-        if(!disk.good()) // end of disk reached
-        {
-            disk.clear();
-            break;
-        }
+        out << std::to_string(LBN++) << "   " << std::to_string(disk.header.Minutes) << "   " << std::to_string(disk.header.Seconds) << "   " << std::to_string(disk.header.Sectors) << "   " << std::to_string(disk.header.Mode) << "    ";
+        out << std::to_string(disk.subheader.FileNumber) << "    " << std::to_string(disk.subheader.ChannelNumber) << " " << toBinString(disk.subheader.Submode, 8) << " " << toBinString(disk.subheader.CodingInformation, 8) << std::endl;
+        disk.GotoNextSector(0, false, UINT32_MAX, false);
     }
+    disk.Clear();
 
     out.close();
-    disk.seekg(pos);
+    disk.Seek(pos);
 }
