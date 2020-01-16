@@ -15,9 +15,6 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
     memorySwapCount = 0;
     isCA = false;
 
-    memset(controlRegisters, 0, 0x80*sizeof(uint32_t));
-    memset(internalRegisters, 0, 32*sizeof(uint16_t));
-
     Reset();
 
 #ifdef DEBUG
@@ -40,6 +37,10 @@ MCD212::~MCD212()
 
 void MCD212::Reset()
 {
+    memset(controlRegisters, 0, 0x80*sizeof(uint32_t));
+    memset(internalRegisters, 0, 32*sizeof(uint16_t));
+    ResetMemory();
+
     controlRegisters[ImageCodingMethod] &= 0xF80000; // reset bits 0, 1, 2, 3, 8, 9, 10, 11, 18 (plane A and B off,external video disabled)
     controlRegisters[CursorControl] &= 0x7FFFFF; // reset bit 23 (cursor disabled)
     controlRegisters[BackdropColor] = 0; // reset bits 0, 1, 2, 3 (black backdrop)
