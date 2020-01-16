@@ -58,7 +58,7 @@ void MainFrame::CreateMenuBar()
     wxMenu* cdi = new wxMenu;
     wxMenu* cdiexport = new wxMenu;
     cdiexport->Append(IDOnExportFiles, "Files");
-    cdiexport->Append(IDOnExportAudio, "Audio");
+//    cdiexport->Append(IDOnExportAudio, "Audio");
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
@@ -148,6 +148,7 @@ void MainFrame::OnLoadBIOS(wxCommandEvent& event)
 void MainFrame::OnCloseROM(wxCommandEvent& event)
 {
     app->StopGameThread();
+    app->cdi->CloseROM();
 }
 
 void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))

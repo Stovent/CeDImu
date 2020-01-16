@@ -30,8 +30,7 @@ void GamePanel::RefreshLoop(wxTimerEvent& event)
     dc.SetBrush(*wxBLACK_BRUSH);
     dc.DrawRectangle(0, 0, mainFrame->GetClientSize().x, mainFrame->GetClientSize().y);
     dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-    if(!mainFrame->pause->IsChecked())
-        DrawTextInfo(dc);
+    DrawTextInfo(dc);
 }
 
 void GamePanel::DrawTextInfo(wxClientDC& dc)
