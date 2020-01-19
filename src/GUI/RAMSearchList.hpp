@@ -13,6 +13,7 @@ public:
     RAMSearchFrame* ramSearchFrame;
 
     RAMSearchList(RAMSearchFrame* parent);
+
     virtual wxString OnGetItemText(long item, long column) const override;
 };
 

@@ -27,6 +27,7 @@ public:
     wxRadioButton* byte1;
     wxRadioButton* byte2;
     wxRadioButton* byte4;
+    wxRadioButton* lastByte;
 
     RAMSearchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~RAMSearchFrame();
@@ -35,6 +36,14 @@ public:
 
     void PaintEvent();
     void RefreshLoop(wxTimerEvent& event);
+
+    void OnCheckMisaligned(wxCommandEvent& event);
+    void OnSigned(wxCommandEvent& event);
+    void OnUnsigned(wxCommandEvent& event);
+    void OnHexadecimal(wxCommandEvent& event);
+    void OnByte1(wxCommandEvent& event);
+    void OnByte2(wxCommandEvent& event);
+    void OnByte4(wxCommandEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 };

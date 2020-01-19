@@ -20,6 +20,7 @@ RAMSearchList::RAMSearchList(RAMSearchFrame* parent) : wxListCtrl(parent, wxID_A
     valueCol.SetWidth(100);
     InsertColumn(1, valueCol);
 
+    EnableAlternateRowColours();
     SetItemCount(ramSearchFrame->mainFrame->app->vdsc->allocatedMemory);
 }
 

@@ -30,6 +30,14 @@ enum
     IDDisassemblerOnClose,
 
     IDDisassemblerpc, IDDisassemblersr,
+
+    IDRAMSearchListCheckMisaligned,
+    IDRAMSearchListSigned,
+    IDRAMSearchListUnsigned,
+    IDRAMSearchListHexadecimal,
+    IDRAMSearchListByte1,
+    IDRAMSearchListByte2,
+    IDRAMSearchListByte4,
 };
 
 class MainFrame : public wxFrame

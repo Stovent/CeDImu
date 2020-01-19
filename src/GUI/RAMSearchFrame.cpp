@@ -6,6 +6,13 @@
 wxBEGIN_EVENT_TABLE(RAMSearchFrame, wxFrame)
     EVT_TIMER(wxID_ANY, RAMSearchFrame::RefreshLoop)
     EVT_CLOSE(RAMSearchFrame::OnClose)
+    EVT_CHECKBOX(IDRAMSearchListCheckMisaligned, RAMSearchFrame::OnCheckMisaligned)
+    EVT_RADIOBUTTON(IDRAMSearchListSigned, RAMSearchFrame::OnSigned)
+    EVT_RADIOBUTTON(IDRAMSearchListUnsigned, RAMSearchFrame::OnUnsigned)
+    EVT_RADIOBUTTON(IDRAMSearchListHexadecimal, RAMSearchFrame::OnHexadecimal)
+    EVT_RADIOBUTTON(IDRAMSearchListByte1, RAMSearchFrame::OnByte1)
+    EVT_RADIOBUTTON(IDRAMSearchListByte2, RAMSearchFrame::OnByte2)
+    EVT_RADIOBUTTON(IDRAMSearchListByte4, RAMSearchFrame::OnByte4)
 wxEND_EVENT_TABLE()
 
 RAMSearchFrame::RAMSearchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "RAM Search", pos, size)
@@ -44,9 +51,9 @@ RAMSearchFrame::RAMSearchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos,
     wxBoxSizer* dataSizer = new wxBoxSizer(wxHORIZONTAL);
 
     wxStaticBoxSizer* dataSize = new wxStaticBoxSizer(wxVERTICAL, buttonsPanel, "Data display");
-    signed_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Signed", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-    unsigned_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Unsigned");
-    hexadecimal_ = new wxRadioButton(buttonsPanel, wxID_ANY, "Hexadecimal");
+    signed_ = new wxRadioButton(buttonsPanel, IDRAMSearchListSigned, "Signed", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+    unsigned_ = new wxRadioButton(buttonsPanel, IDRAMSearchListUnsigned, "Unsigned");
+    hexadecimal_ = new wxRadioButton(buttonsPanel, IDRAMSearchListHexadecimal, "Hexadecimal");
     dataSize->Add(signed_, 1, wxEXPAND, 1);
     dataSize->Add(unsigned_, 1, wxEXPAND, 1);
     dataSize->Add(hexadecimal_, 1, wxEXPAND, 1);
@@ -55,10 +62,11 @@ RAMSearchFrame::RAMSearchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos,
 
 
     wxStaticBoxSizer* dataDisplay = new wxStaticBoxSizer(wxVERTICAL, buttonsPanel, "Data size");
-    byte1 = new wxRadioButton(buttonsPanel, wxID_ANY, "1 byte", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-    byte2 = new wxRadioButton(buttonsPanel, wxID_ANY, "2 byte");
-    byte4 = new wxRadioButton(buttonsPanel, wxID_ANY, "4 byte");
-    checkMisaligned = new wxCheckBox(buttonsPanel, wxID_ANY, "Check misaligned");
+    byte1 = new wxRadioButton(buttonsPanel, IDRAMSearchListByte1, "1 byte", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+    byte2 = new wxRadioButton(buttonsPanel, IDRAMSearchListByte2, "2 byte");
+    byte4 = new wxRadioButton(buttonsPanel, IDRAMSearchListByte4, "4 byte");
+    lastByte = byte1;
+    checkMisaligned = new wxCheckBox(buttonsPanel, IDRAMSearchListCheckMisaligned, "Check misaligned");
     dataDisplay->Add(byte1, 1, 0, 2);
     dataDisplay->Add(byte2, 1, 0, 2);
     dataDisplay->Add(byte4, 1, 0, 2);
@@ -119,4 +127,57 @@ void RAMSearchFrame::PaintEvent()
 {
     if(!mainFrame->pause->IsChecked())
         ramSearchList->Refresh();
+}
+
+void RAMSearchFrame::OnCheckMisaligned(wxCommandEvent& event)
+{
+    ramSearchList->Refresh();
+}
+
+void RAMSearchFrame::OnSigned(wxCommandEvent& event)
+{
+    ramSearchList->Refresh();
+}
+
+void RAMSearchFrame::OnUnsigned(wxCommandEvent& event)
+{
+    ramSearchList->Refresh();
+}
+
+void RAMSearchFrame::OnHexadecimal(wxCommandEvent& event)
+{
+    ramSearchList->Refresh();
+}
+
+void RAMSearchFrame::OnByte1(wxCommandEvent& event)
+{
+    if(lastByte == byte2)
+        ramSearchList->EnsureVisible(ramSearchList->GetTopItem()*2 + ramSearchList->GetCountPerPage()-1);
+    else
+        ramSearchList->EnsureVisible(ramSearchList->GetTopItem()*4 + ramSearchList->GetCountPerPage()-1);
+
+    lastByte = byte1;
+    ramSearchList->Refresh();
+}
+
+void RAMSearchFrame::OnByte2(wxCommandEvent& event)
+{
+    if(lastByte == byte1)
+        ramSearchList->EnsureVisible(ramSearchList->GetTopItem()/2);
+    else
+        ramSearchList->EnsureVisible(ramSearchList->GetTopItem()*2 + ramSearchList->GetCountPerPage()-1);
+
+    lastByte = byte2;
+    ramSearchList->Refresh();
+}
+
+void RAMSearchFrame::OnByte4(wxCommandEvent& event)
+{
+    if(lastByte == byte1)
+        ramSearchList->EnsureVisible(ramSearchList->GetTopItem()/4);
+    else
+        ramSearchList->EnsureVisible(ramSearchList->GetTopItem()/2);
+
+    lastByte = byte4;
+    ramSearchList->Refresh();
 }

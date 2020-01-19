@@ -105,6 +105,8 @@ void MCD212::SetByte(const uint32_t& addr, const uint8_t& data)
     else if(addr <= 0x4FFFDF)
     {
 #ifdef DEBUG
+        if(addr >= 0x400000)
+            out << "Warning: writing to System ROM ";
         out << std::hex << app->cpu->currentPC << "\tSet byte " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr] = data;
@@ -129,6 +131,8 @@ void MCD212::SetWord(const uint32_t& addr, const uint16_t& data)
     else if(addr < 0x4FFFDF)
     {
 #ifdef DEBUG
+        if(addr >= 0x400000)
+            out << "Warning: writing to System ROM ";
         out << std::hex << app->cpu->currentPC << "\tSet word " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr] = data >> 8;
@@ -154,6 +158,8 @@ void MCD212::SetLong(const uint32_t& addr, const uint32_t& data)
     else if(addr < 0x4FFFDF)
     {
 #ifdef DEBUG
+        if(addr >= 0x400000)
+            out << "Warning: writing to System ROM ";
         out << std::hex << app->cpu->currentPC << "\tSet long " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr]   = data >> 24;
