@@ -2,7 +2,7 @@
 /*
 
 !.gitignore
-!Makefile
+!WinMakefile
 !CMakeLists.txt
 
 !/src
