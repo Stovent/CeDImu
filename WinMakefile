@@ -20,7 +20,7 @@ bin/obj/CDI.o bin/obj/CDIDisk.o bin/obj/CDIDirectory.o bin/obj/CDIFile.o bin/obj
 
 CeDImu :
 	if not exist bin\obj\ mkdir bin\obj
-	windres.exe -I$(wxIPath) -I$(wxIMSWU) -J rc -O coff -i Ressources/ressource.rc -o bin/obj/ressource.res
+	windres.exe -I$(wxIPath) -I$(wxIMSWU) -J rc -O coff -i ressources/ressource.rc -o bin/obj/ressource.res
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDI.cpp -o bin/obj/CDI.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIDisk.cpp -o bin/obj/CDIDisk.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIDirectory.cpp -o bin/obj/CDIDirectory.o
