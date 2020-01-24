@@ -178,7 +178,7 @@ enum SCC68070Peripherals
     UCSR = 0x1014, // UART Clock Select Register
     UCR  = 0x1016, // UART Command Register
     UTHR = 0x1018, // UART Transmit Holding Register
-    URHR = 0x100A, // UART Receive Holding Register
+    URHR = 0x101A, // UART Receive Holding Register
 
     TSR = 0x101F, // Timer Status Register
     TCR = 0x1020, // Timer Control Register

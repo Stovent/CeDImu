@@ -21,6 +21,11 @@ SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : a
     GenerateInstructionSet();
     RebootCore();
 
+    UART_IN.push(0);
+    UART_IN.push(0);
+    UART_IN.push(6);
+    UART_IN.push(1);
+
     SET_TX_READY
     SET_RX_READY
 }
