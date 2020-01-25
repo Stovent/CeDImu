@@ -24,6 +24,7 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
     backgroundPlane.Create(1, 1);
     if(!backgroundPlane.HasAlpha())
         backgroundPlane.InitAlpha();
+
     cursorPlane.Create(16, 16);
     if(!cursorPlane.HasAlpha())
         cursorPlane.InitAlpha();
@@ -105,20 +106,22 @@ void MCD212::DisplayLine()
 
     if(++lineNumber >= GetVerticalResolution())
     {
-        lineNumber = 0;
         UNSET_DA_BIT()
         if(GetDE())
         {
+            // either draw in a single time on each frame, either draw them line by line
             DrawPlaneA();
             DrawPlaneB();
             DrawBackground();
 
             wxImage* screen = new wxImage(GetHorizontalResolution1(), GetVerticalResolution());
+            // do planeA + planeB + cursor + background here
             app->mainFrame->gamePanel->RefreshScreen(backgroundPlane);
             delete screen;
         }
         totalFrameCount++;
         OnFrameCompleted();
+        lineNumber = 0;
     }
 }
 
@@ -463,8 +466,8 @@ void MCD212::DrawBackground()
 void MCD212::DrawCursor()
 {
     uint8_t yAddress = controlRegisters[CursorPattern] >> 16 & 0x0F;
-    uint8_t* data = cursorPlane.GetData() + 3*yAddress*15;
-    uint8_t* alpha = cursorPlane.GetAlpha();
+    uint8_t* data = cursorPlane.GetData() + 3*yAddress*16;
+    uint8_t* alpha = cursorPlane.GetAlpha() + yAddress*16;
 
     uint16_t mask = 1 << 15;
     while(mask)

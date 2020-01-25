@@ -11,7 +11,7 @@ uint8_t MCD212::GetByte(const uint32_t& addr)
         const uint8_t ret = internalRegisters[addr-0x4FFFE0] & 0x00FF;
         if(addr == 0x4FFFE1)
         {
-            internalRegisters[CSR2R] &= 0x00FE;
+            internalRegisters[CSR2R] &= 0x00FE; // clear BE bit on status read
         }
         return ret;
     }
@@ -38,6 +38,7 @@ uint16_t MCD212::GetWord(const uint32_t& addr)
         memorySwapCount++;
         return memory[addr + 0x400000] << 8 | memory[addr + 0x400001];
     }
+
     if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
@@ -69,6 +70,7 @@ uint32_t MCD212::GetLong(const uint32_t& addr)
         memorySwapCount += 2;
         return memory[addr + 0x400000] << 24 | memory[addr + 0x400001] << 16 | memory[addr + 0x400002] << 8 | memory[addr + 0x400003];
     }
+
     if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
 #ifdef DEBUG
@@ -106,7 +108,7 @@ void MCD212::SetByte(const uint32_t& addr, const uint8_t& data)
     {
 #ifdef DEBUG
         if(addr >= 0x400000)
-            out << "Warning: writing to System ROM ";
+            out << "WARNING: writing to System ROM ";
         out << std::hex << app->cpu->currentPC << "\tSet byte " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr] = data;
@@ -128,11 +130,11 @@ void MCD212::SetWord(const uint32_t& addr, const uint16_t& data)
 #endif // DEBUG
         internalRegisters[addr-0x4FFFE0] = data;
     }
-    else if(addr < 0x4FFFDF)
+    else if(addr <= 0x4FFFDF)
     {
 #ifdef DEBUG
         if(addr >= 0x400000)
-            out << "Warning: writing to System ROM ";
+            out << "WARNING: writing to System ROM ";
         out << std::hex << app->cpu->currentPC << "\tSet word " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr] = data >> 8;
@@ -155,11 +157,11 @@ void MCD212::SetLong(const uint32_t& addr, const uint32_t& data)
 #endif // DEBUG
         internalRegisters[addr-0x4FFFE0] = data;
     }
-    else if(addr < 0x4FFFDF)
+    else if(addr <= 0x4FFFDF)
     {
 #ifdef DEBUG
         if(addr >= 0x400000)
-            out << "Warning: writing to System ROM ";
+            out << "WARNING: writing to System ROM ";
         out << std::hex << app->cpu->currentPC << "\tSet long " << std::dec << data << " (0x" << std::hex << data << ") \tat address 0x" << addr << std::endl;
 #endif // DEBUG
         memory[addr]   = data >> 24;
