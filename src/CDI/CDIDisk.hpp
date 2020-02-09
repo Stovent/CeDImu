@@ -51,8 +51,7 @@ public:
     int Peek();
 
     uint32_t Tell();
-    void Seek(const uint32_t pos);
-    void Seek(const uint32_t offset, std::ios::seekdir direction);
+    void Seek(const uint32_t offset, std::ios::seekdir direction = std::ios::beg);
     bool GotoLBN(const uint32_t lbn, const uint32_t offset = 0);
     bool GotoNextSector(uint8_t submodeMask = 0, const bool maskIncludeCurrentSector = false, uint32_t maxSectorCount = UINT32_MAX, const bool includeAllSectors = false);
 

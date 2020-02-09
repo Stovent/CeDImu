@@ -16,6 +16,7 @@ void SCC68070::Interpreter(const bool loop)
 
         currentPC = PC;
         currentOpcode = GetNextWord();
+
         std::map<uint16_t, SCC68070InstructionSet>::iterator it = ILUT.find(currentOpcode);
 
         if(it == ILUT.end())

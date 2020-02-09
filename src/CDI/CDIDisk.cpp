@@ -61,12 +61,6 @@ uint32_t CDIDisk::Tell()
     return disk.tellg();
 }
 
-void CDIDisk::Seek(const uint32_t pos)
-{
-    disk.seekg(pos);
-    UpdateSectorInfo();
-}
-
 void CDIDisk::Seek(const uint32_t offset, std::ios::seekdir direction)
 {
     disk.seekg(offset, direction);

@@ -2,6 +2,8 @@
 Experimental Philips CD-I emulator
 (I use a capital `I` instead of a lower case `i` because the Green Book capitalizes it)
 
+Note: the project is still in a very early development stage, please open issues only to address problems in the existing code.
+
 ## How to build
 CeDImu depends on wxWidgets.
 
@@ -15,10 +17,13 @@ Use MinGW
 2. Open a terminal and type `make -f WinMakefile` (Assuming `make` is in your PATH variable).
 
 #### CMake
-Use Cmake-GUI.
+Use CMake-GUI.
 
 ### Linux
 Package dependency: `libwxgtk3.0-dev`
+
+Install the dependency, then open a terminal in the root directory of the git and type:
+
 ```sh
 cmake .
 make -j$(nproc --all)
@@ -39,4 +44,4 @@ Release 1.0 when this TODO list will be implemented.
 * MCD251 (MPEG Full Motion Video Decoder (FMV))
 
 ## libCDI
-If I get everything listed upper (except TAS Tools) working, stable and fully functionnal, the goal is to create libCDI, a complete library (static and/or dynamic) to allow any program to implement CDI application (other emulators like Bizhawk, MAME, etc)
+If I get everything listed upper (except TAS Tools) working, stable and fully functional, the goal is to create libCDI, a complete library (static and/or dynamic) to allow any program to implement CDI application (other emulators like Bizhawk, MAME, etc)
