@@ -33,7 +33,7 @@ uint16_t SCC68070::Exception(const uint8_t& vectorNumber)
     SetWord(ARIWPr(7, 2), sr);
 
     if(vectorNumber <= 1 || vectorNumber == 9 || vectorNumber == 24)
-        stop = false;
+        run = true;
 
     switch(vectorNumber) // handle Exception Processing Clock Periods
     {
@@ -3036,7 +3036,7 @@ uint16_t SCC68070::Stop() // Not fully emulated
 
     if(GetS())
     {
-        stop = true;
+        run = false;
         SR = data;
         if(data == 0)
             SetZ();

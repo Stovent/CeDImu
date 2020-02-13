@@ -24,7 +24,7 @@ class SCC68070;
 // contains more information than the SCC68070 datasheet itself
 enum SCC68070InstructionSet
 {
-    UNKNOWN = 0,
+    UNKNOWN_INSTRUCTION = 0,
     ABCD, // Add Decimal with Extend
     ADD, // Add Binary
     ADDA, // Add Address
@@ -213,7 +213,6 @@ public:
     uint32_t USP;
     uint32_t SSP;
 
-    bool stop;
     uint32_t currentPC;
     bool run;
     bool disassemble;

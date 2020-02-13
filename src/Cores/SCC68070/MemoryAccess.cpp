@@ -413,13 +413,10 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
                     internal[addr-INTERNAL] = UART_IN.front();
                     UART_IN.pop();
                 }
-            }
 #ifdef DEBUG
-            if(addr == 0x8000201B)
-            {
                 out << "URHR 0x" << std::hex << currentPC << " value #" << (uint32_t)internal[addr-INTERNAL] << std::endl;
-            }
 #endif // DEBUG
+            }
             return internal[addr-INTERNAL];
         }
         else

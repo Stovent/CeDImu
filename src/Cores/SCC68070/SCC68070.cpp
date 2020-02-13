@@ -46,7 +46,6 @@ void SCC68070::RebootCore()
     instructionsBuffer.clear();
     ResetOperation();
     instructionsBufferChanged = true;
-    stop = false;
 }
 
 void SCC68070::ResetOperation()
@@ -205,7 +204,7 @@ void SCC68070::GenerateInstructionOpcodes(SCC68070InstructionSet instruction, co
             s += toBinString(value, len);
             if(pos + len < 16)
                 s += std::string(format + pos + len, 16 - pos - len);
-            ILUT.emplace(binStringToInt(s), instruction);
+            ILUT[binStringToInt(s)] = instruction;
         }
     }
     else
@@ -249,6 +248,10 @@ void SCC68070::GenerateInstructionSet()
     200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239,\
     240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255,\
 }
+
+    for(int i = 0; i <= UINT16_MAX; i++) // init LUT with unknown instructions
+        ILUT[i] = UNKNOWN_INSTRUCTION;
+
     GenerateInstructionOpcodes(ABCD, "1100aaa10000bccc", {
         {0, 1, 2, 3, 4, 5, 6, 7}, // aaa
         {0, 1}, // b
@@ -281,9 +284,9 @@ void SCC68070::GenerateInstructionSet()
     GenerateInstructionOpcodes(ANDI, "00000010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(ANDI, "00000010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} });
 
-    ILUT.emplace(0x023C, ANDICCR);
+    ILUT[0x023C] = ANDICCR;
 
-    ILUT.emplace(0x027C, ANDISR);
+    ILUT[0x027C] = ANDISR;
 
     GenerateInstructionOpcodes(ASm,  "1110000a11bbbccc", {{0, 1}, {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(ASm,  "1110000a11111ccc", {{0, 1}, /* effective mode 7 */ {0, 1} });
@@ -295,26 +298,26 @@ void SCC68070::GenerateInstructionSet()
     GenerateInstructionOpcodes(BCHG, "0000aaa101bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(BCHG, "0000aaa101111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} });
     GenerateInstructionOpcodes(BCHG, "0000100001aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    ILUT.emplace(0x0878, BCHG); ILUT.emplace(0x0879, BCHG); /*effective mode 7*/
+    ILUT[0x0878] = BCHG; ILUT[0x0879] = BCHG; /*effective mode 7*/
 
     GenerateInstructionOpcodes(BCLR, "0000aaa110bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(BCLR, "0000aaa110111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} });
     GenerateInstructionOpcodes(BCLR, "0000100010aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    ILUT.emplace(0x08B8, BCLR); ILUT.emplace(0x08B9, BCLR); /*effective mode 7*/
+    ILUT[0x08B8] = BCLR; ILUT[0x08B9] = BCLR; /*effective mode 7*/
 
     GenerateInstructionOpcodes(BRA,  "01100000aaaaaaaa", {FULL_BYTE });
 
     GenerateInstructionOpcodes(BSET, "0000aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(BSET, "0000aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} });
     GenerateInstructionOpcodes(BSET, "0000100011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    ILUT.emplace(0x08F8, BSET); ILUT.emplace(0x08F9, BSET); /*effective mode 7*/
+    ILUT[0x08F8] = BSET; ILUT[0x08F9] = BSET; /*effective mode 7*/
 
     GenerateInstructionOpcodes(BSR,  "01100001aaaaaaaa", {FULL_BYTE });
 
     GenerateInstructionOpcodes(BTST, "0000aaa100bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(BTST, "0000aaa100111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} });
     GenerateInstructionOpcodes(BTST, "0000100000aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    ILUT.emplace(0x0838, BTST); ILUT.emplace(0x0839, BTST); ILUT.emplace(0x083A, BTST); ILUT.emplace(0x083B, BTST); /*effective mode 7*/
+    ILUT[0x0838] = BTST; ILUT[0x0839] = BTST; ILUT[0x083A] = BTST; ILUT[0x083B] = BTST; /*effective mode 7*/
 
     GenerateInstructionOpcodes(CHK,  "0100aaa110bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(CHK,  "0100aaa110111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} });
@@ -349,15 +352,15 @@ void SCC68070::GenerateInstructionSet()
     GenerateInstructionOpcodes(EORI, "00001010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(EORI, "00001010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} });
 
-    ILUT.emplace(0x0A3C, EORICCR);
+    ILUT[0x0A3C] = EORICCR;
 
-    ILUT.emplace(0x0A7C, EORISR);
+    ILUT[0x0A7C] = EORISR;
 
     GenerateInstructionOpcodes(EXG,  "1100aaa1bbbbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0b01000, 0b01001, 0b10001}, {0, 1, 2, 3, 4, 5, 6, 7} });
 
     GenerateInstructionOpcodes(EXT,  "0100100aaa000bbb", {{0b010, 0b011, 0b111}, {0, 1, 2, 3, 4, 5, 6, 7} });
 
-    ILUT.emplace(0x4AFC, ILLEGAL);
+    ILUT[0x4AFC] = ILLEGAL;
 
     GenerateInstructionOpcodes(JMP,  "0100111011aaabbb", {{2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(JMP,  "0100111011111bbb", {/*mode 7*/ {0, 1, 2, 3} });
@@ -389,7 +392,7 @@ void SCC68070::GenerateInstructionSet()
     GenerateInstructionOpcodes(MOVECCR, "0100010011111bbb", {/*effective mode 7*/ {0, 1, 2, 3, 4} });
 
     GenerateInstructionOpcodes(MOVEfSR, "0100000011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    ILUT.emplace(0x40F8, MOVEfSR); ILUT.emplace(0x40F9, MOVEfSR);
+    ILUT[0x40F8] = MOVEfSR; ILUT[0x40F9] = MOVEfSR;
 
     GenerateInstructionOpcodes(MOVESR, "0100011011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(MOVESR, "0100011011111bbb", {/*effective mode 7*/{0, 1, 2, 3, 4} });
@@ -412,7 +415,7 @@ void SCC68070::GenerateInstructionSet()
     GenerateInstructionOpcodes(MULU, "1100aaa011111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} });
 
     GenerateInstructionOpcodes(NBCD, "0100100000aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    ILUT.emplace(0x4838, NBCD); ILUT.emplace(0x4839, NBCD);
+    ILUT[0x4838] = NBCD; ILUT[0x4839] = NBCD;
 
     GenerateInstructionOpcodes(NEG,  "01000100aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(NEG,  "01000100aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} });
@@ -420,7 +423,7 @@ void SCC68070::GenerateInstructionSet()
     GenerateInstructionOpcodes(NEGX, "01000000aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(NEGX, "01000000aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} });
 
-    ILUT.emplace(0x4E71, NOP);
+    ILUT[0x4E71] = NOP;
 
     GenerateInstructionOpcodes(NOT,  "01000110aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(NOT,  "01000110aa111ccc", {{0, 1, 2}, {0, 1} });
@@ -433,14 +436,14 @@ void SCC68070::GenerateInstructionSet()
     GenerateInstructionOpcodes(ORI,  "00000000aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(ORI,  "00000000aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} });
 
-    ILUT.emplace(0x003C, ORICCR);
+    ILUT[0x003C] = ORICCR;
 
-    ILUT.emplace(0x007C, ORISR);
+    ILUT[0x007C] = ORISR;
 
     GenerateInstructionOpcodes(PEA,  "0100100001aaabbb", {{2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(PEA,  "0100100001111bbb", {/*mode 7*/ {0, 1, 2, 3} });
 
-    ILUT.emplace(0x4E70, RESET);
+    ILUT[0x4E70] = RESET;
 
     GenerateInstructionOpcodes(ROm,  "1110011a11bbbccc", {{0, 1},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(ROm,  "1110011a11111ccc", {{0, 1},/*effective mode 7*/ {0, 1} });
@@ -452,18 +455,18 @@ void SCC68070::GenerateInstructionSet()
 
     GenerateInstructionOpcodes(ROXr,  "1110aaabccd10eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} });
 
-    ILUT.emplace(0x4E73, RTE);
+    ILUT[0x4E73] = RTE;
 
-    ILUT.emplace(0x4E77, RTR);
+    ILUT[0x4E77] = RTR;
 
-    ILUT.emplace(0x4E75, RTS);
+    ILUT[0x4E75] = RTS;
 
     GenerateInstructionOpcodes(SBCD, "1000aaa10000bccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} });
 
     GenerateInstructionOpcodes(Scc,  "0101aaaa11bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(Scc,  "0101aaaa11111ccc", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},/*effective mode 7*/ {0, 1} });
 
-    ILUT.emplace(0x4E72, STOP);
+    ILUT[0x4E72] = STOP;
 
     GenerateInstructionOpcodes(SUB,  "1001aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(SUB,  "1001aaabbb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} });
@@ -486,11 +489,11 @@ void SCC68070::GenerateInstructionSet()
     GenerateInstructionOpcodes(SWAP, "0100100001000aaa", {{0, 1, 2, 3, 4, 5, 6, 7} });
 
     GenerateInstructionOpcodes(TAS,  "0100101011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
-    ILUT.emplace(0x4AF8, TAS); ILUT.emplace(0x4AF9, TAS);
+    ILUT[0x4AF8] = TAS; ILUT[0x4AF9] = TAS;
 
     GenerateInstructionOpcodes(TRAP, "010011100100aaaa", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15} });
 
-    ILUT.emplace(0x4E76, TRAPV);
+    ILUT[0x4E76] = TRAPV;
 
     GenerateInstructionOpcodes(TST,  "01001010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} });
     GenerateInstructionOpcodes(TST,  "01001010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} });

@@ -5,8 +5,6 @@ void SCC68070::Interpreter(const bool loop)
     run = loop;
     do
     {
-        if(stop) return;
-
         if(executionTime == 0)
         {
             instructionsBuffer.clear();
@@ -16,34 +14,17 @@ void SCC68070::Interpreter(const bool loop)
 
         currentPC = PC;
         currentOpcode = GetNextWord();
+        const SCC68070InstructionSet inst = ILUT[currentOpcode];
 
-        std::map<uint16_t, SCC68070InstructionSet>::iterator it = ILUT.find(currentOpcode);
-
-        if(it == ILUT.end())
+        executionTime += (this->*instructions[inst])();
+        if(disassemble)
         {
-            UnknownInstruction();
-            if(disassemble)
-            {
-                DisassembleUnknownInstruction(currentPC);
-                if(app->mainFrame->disassemblerFrame)
-                    app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
+            (this->*Disassemble[inst])(currentPC);
+            if(app->mainFrame->disassemblerFrame)
+                app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
 #ifdef DEBUG
-                instruction << *--instructionsBuffer.end() << std::endl;
+            instruction << *--instructionsBuffer.end() << std::endl;
 #endif // DEBUG
-            }
-        }
-        else
-        {
-            executionTime += (this->*instructions[it->second])();
-            if(disassemble)
-            {
-                (this->*Disassemble[it->second])(currentPC);
-                if(app->mainFrame->disassemblerFrame)
-                    app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
-#ifdef DEBUG
-                instruction << *--instructionsBuffer.end() << std::endl;
-#endif // DEBUG
-            }
         }
 
         if(!isEven(PC))
@@ -67,9 +48,6 @@ void SCC68070::Interpreter(const bool loop)
 /*
 void SCC68070::Interpreter(const bool loop)
 {
-//    if(stop)
-//        return;
-
 //    if((long double)executionTime > ((long double)vdsc.GetLineDisplayTime() / clockPeriod))
     if(executionTime > 2000)
     {
@@ -77,9 +55,6 @@ void SCC68070::Interpreter(const bool loop)
         executionTime = 0;
 //        vdsc.DisplayLine();
     }
-
-    if(PC == 0)
-        stop = 1;
 
     if(!isEven(PC))
         instruction << "PC NOT EVEN!" << std::endl;
