@@ -407,14 +407,14 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
             if(addr == 0x8000201B)
             {
                 if(UART_IN.empty())
-                    internal[addr-INTERNAL] = INT8_MIN;
+                    internal[URHR] = 0;
                 else
                 {
-                    internal[addr-INTERNAL] = UART_IN.front();
+                    internal[URHR] = UART_IN.front();
                     UART_IN.pop();
                 }
 #ifdef DEBUG
-                out << "URHR 0x" << std::hex << currentPC << " value #" << (uint32_t)internal[addr-INTERNAL] << std::endl;
+                out << "URHR 0x" << std::hex << currentPC << " value #" << (uint32_t)internal[URHR] << std::endl;
 #endif // DEBUG
             }
             return internal[addr-INTERNAL];
@@ -460,30 +460,35 @@ void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
         vdsc->SetByte(addr, data);
     else if(addr >= 0x80000000 || addr < 0x80008080)
     {
-        internal[addr-INTERNAL] = data;
-        if(addr == 0x80002017) // UART Command Register
+        if(GetS())
         {
-            switch(data)
+            internal[addr-INTERNAL] = data;
+            if(addr == 0x80002017) // UART Command Register
             {
-            case 2: // reset receiver
-                internal[URHR] = 0;
-                break;
-            case 3: // reset transmitter
-                internal[UTHR] = 0;
-                break;
-            case 4: // Reset error status
-                internal[USR] &= 0x0F;
-                break;
+                switch(data)
+                {
+                case 2: // reset receiver
+                    internal[URHR] = 0;
+                    break;
+                case 3: // reset transmitter
+                    internal[UTHR] = 0;
+                    break;
+                case 4: // Reset error status
+                    internal[USR] &= 0x0F;
+                    break;
+                }
+            }
+            else if(addr == 0x80002019) // UART Transmit Holding Register
+            {
+                UART_OUT.push(data);
+                internal[USR] |= 0x08; // set TXEMT bit
+#ifdef DEBUG
+                uart_out.write((char*)&data, 1);
+#endif // DEBUG
             }
         }
-        else if(addr == 0x80002019) // UART Transmit Holding Register
-        {
-            UART_OUT.push(data);
-            internal[USR] |= 0x08; // set TXEMT bit
-#ifdef DEBUG
-            uart_out.write((char*)&data, 1);
-#endif // DEBUG
-        }
+        else
+            return vdsc->SetByte(addr, data);
     }
 #ifdef DEBUG
     else
