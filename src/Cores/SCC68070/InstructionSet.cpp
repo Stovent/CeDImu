@@ -2139,9 +2139,51 @@ uint16_t SCC68070::Movem()
 
 uint16_t SCC68070::Movep()
 {
-    wxMessageBox("Warning: MOVEP not supported yet");
+    uint8_t data = (currentOpcode & 0x0E00) >> 9;
+    uint8_t dir  = (currentOpcode & 0x0080) >> 7;
+    uint8_t size = (currentOpcode & 0x0040) >> 6;
+    int16_t disp = GetNextWord();
+    uint32_t address = A[currentOpcode & 0x0007] + disp;
+    uint16_t calcTime;
 
-    return 0;
+    if(dir == 0) // memory to register
+    {
+        if(size == 0) // word
+        {
+            D[data] &= 0xFFFF0000;
+            D[data] |= GetByte(addr) << 8;
+            D[data] |= GetByte(addr + 2);
+            calcTime = 22;
+        }
+        else // long
+        {
+            D[data] = 0;
+            D[data] |= GetByte(addr) << 24;
+            D[data] |= GetByte(addr + 2) << 16;
+            D[data] |= GetByte(addr + 4) << 8;
+            D[data] |= GetByte(addr + 6);
+            calcTime = 36;
+        }
+    }
+    else // register to memory
+    {
+        if(size == 0) // word
+        {
+            SetByte(addr,     (D[data] & 0x0000FF00) >> 8);
+            SetByte(addr + 2, (D[data] & 0x000000FF));
+            calcTime = 25;
+        }
+        else // long
+        {
+            SetByte(addr,     (D[data] & 0xFF000000) >> 24);
+            SetByte(addr + 2, (D[data] & 0x00FF0000) >> 16);
+            SetByte(addr + 4, (D[data] & 0x0000FF00) >> 8);
+            SetByte(addr + 6, (D[data] & 0x000000FF));
+            calcTime = 39;
+        }
+    }
+
+    return calcTime;
 }
 
 uint16_t SCC68070::Moveq()

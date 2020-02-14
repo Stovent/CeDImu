@@ -15,7 +15,6 @@ class SCC68070;
 
 #define UNCHANGED 2
 #define OPCODESNBR 84
-#define MEMORYSIZE 1048576
 
 #define INTERNAL 0x80001001
 
