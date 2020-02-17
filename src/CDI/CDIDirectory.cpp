@@ -146,6 +146,12 @@ bool CDIDirectory::GetFile(std::string filename, CDIFile& cdifile)
     }
 }
 
+void CDIDirectory::Clear()
+{
+    files.clear();
+    subDirectories.clear();
+}
+
 std::stringstream CDIDirectory::ExportInfo() const
 {
     std::stringstream ss;
@@ -199,10 +205,4 @@ void CDIDirectory::ExportFiles(std::string basePath) const
     {
         subdir.second.ExportFiles(basePath);
     }
-}
-
-void CDIDirectory::Clear()
-{
-    files.clear();
-    subDirectories.clear();
 }

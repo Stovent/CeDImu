@@ -85,7 +85,7 @@ void MainFrame::CreateMenuBar()
 
 void MainFrame::SetTitleInfo(const uint16_t fps)
 {
-    SetTitle((app->cdi ? (app->cdi->disk.IsOpen() ? app->cdi->gameName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->vdsc->biosFilename + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps));
+    SetTitle((app->cdi ? (!app->cdi->gameName.empty() ? app->cdi->gameName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->vdsc->biosFilename + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps));
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)

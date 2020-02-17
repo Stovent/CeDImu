@@ -25,11 +25,11 @@ struct CDIDirectory
     void LoadSubDirectories(CDIDisk& disk);
     void LoadFiles(CDIDisk& disk);
     bool GetFile(std::string filename, CDIFile& cdifile);
-    std::stringstream ExportInfo() const;
     void Clear();
 
-    void ExportFiles(std::string basePath) const;
+    std::stringstream ExportInfo() const;
     void ExportAudio(std::string basePath) const;
+    void ExportFiles(std::string basePath) const;
 };
 
 #endif // CDIDIRECTORY_HPP

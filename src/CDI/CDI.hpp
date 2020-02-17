@@ -20,9 +20,12 @@ enum AudioCodingInformation
 
 class CDI
 {
+    CDIDisk disk;
+
+    void LoadFileTree();
+
 public:
     CeDImu* cedimu;
-    CDIDisk disk;
     CDIFile mainModule;
     CDIDirectory rootDirectory;
     std::string gameName;
@@ -34,7 +37,6 @@ public:
 
     bool OpenROM(const std::string rom);
     void CloseROM();
-    void LoadFileTree();
     bool CreateSubfoldersFromROMDirectory(std::string path = "");
     bool LoadModuleInMemory(std::string moduleName, uint32_t address);
 

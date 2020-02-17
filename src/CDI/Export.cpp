@@ -7,16 +7,27 @@
 
 bool CDI::ExportAudio()
 {
-    ExportAudioInfo();
-    bool bol = true;
+    if(!disk.IsOpen())
+    {
+        wxMessageBox("No ROM loaded, no audio to export");
+        return false;
+    }
+
+    cedimu->mainFrame->SetStatusText("Exporting audio...");
 
     std::string currentPath = "audio/";
-    CreateSubfoldersFromROMDirectory(currentPath);
+    if(!CreateSubfoldersFromROMDirectory(currentPath))
+    {
+        wxMessageBox("Could not create subfolders " + currentPath);
+        return false;
+    }
 
     currentPath = gameFolder + currentPath;
+
     rootDirectory.ExportAudio(currentPath);
 
-    return bol;
+    cedimu->mainFrame->SetStatusText("Audio exported to " + currentPath);
+    return true;
 }
 
 void CDI::ExportAudioInfo()
@@ -52,8 +63,7 @@ bool CDI::ExportFiles()
 
     rootDirectory.ExportFiles(currentPath);
 
-    wxMessageBox("Files exported to " + currentPath);
-    cedimu->mainFrame->SetStatusText("");
+    cedimu->mainFrame->SetStatusText("Files exported to " + currentPath);
     return true;
 }
 

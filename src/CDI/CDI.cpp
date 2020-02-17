@@ -20,13 +20,13 @@ bool CDI::OpenROM(const std::string rom)
         return false;
 
 #ifdef _WIN32
-    this->romPath = rom.substr(0, rom.rfind('\\')+1);
+    romPath = rom.substr(0, rom.rfind('\\')+1);
 #else
-    this->romPath = rom.substr(0, rom.rfind('/')+1);
+    romPath = rom.substr(0, rom.rfind('/')+1);
 #endif
 
     LoadFileTree();
-    this->gameFolder = romPath + gameName + "/";
+    gameFolder = romPath + gameName + "/";
     cedimu->mainFrame->SetTitle(gameName + " - CeDImu");
     return true;
 }
@@ -34,7 +34,10 @@ bool CDI::OpenROM(const std::string rom)
 void CDI::CloseROM()
 {
     rootDirectory.Clear();
-    return disk.Close();
+    disk.Close();
+    gameFolder = "";
+    gameName = "";
+    romPath = "";
 }
 
 void CDI::LoadFileTree()
