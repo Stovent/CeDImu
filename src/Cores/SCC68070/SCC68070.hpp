@@ -690,8 +690,6 @@ private:
     };
 };
 
-#define SP (A[7])
-
 #define SET_TX_READY internal[USR] |= 0x04;
 #define SET_RX_READY internal[USR] |= 0x01;
 

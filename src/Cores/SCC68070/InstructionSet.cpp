@@ -1728,9 +1728,9 @@ uint16_t SCC68070::Link()
 {
     uint8_t reg = (currentOpcode & 0x0007);
     SetLong(ARIWPr(7, 4), A[reg]);
-    A[reg] = SP;
+    A[reg] = A[7];
     int16_t disp = GetNextWord();
-    SP += signExtend16(disp);
+    A[7] += signExtend16(disp);
     return 25;
 }
 
@@ -2990,7 +2990,7 @@ uint16_t SCC68070::Rte()
         PC = GetLong(ARIWPo(7, 4));
         if(GetWord(ARIWPo(7, 4)) & 0xF000) // long format
         {
-            SP += 26;
+            A[7] += 26;
             calcTime = 146;
         }
     }
@@ -3596,7 +3596,7 @@ uint16_t SCC68070::Tst()
 uint16_t SCC68070::Unlk()
 {
     uint8_t reg = currentOpcode & 0x0007;
-    SP = A[reg];
+    A[7] = A[reg];
     A[reg] = GetLong(ARIWPo(7, 4));
     return 15;
 }
