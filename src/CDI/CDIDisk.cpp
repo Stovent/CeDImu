@@ -9,7 +9,7 @@ bool CDIDisk::Open(const std::string& filename)
     return disk.is_open();
 }
 
-bool CDIDisk::IsOpen()
+bool CDIDisk::IsOpen() const
 {
     return disk.is_open();
 }
@@ -17,6 +17,8 @@ bool CDIDisk::IsOpen()
 void CDIDisk::Close()
 {
     disk.close();
+    memset(&header, 0, sizeof(header));
+    memset(&subheader, 0, sizeof(subheader));
 }
 
 bool CDIDisk::Good()
@@ -30,11 +32,6 @@ bool CDIDisk::Good()
 void CDIDisk::Clear()
 {
     disk.clear();
-}
-
-int CDIDisk::Peek()
-{
-    return disk.peek();
 }
 
 void CDIDisk::UpdateSectorInfo()
@@ -61,111 +58,82 @@ uint32_t CDIDisk::Tell()
     return disk.tellg();
 }
 
-void CDIDisk::Seek(const uint32_t offset, std::ios::seekdir direction)
+bool CDIDisk::Seek(const uint32_t offset, std::ios::seekdir direction)
 {
+    Clear();
     disk.seekg(offset, direction);
     UpdateSectorInfo();
-}
-
-bool CDIDisk::GotoLBN(const uint32_t lbn, const uint32_t offset)
-{
-    uint32_t position = lbn * 2352 + 24 + offset;
-    disk.seekg(position);
-    UpdateSectorInfo();
-    if(disk.good())
-        return true;
-    else
-        return false;
+    return Good();
 }
 
 /**
-* Go to the begining of the data of the next sector (after the subheader)
-* @param submodeMask: go to the next sector matching the given mask (only bit 1, 2 and 3 are used).
-* @param maskIncludeCurrentSector: specifiy whether the current sector have to be taken in consideration when searching for the next sector with the specified mask.
-* @param maxSectorCount: Max number of sector to search for (e.g. to search for all the audio sector in a restricted range, such a single file).
-* @param includeAllSectors: specify whether maxSectorCount should include Message sectors and Empty sectors or not.
-*
-* @return returns false if an error flag is set in the file or if no sector matching the given mask was found in the specified range. Otherwise returns true.
+* Set the cursor file position at the beginning of the data section + offset
+* of the logical block number {lbn}.
 **/
-bool CDIDisk::GotoNextSector(uint8_t submodeMask, const bool maskIncludeCurrentSector, uint32_t maxSectorCount, const bool includeAllSectors)
+bool CDIDisk::GotoLBN(const uint32_t lbn, const uint32_t offset)
 {
-    uint32_t position = disk.tellg();
-    position -= position % 2352 - 24;
-
-    disk.seekg(position);
+    Clear();
+    disk.seekg(lbn * 2352 + 24 + offset);
     UpdateSectorInfo();
+    return Good();
+}
 
+/**
+* Go to the next sector which submode matches the given mask.
+* If no mask is provided (or one with 0 as the data, audio and video bits),
+* then only advance to the next sector, without any check.
+* The mask is only applied on the data, audio and video bits of the submode.
+* Use the 'SubmodeBits.cdiany' enum to go to the next non-empty sector.
+**/
+bool CDIDisk::GotoNextSector(uint8_t submodeMask)
+{
     if(submodeMask &= 0x0E)
-    {
-        if(!maskIncludeCurrentSector)
-            disk.seekg(2352, std::ios::cur);
-
-        while(!(subheader.Submode & submodeMask) && Good())
-        {
-            if(includeAllSectors)
-                maxSectorCount--;
-            else
-                if(!IsEmptySector())
-                    maxSectorCount--;
-
-            if(!maxSectorCount)
-                return false;
-
-            disk.seekg(2352, std::ios::cur);
-            UpdateSectorInfo();
-        }
-    }
-    else
     {
         do
         {
-            disk.seekg(2352, std::ios::cur);
+            disk.seekg(2376 - disk.tellg() % 2352, std::ios::cur);
             UpdateSectorInfo();
-            --maxSectorCount;
-            if(includeAllSectors)
-                break;
-        } while(IsEmptySector() && Good() && maxSectorCount);
+        } while(!(subheader.Submode & submodeMask) && disk.good());
     }
-
-    if(disk.good())
-        return true;
     else
-        return false;
+    {
+        disk.seekg(2376 - disk.tellg() % 2352, std::ios::cur);
+        UpdateSectorInfo();
+    }
+    return Good();
 }
 
 /**
-* Get data from sectors only, starting at the current file cursor position
+* Read {size} bytes from sectors only, starting at the current file cursor position.
+* If {size} is greater than the sector data size, then it will continue reading on
+* the next sector data section.
+* After execution, {size} is set to the true date size read by this function.
 **/
-bool CDIDisk::GetData(char* dst, uint32_t size, const bool includeEmptySectors)
+bool CDIDisk::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
 {
     uint32_t index = 0;
-    while(size)
+    while(size && disk.good())
     {
         uint16_t length = GetSectorDataSize();
-        length = (length > size) ? size : length;
+        length = (size == 2048) ? length : ((size < length) ? size : length);
         disk.read(&dst[index], length);
-        size -= length;
         index += length;
+        size -= (size < 2048) ? size : 2048;
         if(size) // to make sure GetData let the file cursor at the last read data and not at the next sector
-            GotoNextSector(0, false, UINT32_MAX, includeEmptySectors);
+            includeEmptySectors ? GotoNextSector() : GotoNextSector(cdiany);
     }
-
-    if(disk.good())
-        return true;
-    else
-        return false;
+    size = index;
+    return disk.good();
 }
 
 /**
-* Get data from the current file cursor position
+* Read {size} bytes from the current file cursor position, increasing it
+* by the same amount. Does not perform any check on sector position.
 **/
 bool CDIDisk::Read(char* dst, uint32_t size)
 {
     disk.read(dst, size);
-    if(disk.good())
-        return true;
-    else
-        return false;
+    return disk.good();
 }
 
 /**
@@ -220,17 +188,4 @@ std::string CDIDisk::GetString(uint16_t length, const char delim)
     for(; str[--length] == delim && length;);
 
     return std::string(str, length+1);
-}
-
-bool CDIDisk::IsEmptySector()
-{
-    if(!(subheader.Submode & 0x0E) && !subheader.ChannelNumber && !subheader.CodingInformation)
-        return true;
-    else
-        return false;
-}
-
-uint16_t CDIDisk::GetSectorDataSize()
-{
-    return (subheader.Submode & cdiform) ? 2324 : 2048;
 }

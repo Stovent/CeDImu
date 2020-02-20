@@ -7,19 +7,19 @@
 #include "CDI.hpp"
 #include "../utils.hpp"
 
-CDIDirectory::CDIDirectory(uint8_t namesize, std::string dirname, uint32_t lbn, uint16_t parent, uint16_t offset)
+CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset)
 {
     nameSize = namesize;
     relOffset = offset;
     parentDirectory = parent;
     dirLBN = lbn;
-    name = dirname;
+    dirname = name;
 }
 
-void CDIDirectory::LoadSubDirectories(CDIDisk& disk)
+void CDIDirectory::LoadContent(CDIDisk& disk)
 {
+    const uint32_t pos = disk.Tell();
     uint8_t c;
-    uint32_t pos = disk.Tell();
 
     disk.GotoLBN(dirLBN);
     c = disk.GetByte();
@@ -31,60 +31,10 @@ void CDIDirectory::LoadSubDirectories(CDIDisk& disk)
     {
         while((disk.Tell() % 2352) < 2072)
         {
-            uint8_t namesize = 0, attr = 0;
-            uint32_t lbn = 0;
-            std::string dirname;
-
-            c = disk.GetByte(); // record length
-            if(c == 0)
-                break;
-
-            disk.Seek(5, std::ios::cur);
-            lbn = disk.GetLong();
-
-            disk.Seek(22, std::ios::cur); // we skip filesize as it is not necessary for a directory
-
-            namesize = disk.GetByte();
-            dirname = disk.GetString(namesize);
-            if(isEven(namesize))
-                disk.GetByte();
-
-            disk.Seek(4, std::ios::cur);
-            attr = disk.GetByte(); // I only retrieves the high order byte...
-            disk.Seek(5, std::ios::cur);
-
-            if(attr & 0x80) // ...So I only have to compare with 0x80 and not 0x8000
-            {
-                subDirectories.emplace(dirname, CDIDirectory(namesize, dirname, lbn, relOffset, 0));
-                subDirectories.find(dirname)->second.LoadFiles(disk);
-                subDirectories.find(dirname)->second.LoadSubDirectories(disk);
-            }
-        }
-        break;
-        disk.GotoNextSector();
-    } while(!(disk.subheader.Submode & cdieof)); // in case the directory structure is spreaded over several sectors
-    disk.Seek(pos);
-}
-
-void CDIDirectory::LoadFiles(CDIDisk& disk)
-{
-    uint8_t c;
-    uint32_t pos = disk.Tell();
-
-    disk.GotoLBN(dirLBN);
-    c = disk.GetByte();
-    disk.Seek(c-1, std::ios::cur); // describe the current directory, so we skip it
-    c = disk.GetByte();
-    disk.Seek(c-1, std::ios::cur); // describe the parent directory, so we skip it
-
-    do
-    {
-        while((disk.Tell() % 2352) < 2072)
-        {
-            uint8_t namesize = 0, filenbr;
-            uint16_t attributes = 0;
-            uint32_t lbn = 0, filesize = 0;
-            std::string filename;
+            uint8_t namesize, filenumber;
+            uint16_t attributes;
+            uint32_t lbn, filesize;
+            std::string name;
 
             c = disk.GetByte(); // record length
             if(c == 0)
@@ -99,63 +49,72 @@ void CDIDirectory::LoadFiles(CDIDisk& disk)
             disk.Seek(14, std::ios::cur);
 
             namesize = disk.GetByte();
-            filename = disk.GetString(namesize);
+            name = disk.GetString(namesize, 0);
             if(isEven(namesize))
                 disk.GetByte();
 
-            disk.Seek(4, std::ios::cur);
-
+            disk.Seek(4, std::ios::cur); // skip Owner ID
             attributes = disk.GetWord();
+
             disk.Seek(2, std::ios::cur);
-            filenbr = disk.GetByte();
+            filenumber = disk.GetByte();
             disk.GetByte(); // last byte is reserved
 
-            if(!(attributes & 0x8000))
+            if(attributes & 0x8000) // directory
             {
-                files.emplace(filename, CDIFile(&disk, lbn, filesize, namesize, filename, attributes, filenbr, relOffset));
+                std::pair<std::map<std::string, CDIDirectory>::iterator, bool> dir = subdirectories.emplace(name, CDIDirectory(namesize, name, lbn, relOffset, 0));
+                if(dir.second)
+                {
+                    dir.first->second.LoadContent(disk);
+                }
+                else
+                    wxMessageBox(name + " already exists in the current directory " + dirname);
+            }
+            else // file
+            {
+                files.emplace(name, CDIFile(&disk, lbn, filesize, namesize, name, attributes, filenumber, relOffset));
             }
         }
-        break;
-        disk.GotoNextSector();
+        if(!(disk.subheader.Submode & cdieof))
+            disk.GotoNextSector();
     } while(!(disk.subheader.Submode & cdieof)); // in case the directory structure is spreaded over several sectors
     disk.Seek(pos);
 }
 
-bool CDIDirectory::GetFile(std::string filename, CDIFile& cdifile)
+CDIFile* CDIDirectory::GetFile(std::string filename)
 {
     const size_t pos = filename.find('/');
     if(pos == std::string::npos)
     {
         std::map<std::string, CDIFile>::iterator it = files.find(filename);
         if(it == files.end())
-            return false;
+            return nullptr;
 
-        cdifile = it->second;
-        return true;
+        return &it->second;
     }
     else
     {
         std::string dir = filename.substr(0, pos);
         filename = filename.substr(pos+1);
 
-        std::map<std::string, CDIDirectory>::iterator it = subDirectories.find(dir);
-        if(it == subDirectories.end())
-            return false;
+        std::map<std::string, CDIDirectory>::iterator it = subdirectories.find(dir);
+        if(it == subdirectories.end())
+            return nullptr;
 
-        return it->second.GetFile(filename, cdifile);
+        return it->second.GetFile(filename);
     }
 }
 
 void CDIDirectory::Clear()
 {
     files.clear();
-    subDirectories.clear();
+    subdirectories.clear();
 }
 
 std::stringstream CDIDirectory::ExportInfo() const
 {
     std::stringstream ss;
-    ss << "Dir: " << name << "/" << std::endl;
+    ss << "Dir: " << dirname << "/" << std::endl;
     ss << "LBN: " << dirLBN << std::endl;
     for(std::pair<std::string, CDIFile> file : files)
     {
@@ -169,8 +128,8 @@ std::stringstream CDIDirectory::ExportInfo() const
 
 void CDIDirectory::ExportAudio(std::string basePath) const
 {
-    if(name != "/")
-        basePath += name + "/";
+    if(dirname != "/")
+        basePath += dirname + "/";
 
     if(!wxDirExists(basePath))
         if(!wxMkdir(basePath))
@@ -181,7 +140,7 @@ void CDIDirectory::ExportAudio(std::string basePath) const
         file.second.ExportAudio(basePath);
     }
 
-    for(std::pair<std::string, CDIDirectory> subdir : subDirectories)
+    for(std::pair<std::string, CDIDirectory> subdir : subdirectories)
     {
         subdir.second.ExportAudio(basePath);
     }
@@ -189,8 +148,8 @@ void CDIDirectory::ExportAudio(std::string basePath) const
 
 void CDIDirectory::ExportFiles(std::string basePath) const
 {
-    if(name != "/")
-        basePath += name + "/";
+    if(dirname != "/")
+        basePath += dirname + "/";
 
     if(!wxDirExists(basePath))
         if(!wxMkdir(basePath))
@@ -201,7 +160,7 @@ void CDIDirectory::ExportFiles(std::string basePath) const
         file.second.ExportFile(basePath);
     }
 
-    for(std::pair<std::string, CDIDirectory> subdir : subDirectories)
+    for(std::pair<std::string, CDIDirectory> subdir : subdirectories)
     {
         subdir.second.ExportFiles(basePath);
     }

@@ -1,8 +1,10 @@
+#include "CDI.hpp"
+
 #include <sstream>
+#include <iomanip>
 
 #include <wx/filefn.h>
 
-#include "CDI.hpp"
 #include "../utils.hpp"
 
 bool CDI::ExportAudio()
@@ -74,10 +76,10 @@ void CDI::ExportFilesInfo()
 
     std::ofstream out(gameFolder + "files_info.txt");
 
-    out << "Dir: " << rootDirectory.name << std::endl;
+    out << "Dir: " << rootDirectory.dirname << std::endl;
     out << "LBN: " << rootDirectory.dirLBN << std::endl;
 
-    for(std::pair<std::string, CDIDirectory> dir : rootDirectory.subDirectories)
+    for(std::pair<std::string, CDIDirectory> dir : rootDirectory.subdirectories)
     {
         std::stringstream ss = dir.second.ExportInfo();
         std::string str, tmp;
@@ -106,18 +108,25 @@ void CDI::ExportSectorsInfo()
         return;
     }
 
-    std::ofstream out(gameFolder + "sectors.txt");
-
     const uint32_t pos = disk.Tell();
+    uint32_t LBN = 0;
     disk.Seek(0);
 
-    out << "LBN  Min secs sect mode file channel submode  codingInfo" << std::endl;
-    uint32_t LBN = 0;
+    std::ofstream out(gameFolder + "sectors.txt");
+    out << "   LBN Min secs sect mode file channel  submode codingInfo" << std::endl;
+
     while(disk.Good())
     {
-        out << std::to_string(LBN++) << "   " << std::to_string(disk.header.Minutes) << "   " << std::to_string(disk.header.Seconds) << "   " << std::to_string(disk.header.Sectors) << "   " << std::to_string(disk.header.Mode) << "    ";
-        out << std::to_string(disk.subheader.FileNumber) << "    " << std::to_string(disk.subheader.ChannelNumber) << " " << toBinString(disk.subheader.Submode, 8) << " " << toBinString(disk.subheader.CodingInformation, 8) << std::endl;
-        disk.GotoNextSector(0, false, UINT32_MAX, false);
+        out << std::right << std::setw(6) << std::to_string(LBN++) \
+            << std::setw(4) << std::to_string(disk.header.Minutes) \
+            << std::setw(5) << std::to_string(disk.header.Seconds) \
+            << std::setw(5) << std::to_string(disk.header.Sectors) \
+            << std::setw(5) << std::to_string(disk.header.Mode) \
+            << std::setw(5) << std::to_string(disk.subheader.FileNumber) \
+            << std::setw(8) << std::to_string(disk.subheader.ChannelNumber) \
+            << std::setw(9) << toBinString(disk.subheader.Submode, 8) \
+            << std::setw(11) << toBinString(disk.subheader.CodingInformation, 8) << std::endl;
+        disk.GotoNextSector(); // pass 'cdiany' argument to remove empty sectors
     }
     disk.Clear();
 

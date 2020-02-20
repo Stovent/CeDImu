@@ -1,9 +1,10 @@
 #include "CDI.hpp"
 #include "../utils.hpp"
 
-CDI::CDI(CeDImu* app) : mainModule(&disk), rootDirectory(1, "/", 0, 1, 1)
+CDI::CDI(CeDImu* app) : rootDirectory(1, "/", 0, 1, 1)
 {
     cedimu = app;
+    mainModule = nullptr;
 }
 
 CDI::~CDI()
@@ -13,8 +14,7 @@ CDI::~CDI()
 
 bool CDI::OpenROM(const std::string rom)
 {
-    if(disk.IsOpen())
-        disk.Close();
+    CloseROM();
 
     if(!disk.Open(rom))
         return false;
@@ -25,7 +25,7 @@ bool CDI::OpenROM(const std::string rom)
     romPath = rom.substr(0, rom.rfind('/')+1);
 #endif
 
-    LoadFileTree();
+    LoadCDIFileSystem();
     gameFolder = romPath + gameName + "/";
     cedimu->mainFrame->SetTitle(gameName + " - CeDImu");
     return true;
@@ -33,14 +33,16 @@ bool CDI::OpenROM(const std::string rom)
 
 void CDI::CloseROM()
 {
+    mainModule = nullptr;
     rootDirectory.Clear();
-    disk.Close();
-    gameFolder = "";
+    if(disk.IsOpen())
+        disk.Close();
     gameName = "";
     romPath = "";
+    gameFolder = "";
 }
 
-void CDI::LoadFileTree()
+void CDI::LoadCDIFileSystem()
 {
     const uint32_t pos = disk.Tell();
 
@@ -76,17 +78,13 @@ void CDI::LoadFileTree()
 
         if(dirname == '\0')
         {
-            dirname = '/';
             rootDirectory.dirLBN = lbn;
         }
     }
-    rootDirectory.LoadFiles(disk);
-    rootDirectory.LoadSubDirectories(disk);
+    rootDirectory.LoadContent(disk);
 
-    if(!rootDirectory.GetFile(mainModuleName, mainModule))
-        wxMessageBox("Could not find module " + mainModule.name);
-    else
-        mainModule.name = mainModuleName;
+    if((mainModule = rootDirectory.GetFile(mainModuleName)) == nullptr)
+        wxMessageBox("Could not find main module " + mainModule->name);
 
     disk.Seek(pos);
 }
@@ -114,13 +112,13 @@ bool CDI::CreateSubfoldersFromROMDirectory(std::string path)
 
 bool CDI::LoadModuleInMemory(std::string moduleName, uint32_t address)
 {
-    CDIFile module(&disk);
-    if(!rootDirectory.GetFile(moduleName, module))
+    CDIFile* module;
+    if((module = rootDirectory.GetFile(moduleName)) == nullptr)
     {
         wxMessageBox("Could not load module " + moduleName);
         return false;
     }
 
-    cedimu->vdsc->PutDataInMemory(module.GetFileContent(), module.filesize, address);
+    cedimu->vdsc->PutDataInMemory(module->GetFileContent(), module->filesize, address);
     return true;
 }

@@ -113,16 +113,16 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 
     if(Config::skipBIOS)
     {
-        CDIFile module = app->cdi->mainModule;
+        CDIFile* module = app->cdi->mainModule;
         uint32_t size, address = 0;
-        char* d = module.GetFileContent(true, &size);
+        char* d = module->GetFileContent(&size);
         if(d != nullptr && size)
         {
             app->vdsc->PutDataInMemory(d, size, address);
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
             app->cpu->PC = address + app->vdsc->GetLong(address + 0x30);
-            wxMessageBox("Module " + module.name + " loaded");
+            wxMessageBox("Module " + module->name + " loaded");
 
         }
     }

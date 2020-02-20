@@ -31,6 +31,7 @@ enum SubmodeBits
     cdia    = 0b00000100, // Audio
     cdiv    = 0b00000010, // Video
     cdieor  = 0b00000001, // End of Record
+    cdiany  = 0b00001110, // Any type of sector
 };
 
 class CDIDisk
@@ -44,26 +45,25 @@ public:
     CDISubheader subheader;
 
     bool Open(const std::string& filename);
-    bool IsOpen();
+    bool IsOpen() const;
     void Close();
     bool Good();
     void Clear();
-    int Peek();
 
     uint32_t Tell();
-    void Seek(const uint32_t offset, std::ios::seekdir direction = std::ios::beg);
+    bool Seek(const uint32_t offset, std::ios::seekdir direction = std::ios::beg);
     bool GotoLBN(const uint32_t lbn, const uint32_t offset = 0);
-    bool GotoNextSector(uint8_t submodeMask = 0, const bool maskIncludeCurrentSector = false, uint32_t maxSectorCount = UINT32_MAX, const bool includeAllSectors = false);
+    bool GotoNextSector(uint8_t submodeMask = 0);
 
-    bool GetData(char* dst, uint32_t size, const bool includeEmptySectors = false);
+    bool GetData(char* dst, uint32_t& size, const bool includeEmptySectors = true);
     bool Read(char* dst, uint32_t size);
     uint8_t  GetByte();
     uint16_t GetWord();
     uint32_t GetLong();
     std::string GetString(uint16_t length = 128, const char delim = ' ');
 
-    bool IsEmptySector();
-    uint16_t GetSectorDataSize();
+    inline bool IsEmptySector() const { return !(subheader.Submode & 0x0E) && !subheader.ChannelNumber && !subheader.CodingInformation; };
+    inline uint16_t GetSectorDataSize() const { return (subheader.Submode & cdiform) ? 2324 : 2048; }
 };
 
 #endif // CDIDISK_HPP
