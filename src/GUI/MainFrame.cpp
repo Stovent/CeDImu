@@ -273,6 +273,7 @@ void MainFrame::OnSettings(wxCommandEvent& event)
     wxButton* save = new wxButton(settingsPanel, wxID_ANY, "Save");
     save->Bind(wxEVT_BUTTON, [settingsFrame, skipBIOS] (wxEvent& event) {
         if(skipBIOS->GetValue()) Config::skipBIOS = true; else Config::skipBIOS = false;
+        Config::saveConfig();
         settingsFrame->Destroy();
     });
     saveCancelPanel->Add(save, 1, wxALIGN_RIGHT, 5);
