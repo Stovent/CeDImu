@@ -245,7 +245,6 @@ private:
 
     void (SCC68070::*Execute)(const bool loop) = nullptr;
     void Interpreter(const bool loop);
-//    uint16_t GetInstructionIf(const uint16_t& opcode);
     uint16_t GetNextWord();
 
     // Conditional Codes
