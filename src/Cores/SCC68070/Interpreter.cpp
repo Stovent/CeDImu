@@ -5,7 +5,7 @@ void SCC68070::Interpreter(const bool loop)
     run = loop;
     do
     {
-        if(executionTime == 0)
+        if(cycleCount == 0)
         {
             instructionsBuffer.clear();
             if(app->mainFrame->disassemblerFrame)
@@ -16,32 +16,32 @@ void SCC68070::Interpreter(const bool loop)
         currentOpcode = GetNextWord();
         const SCC68070InstructionSet inst = ILUT[currentOpcode];
 
-        executionTime += (this->*instructions[inst])();
+        uint16_t executionTime = (this->*instructions[inst])();
+        cycleCount += executionTime;
+        totalCycleCount += executionTime;
+
         if(disassemble)
         {
             (this->*Disassemble[inst])(currentPC);
             if(app->mainFrame->disassemblerFrame)
                 app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
-#ifdef DEBUG
-            instruction << *--instructionsBuffer.end() << std::endl;
-#endif // DEBUG
+
+            LOG(instruction, *--instructionsBuffer.end());
         }
 
         if(!isEven(PC))
         {
-#ifdef DEBUG
-            instruction << "PC NOT EVEN!" << std::endl;
-#endif // DEBUG
+            LOG(instruction, "PC NOT EVEN!");
             Exception(AddressError);
         }
 
         instructionsBufferChanged = true;
         count++;
 
-        if(executionTime * clockPeriod >= vdsc->GetLineDisplayTimeNanoSeconds())
+        if(cycleCount * cycleDelay >= vdsc->GetLineDisplayTimeNanoSeconds())
         {
             vdsc->DisplayLine();
-            executionTime = 0;
+            cycleCount = 0;
         }
     } while(run);
 }

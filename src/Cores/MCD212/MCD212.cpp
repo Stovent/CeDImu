@@ -3,6 +3,8 @@
 #include <cstring>
 #include <wx/msgdlg.h>
 
+#include "../../utils.hpp"
+
 #define   SET_DA_BIT() internalRegisters[CSR1R] |= 0x80;
 #define UNSET_DA_BIT() internalRegisters[CSR1R] &= 0x20;
 
@@ -17,9 +19,7 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
 
     Reset();
 
-#ifdef DEBUG
-    out.open("MCD212.txt");
-#endif // DEBUG
+    OPEN_LOG(out, "MCD212.txt")
 
     backgroundPlane.Create(1, 1);
     if(!backgroundPlane.HasAlpha())
@@ -189,9 +189,7 @@ void MCD212::ExecuteICA1()
         default:
             controlRegisters[(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
-#ifdef DEBUG
-        out << std::hex << (addr + 4*i) << "\tICA1 instruction: 0x" << ica << std::endl;
-#endif // DEBUG
+        LOG(out, std::hex << (addr + 4*i) << "\tICA1 instruction: 0x" << ica)
     }
 end_ICA1:
     isCA = false;
@@ -244,9 +242,7 @@ void MCD212::ExecuteDCA1()
         default:
             controlRegisters[(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-#ifdef DEBUG
-        out << std::hex << addr << "\tDCA1 instruction: 0x" << dca << std::endl;
-#endif // DEBUG
+        LOG(out, std::hex << addr << "\tDCA1 instruction: 0x" << dca)
         addr += 4;
     }
 end_DCA1:
@@ -300,9 +296,7 @@ void MCD212::ExecuteICA2()
         default:
             controlRegisters[(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
-#ifdef DEBUG
-        out << std::hex << (addr + 4*i) << "\tICA2 instruction: 0x" << ica << std::endl;
-#endif // DEBUG
+        LOG(out, std::hex << (addr + 4*i) << "\tICA2 instruction: 0x" << ica)
     }
 end_ICA2:
     isCA = false;
@@ -355,9 +349,7 @@ void MCD212::ExecuteDCA2()
         default:
             controlRegisters[(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-#ifdef DEBUG
-        out << std::hex << addr << "\tDCA2 instruction: 0x" << dca << std::endl;
-#endif // DEBUG
+        LOG(out, std::hex << addr << "\tDCA2 instruction: 0x" << dca)
         addr += 4;
     }
 end_DCA2:

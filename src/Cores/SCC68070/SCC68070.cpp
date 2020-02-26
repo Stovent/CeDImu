@@ -12,12 +12,12 @@ SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : a
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[0x80008080-INTERNAL];
     count = 0;
-    clockPeriod = (1.0L / clockFrequency) * 1000000000; // Time used to execute a clock cycle
-#ifdef DEBUG
-    out.open("SCC68070.txt");
-    instruction.open("instructions.txt");
-    uart_out.open("uart_out.txt");
-#endif // DEBUG
+    cycleDelay = (1.0L / clockFrequency) * 1000000000; // Time between two clock cycles in nanoseconds
+
+    OPEN_LOG(out, "SCC68070.txt")
+    OPEN_LOG(instruction, "instructions.txt")
+    OPEN_LOG(uart_out, "uart_out.txt")
+
     GenerateInstructionSet();
     RebootCore();
 
@@ -37,7 +37,8 @@ SCC68070::~SCC68070()
 
 void SCC68070::RebootCore()
 {
-    executionTime = 0;
+    cycleCount = 0;
+    totalCycleCount = 0;
     for(uint8_t i = 0; i < 8; i++)
     {
         D[i] = 0;

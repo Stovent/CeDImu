@@ -215,11 +215,11 @@ public:
     uint32_t currentPC;
     bool run;
     bool disassemble;
-#ifdef DEBUG
+
     std::ofstream out;
     std::ofstream instruction;
     std::ofstream uart_out;
-#endif // DEBUG
+
     std::vector<std::string> instructionsBuffer;
     bool instructionsBufferChanged;
 
@@ -231,7 +231,6 @@ public:
     void SingleStep();
     void ResetOperation();
     unsigned long long count;
-    long double clockPeriod;
 
     inline void SetUARTReceiveHoldingRegister(const uint8_t data) { internal[URHR] = data; }
 
@@ -241,7 +240,9 @@ private:
     uint16_t currentOpcode;
     uint32_t lastAddress;
 
-    unsigned int executionTime;
+    uint32_t cycleCount;
+    uint64_t totalCycleCount;
+    long double cycleDelay;
 
     void (SCC68070::*Execute)(const bool loop) = nullptr;
     void Interpreter(const bool loop);
