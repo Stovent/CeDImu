@@ -157,7 +157,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
             std::ofstream out(directoryPath + name + '_' + std::to_string(channel) + ".wav", std::ios::binary | std::ios::out);
 
             uint16_t bytePerBloc = wavHeader.channelNumber * wavHeader.bitsPerSample / 8;
-            uint16_t bytePerSec = wavHeader.frequency * bytePerBloc;
+            uint32_t bytePerSec = wavHeader.frequency * bytePerBloc;
             uint32_t dataSize = left.size()*2 + right.size()*2;
             uint32_t wavSize = 36 + dataSize;
 
