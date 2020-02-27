@@ -58,7 +58,7 @@ void MainFrame::CreateMenuBar()
     wxMenu* cdi = new wxMenu;
     wxMenu* cdiexport = new wxMenu;
     cdiexport->Append(IDOnExportFiles, "Files");
-//    cdiexport->Append(IDOnExportAudio, "Audio");
+    cdiexport->Append(IDOnExportAudio, "Audio");
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
