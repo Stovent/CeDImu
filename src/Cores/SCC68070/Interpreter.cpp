@@ -26,12 +26,12 @@ void SCC68070::Interpreter(const bool loop)
             if(app->mainFrame->disassemblerFrame)
                 app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
 
-            LOG(instruction, *--instructionsBuffer.end());
+            LOG(instruction << *--instructionsBuffer.end() << std::endl);
         }
 
         if(!isEven(PC))
         {
-            LOG(instruction, "PC NOT EVEN!");
+            LOG(instruction << "PC NOT EVEN!" << std::endl);
             Exception(AddressError);
         }
 

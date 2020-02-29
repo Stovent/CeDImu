@@ -65,6 +65,13 @@ bool MCD212::LoadBIOS(const char* filename)
     long size = ftell(f); // should be 512KB
     fseek(f, 0, SEEK_SET);
 
+    if(size > 0xFFC00)
+    {
+        LOG(out << "WARNING: BIOS is bigger than ROM size (0xFFC00)" << std::endl)
+        wxMessageBox("BIOS is bigger than ROM size (0xFFC00)");
+        size = 0xFFC00;
+    }
+
     fread(&memory[0x400000], 1, size, f);
 
     fclose(f);

@@ -68,10 +68,10 @@ inline uint32_t binStringToInt(std::string s)
 
 #ifdef DEBUG
 #define OPEN_LOG(stream, name)  stream.open(name);
-#define LOG(stream, content) stream << content << std::endl;
+#define LOG(content) content;
 #else
 #define OPEN_LOG(stream, name)
-#define LOG(stream, content)
+#define LOG(content)
 #endif // DEBUG
 
 #endif // UTILS_HPP
