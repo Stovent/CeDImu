@@ -1,12 +1,6 @@
 #include "MCD212.hpp"
 
-#include <cstring>
 #include <wx/msgdlg.h>
-
-#include "../../utils.hpp"
-
-#define   SET_DA_BIT() internalRegisters[CSR1R] |= 0x80;
-#define UNSET_DA_BIT() internalRegisters[CSR1R] &= 0x20;
 
 MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
 {
@@ -42,7 +36,7 @@ void MCD212::Reset()
     memset(internalRegisters, 0, 32*sizeof(uint16_t));
     ResetMemory();
 
-    controlRegisters[ImageCodingMethod] &= 0xF80000; // reset bits 0, 1, 2, 3, 8, 9, 10, 11, 18 (plane A and B off,external video disabled)
+    controlRegisters[ImageCodingMethod] &= 0xF80000; // reset bits 0, 1, 2, 3, 8, 9, 10, 11, 18 (plane A and B off, external video disabled)
     controlRegisters[CursorControl] &= 0x7FFFFF; // reset bit 23 (cursor disabled)
     controlRegisters[BackdropColor] = 0; // reset bits 0, 1, 2, 3 (black backdrop)
 
@@ -99,57 +93,6 @@ void MCD212::MemorySwap()
     memorySwapCount = 0;
 }
 
-void MCD212::DisplayLine()
-{
-    SET_DA_BIT()
-
-    if(GetDE())
-    {
-        DisplayLineA();
-        DisplayLineB();
-        if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
-            DrawCursor();
-    }
-
-    if(++lineNumber >= GetVerticalResolution())
-    {
-        UNSET_DA_BIT()
-        if(GetDE())
-        {
-            // either draw in a single time on each frame, either draw them line by line
-            DrawPlaneA();
-            DrawPlaneB();
-            DrawBackground();
-
-            wxImage* screen = new wxImage(GetHorizontalResolution1(), GetVerticalResolution());
-            // do planeA + planeB + cursor + background here
-            app->mainFrame->gamePanel->RefreshScreen(backgroundPlane);
-            delete screen;
-        }
-        totalFrameCount++;
-        OnFrameCompleted();
-        lineNumber = 0;
-    }
-}
-
-void MCD212::DisplayLineA()
-{
-    if(GetIC1() && GetDC1())
-        ExecuteDCA1();
-
-    if(GetIC1() && lineNumber >= GetVerticalResolution()-1)
-        ExecuteICA1();
-}
-
-void MCD212::DisplayLineB()
-{
-    if(GetIC2() && GetDC2())
-        ExecuteDCA2();
-
-    if(GetIC2() && lineNumber >= GetVerticalResolution()-1)
-        ExecuteICA2();
-}
-
 void MCD212::ExecuteICA1()
 {
     isCA = true;
@@ -196,7 +139,7 @@ void MCD212::ExecuteICA1()
         default:
             controlRegisters[(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
-        LOG(out, std::hex << (addr + 4*i) << "\tICA1 instruction: 0x" << ica)
+        LOG(out << std::hex << (addr + 4*i) << "\tICA1 instruction: 0x" << ica << std::endl)
     }
 end_ICA1:
     isCA = false;
@@ -249,7 +192,7 @@ void MCD212::ExecuteDCA1()
         default:
             controlRegisters[(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-        LOG(out, std::hex << addr << "\tDCA1 instruction: 0x" << dca)
+        LOG(out << std::hex << addr << "\tDCA1 instruction: 0x" << dca << std::endl)
         addr += 4;
     }
 end_DCA1:
@@ -303,7 +246,7 @@ void MCD212::ExecuteICA2()
         default:
             controlRegisters[(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
-        LOG(out, std::hex << (addr + 4*i) << "\tICA2 instruction: 0x" << ica)
+        LOG(out << std::hex << (addr + 4*i) << "\tICA2 instruction: 0x" << ica << std::endl)
     }
 end_ICA2:
     isCA = false;
@@ -356,130 +299,12 @@ void MCD212::ExecuteDCA2()
         default:
             controlRegisters[(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-        LOG(out, std::hex << addr << "\tDCA2 instruction: 0x" << dca)
+        LOG(out << std::hex << addr << "\tDCA2 instruction: 0x" << dca << std::endl)
         addr += 4;
     }
 end_DCA2:
     isCA = false;
     return;
-}
-
-void MCD212::DrawPlaneA()
-{
-    uint16_t width = GetHorizontalResolution1();
-    uint16_t height = GetVerticalResolution();
-    if(!planeA.Create(width, height))
-    {
-        wxMessageBox("Could not create plane A image");
-        return;
-    }
-
-    if(GetFT12_1() <= 1)
-    {
-        DecodeBitmap(&memory[GetVSR1()], planeA.GetData(), GetHorizontalResolution1(), GetVerticalResolution(), GetCM1());
-    }
-    else if(GetFT12_1() == 2)
-    {
-        DecodeRunLength(&memory[GetVSR1()], planeA.GetData(), GetHorizontalResolution1(), GetVerticalResolution(), GetCM1());
-    }
-    else
-    {
-        DecodeMosaic(&memory[GetVSR1()], planeA.GetData(), GetHorizontalResolution1(), GetVerticalResolution(), GetCM1());
-    }
-}
-
-void MCD212::DrawPlaneB()
-{
-    uint16_t width = GetHorizontalResolution2();
-    uint16_t height = GetVerticalResolution();
-    if(!planeB.Create(width, height))
-    {
-        wxMessageBox("Could not create plane B image");
-        return;
-    }
-}
-
-void* MCD212::DecodeBitmap(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm)
-{
-    return 0;
-}
-
-void* MCD212::DecodeRunLength(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm)
-{
-    uint16_t index = 0;
-    for(int y = 0; y < height; y++)
-    {
-        for(int x = 0; x < width;)
-        {
-            uint8_t format = data[index++];
-            if(format & 0x80) // multiple pixels
-            {
-                uint8_t num = data[index];
-                if(cm) // 4 bits / pixel
-                {
-                    uint8_t color1 = (format & 0x70) >> 4;
-                    uint8_t color2 = (format & 0x07);
-                }
-                else // 8 bits / pixels
-                {
-                    uint8_t color = format & 0x7F;
-                }
-            }
-            else // single pixel
-            {
-                if(cm) // 4 bits / pixel
-                {
-                    uint8_t color1 = (format & 0x70) >> 4;
-                    uint8_t color2 = (format & 0x07);
-                }
-                else // 8 bits / pixels
-                {
-                    uint8_t color = format & 0x7F;
-                }
-            }
-        }
-    }
-    return 0;
-}
-
-void* MCD212::DecodeMosaic(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm)
-{
-    return 0;
-}
-
-uint32_t MCD212::GetColorFromCLUT(uint8_t address)
-{
-    return 0;
-}
-
-void MCD212::DrawBackground()
-{
-    uint8_t* data  = backgroundPlane.GetData();
-    uint8_t* alpha = backgroundPlane.GetAlpha();
-    *alpha  = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-    data[0] = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-    data[1] = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-    data[2] = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
-}
-
-void MCD212::DrawCursor()
-{
-    uint8_t yAddress = controlRegisters[CursorPattern] >> 16 & 0x0F;
-    uint8_t* data = cursorPlane.GetData() + 3*yAddress*16;
-    uint8_t* alpha = cursorPlane.GetAlpha() + yAddress*16;
-
-    uint16_t mask = 1 << 15;
-    while(mask)
-    {
-        if(controlRegisters[CursorPattern] & mask)
-        {
-            *alpha  = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-            data[0] = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-            data[1] = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-            data[2] = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
-        }
-        mask >>= 1;
-    }
 }
 
 void MCD212::OnFrameCompleted()

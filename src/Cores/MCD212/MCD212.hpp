@@ -5,6 +5,8 @@ class MCD212;
 
 #include <fstream>
 
+#include <wx/image.h>
+
 #include "../VDSC.hpp"
 
 enum MCD212Registers
@@ -59,16 +61,19 @@ class MCD212 : public VDSC
     uint8_t memorySwapCount;
     bool isCA;
 
-    void* DecodeBitmap(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm);
-    void* DecodeRunLength(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm);
-    void* DecodeMosaic(uint8_t* data, uint8_t* dst, uint16_t width, uint16_t height, bool cm);
+    // Display File Decoders
+    void DecodeBitmap(wxImage& plane, uint8_t* data, uint16_t width, bool cm);
+    void DecodeRunLength(wxImage& plane, uint8_t* data, uint16_t width, bool cm);
+    void DecodeMosaic(wxImage& plane, uint8_t* data, uint16_t width, bool cm);
 
-    void DrawPlaneA();
-    void DrawPlaneB();
+    // Real-Time Decoders (returns pixels in ARGB format)
+    uint32_t DecodeRGB555(uint16_t pixel);
+    void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6]);
+    uint32_t DecodeCLUT(uint8_t pixel);
+
     void DrawBackground();
     void DrawCursor();
 
-    uint32_t GetColorFromCLUT(uint8_t address);
 
     void DisplayLineA();
     void DisplayLineB();

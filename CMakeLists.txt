@@ -10,6 +10,7 @@ set(SRCS
 	src/CDI/Export.cpp
 	src/Cores/MCD212/DRAMInterface.cpp
 	src/Cores/MCD212/MCD212.cpp
+	src/Cores/MCD212/Display.cpp
 	src/Cores/MCD212/Registers.cpp
 	src/Cores/SCC66470/DRAMInterface.cpp
 	src/Cores/SCC66470/SCC66470.cpp
@@ -35,7 +36,7 @@ set(CMAKE_SOURCE_DIRECTORY ".")
 if(UNIX)
 	set(CMAKE_GENERATOR "Unix Makefiles")
 endif()
-	
+
 add_executable(CeDImu ${SRCS})
 
 find_package(wxWidgets COMPONENTS adv core base REQUIRED)
