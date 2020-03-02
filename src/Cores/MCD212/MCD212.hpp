@@ -61,6 +61,10 @@ class MCD212 : public VDSC
     uint8_t memorySwapCount;
     bool isCA;
 
+    uint32_t* controlRegisters;
+    uint16_t* internalRegisters;
+    std::ofstream out;
+
     // Display File Decoders
     void DecodeBitmap(wxImage& plane, uint8_t* data, uint16_t width, bool cm);
     void DecodeRunLength(wxImage& plane, uint8_t* data, uint16_t width, bool cm);
@@ -142,10 +146,6 @@ class MCD212 : public VDSC
 
 
 public:
-    uint32_t* controlRegisters;
-    uint16_t* internalRegisters;
-    std::ofstream out;
-
     MCD212(CeDImu* appp);
     virtual ~MCD212();
 

@@ -18,7 +18,7 @@ uint8_t MCD212::GetByte(const uint32_t& addr)
     }
     else if(addr <= 0x4FFFDF)
     {
-        LOG(out << std::setw(6) << std::hex << app->cpu->currentPC << " Get byte at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << (int)memory[addr] << ") " << std::dec << (int)(memory[addr]) << std::endl)
+        LOG(out << std::setw(6) << std::hex << app->cpu->currentPC << " Get byte at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << (int)memory[addr] << ") " << std::dec << (int)memory[addr] << std::endl)
         return memory[addr];
     }
     else
@@ -89,7 +89,7 @@ void MCD212::SetByte(const uint32_t& addr, const uint8_t& data)
     }
     else if(addr <= 0x4FFFDF)
     {
-        LOG(if(addr >= 0x400000) out << "WARNING: writing to System ROM "; out << std::setw(6) << std::hex << app->cpu->currentPC << " Set byte at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int)data << std::endl)
+        LOG(if(addr >= 0x400000) out << "WARNING: writing to System ROM "; out << std::setw(6) << std::hex << app->cpu->currentPC << " Set byte at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << (int)data << ") " << std::dec << (int)data << std::endl)
         memory[addr] = data;
     }
     else

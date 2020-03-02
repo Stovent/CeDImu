@@ -6,7 +6,6 @@
 SCC66470::SCC66470(CeDImu* appp) : VDSC(appp)
 {
     memory = new uint8_t[0x200000];
-    lineNumber = 0;
     allocatedMemory = 0x200000;
     memorySwapCount = 0;
 }
