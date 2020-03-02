@@ -26,7 +26,7 @@ uint16_t MCD212::GetWordNoDebug(const uint32_t addr)
     {
         return internalRegisters[addr-0x4FFFE0];
     }
-    else if(addr < 0x4FFFDF)
+    else if(addr <= 0x4FFFDF)
     {
         return memory[addr] << 8 | memory[addr + 1];
     }
@@ -42,7 +42,7 @@ uint32_t MCD212::GetLongNoDebug(const uint32_t addr)
     {
         return internalRegisters[addr-0x4FFFE0] << 16 | internalRegisters[addr-0x4FFFDF];
     }
-    else if(addr < 0x4FFFDF)
+    else if(addr <= 0x4FFFDF)
     {
         return memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3];
     }

@@ -133,17 +133,32 @@ void RAMSearchFrame::OnCheckMisaligned(wxCommandEvent& event)
 {
     if(checkMisaligned->GetValue())
     {
+        ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory);
         if(lastByte == byte2)
+        {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() * 2 + ramSearchList->GetCountPerPage()-1);
+        }
         else if (lastByte == byte4)
+        {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() * 4 + ramSearchList->GetCountPerPage()-1);
+        }
     }
     else
     {
         if(lastByte == byte2)
+        {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 2);
+            ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory / 2);
+        }
         else if (lastByte == byte4)
+        {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 4);
+            ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory / 4);
+        }
+        else
+        {
+            ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory);
+        }
     }
     ramSearchList->Refresh();
 }
@@ -165,12 +180,14 @@ void RAMSearchFrame::OnHexadecimal(wxCommandEvent& event)
 
 void RAMSearchFrame::OnByte1(wxCommandEvent& event)
 {
-    ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory);
     if(!checkMisaligned->GetValue())
+    {
+        ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory);
         if(lastByte == byte2)
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() * 2 + ramSearchList->GetCountPerPage()-1);
         else
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() * 4 + ramSearchList->GetCountPerPage()-1);
+    }
 
     lastByte = byte1;
     ramSearchList->Refresh();
@@ -178,12 +195,19 @@ void RAMSearchFrame::OnByte1(wxCommandEvent& event)
 
 void RAMSearchFrame::OnByte2(wxCommandEvent& event)
 {
-    ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory / 2);
     if(!checkMisaligned->GetValue())
+    {
         if(lastByte == byte1)
+        {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 2);
+            ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory / 2);
+        }
         else
+        {
+            ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory / 2);
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() * 2 + ramSearchList->GetCountPerPage()-1);
+        }
+    }
 
     lastByte = byte2;
     ramSearchList->Refresh();
@@ -191,12 +215,14 @@ void RAMSearchFrame::OnByte2(wxCommandEvent& event)
 
 void RAMSearchFrame::OnByte4(wxCommandEvent& event)
 {
-    ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory / 4);
     if(!checkMisaligned->GetValue())
+    {
         if(lastByte == byte1)
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 4);
         else
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 2);
+        ramSearchList->SetItemCount(mainFrame->app->vdsc->allocatedMemory / 4);
+    }
 
     lastByte = byte4;
     ramSearchList->Refresh();
