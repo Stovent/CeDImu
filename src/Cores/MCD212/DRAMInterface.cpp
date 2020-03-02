@@ -4,7 +4,55 @@
 
 #include "../../utils.hpp"
 
-uint8_t MCD212::GetByte(const uint32_t& addr)
+uint8_t MCD212::GetByteNoDebug(const uint32_t addr)
+{
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    {
+        return internalRegisters[addr-0x4FFFE0] & 0x00FF;
+    }
+    else if(addr <= 0x4FFFDF)
+    {
+        return memory[addr];
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+uint16_t MCD212::GetWordNoDebug(const uint32_t addr)
+{
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    {
+        return internalRegisters[addr-0x4FFFE0];
+    }
+    else if(addr < 0x4FFFDF)
+    {
+        return memory[addr] << 8 | memory[addr + 1];
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+uint32_t MCD212::GetLongNoDebug(const uint32_t addr)
+{
+    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    {
+        return internalRegisters[addr-0x4FFFE0] << 16 | internalRegisters[addr-0x4FFFDF];
+    }
+    else if(addr < 0x4FFFDF)
+    {
+        return memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3];
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+uint8_t MCD212::GetByte(const uint32_t addr)
 {
     if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
@@ -28,7 +76,7 @@ uint8_t MCD212::GetByte(const uint32_t& addr)
     }
 }
 
-uint16_t MCD212::GetWord(const uint32_t& addr)
+uint16_t MCD212::GetWord(const uint32_t addr)
 {
     if(memorySwapCount < 4)
     {
@@ -54,7 +102,7 @@ uint16_t MCD212::GetWord(const uint32_t& addr)
     }
 }
 
-uint32_t MCD212::GetLong(const uint32_t& addr)
+uint32_t MCD212::GetLong(const uint32_t addr)
 {
     if(memorySwapCount < 4)
     {
@@ -80,7 +128,7 @@ uint32_t MCD212::GetLong(const uint32_t& addr)
     }
 }
 
-void MCD212::SetByte(const uint32_t& addr, const uint8_t& data)
+void MCD212::SetByte(const uint32_t addr, const uint8_t data)
 {
     if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
@@ -98,7 +146,7 @@ void MCD212::SetByte(const uint32_t& addr, const uint8_t& data)
     }
 }
 
-void MCD212::SetWord(const uint32_t& addr, const uint16_t& data)
+void MCD212::SetWord(const uint32_t addr, const uint16_t data)
 {
     if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
@@ -117,7 +165,7 @@ void MCD212::SetWord(const uint32_t& addr, const uint16_t& data)
     }
 }
 
-void MCD212::SetLong(const uint32_t& addr, const uint32_t& data)
+void MCD212::SetLong(const uint32_t addr, const uint32_t data)
 {
     if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
     {
