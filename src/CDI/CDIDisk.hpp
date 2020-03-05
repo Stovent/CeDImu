@@ -44,6 +44,10 @@ public:
     CDIHeader header;
     CDISubheader subheader;
 
+    CDIDisk() : disk(), header(), subheader() {}
+    CDIDisk(const CDIDisk&) = delete;
+    CDIDisk(const CDIDisk&&) = delete;
+
     bool Open(const std::string& filename);
     bool IsOpen() const;
     void Close();

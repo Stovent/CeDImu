@@ -93,7 +93,7 @@ bool CDIDisk::GotoNextSector(uint8_t submodeMask)
         {
             disk.seekg(2376 - disk.tellg() % 2352, std::ios::cur);
             UpdateSectorInfo();
-        } while(!(subheader.Submode & submodeMask) && disk.good());
+        } while(!(subheader.Submode & submodeMask) && Good());
     }
     else
     {
@@ -106,8 +106,9 @@ bool CDIDisk::GotoNextSector(uint8_t submodeMask)
 /**
 * Read {size} bytes from sectors only, starting at the current file cursor position.
 * If {size} is greater than the sector data size, then it will continue reading on
-* the next sector data section.
-* After execution, {size} is set to the true date size read by this function.
+* the data section of the next sector.
+* Returns true if no problems occured, false otherwise.
+* After execution, {size} is set to the actual data size read from the disk.
 **/
 bool CDIDisk::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
 {
