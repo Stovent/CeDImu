@@ -111,6 +111,8 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
         return;
     }
 
+    SetTitleInfo(0);
+
     if(Config::skipBIOS)
     {
         CDIFile* module = app->cdi->GetFile(app->cdi->mainModule);
@@ -242,16 +244,20 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
+    SetStatusText("Exporting audio...");
     if(app->cdi)
         app->cdi->ExportFiles();
     else
         wxMessageBox("No ROM loaded, no file to export");
+    SetStatusText("Files exported!");
 }
 
 void MainFrame::OnExportAudio(wxCommandEvent& event)
 {
+    SetStatusText("Exporting audio...");
     if(app->cdi)
         app->cdi->ExportAudio();
+    SetStatusText("Audio exported!");
 }
 
 void MainFrame::OnSettings(wxCommandEvent& event)

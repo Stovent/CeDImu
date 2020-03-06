@@ -8,11 +8,9 @@ class CDI;
 #include "CDIDisk.hpp"
 #include "CDIFile.hpp"
 #include "CDIDirectory.hpp"
-#include "../CeDImu.hpp"
 
 class CDI
 {
-    CeDImu* cedimu;
     CDIDisk disk;
     CDIDirectory rootDirectory;
 
@@ -25,7 +23,7 @@ public:
     std::string romPath;
     std::string gameFolder; // romPath + gameName + "/"
 
-    CDI(CeDImu* app);
+    CDI();
     ~CDI();
 
     bool OpenROM(const std::string& rom);

@@ -1,9 +1,12 @@
 #include "CDI.hpp"
+
+#include <wx/msgdlg.h>
+
 #include "../utils.hpp"
 
-CDI::CDI(CeDImu* app) : disk(), rootDirectory(1, "/", 0, 1, 1)
+CDI::CDI() : disk(), rootDirectory(1, "/", 0, 1, 1)
 {
-    cedimu = app;
+
 }
 
 CDI::~CDI()
@@ -26,7 +29,6 @@ bool CDI::OpenROM(const std::string& rom)
 
     LoadCDIFileSystem();
     gameFolder = romPath + gameName + "/";
-    cedimu->mainFrame->SetTitle(gameName + " - CeDImu");
     return true;
 }
 
@@ -75,7 +77,7 @@ void CDI::LoadCDIFileSystem()
         if(!isEven(nameSize))
             disk.GetByte();
 
-        if(dirname == '\0')
+        if(dirname[0] == '\0')
         {
             rootDirectory.dirLBN = lbn;
         }

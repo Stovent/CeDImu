@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include <wx/filefn.h>
+#include <wx/msgdlg.h>
 
 #include "../utils.hpp"
 
@@ -14,8 +14,6 @@ bool CDI::ExportAudio()
         wxMessageBox("No ROM loaded, no audio to export");
         return false;
     }
-
-    cedimu->mainFrame->SetStatusText("Exporting audio...");
 
     std::string currentPath = "audio/";
     if(!CreateSubfoldersFromROMDirectory(currentPath))
@@ -28,7 +26,6 @@ bool CDI::ExportAudio()
 
     rootDirectory.ExportAudio(currentPath);
 
-    cedimu->mainFrame->SetStatusText("Audio exported to " + currentPath);
     return true;
 }
 
@@ -50,7 +47,6 @@ bool CDI::ExportFiles()
         return false;
     }
 
-    cedimu->mainFrame->SetStatusText("Exporting files...");
     ExportSectorsInfo();
     ExportFilesInfo();
 
@@ -65,7 +61,6 @@ bool CDI::ExportFiles()
 
     rootDirectory.ExportFiles(currentPath);
 
-    cedimu->mainFrame->SetStatusText("Files exported to " + currentPath);
     return true;
 }
 

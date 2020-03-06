@@ -61,7 +61,7 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
 bool CeDImu::InitializeCDI(const char* pathToROM)
 {
     delete cdi;
-    cdi = new CDI(this);
+    cdi = new CDI();
     return cdi->OpenROM(pathToROM);
 }
 
