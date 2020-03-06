@@ -12,15 +12,15 @@ class CDI;
 
 class CDI
 {
-    CDIDisk disk;
-
-    void LoadCDIFileSystem();
-
-public:
     CeDImu* cedimu;
-    CDIFile* mainModule;
+    CDIDisk disk;
     CDIDirectory rootDirectory;
 
+    void LoadCDIFileSystem();
+    bool CreateSubfoldersFromROMDirectory(std::string path = "");
+
+public:
+    std::string mainModule;
     std::string gameName;
     std::string romPath;
     std::string gameFolder; // romPath + gameName + "/"
@@ -28,10 +28,9 @@ public:
     CDI(CeDImu* app);
     ~CDI();
 
-    bool OpenROM(const std::string rom);
+    bool OpenROM(const std::string& rom);
     void CloseROM();
-    bool CreateSubfoldersFromROMDirectory(std::string path = "");
-    bool LoadModuleInMemory(std::string moduleName, uint32_t address);
+    CDIFile* GetFile(std::string name);
 
     bool ExportAudio();
     void ExportAudioInfo();

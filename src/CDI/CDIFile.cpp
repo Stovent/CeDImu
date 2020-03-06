@@ -3,25 +3,28 @@
 #include <cmath>
 #include <fstream>
 #include <iterator>
+#include <vector>
 
-#include "CDI.hpp"
-#include "../utils.hpp"
+#include <wx/msgdlg.h>
 
-CDIFile::CDIFile(CDIDisk* cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos)
+CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) : disk(cdidisk)
 {
-    disk = cdidisk;
     nameSize = namesize;
     fileNumber = filenumber;
     attributes = attr;
     parent = parentRelpos;
     fileLBN = lbn;
     filesize = size;
-    name = filename;
+    filename = name;
 }
 
+/**
+* Converts and writes the audio data from the disk to 16-bit PCM on a
+* file in the directory {directoryPath}, each channel is exported individualy.
+**/
 void CDIFile::ExportAudio(std::string directoryPath)
 {
-    uint32_t pos = disk->Tell();
+    uint32_t pos = disk.Tell();
     float k0[4] = {0.0, 0.9375, 1.796875, 1.53125};
     float k1[4] = {0.0, 0.0, -0.8125, -0.859375};
 
@@ -31,23 +34,23 @@ void CDIFile::ExportAudio(std::string directoryPath)
         std::vector<uint16_t> left;
         std::vector<uint16_t> right;
 
-        disk->GotoLBN(fileLBN);
+        disk.GotoLBN(fileLBN);
 
         int32_t sizeLeft = filesize;
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
 
-            if(!(disk->subheader.Submode & cdia) || disk->subheader.ChannelNumber != channel)
+            if(!(disk.subheader.Submode & cdia) || disk.subheader.ChannelNumber != channel)
             {
-                disk->GotoNextSector();
+                disk.GotoNextSector();
                 continue;
             }
 
-            bool emph = disk->subheader.CodingInformation & AudioCodingInformation::emphasis;
-            bool bps = disk->subheader.CodingInformation & AudioCodingInformation::bps;
-            bool fs = disk->subheader.CodingInformation & AudioCodingInformation::sf;
-            bool ms = disk->subheader.CodingInformation & AudioCodingInformation::ms;
+//            bool emph = disk.subheader.CodingInformation & AudioCodingInformation::emphasis;
+            bool bps = disk.subheader.CodingInformation & AudioCodingInformation::bps;
+            bool fs = disk.subheader.CodingInformation & AudioCodingInformation::sf;
+            bool ms = disk.subheader.CodingInformation & AudioCodingInformation::ms;
 
             if(bps) // Level A (8 bits per sample)
             {
@@ -58,8 +61,8 @@ void CDIFile::ExportAudio(std::string directoryPath)
                     uint8_t filter[4];
                     uint8_t SD[4][28]; // sound data
 
-                    disk->Read((char*)s, 4);
-                    disk->Seek(12, std::ios::cur);
+                    disk.Read((char*)s, 4);
+                    disk.Seek(12, std::ios::cur);
                     for(uint8_t i = 0; i < 4; i++)
                     {
                         range[i] = s[i] & 0x0F;
@@ -70,7 +73,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
                     {
                         for(uint8_t su = 0; su < 4; su++) // sound unit
                         {
-                            SD[su][ss] = disk->GetByte();
+                            SD[su][ss] = disk.GetByte();
                         }
                     }
 
@@ -105,9 +108,9 @@ void CDIFile::ExportAudio(std::string directoryPath)
                     uint8_t filter[8];
                     uint8_t SD[8][28]; // sound data
 
-                    disk->Seek(4, std::ios::cur);
-                    disk->Read((char*)s, 8);
-                    disk->Seek(4, std::ios::cur);
+                    disk.Seek(4, std::ios::cur);
+                    disk.Read((char*)s, 8);
+                    disk.Seek(4, std::ios::cur);
                     for(uint8_t i = 0; i < 8; i++)
                     {
                         range[i] = s[i] & 0x0F;
@@ -118,7 +121,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
                     {
                         for(uint8_t su = 0; su < 8; su += 2)
                         {
-                            const uint8_t SB = disk->GetByte();
+                            const uint8_t SB = disk.GetByte();
                             SD[su][ss] = SB & 0x0F;
                             SD[su+1][ss] = SB >> 4;
                         }
@@ -149,12 +152,12 @@ void CDIFile::ExportAudio(std::string directoryPath)
             wavHeader.bitsPerSample = 16;
             wavHeader.channelNumber = ms + 1;
 
-            disk->GotoNextSector();
+            disk.GotoNextSector();
         }
 
         if(left.size())
         {
-            std::ofstream out(directoryPath + name + '_' + std::to_string(channel) + ".wav", std::ios::binary | std::ios::out);
+            std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + ".wav", std::ios::binary | std::ios::out);
 
             uint16_t bytePerBloc = wavHeader.channelNumber * wavHeader.bitsPerSample / 8;
             uint32_t bytePerSec = wavHeader.frequency * bytePerBloc;
@@ -193,23 +196,26 @@ void CDIFile::ExportAudio(std::string directoryPath)
             out.close();
         }
     }
-    disk->Seek(pos);
+    disk.Seek(pos);
 }
 
+/**
+* Writes the content of the file (including empty sectors) in {directoryPath} + this->filename.
+**/
 void CDIFile::ExportFile(std::string directoryPath)
 {
-    const uint32_t pos = disk->Tell();
+    const uint32_t pos = disk.Tell();
 
-    std::ofstream out(directoryPath + name, std::ios::out | std::ios::binary);
+    std::ofstream out(directoryPath + filename, std::ios::out | std::ios::binary);
 
-    uint32_t size;
-    char const * const data = GetFileContent(&size);
+    uint32_t size = 0;
+    char const * const data = GetFileContent(size);
     if(data && size)
         out.write(data, size);
     delete[] data;
 
     out.close();
-    disk->Seek(pos);
+    disk.Seek(pos);
 }
 
 /**
@@ -217,24 +223,23 @@ void CDIFile::ExportFile(std::string directoryPath)
 * the size of the file content.
 * Remember to delete the returned pointer (allocated with new[])
 **/
-char* CDIFile::GetFileContent(uint32_t* size)
+char* CDIFile::GetFileContent(uint32_t& size)
 {
-    const uint32_t pos = disk->Tell();
+    const uint32_t pos = disk.Tell();
 
     uint32_t readSize = (double)filesize / 2048.0 * 2324.0;
     char* data = new (std::nothrow) char[readSize];
     if(data == nullptr)
     {
-        wxMessageBox("Could not allocate memory to export file " + name);
+        wxMessageBox("Could not allocate memory to export file " + filename);
         return nullptr;
     }
 
     readSize = filesize;
-    disk->GotoLBN(fileLBN);
-    disk->GetData(data, readSize, true);
-    if(size)
-        *size = readSize;
+    disk.GotoLBN(fileLBN);
+    disk.GetData(data, readSize, true);
+    size = readSize;
 
-    disk->Seek(pos);
+    disk.Seek(pos);
     return data;
 }

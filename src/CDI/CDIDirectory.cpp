@@ -1,10 +1,7 @@
 #include "CDIDirectory.hpp"
 
-#include <sstream>
+#include <wx/msgdlg.h>
 
-#include <wx/filefn.h>
-
-#include "CDI.hpp"
 #include "../utils.hpp"
 
 CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset)
@@ -16,6 +13,10 @@ CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uin
     dirname = name;
 }
 
+/**
+* Reads the directory content from the disk and reursively
+* loads its subfolders' content.
+**/
 void CDIDirectory::LoadContent(CDIDisk& disk)
 {
     const uint32_t pos = disk.Tell();
@@ -72,7 +73,7 @@ void CDIDirectory::LoadContent(CDIDisk& disk)
             }
             else // file
             {
-                files.emplace(name, CDIFile(&disk, lbn, filesize, namesize, name, attributes, filenumber, relOffset));
+                files.emplace(name, CDIFile(disk, lbn, filesize, namesize, name, attributes, filenumber, relOffset));
             }
         }
         if(!(disk.subheader.Submode & cdieof))
@@ -81,6 +82,9 @@ void CDIDirectory::LoadContent(CDIDisk& disk)
     disk.Seek(pos);
 }
 
+/**
+* Returns a pointer to the file named {filename}, or nullptr is not found
+**/
 CDIFile* CDIDirectory::GetFile(std::string filename)
 {
     const size_t pos = filename.find('/');
@@ -105,12 +109,18 @@ CDIFile* CDIDirectory::GetFile(std::string filename)
     }
 }
 
+/**
+* Clear the directory content.
+**/
 void CDIDirectory::Clear()
 {
     files.clear();
     subdirectories.clear();
 }
 
+/**
+* Returns the directory organization.
+**/
 std::stringstream CDIDirectory::ExportInfo() const
 {
     std::stringstream ss;
@@ -118,7 +128,7 @@ std::stringstream CDIDirectory::ExportInfo() const
     ss << "LBN: " << dirLBN << std::endl;
     for(std::pair<std::string, CDIFile> file : files)
     {
-        ss << "    file: " << file.second.name << std::endl;
+        ss << "    file: " << file.second.filename << std::endl;
         ss << "    Size: " << file.second.filesize << std::endl;
         ss << "    LBN : " << file.second.fileLBN << std::endl << std::endl;
     }
@@ -126,6 +136,10 @@ std::stringstream CDIDirectory::ExportInfo() const
     return ss;
 }
 
+/**
+* Exports the files audio data, and recursively exports its subdirectories'
+* files audio data.
+**/
 void CDIDirectory::ExportAudio(std::string basePath) const
 {
     if(dirname != "/")
@@ -146,6 +160,10 @@ void CDIDirectory::ExportAudio(std::string basePath) const
     }
 }
 
+/**
+* Exports the files content, and recursively exports its subdirectories'
+* files content.
+**/
 void CDIDirectory::ExportFiles(std::string basePath) const
 {
     if(dirname != "/")

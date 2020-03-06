@@ -1,10 +1,9 @@
 #include "CDI.hpp"
 #include "../utils.hpp"
 
-CDI::CDI(CeDImu* app) : rootDirectory(1, "/", 0, 1, 1)
+CDI::CDI(CeDImu* app) : disk(), rootDirectory(1, "/", 0, 1, 1)
 {
     cedimu = app;
-    mainModule = nullptr;
 }
 
 CDI::~CDI()
@@ -12,7 +11,7 @@ CDI::~CDI()
     CloseROM();
 }
 
-bool CDI::OpenROM(const std::string rom)
+bool CDI::OpenROM(const std::string& rom)
 {
     CloseROM();
 
@@ -33,10 +32,10 @@ bool CDI::OpenROM(const std::string rom)
 
 void CDI::CloseROM()
 {
-    mainModule = nullptr;
     rootDirectory.Clear();
     if(disk.IsOpen())
         disk.Close();
+    mainModule = "";
     gameName = "";
     romPath = "";
     gameFolder = "";
@@ -56,7 +55,7 @@ void CDI::LoadCDIFileSystem()
 
     disk.Seek(256, std::ios_base::cur); // goto application identifier
 
-    std::string mainModuleName = disk.GetString();
+    mainModule = disk.GetString();
 
     disk.GotoLBN(lbn); //go to path table
 
@@ -83,8 +82,8 @@ void CDI::LoadCDIFileSystem()
     }
     rootDirectory.LoadContent(disk);
 
-    if((mainModule = rootDirectory.GetFile(mainModuleName)) == nullptr)
-        wxMessageBox("Could not find main module " + mainModule->name);
+    if((rootDirectory.GetFile(mainModule)) == nullptr)
+        wxMessageBox("Could not find main module " + mainModule);
 
     disk.Seek(pos);
 }
@@ -110,15 +109,10 @@ bool CDI::CreateSubfoldersFromROMDirectory(std::string path)
     return true;
 }
 
-bool CDI::LoadModuleInMemory(std::string moduleName, uint32_t address)
+/**
+* Returns a pointer to the file named {name}, or nullptr is not found
+**/
+CDIFile* CDI::GetFile(std::string name)
 {
-    CDIFile* module;
-    if((module = rootDirectory.GetFile(moduleName)) == nullptr)
-    {
-        wxMessageBox("Could not load module " + moduleName);
-        return false;
-    }
-
-    cedimu->vdsc->PutDataInMemory(module->GetFileContent(), module->filesize, address);
-    return true;
+    return rootDirectory.GetFile(name);
 }

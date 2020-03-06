@@ -1,7 +1,6 @@
 #include <fstream>
 
 #include "Config.hpp"
-#include "CeDImu.hpp"
 
 namespace Config
 {

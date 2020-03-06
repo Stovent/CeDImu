@@ -1,7 +1,7 @@
 #ifndef CDIFILE_HPP
 #define CDIFILE_HPP
 
-struct CDIFile;
+class CDIFile;
 
 #include <string>
 
@@ -15,22 +15,25 @@ enum AudioCodingInformation
     ms       = 0b00000011  // mono/stereo
 };
 
-struct CDIFile
+class CDIFile
 {
-    CDIDisk* disk;
+    CDIDisk& disk;
+
+public:
     uint8_t nameSize;
     uint8_t fileNumber;
     uint16_t attributes;
     uint16_t parent;
     uint32_t fileLBN;
     uint32_t filesize;
-    std::string name;
+    std::string filename;
 
-    CDIFile(CDIDisk* cdidisk, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t fileNumber, uint16_t parentRelpos);
+    CDIFile() = delete;
+    CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string name, uint16_t attr, uint8_t fileNumber, uint16_t parentRelpos);
 
     void ExportAudio(std::string directoryPath);
     void ExportFile(std::string directoryPath);
-    char* GetFileContent(uint32_t* size = nullptr);
+    char* GetFileContent(uint32_t& size);
 };
 
 struct WAVHeader

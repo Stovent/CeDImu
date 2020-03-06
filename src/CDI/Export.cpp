@@ -91,7 +91,7 @@ void CDI::ExportFilesInfo()
     for(std::pair<std::string, CDIFile> file : rootDirectory.files)
     {
         std::stringstream ss;
-        ss << "    file: " << file.second.name << std::endl;
+        ss << "    file: " << file.second.filename << std::endl;
         ss << "    Size: " << file.second.filesize << std::endl;
         ss << "    LBN : " << file.second.fileLBN << std::endl << std::endl;
         out << ss.str();

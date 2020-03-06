@@ -21,6 +21,7 @@ struct CDIDirectory
     std::map<std::string, CDIFile> files;
     std::map<std::string, CDIDirectory> subdirectories;
 
+    CDIDirectory() = delete;
     CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset);
 
     void Clear();
