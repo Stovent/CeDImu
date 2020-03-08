@@ -202,8 +202,6 @@ class SCC68070
 public:
     CeDImu* app;
     VDSC* vdsc;
-    std::queue<uint8_t> UART_OUT;
-    std::queue<uint8_t> UART_IN;
 
     int32_t D[8];
     int32_t A[8];
@@ -219,6 +217,7 @@ public:
     std::ofstream out;
     std::ofstream instruction;
     std::ofstream uart_out;
+    std::ifstream uart_in;
 
     std::vector<std::string> instructionsBuffer;
     bool instructionsBufferChanged;
@@ -232,7 +231,8 @@ public:
     void ResetOperation();
     unsigned long long count;
 
-    inline void SetUARTReceiveHoldingRegister(const uint8_t data) { internal[URHR] = data; }
+    uint8_t ReadUART();
+    void WriteUART(const uint8_t data);
 
 private:
     uint8_t* internal;

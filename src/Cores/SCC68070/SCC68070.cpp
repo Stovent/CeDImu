@@ -17,14 +17,10 @@ SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : a
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instruction, "instructions.txt")
     OPEN_LOG(uart_out, "uart_out.txt")
+    uart_in.open("uart_in", std::ios::binary | std::ios::in);
 
     GenerateInstructionSet();
     RebootCore();
-
-    UART_IN.push(0);
-    UART_IN.push(0);
-    UART_IN.push(6);
-    UART_IN.push(1);
 
     SET_TX_READY
     SET_RX_READY
@@ -33,6 +29,21 @@ SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : a
 SCC68070::~SCC68070()
 {
     delete[] internal;
+}
+
+uint8_t SCC68070::ReadUART()
+{
+    int c = uart_in.get();
+    LOG(out << std::hex << currentPC << "\tURHR: 0x" << c << std::endl)
+    return (c != EOF) ? c : 0;
+}
+
+void SCC68070::WriteUART(const uint8_t data)
+{
+    internal[UTHR] = data;
+    LOG(uart_out.write((char*)&data, 1))
+    LOG(out << std::hex << currentPC << "\tUTHR: 0x" << (uint32_t)internal[UTHR] << std::endl)
+    internal[USR] |= 0x08; // set TXEMT bit
 }
 
 void SCC68070::RebootCore()

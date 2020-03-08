@@ -398,6 +398,7 @@ void SCC68070::SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTi
 
 uint8_t SCC68070::GetByte(const uint32_t& addr)
 {
+    LOG(out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl)
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc->GetByte(addr);
     else if(addr >= 0x80000000 && addr < 0x80008080)
@@ -406,14 +407,7 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
         {
             if(addr == 0x8000201B)
             {
-                if(UART_IN.empty())
-                    internal[URHR] = 0;
-                else
-                {
-                    internal[URHR] = UART_IN.front();
-                    UART_IN.pop();
-                }
-                LOG(out << "URHR 0x" << std::hex << currentPC << " value #" << (uint32_t)internal[URHR] << std::endl)
+                internal[URHR] = ReadUART();
             }
             return internal[addr-INTERNAL];
         }
@@ -422,33 +416,32 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
     }
     else
     {
-        LOG(out << "OUT OF RANGE:")
+        LOG(out << "    PREVIOUS IS OUT OF RANGE" << std::endl)
     }
-    LOG(out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl)
     return 0;
 }
 
 uint16_t SCC68070::GetWord(const uint32_t& addr)
 {
+    LOG(out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl)
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc->GetWord(addr);
     else
     {
-        LOG(out << "OUT OF RANGE:")
+        LOG(out << "    PREVIOUS IS OUT OF RANGE" << std::endl)
     }
-    LOG(out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl)
     return 0;
 }
 
 uint32_t SCC68070::GetLong(const uint32_t& addr)
 {
+    LOG(out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl)
     if(addr < 0x80000000 || addr >= 0xC0000000)
         return vdsc->GetLong(addr);
     else
     {
-        LOG(out << "OUT OF RANGE:")
+        LOG(out << "    PREVIOUS IS OUT OF RANGE" << std::endl)
     }
-    LOG(out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl)
     return 0;
 }
 
@@ -478,15 +471,11 @@ void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
             }
             else if(addr == 0x80002019) // UART Transmit Holding Register
             {
-                UART_OUT.push(data);
-                internal[USR] |= 0x08; // set TXEMT bit
-#ifdef DEBUG
-                uart_out.write((char*)&data, 1);
-#endif // DEBUG
+                WriteUART(data);
             }
         }
         else
-            return vdsc->SetByte(addr, data);
+                vdsc->SetByte(addr, data);
     }
     else
     {
