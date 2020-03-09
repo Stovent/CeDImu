@@ -56,7 +56,6 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     case 'A':
         if(!app->cpu) break;
         mainFrame->Pause();
-        app->cpu->instructionsBufferChanged = true;
         break;
 
     case 'Z':

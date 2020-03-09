@@ -1,5 +1,8 @@
 #include "SCC68070.hpp"
 
+#include <algorithm>
+#include <iterator>
+
 void SCC68070::Interpreter(const bool loop)
 {
     run = loop;
@@ -7,9 +10,9 @@ void SCC68070::Interpreter(const bool loop)
     {
         if(cycleCount == 0)
         {
-            instructionsBuffer.clear();
-            if(app->mainFrame->disassemblerFrame)
-                app->mainFrame->disassemblerFrame->instructions.clear();
+            LOG(std::ostream_iterator<std::string> osit(instruction, "\n"); \
+                std::copy(disassembledInstructions.begin(), disassembledInstructions.end(), osit);)
+            disassembledInstructions.clear();
         }
 
         currentPC = PC;
@@ -23,10 +26,6 @@ void SCC68070::Interpreter(const bool loop)
         if(disassemble)
         {
             (this->*Disassemble[inst])(currentPC);
-            if(app->mainFrame->disassemblerFrame)
-                app->mainFrame->disassemblerFrame->instructions += *--instructionsBuffer.end() + "\n";
-
-            LOG(instruction << *--instructionsBuffer.end() << std::endl);
         }
 
         if(!isEven(PC))
@@ -35,8 +34,7 @@ void SCC68070::Interpreter(const bool loop)
             Exception(AddressError);
         }
 
-        instructionsBufferChanged = true;
-        count++;
+        instructionCount++;
 
         if(cycleCount * cycleDelay >= vdsc->GetLineDisplayTimeNanoSeconds())
         {

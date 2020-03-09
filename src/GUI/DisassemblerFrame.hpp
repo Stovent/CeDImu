@@ -3,6 +3,8 @@
 
 class DisassemblerFrame;
 
+#include <sstream>
+
 #include <wx/textctrl.h>
 #include <wx/frame.h>
 #include <wx/sizer.h>
@@ -14,8 +16,7 @@ class DisassemblerFrame;
 class DisassemblerFrame : public wxFrame
 {
 public:
-    uint32_t currentRow;
-    std::string instructions;
+    std::stringstream instructions;
 
     DisassemblerFrame(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~DisassemblerFrame();

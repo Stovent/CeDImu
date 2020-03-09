@@ -1,5 +1,3 @@
-#include <string>
-
 #include <wx/msgdlg.h>
 #include <wx/dcclient.h>
 
@@ -15,7 +13,6 @@ wxEND_EVENT_TABLE()
 DisassemblerFrame::DisassemblerFrame(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "SCC68070 Disassembler", pos, size), cpu(core)
 {
     cpu->disassemble = true;
-    currentRow = 0;
     mainFrame = parent;
 
     disassembler = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxTE_MULTILINE);
@@ -63,18 +60,16 @@ void DisassemblerFrame::RefreshLoop(wxTimerEvent& event)
 
 void DisassemblerFrame::PaintEvent()
 {
-    if(cpu->instructionsBufferChanged)
+    for(uint8_t i = 0; i < 8; i++)
     {
-        for(uint8_t i = 0; i < 8; i++)
-        {
-            d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(cpu->D[i]));
-            a[i]->SetLabelText("A" + std::to_string(i) + ": 0x" + toHex(cpu->A[i]));
-        }
-        pc->SetLabelText("PC: 0x" + toHex(cpu->PC));
-        sr->SetLabelText("SR: " + toBinString(cpu->SR, 16));
-
-        disassembler->SetValue(instructions);
-
-        cpu->instructionsBufferChanged = false;
+        d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(cpu->D[i]));
+        a[i]->SetLabelText("A" + std::to_string(i) + ": 0x" + toHex(cpu->A[i]));
     }
+    pc->SetLabelText("PC: 0x" + toHex(cpu->PC));
+    sr->SetLabelText("SR: " + toBinString(cpu->SR, 16));
+
+    instructions.str("");
+    std::ostream_iterator<std::string> ssit(instructions, "\n");
+    std::copy(cpu->disassembledInstructions.begin(), cpu->disassembledInstructions.end(), ssit);
+    disassembler->SetValue(instructions.str());
 }

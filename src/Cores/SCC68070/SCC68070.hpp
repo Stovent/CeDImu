@@ -200,8 +200,6 @@ enum SCC68070Peripherals
 class SCC68070
 {
 public:
-    CeDImu* app;
-    VDSC* vdsc;
 
     int32_t D[8];
     int32_t A[8];
@@ -219,22 +217,26 @@ public:
     std::ofstream uart_out;
     std::ifstream uart_in;
 
-    std::vector<std::string> instructionsBuffer;
-    bool instructionsBufferChanged;
+    std::vector<std::string> disassembledInstructions;
 
-    SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency = 15000000L);
+    SCC68070() = delete;
+    SCC68070(SCC68070&) = delete;
+    SCC68070(SCC68070&&) = delete;
+    explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = 15000000L);
     ~SCC68070();
-    void Run();
 
+    void Run();
     void RebootCore();
     void SingleStep();
     void ResetOperation();
-    unsigned long long count;
+    unsigned long long instructionCount;
 
     uint8_t ReadUART();
     void WriteUART(const uint8_t data);
 
 private:
+    VDSC* vdsc;
+
     uint8_t* internal;
 
     uint16_t currentOpcode;
@@ -266,6 +268,7 @@ private:
     uint8_t GetS();
 
     uint16_t Exception(const uint8_t& vectorNumber);
+    std::string DisassembleException(const uint8_t vectorNumber);
 
     // Addressing modes
     int32_t GetIndexRegister(const uint16_t& bew);

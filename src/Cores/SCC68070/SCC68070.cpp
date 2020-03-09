@@ -2,16 +2,14 @@
 
 #include "SCC68070.hpp"
 
-SCC68070::SCC68070(CeDImu* cedimu, VDSC* gpu, const uint32_t clockFrequency) : app(cedimu), vdsc(gpu), instructionsBuffer(), ILUT()
+SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
 {
-    if(app->mainFrame->disassemblerFrame)
-        disassemble = true;
-    else
-        disassemble = false;
+    vdsc = gpu;
+    disassemble = true;
 
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[0x80008080-INTERNAL];
-    count = 0;
+    instructionCount = 0;
     cycleDelay = (1.0L / clockFrequency) * 1000000000; // Time between two clock cycles in nanoseconds
 
     OPEN_LOG(out, "SCC68070.txt")
@@ -55,9 +53,8 @@ void SCC68070::RebootCore()
         D[i] = 0;
         A[i] = 0;
     }
-    instructionsBuffer.clear();
+    disassembledInstructions.clear();
     ResetOperation();
-    instructionsBufferChanged = true;
 }
 
 void SCC68070::ResetOperation()

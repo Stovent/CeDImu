@@ -54,7 +54,7 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
     if(!vdsc->LoadBIOS(pathToBIOS))
         return false;
 
-    cpu = new SCC68070(this, vdsc);
+    cpu = new SCC68070(vdsc);
     return true;
 }
 
