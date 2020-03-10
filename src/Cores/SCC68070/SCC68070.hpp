@@ -5,8 +5,6 @@ class SCC68070;
 
 #include <cstdint>
 #include <vector>
-#include <queue>
-#include <map>
 
 #include <wx/msgdlg.h>
 
@@ -343,8 +341,9 @@ private:
 
     // Instruction Set
     void GenerateInstructionSet();
-    void GenerateInstructionOpcodes(SCC68070InstructionSet instruction, const char* format, std::vector<std::vector<int>> values);
-    std::map<uint16_t, SCC68070InstructionSet> ILUT; // Instructions Look Up Table
+    void GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, uint16_t (SCC68070::*instFunc)(), void (SCC68070::*disFunc)(uint32_t));
+
+    uint16_t (SCC68070::*ILUT[UINT16_MAX+1])(); // Instructions Look Up Table
     uint16_t UnknownInstruction();
     uint16_t Abcd();
     uint16_t Add();
@@ -430,95 +429,8 @@ private:
     uint16_t Trapv();
     uint16_t Tst();
     uint16_t Unlk();
-    uint16_t (SCC68070::*instructions[OPCODESNBR+1])() = {
-        &SCC68070::UnknownInstruction,
-        &SCC68070::Abcd,
-        &SCC68070::Add,
-        &SCC68070::Adda,
-        &SCC68070::Addi,
-        &SCC68070::Addq,
-        &SCC68070::Addx,
-        &SCC68070::And,
-        &SCC68070::Andi,
-        &SCC68070::Andiccr,
-        &SCC68070::Andisr,
-        &SCC68070::AsM,
-        &SCC68070::AsR,
-        &SCC68070::BCC,
-        &SCC68070::Bchg,
-        &SCC68070::Bclr,
-        &SCC68070::Bra,
-        &SCC68070::Bset,
-        &SCC68070::Bsr,
-        &SCC68070::Btst,
-        &SCC68070::Chk,
-        &SCC68070::Clr,
-        &SCC68070::Cmp,
-        &SCC68070::Cmpa,
-        &SCC68070::Cmpi,
-        &SCC68070::Cmpm,
-        &SCC68070::DbCC,
-        &SCC68070::Divs,
-        &SCC68070::Divu,
-        &SCC68070::Eor,
-        &SCC68070::Eori,
-        &SCC68070::Eoriccr,
-        &SCC68070::Eorisr,
-        &SCC68070::Exg,
-        &SCC68070::Ext,
-        &SCC68070::Illegal,
-        &SCC68070::Jmp,
-        &SCC68070::Jsr,
-        &SCC68070::Lea,
-        &SCC68070::Link,
-        &SCC68070::LsM,
-        &SCC68070::LsR,
-        &SCC68070::Move,
-        &SCC68070::Movea,
-        &SCC68070::Moveccr,
-        &SCC68070::MoveFsr,
-        &SCC68070::Movesr,
-        &SCC68070::Moveusp,
-        &SCC68070::Movem,
-        &SCC68070::Movep,
-        &SCC68070::Moveq,
-        &SCC68070::Muls,
-        &SCC68070::Mulu,
-        &SCC68070::Nbcd,
-        &SCC68070::Neg,
-        &SCC68070::Negx,
-        &SCC68070::Nop,
-        &SCC68070::Not,
-        &SCC68070::Or,
-        &SCC68070::Ori,
-        &SCC68070::Oriccr,
-        &SCC68070::Orisr,
-        &SCC68070::Pea,
-        &SCC68070::Reset,
-        &SCC68070::RoM,
-        &SCC68070::RoR,
-        &SCC68070::RoxM,
-        &SCC68070::RoxR,
-        &SCC68070::Rte,
-        &SCC68070::Rtr,
-        &SCC68070::Rts,
-        &SCC68070::Sbcd,
-        &SCC68070::SCC,
-        &SCC68070::Stop,
-        &SCC68070::Sub,
-        &SCC68070::Suba,
-        &SCC68070::Subi,
-        &SCC68070::Subq,
-        &SCC68070::Subx,
-        &SCC68070::Swap,
-        &SCC68070::Tas,
-        &SCC68070::Trap,
-        &SCC68070::Trapv,
-        &SCC68070::Tst,
-        &SCC68070::Unlk
-    };
 
-    std::map<uint16_t, SCC68070InstructionSet> DLUT; // Disassembler Look Up Table
+    void (SCC68070::*DLUT[UINT16_MAX+1])(uint32_t); // Disassembler Look Up Table
     void DisassembleUnknownInstruction(uint32_t pc);
     void DisassembleAbcd(uint32_t pc);
     void DisassembleAdd(uint32_t pc);
@@ -604,93 +516,6 @@ private:
     void DisassembleTrapv(uint32_t pc);
     void DisassembleTst(uint32_t pc);
     void DisassembleUnlk(uint32_t pc);
-    void (SCC68070::*Disassemble[OPCODESNBR+1])(uint32_t pc) = {
-        &SCC68070::DisassembleUnknownInstruction,
-        &SCC68070::DisassembleAbcd,
-        &SCC68070::DisassembleAdd,
-        &SCC68070::DisassembleAdda,
-        &SCC68070::DisassembleAddi,
-        &SCC68070::DisassembleAddq,
-        &SCC68070::DisassembleAddx,
-        &SCC68070::DisassembleAnd,
-        &SCC68070::DisassembleAndi,
-        &SCC68070::DisassembleAndiccr,
-        &SCC68070::DisassembleAndisr,
-        &SCC68070::DisassembleAsM,
-        &SCC68070::DisassembleAsR,
-        &SCC68070::DisassembleBCC,
-        &SCC68070::DisassembleBchg,
-        &SCC68070::DisassembleBclr,
-        &SCC68070::DisassembleBra,
-        &SCC68070::DisassembleBset,
-        &SCC68070::DisassembleBsr,
-        &SCC68070::DisassembleBtst,
-        &SCC68070::DisassembleChk,
-        &SCC68070::DisassembleClr,
-        &SCC68070::DisassembleCmp,
-        &SCC68070::DisassembleCmpa,
-        &SCC68070::DisassembleCmpi,
-        &SCC68070::DisassembleCmpm,
-        &SCC68070::DisassembleDbCC,
-        &SCC68070::DisassembleDivs,
-        &SCC68070::DisassembleDivu,
-        &SCC68070::DisassembleEor,
-        &SCC68070::DisassembleEori,
-        &SCC68070::DisassembleEoriccr,
-        &SCC68070::DisassembleEorisr,
-        &SCC68070::DisassembleExg,
-        &SCC68070::DisassembleExt,
-        &SCC68070::DisassembleIllegal,
-        &SCC68070::DisassembleJmp,
-        &SCC68070::DisassembleJsr,
-        &SCC68070::DisassembleLea,
-        &SCC68070::DisassembleLink,
-        &SCC68070::DisassembleLsM,
-        &SCC68070::DisassembleLsR,
-        &SCC68070::DisassembleMove,
-        &SCC68070::DisassembleMovea,
-        &SCC68070::DisassembleMoveccr,
-        &SCC68070::DisassembleMoveFsr,
-        &SCC68070::DisassembleMovesr,
-        &SCC68070::DisassembleMoveusp,
-        &SCC68070::DisassembleMovem,
-        &SCC68070::DisassembleMovep,
-        &SCC68070::DisassembleMoveq,
-        &SCC68070::DisassembleMuls,
-        &SCC68070::DisassembleMulu,
-        &SCC68070::DisassembleNbcd,
-        &SCC68070::DisassembleNeg,
-        &SCC68070::DisassembleNegx,
-        &SCC68070::DisassembleNop,
-        &SCC68070::DisassembleNot,
-        &SCC68070::DisassembleOr,
-        &SCC68070::DisassembleOri,
-        &SCC68070::DisassembleOriccr,
-        &SCC68070::DisassembleOrisr,
-        &SCC68070::DisassemblePea,
-        &SCC68070::DisassembleReset,
-        &SCC68070::DisassembleRoM,
-        &SCC68070::DisassembleRoR,
-        &SCC68070::DisassembleRoxM,
-        &SCC68070::DisassembleRoxR,
-        &SCC68070::DisassembleRte,
-        &SCC68070::DisassembleRtr,
-        &SCC68070::DisassembleRts,
-        &SCC68070::DisassembleSbcd,
-        &SCC68070::DisassembleSCC,
-        &SCC68070::DisassembleStop,
-        &SCC68070::DisassembleSub,
-        &SCC68070::DisassembleSuba,
-        &SCC68070::DisassembleSubi,
-        &SCC68070::DisassembleSubq,
-        &SCC68070::DisassembleSubx,
-        &SCC68070::DisassembleSwap,
-        &SCC68070::DisassembleTas,
-        &SCC68070::DisassembleTrap,
-        &SCC68070::DisassembleTrapv,
-        &SCC68070::DisassembleTst,
-        &SCC68070::DisassembleUnlk
-    };
 };
 
 #define SET_TX_READY internal[USR] |= 0x04;

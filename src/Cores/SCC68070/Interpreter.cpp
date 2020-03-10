@@ -17,15 +17,14 @@ void SCC68070::Interpreter(const bool loop)
 
         currentPC = PC;
         currentOpcode = GetNextWord();
-        const SCC68070InstructionSet inst = ILUT[currentOpcode];
 
-        uint16_t executionTime = (this->*instructions[inst])();
+        uint16_t executionTime = (this->*ILUT[currentOpcode])();
         cycleCount += executionTime;
         totalCycleCount += executionTime;
 
         if(disassemble)
         {
-            (this->*Disassemble[inst])(currentPC);
+            (this->*DLUT[currentOpcode])(currentPC);
         }
 
         if(!isEven(PC))
