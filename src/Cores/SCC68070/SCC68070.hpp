@@ -198,7 +198,6 @@ enum SCC68070Peripherals
 class SCC68070
 {
 public:
-
     int32_t D[8];
     int32_t A[8];
     uint32_t PC;
@@ -209,11 +208,6 @@ public:
     uint32_t currentPC;
     bool run;
     bool disassemble;
-
-    std::ofstream out;
-    std::ofstream instruction;
-    std::ofstream uart_out;
-    std::ifstream uart_in;
 
     std::vector<std::string> disassembledInstructions;
 
@@ -229,11 +223,13 @@ public:
     void ResetOperation();
     unsigned long long instructionCount;
 
-    uint8_t ReadUART();
-    void WriteUART(const uint8_t data);
-
 private:
     VDSC* vdsc;
+
+    std::ofstream out;
+    std::ofstream instruction;
+    std::ofstream uart_out;
+    std::ifstream uart_in;
 
     uint8_t* internal;
 
@@ -301,6 +297,10 @@ private:
     void SetByte(const uint32_t& addr, const uint8_t& data);
     void SetWord(const uint32_t& addr, const uint16_t& data);
     void SetLong(const uint32_t& addr, const uint32_t& data);
+
+    // UART
+    uint8_t ReadUART();
+    void WriteUART(const uint8_t data);
 
     // Conditional Codes
     bool T();

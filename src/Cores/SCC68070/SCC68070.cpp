@@ -46,8 +46,14 @@ void SCC68070::WriteUART(const uint8_t data)
 
 void SCC68070::RebootCore()
 {
+    run = false;
+    LOG(out << "RESET" << std::endl; instruction << "RESET" << std::endl;)
     cycleCount = 0;
     totalCycleCount = 0;
+    currentOpcode = 0;
+    currentPC = 0;
+    lastAddress = 0;
+    memset(internal, 0, 0x80008080-INTERNAL);
     for(uint8_t i = 0; i < 8; i++)
     {
         D[i] = 0;
