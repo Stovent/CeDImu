@@ -26,7 +26,6 @@ public:
 
     virtual bool LoadBIOS(const char* filename) = 0;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
-    virtual void ResetMemory() = 0;
     virtual void MemorySwap() = 0;
 
     // do NOT use those for emulation

@@ -25,7 +25,7 @@ enum MCD212Registers
     DCP1  = 0x1A,
 };
 
-enum MCD212ControlRegisterMap
+enum MCD212ControlRegistersMap
 {
     CLUTColor = 0x00,
     ImageCodingMethod = 0x40,
@@ -66,21 +66,20 @@ class MCD212 : public VDSC
     std::ofstream out;
 
     // Display File Decoders
-    void DecodeBitmap(wxImage& plane, uint8_t* data, uint16_t width, bool cm);
-    void DecodeRunLength(wxImage& plane, uint8_t* data, uint16_t width, bool cm);
-    void DecodeMosaic(wxImage& plane, uint8_t* data, uint16_t width, bool cm);
+    void DecodeBitmap(wxImage& plane, uint8_t* data, bool cm);
+    void DecodeRunLength(wxImage& plane, uint8_t* data, bool cm);
+    void DecodeMosaic(wxImage& plane, uint8_t* data, bool cm);
 
     // Real-Time Decoders (returns pixels in ARGB format)
     uint32_t DecodeRGB555(uint16_t pixel);
     void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6]);
     uint32_t DecodeCLUT(uint8_t pixel);
 
-    void DrawBackground();
-    void DrawCursor();
-
 
     void DisplayLineA();
     void DisplayLineB();
+    void DrawCursor();
+    void DrawBackground();
 
     void ExecuteICA1();
     void ExecuteDCA1();
@@ -153,7 +152,6 @@ public:
 
     virtual bool LoadBIOS(const char* filename) override;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
-    virtual void ResetMemory() override;
     virtual void MemorySwap() override;
 
     virtual uint8_t  GetByteNoDebug(const uint32_t addr) override;

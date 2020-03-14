@@ -20,7 +20,6 @@ public:
 
     virtual bool LoadBIOS(const char* filename) override;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
-    virtual void ResetMemory() override;
     virtual void MemorySwap() override;
 
     virtual uint8_t  GetByteNoDebug(const uint32_t addr) override;

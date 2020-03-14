@@ -36,10 +36,8 @@ void MCD212::DisplayLine()
         {
             DrawBackground();
 
-            wxImage* screen = new wxImage(GetHorizontalResolution1(), GetVerticalResolution());
             // do planeA + planeB + cursor + background here
             app->mainFrame->gamePanel->RefreshScreen(backgroundPlane);
-            delete screen;
         }
         totalFrameCount++;
         OnFrameCompleted();
@@ -49,17 +47,20 @@ void MCD212::DisplayLine()
 
 void MCD212::DisplayLineA()
 {
-    if(GetFT12_1() <= 1)
+    if(controlRegisters[ImageCodingMethod] & 0x00000F) // plane on
     {
-        DecodeBitmap(planeA, &memory[GetVSR1()], GetHorizontalResolution1(), GetCM1());
-    }
-    else if(GetFT12_1() == 2)
-    {
-        DecodeRunLength(planeA, &memory[GetVSR1()], GetHorizontalResolution1(), GetCM1());
-    }
-    else
-    {
-        DecodeMosaic(planeA, &memory[GetVSR1()], GetHorizontalResolution1(), GetCM1());
+        if(GetFT12_1() <= 1)
+        {
+            DecodeBitmap(planeA, &memory[GetVSR1()], GetCM1());
+        }
+        else if(GetFT12_1() == 2)
+        {
+            DecodeRunLength(planeA, &memory[GetVSR1()], GetCM1());
+        }
+        else
+        {
+            DecodeMosaic(planeA, &memory[GetVSR1()], GetCM1());
+        }
     }
 
     if(GetIC1() && GetDC1())
@@ -71,17 +72,21 @@ void MCD212::DisplayLineA()
 
 void MCD212::DisplayLineB()
 {
-    if(GetFT12_2() <= 1)
+
+    if(controlRegisters[ImageCodingMethod] & 0x000F00) // plane on
     {
-        DecodeBitmap(planeB, &memory[GetVSR2()], GetHorizontalResolution2(), GetCM2());
-    }
-    else if(GetFT12_2() == 2)
-    {
-        DecodeRunLength(planeB, &memory[GetVSR2()], GetHorizontalResolution2(), GetCM2());
-    }
-    else
-    {
-        DecodeMosaic(planeB, &memory[GetVSR2()], GetHorizontalResolution2(), GetCM2());
+        if(GetFT12_2() <= 1)
+        {
+            DecodeBitmap(planeB, &memory[GetVSR2()], GetCM2());
+        }
+        else if(GetFT12_2() == 2)
+        {
+            DecodeRunLength(planeB, &memory[GetVSR2()], GetCM2());
+        }
+        else
+        {
+            DecodeMosaic(planeB, &memory[GetVSR2()], GetCM2());
+        }
     }
 
     if(GetIC2() && GetDC2())
@@ -91,7 +96,7 @@ void MCD212::DisplayLineB()
         ExecuteICA2();
 }
 
-void MCD212::DecodeBitmap(wxImage& plane, uint8_t* data, uint16_t width, bool cm)
+void MCD212::DecodeBitmap(wxImage& plane, uint8_t* data, bool cm)
 {
     uint8_t* pixels = plane.GetData();
     uint8_t* alpha = plane.GetAlpha();
@@ -100,7 +105,7 @@ void MCD212::DecodeBitmap(wxImage& plane, uint8_t* data, uint16_t width, bool cm
 
     if(cm) // 4 bits per pixel
     {
-        for(uint16_t i = 0; i < width; i++)
+        for(uint16_t i = 0; i < plane.GetWidth(); i++)
         {
         }
     }
@@ -109,11 +114,11 @@ void MCD212::DecodeBitmap(wxImage& plane, uint8_t* data, uint16_t width, bool cm
     }
 }
 
-void MCD212::DecodeRunLength(wxImage& plane, uint8_t* data, uint16_t width, bool cm)
+void MCD212::DecodeRunLength(wxImage& plane, uint8_t* data, bool cm)
 {
     uint16_t index = 0;
 
-    for(int x = 0; x < width;)
+    for(int x = 0; x < plane.GetWidth();)
     {
         uint8_t format = data[index++];
         if(format & 0x80) // multiple pixels
@@ -144,7 +149,7 @@ void MCD212::DecodeRunLength(wxImage& plane, uint8_t* data, uint16_t width, bool
     }
 }
 
-void MCD212::DecodeMosaic(wxImage& plane, uint8_t* data, uint16_t width, bool cm)
+void MCD212::DecodeMosaic(wxImage& plane, uint8_t* data, bool cm)
 {
 }
 

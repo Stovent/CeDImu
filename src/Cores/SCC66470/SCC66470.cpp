@@ -5,8 +5,9 @@
 
 SCC66470::SCC66470(CeDImu* appp) : VDSC(appp)
 {
-    memory = new uint8_t[0x200000];
     allocatedMemory = 0x200000;
+    memory = new uint8_t[allocatedMemory];
+    memset(memory, 0, 1024 * 1024);
     memorySwapCount = 0;
 }
 
@@ -39,11 +40,6 @@ bool SCC66470::LoadBIOS(const char* filename) // only CD-I 205, it should be 523
 void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
 {
     memcpy(&memory[position], s, size);
-}
-
-void SCC66470::ResetMemory()
-{
-    memset(memory, 0, 1024 * 1024);
 }
 
 void SCC66470::DisplayLine()
