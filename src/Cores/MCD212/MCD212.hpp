@@ -166,14 +166,12 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data) override;
     virtual void SetLong(const uint32_t addr, const uint32_t data) override;
 
-
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override // as nano seconds
     {
         return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
     }
 
     virtual void OnFrameCompleted() override;
-    virtual void ShowViewer() override;
 
     virtual void DisplayLine() override;
 };

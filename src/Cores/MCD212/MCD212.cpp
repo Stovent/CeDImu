@@ -311,10 +311,3 @@ void MCD212::OnFrameCompleted()
         app->mainFrame->SetStatusText("pause");
     }
 }
-
-void MCD212::ShowViewer()
-{
-    wxFrame* frame = new wxFrame(app->mainFrame, wxID_ANY, "MCD212 Viewer");
-
-    frame->Show();
-}

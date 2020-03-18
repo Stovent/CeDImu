@@ -222,8 +222,7 @@ void MainFrame::OnRebootCore(wxCommandEvent& event)
 
 void MainFrame::OnVDSCViewer(wxCommandEvent& event)
 {
-    if(app->vdsc)
-        app->vdsc->ShowViewer();
+    wxMessageBox("Unimplemented yet");
 }
 
 void MainFrame::OnDisassembler(wxCommandEvent& event)

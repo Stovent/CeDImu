@@ -46,7 +46,6 @@ public:
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() { return 0; }
 
     virtual void OnFrameCompleted() = 0;
-    virtual void ShowViewer() = 0;
 };
 
 #endif // VDSC_HPP
