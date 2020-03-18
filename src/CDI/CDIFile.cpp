@@ -18,6 +18,43 @@ CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize
     filename = name;
 }
 
+static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::vector<uint16_t>& left, const std::vector<uint16_t>& right)
+{
+    uint16_t bytePerBloc = wavHeader.channelNumber * wavHeader.bitsPerSample / 8;
+    uint32_t bytePerSec = wavHeader.frequency * bytePerBloc;
+    uint32_t dataSize = left.size()*2 + right.size()*2;
+    uint32_t wavSize = 36 + dataSize;
+
+    out.write("RIFF", 4);
+    out.write((char*)&wavSize, 4);
+    out.write("WAVE", 4);
+    out.write("fmt ", 4);
+    out.write("\x10\0\0\0", 4);
+    out.write("\1\0", 2); // audio format
+
+    out.write((char*)&wavHeader.channelNumber, 2);
+    out.write((char*)&wavHeader.frequency, 4);
+    out.write((char*)&bytePerSec, 4);
+    out.write((char*)&bytePerBloc, 2);
+    out.write((char*)&wavHeader.bitsPerSample, 2);
+    out.write("data", 4);
+    out.write((char*)&dataSize, 4);
+
+    if(right.size()) // stereo
+    {
+        for(uint32_t i = 0; i < left.size() && i < right.size(); i++)
+        {
+            out.write((char*)&left[i], 2);
+            out.write((char*)&right[i], 2);
+        }
+    }
+    else // mono
+    {
+        std::ostream_iterator<int16_t> outit(out);
+        std::copy(left.begin(), left.end(), outit);
+    }
+}
+
 /**
 * Converts and writes the audio data from the disk to 16-bit PCM on a
 * file in the directory {directoryPath}, each channel is exported individualy.
@@ -36,6 +73,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
 
         disk.GotoLBN(fileLBN);
 
+        uint8_t record = 0;
         int32_t sizeLeft = filesize;
         while(sizeLeft > 0)
         {
@@ -152,47 +190,22 @@ void CDIFile::ExportAudio(std::string directoryPath)
             wavHeader.bitsPerSample = 16;
             wavHeader.channelNumber = ms + 1;
 
+            if(disk.subheader.Submode & cdieor)
+            {
+                std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + ".wav", std::ios::binary | std::ios::out);
+                writeWAV(out, wavHeader, left, right);
+                out.close();
+                left.clear();
+                right.clear();
+            }
+
             disk.GotoNextSector();
         }
 
         if(left.size())
         {
-            std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + ".wav", std::ios::binary | std::ios::out);
-
-            uint16_t bytePerBloc = wavHeader.channelNumber * wavHeader.bitsPerSample / 8;
-            uint32_t bytePerSec = wavHeader.frequency * bytePerBloc;
-            uint32_t dataSize = left.size()*2 + right.size()*2;
-            uint32_t wavSize = 36 + dataSize;
-
-            out.write("RIFF", 4);
-            out.write((char*)&wavSize, 4);
-            out.write("WAVE", 4);
-            out.write("fmt ", 4);
-            out.write("\x10\0\0\0", 4);
-            out.write("\1\0", 2); // audio format
-
-            out.write((char*)&wavHeader.channelNumber, 2);
-            out.write((char*)&wavHeader.frequency, 4);
-            out.write((char*)&bytePerSec, 4);
-            out.write((char*)&bytePerBloc, 2);
-            out.write((char*)&wavHeader.bitsPerSample, 2);
-            out.write("data", 4);
-            out.write((char*)&dataSize, 4);
-
-            if(right.size()) // stereo
-            {
-                for(uint32_t i = 0; i < left.size() && i < right.size(); i++)
-                {
-                    out.write((char*)&left[i], 2);
-                    out.write((char*)&right[i], 2);
-                }
-            }
-            else // mono
-            {
-                std::ostream_iterator<int16_t> outit(out);
-                std::copy(left.begin(), left.end(), outit);
-            }
-
+            std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record) + ".wav", std::ios::binary | std::ios::out);
+            writeWAV(out, wavHeader, left, right);
             out.close();
         }
     }

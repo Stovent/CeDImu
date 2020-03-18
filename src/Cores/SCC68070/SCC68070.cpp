@@ -178,14 +178,14 @@ void SCC68070::SetS(const uint8_t S) // From Bizhawk
     {
         USP = A[7];
         A[7] = SSP;
+        SR |= 0b0010000000000000;
     }
     else // exiting supervisor mode
     {
         SSP = A[7];
         A[7] = USP;
+        SR &= 0b1101111111111111;
     }
-    SR &= 0b1101111111111111;
-    SR |= (S << 13);
 }
 
 uint8_t SCC68070::GetS()

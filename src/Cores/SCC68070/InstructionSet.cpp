@@ -13,7 +13,7 @@ uint16_t SCC68070::Exception(const uint8_t& vectorNumber)
 
     if(vectorNumber == 2 || vectorNumber == 3) // TODO: implement long Stack format
     {
-        int32_t last = lastAddress;
+        uint32_t last = lastAddress;
         SetWord(ARIWPr(7, 2), 0); // internal information
         SetWord(ARIWPr(7, 2), currentOpcode); // IRC
         SetWord(ARIWPr(7, 2), currentOpcode); // IR
@@ -22,8 +22,8 @@ uint16_t SCC68070::Exception(const uint8_t& vectorNumber)
         SetLong(ARIWPr(7, 4), 0); // TPD
         SetWord(ARIWPr(7, 2), 0); // internal information
         SetWord(ARIWPr(7, 2), 0); // internal information
-        SetWord(ARIWPr(7, 2), 0); // MM
-        SetWord(ARIWPr(7, 2), 0); // SSW
+        SetWord(ARIWPr(7, 2), 0); // Current Move Multiple Mask
+        SetWord(ARIWPr(7, 2), 0); // Special Status Word
         SetWord(ARIWPr(7, 2), 0xF000 | ((uint16_t)vectorNumber << 2));
     }
     else
@@ -49,7 +49,6 @@ uint16_t SCC68070::Exception(const uint8_t& vectorNumber)
     default:
         if(vectorNumber == 15 || (vectorNumber >= 24 && vectorNumber < 32) || vectorNumber >= 57)
             calcTime += 65;
-    break;
     }
 
     PC = GetLong(vectorNumber * 4);
