@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <fstream>
-#include <iterator>
 #include <vector>
 
 #include <wx/msgdlg.h>
@@ -50,8 +49,7 @@ static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::
     }
     else // mono
     {
-        std::ostream_iterator<int16_t> outit(out);
-        std::copy(left.begin(), left.end(), outit);
+        out.write((char*)&left[0], left.size() * 2);
     }
 }
 
@@ -78,6 +76,15 @@ void CDIFile::ExportAudio(std::string directoryPath)
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
+
+            if(disk.subheader.Submode & cdieor && left.size())
+            {
+                std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + ".wav", std::ios::binary | std::ios::out);
+                writeWAV(out, wavHeader, left, right);
+                out.close();
+                left.clear();
+                right.clear();
+            }
 
             if(!(disk.subheader.Submode & cdia) || disk.subheader.ChannelNumber != channel)
             {
@@ -189,15 +196,6 @@ void CDIFile::ExportAudio(std::string directoryPath)
             }
             wavHeader.bitsPerSample = 16;
             wavHeader.channelNumber = ms + 1;
-
-            if(disk.subheader.Submode & cdieor)
-            {
-                std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + ".wav", std::ios::binary | std::ios::out);
-                writeWAV(out, wavHeader, left, right);
-                out.close();
-                left.clear();
-                right.clear();
-            }
 
             disk.GotoNextSector();
         }
