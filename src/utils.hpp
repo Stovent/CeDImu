@@ -66,6 +66,16 @@ inline uint32_t binStringToInt(std::string s)
     return ret;
 }
 
+inline int16_t lim16(const int32_t data)
+{
+    if(data > INT16_MAX)
+        return INT16_MAX;
+    else if(data < INT16_MIN)
+        return INT16_MIN;
+    else
+        return data;
+}
+
 #ifdef DEBUG
 #define OPEN_LOG(stream, name)  stream.open(name);
 #define LOG(content) content;

@@ -4,6 +4,8 @@
 #include <fstream>
 #include <vector>
 
+#include "../utils.hpp"
+
 #include <wx/msgdlg.h>
 
 CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) : disk(cdidisk)
@@ -131,14 +133,14 @@ void CDIFile::ExportAudio(std::string directoryPath)
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
                                 if(su & 1)
-                                    right.push_back(SD[su][ss] * gain + k);
+                                    right.push_back(lim16(SD[su][ss] * gain + k));
                                 else
-                                    left.push_back(SD[su][ss] * gain + k);
+                                    left.push_back(lim16(SD[su][ss] * gain + k));
                         }
                         else // mono
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
-                                left.push_back(SD[su][ss] * gain + k);
+                                left.push_back(lim16(SD[su][ss] * gain + k));
                         }
                     }
                 }
@@ -181,14 +183,14 @@ void CDIFile::ExportAudio(std::string directoryPath)
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
                                 if(su & 1)
-                                    right.push_back(SD[su][ss] * gain + k);
+                                    right.push_back(lim16(SD[su][ss] * gain + k));
                                 else
-                                    left.push_back(SD[su][ss] * gain + k);
+                                    left.push_back(lim16(SD[su][ss] * gain + k));
                         }
                         else // mono
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
-                                left.push_back(SD[su][ss] * gain + k);
+                                left.push_back(lim16(SD[su][ss] * gain + k));
                         }
                     }
                 }
