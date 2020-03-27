@@ -29,7 +29,7 @@ SCC68070::~SCC68070()
     delete[] internal;
 }
 
-uint8_t SCC68070::ReadUART()
+uint8_t SCC68070::ReadUART() // 1st byte is discarded by BIOS 220
 {
     int c = uart_in.get();
     LOG(out << std::hex << currentPC << "\tURHR: 0x" << c << std::endl)

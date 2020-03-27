@@ -307,7 +307,7 @@ void SCC68070::DisassembleBclr(uint32_t pc)
 
 void SCC68070::DisassembleBra(uint32_t pc)
 {
-    int16_t disp = (int8_t)currentOpcode & 0x00FF;
+    int16_t disp = (int8_t)(currentOpcode & 0x00FF);
 
     if(disp == 0)
         disp = vdsc->GetWordNoDebug(pc+2);
