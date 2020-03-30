@@ -243,7 +243,7 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
-    SetStatusText("Exporting audio...");
+    SetStatusText("Exporting files...");
     if(app->cdi)
         app->cdi->ExportFiles();
     else
