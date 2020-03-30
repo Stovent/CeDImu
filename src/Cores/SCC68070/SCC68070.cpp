@@ -10,7 +10,7 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[0x80008080-INTERNAL];
     instructionCount = 0;
-    cycleDelay = (1.0L / clockFrequency) * 1000000000; // Time between two clock cycles in nanoseconds
+    cycleDelay = (1.0L / clockFrequency) * 1000000000;
 
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instruction, "instructions.txt")

@@ -214,7 +214,7 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = 15000000L);
+    explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = 15500000L);
     ~SCC68070();
 
     void Run();
@@ -238,7 +238,7 @@ private:
 
     uint32_t cycleCount;
     uint64_t totalCycleCount;
-    long double cycleDelay;
+    long double cycleDelay; // Time between two clock cycles in nanoseconds
 
     void (SCC68070::*Execute)(const bool loop) = nullptr;
     void Interpreter(const bool loop);
