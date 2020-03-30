@@ -409,7 +409,7 @@ uint8_t SCC68070::GetByte(const uint32_t& addr)
             {
                 internal[URHR] = ReadUART();
             }
-            return internal[addr-INTERNAL];
+            return internal[addr-Base];
         }
         else
             return vdsc->GetByte(addr);
@@ -453,7 +453,7 @@ void SCC68070::SetByte(const uint32_t& addr, const uint8_t& data)
     {
         if(GetS())
         {
-            internal[addr-INTERNAL] = data;
+            internal[addr-Base] = data;
             if(addr == 0x80002017) // UART Command Register
             {
                 switch(data)

@@ -14,8 +14,6 @@ class SCC68070;
 #define UNCHANGED 2
 #define OPCODESNBR 84
 
-#define INTERNAL 0x80001001
-
 // Actually, figure VI.1 of the Green Book
 // and Table 2-2 of the MC68000UM
 // contains more information than the SCC68070 datasheet itself
@@ -163,36 +161,43 @@ enum ExceptionVectors
 
 enum SCC68070Peripherals
 {
-    LIR  = 0,
-    IDR  = 0x1000, // I2C Data Register
-    IAR  = 0x1002, // I2C Address Register
-    ISR  = 0x1004, // I2C Status Register
-    ICR  = 0x1006, // I2C Control Register
-    ICCR = 0x1008, // I2C Clock Control Register
+    Base = 0x80001001,
+    Last = 0x8000807F,
+    Size = Last - Base + 1,
 
-    UMR  = 0x1010, // UART Mode Register
-    USR  = 0x1012, // UART Status Register
-    UCSR = 0x1014, // UART Clock Select Register
-    UCR  = 0x1016, // UART Command Register
-    UTHR = 0x1018, // UART Transmit Holding Register
-    URHR = 0x101A, // UART Receive Holding Register
+    LIR  = 0x80001001 - Base,
 
-    TSR = 0x101F, // Timer Status Register
-    TCR = 0x1020, // Timer Control Register
-    RRH = 0x1021, // Reload Register High
-    RRL = 0x1022, // Reload Register Low
-    T0H = 0x1023, // Timer 0 High
-    T0L = 0x1024, // Timer 0 Low
-    T1H = 0x1025, // Timer 1 High
-    T1L = 0x1026, // Timer 1 Low
-    T2H = 0x1027, // Timer 2 High
-    T2L = 0x1028, // Timer 2 Low
+    IDR  = 0x80002001 - Base, // I2C Data Register
+    IAR  = 0x80002003 - Base, // I2C Address Register
+    ISR  = 0x80002005 - Base, // I2C Status Register
+    ICR  = 0x80002007 - Base, // I2C Control Register
+    ICCR = 0x80002009 - Base, // I2C Clock Control Register
 
-    PICR1 = 0x1044,
-    PICR2 = 0x1046,
-    DMA = 0x2FFF,
-    MSR = 0x6FFF, // MMU Status Register
-    MCR, // MMU Control Register
+    UMR  = 0x80002011 - Base, // UART Mode Register
+    USR  = 0x80002013 - Base, // UART Status Register
+    UCSR = 0x80002015 - Base, // UART Clock Select Register
+    UCR  = 0x80002017 - Base, // UART Command Register
+    UTHR = 0x80002019 - Base, // UART Transmit Holding Register
+    URHR = 0x8000201B - Base, // UART Receive Holding Register
+
+    TSR = 0x80002020 - Base, // Timer Status Register
+    TCR = 0x80002021 - Base, // Timer Control Register
+    RRH = 0x80002022 - Base, // Reload Register High
+    RRL = 0x80002023 - Base, // Reload Register Low
+    T0H = 0x80002024 - Base, // Timer 0 High
+    T0L = 0x80002025 - Base, // Timer 0 Low
+    T1H = 0x80002026 - Base, // Timer 1 High
+    T1L = 0x80002027 - Base, // Timer 1 Low
+    T2H = 0x80002028 - Base, // Timer 2 High
+    T2L = 0x80002029 - Base, // Timer 2 Low
+
+    PICR1 = 0x80002045 - Base, // Peripheral Interrupt Control Register 1
+    PICR2 = 0x80002047 - Base, // Peripheral Interrupt Control Register 2
+
+    DMA = 0x80004000 - Base,
+
+    MSR = 0x80008000 - Base, // MMU Status Register
+    MCR = 0x80008001 - Base, // MMU Control Register
 };
 
 class SCC68070

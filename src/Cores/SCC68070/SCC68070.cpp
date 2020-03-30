@@ -8,7 +8,7 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
     disassemble = true;
 
     Execute = &SCC68070::Interpreter;
-    internal = new uint8_t[0x80008080-INTERNAL];
+    internal = new uint8_t[SCC68070Peripherals::Size];
     instructionCount = 0;
     cycleDelay = (1.0L / clockFrequency) * 1000000000;
 
@@ -53,7 +53,7 @@ void SCC68070::RebootCore()
     currentOpcode = 0;
     currentPC = 0;
     lastAddress = 0;
-    memset(internal, 0, 0x80008080-INTERNAL);
+    memset(internal, 0, SCC68070Peripherals::Size);
     for(uint8_t i = 0; i < 8; i++)
     {
         D[i] = 0;
