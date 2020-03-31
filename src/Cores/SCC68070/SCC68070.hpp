@@ -266,16 +266,16 @@ private:
     void SetS(const uint8_t S = 1);
     uint8_t GetS();
 
-    uint16_t Exception(const uint8_t& vectorNumber);
+    uint16_t Exception(const uint8_t vectorNumber);
     std::string DisassembleException(const uint8_t vectorNumber);
 
     // Addressing modes
-    int32_t GetIndexRegister(const uint16_t& bew);
+    int32_t GetIndexRegister(const uint16_t bew);
 
-    uint32_t AddressRegisterIndirectWithPostincrement(const uint8_t& reg, const uint8_t& sizeInByte);
-    uint32_t AddressRegisterIndirectWithPredecrement(const uint8_t& reg, const uint8_t& sizeInByte);
-    uint32_t AddressRegisterIndirectWithDisplacement(const uint8_t& reg);
-    uint32_t AddressRegisterIndirectWithIndex8(const uint8_t& reg);
+    uint32_t AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte);
+    uint32_t AddressRegisterIndirectWithPredecrement(const uint8_t reg, const uint8_t sizeInByte);
+    uint32_t AddressRegisterIndirectWithDisplacement(const uint8_t reg);
+    uint32_t AddressRegisterIndirectWithIndex8(const uint8_t reg);
 
     uint32_t ProgramCounterIndirectWithDisplacement();
     uint32_t ProgramCounterIndirectWithIndex8();
@@ -286,22 +286,22 @@ private:
     std::string DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData = false);
 
     // Addressing modes memory access
-    uint8_t GetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
-    uint16_t GetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
-    uint32_t GetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime);
+    uint8_t GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime);
+    uint16_t GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime);
+    uint32_t GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime);
 
-    void SetByte(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint8_t& data);
-    void SetWord(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint16_t& data);
-    void SetLong(const uint8_t& mode, const uint8_t& reg, uint16_t& calcTime, const uint32_t& data);
+    void SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t data);
+    void SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint16_t data);
+    void SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint32_t data);
 
     // Direct Memory Access
-    uint8_t GetByte(const uint32_t& addr);
-    uint16_t GetWord(const uint32_t& addr);
-    uint32_t GetLong(const uint32_t& addr);
+    uint8_t GetByte(const uint32_t addr);
+    uint16_t GetWord(const uint32_t addr);
+    uint32_t GetLong(const uint32_t addr);
 
-    void SetByte(const uint32_t& addr, const uint8_t& data);
-    void SetWord(const uint32_t& addr, const uint16_t& data);
-    void SetLong(const uint32_t& addr, const uint32_t& data);
+    void SetByte(const uint32_t addr, const uint8_t data);
+    void SetWord(const uint32_t addr, const uint16_t data);
+    void SetLong(const uint32_t addr, const uint32_t data);
 
     // Peripherals
     uint8_t GetPeripheral(const uint32_t addr);

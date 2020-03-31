@@ -2,7 +2,7 @@
 
 #include "../../utils.hpp"
 
-int32_t SCC68070::GetIndexRegister(const uint16_t& bew)
+int32_t SCC68070::GetIndexRegister(const uint16_t bew)
 {
     if(bew & 0x8000)
         if(bew & 0x0800)
@@ -16,25 +16,25 @@ int32_t SCC68070::GetIndexRegister(const uint16_t& bew)
             return signExtend16(D[(bew & 0x7000) >> 12]);
 }
 
-uint32_t SCC68070::AddressRegisterIndirectWithPostincrement(const uint8_t& reg, const uint8_t& sizeInByte)
+uint32_t SCC68070::AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte)
 {
     const int32_t addr = A[reg];
     A[reg] += (reg == 7 && sizeInByte == 1) ? 2 : sizeInByte;
     return addr;
 }
 
-uint32_t SCC68070::AddressRegisterIndirectWithPredecrement(const uint8_t& reg, const uint8_t& sizeInByte)
+uint32_t SCC68070::AddressRegisterIndirectWithPredecrement(const uint8_t reg, const uint8_t sizeInByte)
 {
     A[reg] -= (reg == 7 && sizeInByte == 1) ? 2 : sizeInByte;
     return A[reg];
 }
 
-uint32_t SCC68070::AddressRegisterIndirectWithDisplacement(const uint8_t& reg)
+uint32_t SCC68070::AddressRegisterIndirectWithDisplacement(const uint8_t reg)
 {
     return A[reg] + signExtend16(GetNextWord());
 }
 
-uint32_t SCC68070::AddressRegisterIndirectWithIndex8(const uint8_t& reg)
+uint32_t SCC68070::AddressRegisterIndirectWithIndex8(const uint8_t reg)
 {
     const uint16_t bew = GetNextWord();
     return A[reg] + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
