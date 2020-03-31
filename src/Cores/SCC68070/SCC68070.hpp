@@ -165,7 +165,7 @@ enum SCC68070Peripherals
     Last = 0x8000807F,
     Size = Last - Base + 1,
 
-    LIR  = 0x80001001 - Base,
+    LIR  = 0x80001001 - Base, // Latched Interrupt priority level Register
 
     IDR  = 0x80002001 - Base, // I2C Data Register
     IAR  = 0x80002003 - Base, // I2C Address Register
@@ -303,7 +303,9 @@ private:
     void SetWord(const uint32_t& addr, const uint16_t& data);
     void SetLong(const uint32_t& addr, const uint32_t& data);
 
-    // UART
+    // Peripherals
+    uint8_t GetPeripheral(const uint32_t addr);
+    void SetPeripheral(const uint32_t addr, const uint8_t data);
     uint8_t ReadUART();
     void WriteUART(const uint8_t data);
 
