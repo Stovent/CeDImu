@@ -4,7 +4,6 @@
 class GamePanel;
 
 #include <wx/panel.h>
-#include <wx/timer.h>
 #include <wx/dcclient.h>
 
 #include "../CeDImu.hpp"
@@ -24,7 +23,7 @@ private:
     wxImage screen;
 
     void OnKeyDown(wxKeyEvent& event);
-    void RefreshLoop(wxTimerEvent& event);
+    void RefreshLoop(wxPaintEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 };

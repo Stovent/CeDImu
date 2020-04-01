@@ -15,9 +15,9 @@ GamePanel::~GamePanel()
 {
 }
 
-void GamePanel::RefreshLoop(wxTimerEvent& event)
+void GamePanel::RefreshLoop(wxPaintEvent& event)
 {
-    wxClientDC dc(this);
+    wxPaintDC dc(this);
     dc.Clear();
     dc.SetBrush(*wxBLACK_BRUSH);
     dc.DrawRectangle(0, 0, mainFrame->GetClientSize().x, mainFrame->GetClientSize().y);
