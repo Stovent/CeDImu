@@ -5,7 +5,7 @@
 SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
 {
     vdsc = gpu;
-    disassemble = true;
+    disassemble = false;
 
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];

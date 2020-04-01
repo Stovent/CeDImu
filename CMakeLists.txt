@@ -20,7 +20,7 @@ set(SRCS
 	src/Cores/SCC68070/InstructionSet.cpp
 	src/Cores/SCC68070/Interpreter.cpp
 	src/Cores/SCC68070/MemoryAccess.cpp
-    src/Cores/SCC68070/Peripherals.cpp
+	src/Cores/SCC68070/Peripherals.cpp
 	src/Cores/SCC68070/SCC68070.cpp
 	src/GUI/DisassemblerFrame.cpp
 	src/GUI/MainFrame.cpp

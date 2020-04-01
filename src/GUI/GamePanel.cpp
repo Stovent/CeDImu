@@ -1,7 +1,6 @@
 #include "GamePanel.hpp"
 
 wxBEGIN_EVENT_TABLE(GamePanel, wxPanel)
-    EVT_TIMER(wxID_ANY, GamePanel::RefreshLoop)
     EVT_KEY_DOWN(GamePanel::OnKeyDown)
 wxEND_EVENT_TABLE()
 
@@ -10,17 +9,10 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu* appp) : wxPanel(parent)
     mainFrame = parent;
     app = appp;
     screen.Create(1, 1);
-    oldInstCount = 0;
-    oldFrameCount = 0;
-
-    renderTimer = new wxTimer(this);
-    renderTimer->Start(1000);
 }
 
 GamePanel::~GamePanel()
 {
-    renderTimer->Stop();
-    delete renderTimer;
 }
 
 void GamePanel::RefreshLoop(wxTimerEvent& event)
@@ -30,16 +22,6 @@ void GamePanel::RefreshLoop(wxTimerEvent& event)
     dc.SetBrush(*wxBLACK_BRUSH);
     dc.DrawRectangle(0, 0, mainFrame->GetClientSize().x, mainFrame->GetClientSize().y);
     dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-    DrawTextInfo(dc);
-}
-
-void GamePanel::DrawTextInfo(wxClientDC& dc)
-{
-    if(app->vdsc)
-    {
-        mainFrame->SetTitleInfo(app->vdsc->totalFrameCount - oldFrameCount);
-        oldFrameCount = app->vdsc->totalFrameCount;
-    }
 }
 
 void GamePanel::RefreshScreen(const wxImage& img)

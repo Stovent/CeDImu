@@ -4,6 +4,7 @@
 class MainFrame;
 
 #include <wx/frame.h>
+#include <wx/timer.h>
 #include <wx/menuitem.h>
 
 #include "../CeDImu.hpp"
@@ -52,9 +53,13 @@ public:
     RAMSearchFrame* ramSearchFrame;
 
     void Pause();
-    void SetTitleInfo(const uint16_t fps);
+    void RefreshTitle(wxTimerEvent& event);
 
 private:
+    wxTimer renderTimer;
+    uint32_t oldFrameCount;
+    uint64_t oldCycleCount;
+
     void CreateMenuBar();
     void OnOpenROM(wxCommandEvent& event);
     void OnOpenBinary(wxCommandEvent& event);

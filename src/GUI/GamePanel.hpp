@@ -21,14 +21,10 @@ public:
 private:
     CeDImu* app;
     MainFrame* mainFrame;
-    wxTimer* renderTimer;
     wxImage screen;
-    unsigned long long oldInstCount;
-    uint32_t oldFrameCount;
 
     void OnKeyDown(wxKeyEvent& event);
     void RefreshLoop(wxTimerEvent& event);
-    void DrawTextInfo(wxClientDC& dc);
 
     wxDECLARE_EVENT_TABLE();
 };

@@ -213,6 +213,7 @@ public:
     uint32_t currentPC;
     bool run;
     bool disassemble;
+    uint64_t totalCycleCount;
 
     std::vector<std::string> disassembledInstructions;
 
@@ -242,7 +243,6 @@ private:
     uint32_t lastAddress;
 
     uint32_t cycleCount;
-    uint64_t totalCycleCount;
     long double cycleDelay; // Time between two clock cycles in nanoseconds
 
     void (SCC68070::*Execute)(const bool loop) = nullptr;

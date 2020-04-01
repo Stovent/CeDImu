@@ -25,6 +25,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnRAMSearch, MainFrame::OnRAMSearch)
     EVT_MENU(IDOnSettings, MainFrame::OnSettings)
     EVT_MENU(IDOnAbout, MainFrame::OnAbout)
+    EVT_TIMER(wxID_ANY, MainFrame::RefreshTitle)
 wxEND_EVENT_TABLE()
 
 MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size) : wxFrame(NULL, wxID_ANY, title, pos, size)
@@ -33,11 +34,16 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
     gamePanel = new GamePanel(this, appp);
     disassemblerFrame = nullptr;
     ramSearchFrame = nullptr;
+    oldFrameCount = 0;
+    oldCycleCount = 0;
 
     CreateMenuBar();
 
     CreateStatusBar();
     SetStatusText("CeDImu");
+
+    renderTimer.SetOwner(this);
+    renderTimer.Start(1000);
 }
 
 void MainFrame::CreateMenuBar()
@@ -83,9 +89,21 @@ void MainFrame::CreateMenuBar()
     SetMenuBar(menuBar);
 }
 
-void MainFrame::SetTitleInfo(const uint16_t fps)
+void MainFrame::RefreshTitle(wxTimerEvent& event)
 {
-    SetTitle((app->cdi ? (!app->cdi->gameName.empty() ? app->cdi->gameName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->vdsc->biosFilename + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps));
+    uint16_t fps = 0;
+    if(app->vdsc)
+    {
+        fps = app->vdsc->totalFrameCount - oldFrameCount;
+        oldFrameCount = app->vdsc->totalFrameCount;
+    }
+    long double freq = 0.0;
+    if(app->cpu)
+    {
+        freq = (app->cpu->totalCycleCount - (long double)oldCycleCount) / 1000000.0;
+        oldCycleCount = app->cpu->totalCycleCount;
+    }
+    SetTitle((app->cdi ? (!app->cdi->gameName.empty() ? app->cdi->gameName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->vdsc->biosFilename + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
@@ -110,8 +128,6 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
         wxMessageBox("Could not open ROM!");
         return;
     }
-
-    SetTitleInfo(0);
 
     if(Config::skipBIOS)
     {
