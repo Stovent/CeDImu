@@ -19,9 +19,9 @@ CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize
     parent(parentRelpos)
 {}
 
-static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::vector<uint16_t>& left, const std::vector<uint16_t>& right)
+static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::vector<int16_t>& left, const std::vector<int16_t>& right)
 {
-    uint16_t bytePerBloc = wavHeader.channelNumber * wavHeader.bitsPerSample / 8;
+    uint16_t bytePerBloc = wavHeader.channelNumber * 2;
     uint32_t bytePerSec = wavHeader.frequency * bytePerBloc;
     uint32_t dataSize = left.size()*2 + right.size()*2;
     uint32_t wavSize = 36 + dataSize;
@@ -37,7 +37,7 @@ static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::
     out.write((char*)&wavHeader.frequency, 4);
     out.write((char*)&bytePerSec, 4);
     out.write((char*)&bytePerBloc, 2);
-    out.write((char*)&wavHeader.bitsPerSample, 2);
+    out.write("\x10\0", 2);
     out.write("data", 4);
     out.write((char*)&dataSize, 4);
 
@@ -67,16 +67,16 @@ void CDIFile::ExportAudio(std::string directoryPath)
     float k0[4] = {0.0, 0.9375, 1.796875, 1.53125};
     float k1[4] = {0.0, 0.0, -0.8125, -0.859375};
 
-    long double lk0 = 0.0;
-    long double rk0 = 0.0;
-    long double lk1 = 0.0;
-    long double rk1 = 0.0;
+    int32_t lk0 = 0;
+    int32_t rk0 = 0;
+    int32_t lk1 = 0;
+    int32_t rk1 = 0;
 
     for(int channel = 0; channel < 16; channel++)
     {
         WAVHeader wavHeader;
-        std::vector<uint16_t> left;
-        std::vector<uint16_t> right;
+        std::vector<int16_t> left;
+        std::vector<int16_t> right;
 
         disk.GotoLBN(fileLBN);
 
@@ -132,14 +132,14 @@ void CDIFile::ExportAudio(std::string directoryPath)
                             {
                                 if(su & 1)
                                 {
-                                    long double data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
+                                    int32_t data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
                                     rk1 = rk0;
                                     rk0 = data;
                                     right.push_back(lim16(data));
                                 }
                                 else
                                 {
-                                    long double data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                                    int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
                                     lk1 = lk0;
                                     lk0 = data;
                                     left.push_back(lim16(data));
@@ -150,7 +150,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
                             {
-                                long double data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                                int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
                                 lk1 = lk0;
                                 lk0 = data;
                                 left.push_back(lim16(data));
@@ -200,14 +200,14 @@ void CDIFile::ExportAudio(std::string directoryPath)
                             {
                                 if(su & 1)
                                 {
-                                    long double data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
+                                    int32_t data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
                                     rk1 = rk0;
                                     rk0 = data;
                                     right.push_back(lim16(data));
                                 }
                                 else
                                 {
-                                    long double data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                                    int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
                                     lk1 = lk0;
                                     lk0 = data;
                                     left.push_back(lim16(data));
@@ -218,7 +218,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
                             {
-                                long double data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                                int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
                                 lk1 = lk0;
                                 lk0 = data;
                                 left.push_back(lim16(data));
@@ -228,7 +228,6 @@ void CDIFile::ExportAudio(std::string directoryPath)
                 }
                 wavHeader.frequency = fs ? 18900 : 37800;
             }
-            wavHeader.bitsPerSample = 16;
             wavHeader.channelNumber = ms + 1;
 
             disk.GotoNextSector();

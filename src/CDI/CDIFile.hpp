@@ -40,7 +40,6 @@ struct WAVHeader
 {
     uint16_t channelNumber;
     uint32_t frequency;
-    uint16_t bitsPerSample;
 };
 
 #endif // CDIFILE_HPP
