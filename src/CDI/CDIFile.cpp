@@ -58,12 +58,19 @@ static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::
 /**
 * Converts and writes the audio data from the disk to 16-bit PCM on a
 * file in the directory {directoryPath}, each channel is exported individualy.
+* Special thanks to this thread (http://www.cdinteractive.co.uk/forums/cdinteractive/viewtopic.php?t=3191)
+* for making me understand how the k0 and k1 filters worked in ADCPM decoder
 **/
 void CDIFile::ExportAudio(std::string directoryPath)
 {
     uint32_t pos = disk.Tell();
     float k0[4] = {0.0, 0.9375, 1.796875, 1.53125};
     float k1[4] = {0.0, 0.0, -0.8125, -0.859375};
+
+    long double lk0 = 0.0;
+    long double rk0 = 0.0;
+    long double lk1 = 0.0;
+    long double rk1 = 0.0;
 
     for(int channel = 0; channel < 16; channel++)
     {
@@ -78,15 +85,6 @@ void CDIFile::ExportAudio(std::string directoryPath)
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-
-            if(disk.subheader.Submode & cdieor && left.size())
-            {
-                std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + ".wav", std::ios::binary | std::ios::out);
-                writeWAV(out, wavHeader, left, right);
-                out.close();
-                left.clear();
-                right.clear();
-            }
 
             if(!(disk.subheader.Submode & cdia) || disk.subheader.ChannelNumber != channel)
             {
@@ -106,7 +104,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
                     uint8_t s[4];
                     uint8_t range[4];
                     uint8_t filter[4];
-                    uint8_t SD[4][28]; // sound data
+                     int8_t SD[4][28]; // sound data
 
                     disk.Read((char*)s, 4);
                     disk.Seek(12, std::ios::cur);
@@ -128,19 +126,35 @@ void CDIFile::ExportAudio(std::string directoryPath)
                     for(int su = 0; su < 4; su++)
                     {
                         uint16_t gain = pow(2, 8 - range[su]);
-                        float k = k0[filter[su]] + k1[filter[su]];
                         if(ms) // stereo
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
+                            {
                                 if(su & 1)
-                                    right.push_back(lim16(SD[su][ss] * gain + k));
+                                {
+                                    long double data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
+                                    rk1 = rk0;
+                                    rk0 = data;
+                                    right.push_back(lim16(data));
+                                }
                                 else
-                                    left.push_back(lim16(SD[su][ss] * gain + k));
+                                {
+                                    long double data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                                    lk1 = lk0;
+                                    lk0 = data;
+                                    left.push_back(lim16(data));
+                                }
+                            }
                         }
                         else // mono
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
-                                left.push_back(lim16(SD[su][ss] * gain + k));
+                            {
+                                long double data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                                lk1 = lk0;
+                                lk0 = data;
+                                left.push_back(lim16(data));
+                            }
                         }
                     }
                 }
@@ -153,7 +167,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
                     uint8_t s[8];
                     uint8_t range[8];
                     uint8_t filter[8];
-                    uint8_t SD[8][28]; // sound data
+                     int8_t SD[8][28]; // sound data
 
                     disk.Seek(4, std::ios::cur);
                     disk.Read((char*)s, 8);
@@ -170,7 +184,9 @@ void CDIFile::ExportAudio(std::string directoryPath)
                         {
                             const uint8_t SB = disk.GetByte();
                             SD[su][ss] = SB & 0x0F;
+                            if(SD[su][ss] >= 8) SD[su][ss] -= 16;
                             SD[su+1][ss] = SB >> 4;
+                            if(SD[su+1][ss] >= 8) SD[su+1][ss] -= 16;
                         }
                     }
 
@@ -178,19 +194,35 @@ void CDIFile::ExportAudio(std::string directoryPath)
                     for(int su = 0; su < 8; su++)
                     {
                         uint16_t gain = pow(2, 12 - range[su]);
-                        float k = k0[filter[su]] + k1[filter[su]];
                         if(ms) // stereo
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
+                            {
                                 if(su & 1)
-                                    right.push_back(lim16(SD[su][ss] * gain + k));
+                                {
+                                    long double data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
+                                    rk1 = rk0;
+                                    rk0 = data;
+                                    right.push_back(lim16(data));
+                                }
                                 else
-                                    left.push_back(lim16(SD[su][ss] * gain + k));
+                                {
+                                    long double data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                                    lk1 = lk0;
+                                    lk0 = data;
+                                    left.push_back(lim16(data));
+                                }
+                            }
                         }
                         else // mono
                         {
                             for(uint8_t ss = 0; ss < 28; ss++)
-                                left.push_back(lim16(SD[su][ss] * gain + k));
+                            {
+                                long double data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                                lk1 = lk0;
+                                lk0 = data;
+                                left.push_back(lim16(data));
+                            }
                         }
                     }
                 }
@@ -200,6 +232,15 @@ void CDIFile::ExportAudio(std::string directoryPath)
             wavHeader.channelNumber = ms + 1;
 
             disk.GotoNextSector();
+
+            if(disk.subheader.Submode & cdieor)
+            {
+                std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + ".wav", std::ios::binary | std::ios::out);
+                writeWAV(out, wavHeader, left, right);
+                out.close();
+                left.clear();
+                right.clear();
+            }
         }
 
         if(left.size())

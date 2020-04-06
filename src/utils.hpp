@@ -66,7 +66,7 @@ inline uint32_t binStringToInt(std::string s)
     return ret;
 }
 
-inline int16_t lim16(const int32_t data)
+inline int16_t lim16(const long double data)
 {
     if(data > INT16_MAX)
         return INT16_MAX;
