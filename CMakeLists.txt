@@ -8,20 +8,20 @@ set(SRCS
 	src/CDI/CDIDirectory.cpp
 	src/CDI/CDIFile.cpp
 	src/CDI/Export.cpp
-	src/Cores/MCD212/DRAMInterface.cpp
-	src/Cores/MCD212/MCD212.cpp
-	src/Cores/MCD212/Display.cpp
-	src/Cores/MCD212/Registers.cpp
-	src/Cores/SCC66470/DRAMInterface.cpp
-	src/Cores/SCC66470/SCC66470.cpp
-	src/Cores/SCC68070/AddressingModes.cpp
-	src/Cores/SCC68070/ConditionalTests.cpp
-	src/Cores/SCC68070/Disassembler.cpp
-	src/Cores/SCC68070/InstructionSet.cpp
-	src/Cores/SCC68070/Interpreter.cpp
-	src/Cores/SCC68070/MemoryAccess.cpp
-	src/Cores/SCC68070/Peripherals.cpp
-	src/Cores/SCC68070/SCC68070.cpp
+	src/cores/MCD212/DRAMInterface.cpp
+	src/cores/MCD212/MCD212.cpp
+	src/cores/MCD212/Display.cpp
+	src/cores/MCD212/Registers.cpp
+	src/cores/SCC66470/DRAMInterface.cpp
+	src/cores/SCC66470/SCC66470.cpp
+	src/cores/SCC68070/AddressingModes.cpp
+	src/cores/SCC68070/ConditionalTests.cpp
+	src/cores/SCC68070/Disassembler.cpp
+	src/cores/SCC68070/InstructionSet.cpp
+	src/cores/SCC68070/Interpreter.cpp
+	src/cores/SCC68070/MemoryAccess.cpp
+	src/cores/SCC68070/Peripherals.cpp
+	src/cores/SCC68070/SCC68070.cpp
 	src/GUI/DisassemblerFrame.cpp
 	src/GUI/MainFrame.cpp
 	src/GUI/GamePanel.cpp

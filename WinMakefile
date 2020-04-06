@@ -26,20 +26,20 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIDirectory.cpp -o bin/obj/CDIDirectory.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIFile.cpp -o bin/obj/CDIFile.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/Export.cpp -o bin/obj/Export.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC68070/SCC68070.cpp -o bin/obj/SCC68070.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC68070/Interpreter.cpp -o bin/obj/Interpreter.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC68070/Peripherals.cpp -o bin/obj/Peripherals.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC68070/MemoryAccess.cpp -o bin/obj/MemoryAccess.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC68070/Disassembler.cpp -o bin/obj/Disassembler.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC68070/InstructionSet.cpp -o bin/obj/InstructionSet.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC68070/AddressingModes.cpp -o bin/obj/AddressingModes.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC68070/ConditionalTests.cpp -o bin/obj/ConditionalTests.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC66470/DRAMInterface.cpp -o bin/obj/SCC66470DRAMInterface.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/SCC66470/SCC66470.cpp -o bin/obj/SCC66470.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/MCD212/DRAMInterface.cpp -o bin/obj/MCD212DRAMInterface.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/MCD212/MCD212.cpp -o bin/obj/MCD212.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/MCD212/Display.cpp -o bin/obj/MCD212Display.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Cores/MCD212/Registers.cpp -o bin/obj/MCD212Registers.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/SCC68070.cpp -o bin/obj/SCC68070.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/Interpreter.cpp -o bin/obj/Interpreter.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/Peripherals.cpp -o bin/obj/Peripherals.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/MemoryAccess.cpp -o bin/obj/MemoryAccess.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/Disassembler.cpp -o bin/obj/Disassembler.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/InstructionSet.cpp -o bin/obj/InstructionSet.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/AddressingModes.cpp -o bin/obj/AddressingModes.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/ConditionalTests.cpp -o bin/obj/ConditionalTests.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC66470/DRAMInterface.cpp -o bin/obj/SCC66470DRAMInterface.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC66470/SCC66470.cpp -o bin/obj/SCC66470.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/DRAMInterface.cpp -o bin/obj/MCD212DRAMInterface.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/MCD212.cpp -o bin/obj/MCD212.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/Display.cpp -o bin/obj/MCD212Display.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/Registers.cpp -o bin/obj/MCD212Registers.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/RAMSearchList.cpp -o bin/obj/RAMSearchList.o
