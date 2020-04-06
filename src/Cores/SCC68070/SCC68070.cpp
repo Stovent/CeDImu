@@ -60,12 +60,14 @@ void SCC68070::ResetOperation()
 
 void SCC68070::SingleStep()
 {
-    (this->*Execute)(false);
+    if(!run)
+        (this->*Execute)(false);
 }
 
 void SCC68070::Run()
 {
-    (this->*Execute)(true);
+    if(!run)
+        (this->*Execute)(true);
 }
 
 uint16_t SCC68070::GetNextWord()
