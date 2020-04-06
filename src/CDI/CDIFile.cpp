@@ -8,16 +8,16 @@
 
 #include <wx/msgdlg.h>
 
-CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) : disk(cdidisk)
-{
-    nameSize = namesize;
-    fileNumber = filenumber;
-    attributes = attr;
-    parent = parentRelpos;
-    fileLBN = lbn;
-    filesize = size;
-    filename = name;
-}
+CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
+    disk(cdidisk),
+    fileLBN(lbn),
+    filesize(size),
+    nameSize(namesize),
+    filename(name),
+    attributes(attr),
+    fileNumber(filenumber),
+    parent(parentRelpos)
+{}
 
 static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::vector<uint16_t>& left, const std::vector<uint16_t>& right)
 {

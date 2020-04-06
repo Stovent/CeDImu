@@ -20,13 +20,13 @@ class CDIFile
     CDIDisk& disk;
 
 public:
-    uint8_t nameSize;
-    uint8_t fileNumber;
-    uint16_t attributes;
-    uint16_t parent;
-    uint32_t fileLBN;
-    uint32_t filesize;
-    std::string filename;
+    const uint32_t fileLBN;
+    const uint32_t filesize;
+    const uint8_t nameSize;
+    const std::string filename;
+    const uint16_t attributes;
+    const uint8_t fileNumber;
+    const uint16_t parent;
 
     CDIFile() = delete;
     CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string name, uint16_t attr, uint8_t fileNumber, uint16_t parentRelpos);
