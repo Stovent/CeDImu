@@ -1,7 +1,7 @@
 #include "CeDImu.hpp"
 #include "Config.hpp"
-#include "Cores/SCC66470/SCC66470.hpp"
-#include "Cores/MCD212/MCD212.hpp"
+#include "cores/SCC66470/SCC66470.hpp"
+#include "cores/MCD212/MCD212.hpp"
 
 bool CeDImu::OnInit()
 {

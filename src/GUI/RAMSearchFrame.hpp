@@ -10,7 +10,7 @@ class RAMSearchFrame;
 
 #include "MainFrame.hpp"
 #include "RAMSearchList.hpp"
-#include "../Cores/VDSC.hpp"
+#include "../cores/VDSC.hpp"
 
 class RAMSearchFrame : public wxFrame
 {

@@ -10,7 +10,7 @@ class DisassemblerFrame;
 #include <wx/sizer.h>
 #include <wx/timer.h>
 
-#include "../Cores/SCC68070/SCC68070.hpp"
+#include "../cores/SCC68070/SCC68070.hpp"
 #include "MainFrame.hpp"
 
 class DisassemblerFrame : public wxFrame

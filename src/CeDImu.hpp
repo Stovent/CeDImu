@@ -8,9 +8,9 @@ class CeDImu;
 #include <wx/app.h>
 
 #include "CDI/CDI.hpp"
-#include "Cores/VDSC.hpp"
+#include "cores/VDSC.hpp"
 #include "GUI/MainFrame.hpp"
-#include "Cores/SCC68070/SCC68070.hpp"
+#include "cores/SCC68070/SCC68070.hpp"
 
 class CeDImu : public wxApp
 {

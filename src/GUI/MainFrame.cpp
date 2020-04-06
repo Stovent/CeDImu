@@ -140,8 +140,6 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
             app->cpu->PC = address + app->vdsc->GetLong(address + 0x30);
-            wxMessageBox("Module " + module->filename + " loaded");
-
         }
     }
 
