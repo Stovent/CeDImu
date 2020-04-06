@@ -1,5 +1,5 @@
 # CeDImu
-Experimental Philips CD-I emulator
+Experimental Philips CD-I emulator  
 (I use a capital `I` instead of a lower case `i` because the Green Book capitalizes it)
 
 Note: the project is still in a very early development stage, please open issues only to address problems in the existing code.
@@ -31,12 +31,13 @@ make -j$(nproc --all)
 Find the executable in the bin folder
 
 ## TODO
-* Fix potential bugs in SCC68070 emulation
-* MCD212 and SCC66470 emulation
-* Export video
-* Export audio
-* Sound emulation
-* Basic TAS Tools (RAM Watch, save states, movie recording, avi recording)
+- [ ] Fix potential bugs in SCC68070 emulation
+- [ ] MCD212 and SCC66470 emulation
+- [x] Export files
+- [x] Export audio
+- [ ] Export video
+- [ ] Sound emulation
+- [ ] Basic TAS Tools (RAM Watch, save states, movie recording, avi recording)
 
 Release 1.0 when this TODO list will be implemented.
 
