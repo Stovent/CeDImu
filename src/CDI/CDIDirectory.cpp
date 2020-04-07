@@ -141,15 +141,24 @@ void CDIDirectory::Clear()
 std::stringstream CDIDirectory::ExportInfo() const
 {
     std::stringstream ss;
-    ss << "Dir: " << dirname << "/" << std::endl;
+    std::string dirName = dirname == '/' ? "" : dirname;
+    ss << "Dir: " << dirName << "/" << std::endl;
     ss << "LBN: " << dirLBN << std::endl;
+
+    for(std::pair<std::string, CDIDirectory> dir : subdirectories)
+    {
+        std::stringstream dirss = dir.second.ExportInfo();
+        std::string line;
+        while(std::getline(dirss, line))
+            ss << "\t" << line << std::endl;
+    }
+
     for(std::pair<std::string, CDIFile> file : files)
     {
         ss << "\tFile: " << file.second.filename << std::endl;
         ss << "\tSize: " << file.second.filesize << std::endl;
         ss << "\tLBN : " << file.second.fileLBN << std::endl << std::endl;
     }
-    ss << std::endl;
     return ss;
 }
 

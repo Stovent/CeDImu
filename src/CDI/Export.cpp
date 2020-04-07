@@ -71,26 +71,7 @@ void CDI::ExportFilesInfo()
 
     std::ofstream out(gameFolder + "files_info.txt");
 
-    out << "Dir: " << rootDirectory.dirname << std::endl;
-    out << "LBN: " << rootDirectory.dirLBN << std::endl;
-
-    for(std::pair<std::string, CDIDirectory> dir : rootDirectory.subdirectories)
-    {
-        std::stringstream ss = dir.second.ExportInfo();
-        std::string str, tmp;
-        while(std::getline(ss, tmp))
-            str += "    " + tmp + "\n";
-        out << str;
-    }
-
-    for(std::pair<std::string, CDIFile> file : rootDirectory.files)
-    {
-        std::stringstream ss;
-        ss << "    file: " << file.second.filename << std::endl;
-        ss << "    Size: " << file.second.filesize << std::endl;
-        ss << "    LBN : " << file.second.fileLBN << std::endl << std::endl;
-        out << ss.str();
-    }
+    out << rootDirectory.ExportInfo().str();
 
     out.close();
 }
