@@ -66,6 +66,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
 
     for(int channel = 0; channel < 16; channel++)
     {
+        resetAudioFiltersDelay();
         WAVHeader wavHeader;
         std::vector<int16_t> left;
         std::vector<int16_t> right;
