@@ -63,8 +63,9 @@ static void writeWAV(std::ofstream& out, const Audio::WAVHeader& wavHeader, cons
 void CDIFile::ExportAudio(std::string directoryPath)
 {
     uint32_t pos = disk.Tell();
+    int maxChannel = 0;
 
-    for(int channel = 0; channel < 16; channel++)
+    for(int channel = 0; channel <= maxChannel; channel++)
     {
         Audio::resetAudioFiltersDelay();
         Audio::WAVHeader wavHeader;
@@ -78,6 +79,8 @@ void CDIFile::ExportAudio(std::string directoryPath)
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
+            if(disk.subheader.ChannelNumber > maxChannel)
+                maxChannel = disk.subheader.ChannelNumber;
 
             if(!(disk.subheader.Submode & cdia) || disk.subheader.ChannelNumber != channel)
             {
