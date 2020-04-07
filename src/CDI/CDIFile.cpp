@@ -1,10 +1,9 @@
 #include "CDIFile.hpp"
 
-#include <cmath>
 #include <fstream>
 #include <vector>
 
-#include "../utils.hpp"
+#include "../common/audio.hpp"
 
 #include <wx/msgdlg.h>
 
@@ -64,13 +63,6 @@ static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::
 void CDIFile::ExportAudio(std::string directoryPath)
 {
     uint32_t pos = disk.Tell();
-    float k0[4] = {0.0, 0.9375, 1.796875, 1.53125};
-    float k1[4] = {0.0, 0.0, -0.8125, -0.859375};
-
-    int32_t lk0 = 0;
-    int32_t rk0 = 0;
-    int32_t lk1 = 0;
-    int32_t rk1 = 0;
 
     for(int channel = 0; channel < 16; channel++)
     {
@@ -92,145 +84,17 @@ void CDIFile::ExportAudio(std::string directoryPath)
                 continue;
             }
 
-//            bool emph = disk.subheader.CodingInformation & AudioCodingInformation::emphasis;
+            // bool emph = disk.subheader.CodingInformation & AudioCodingInformation::emphasis;
             bool bps = disk.subheader.CodingInformation & AudioCodingInformation::bps;
-            bool fs = disk.subheader.CodingInformation & AudioCodingInformation::sf;
+            bool sf = disk.subheader.CodingInformation & AudioCodingInformation::sf;
             bool ms = disk.subheader.CodingInformation & AudioCodingInformation::ms;
 
-            if(bps) // Level A (8 bits per sample)
-            {
-                for(uint8_t sg = 0; sg < 18; sg++)
-                {
-                    uint8_t s[4];
-                    uint8_t range[4];
-                    uint8_t filter[4];
-                     int8_t SD[4][28]; // sound data
+            uint8_t data[2304];
+            disk.Read((char*)data, 2304);
+            decodeAudioSector(bps, ms, data, left, right);
 
-                    disk.Read((char*)s, 4);
-                    disk.Seek(12, std::ios::cur);
-                    for(uint8_t i = 0; i < 4; i++)
-                    {
-                        range[i] = s[i] & 0x0F;
-                        filter[i] = s[i] >> 4;
-                    }
-
-                    for(uint8_t ss = 0; ss < 28; ss += 2) // sound sample
-                    {
-                        for(uint8_t su = 0; su < 4; su++) // sound unit
-                        {
-                            SD[su][ss] = disk.GetByte();
-                        }
-                    }
-
-                    // ADPCM decoder
-                    for(int su = 0; su < 4; su++)
-                    {
-                        uint16_t gain = pow(2, 8 - range[su]);
-                        if(ms) // stereo
-                        {
-                            for(uint8_t ss = 0; ss < 28; ss++)
-                            {
-                                if(su & 1)
-                                {
-                                    int32_t data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
-                                    rk1 = rk0;
-                                    rk0 = data;
-                                    right.push_back(lim16(data));
-                                }
-                                else
-                                {
-                                    int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
-                                    lk1 = lk0;
-                                    lk0 = data;
-                                    left.push_back(lim16(data));
-                                }
-                            }
-                        }
-                        else // mono
-                        {
-                            for(uint8_t ss = 0; ss < 28; ss++)
-                            {
-                                int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
-                                lk1 = lk0;
-                                lk0 = data;
-                                left.push_back(lim16(data));
-                            }
-                        }
-                    }
-                }
-                wavHeader.frequency = 37800;
-            }
-            else // Level B and C (4 bits per sample)
-            {
-                for(uint8_t sg = 0; sg < 18; sg++)
-                {
-                    uint8_t s[8];
-                    uint8_t range[8];
-                    uint8_t filter[8];
-                     int8_t SD[8][28]; // sound data
-
-                    disk.Seek(4, std::ios::cur);
-                    disk.Read((char*)s, 8);
-                    disk.Seek(4, std::ios::cur);
-                    for(uint8_t i = 0; i < 8; i++)
-                    {
-                        range[i] = s[i] & 0x0F;
-                        filter[i] = s[i] >> 4;
-                    }
-
-                    for(uint8_t ss = 0; ss < 28; ss++) // sound sample
-                    {
-                        for(uint8_t su = 0; su < 8; su += 2)
-                        {
-                            const uint8_t SB = disk.GetByte();
-                            SD[su][ss] = SB & 0x0F;
-                            if(SD[su][ss] >= 8) SD[su][ss] -= 16;
-                            SD[su+1][ss] = SB >> 4;
-                            if(SD[su+1][ss] >= 8) SD[su+1][ss] -= 16;
-                        }
-                    }
-
-                    // ADPCM decoder
-                    for(int su = 0; su < 8; su++)
-                    {
-                        uint16_t gain = pow(2, 12 - range[su]);
-                        if(ms) // stereo
-                        {
-                            for(uint8_t ss = 0; ss < 28; ss++)
-                            {
-                                if(su & 1)
-                                {
-                                    int32_t data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
-                                    rk1 = rk0;
-                                    rk0 = data;
-                                    right.push_back(lim16(data));
-                                }
-                                else
-                                {
-                                    int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
-                                    lk1 = lk0;
-                                    lk0 = data;
-                                    left.push_back(lim16(data));
-                                }
-                            }
-                        }
-                        else // mono
-                        {
-                            for(uint8_t ss = 0; ss < 28; ss++)
-                            {
-                                int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
-                                lk1 = lk0;
-                                lk0 = data;
-                                left.push_back(lim16(data));
-                            }
-                        }
-                    }
-                }
-                wavHeader.frequency = fs ? 18900 : 37800;
-            }
             wavHeader.channelNumber = ms + 1;
-
-            disk.GotoNextSector();
+            wavHeader.frequency = bps ? 37800 : (sf ? 18900 : 37800);
 
             if(disk.subheader.Submode & cdieor)
             {
@@ -240,6 +104,8 @@ void CDIFile::ExportAudio(std::string directoryPath)
                 left.clear();
                 right.clear();
             }
+
+            disk.GotoNextSector();
         }
 
         if(left.size())
