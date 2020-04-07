@@ -28,10 +28,9 @@ public:
 
     bool OpenROM(const std::string& rom);
     void CloseROM();
-    CDIFile* GetFile(std::string name);
+    CDIFile* GetFile(std::string path);
 
     bool ExportAudio();
-    void ExportAudioInfo();
     bool ExportFiles();
     void ExportFilesInfo();
     void ExportSectorsInfo();

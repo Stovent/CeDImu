@@ -7,6 +7,10 @@
 
 #include "../utils.hpp"
 
+/** \brief Export the audio data in the ROM.
+ *
+ * \return false if no ROM have been opened or if it couls not create subfolders, true otherwise.
+ */
 bool CDI::ExportAudio()
 {
     if(!disk.IsOpen())
@@ -29,16 +33,10 @@ bool CDI::ExportAudio()
     return true;
 }
 
-void CDI::ExportAudioInfo()
-{
-    if(!CreateSubfoldersFromROMDirectory())
-        wxMessageBox("Could not create subfolders " + gameFolder);
-
-    std::ofstream out(gameFolder + "audio_info.txt");
-
-    out.close();
-}
-
+/** \brief Exports the files contained in the ROM.
+ *
+ * \return false if no ROM have been opened or if it couls not create subfolders, true otherwise.
+ */
 bool CDI::ExportFiles()
 {
     if(!disk.IsOpen())
@@ -64,6 +62,8 @@ bool CDI::ExportFiles()
     return true;
 }
 
+/** \brief Export the strucure of the ROM's file system.
+ */
 void CDI::ExportFilesInfo()
 {
     if(!CreateSubfoldersFromROMDirectory())
@@ -95,6 +95,8 @@ void CDI::ExportFilesInfo()
     out.close();
 }
 
+/** \brief Export the structure of the sectors in the ROM.
+ */
 void CDI::ExportSectorsInfo()
 {
     if(!CreateSubfoldersFromROMDirectory())

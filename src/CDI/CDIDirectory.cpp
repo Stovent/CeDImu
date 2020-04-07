@@ -13,10 +13,12 @@ CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uin
     dirname = name;
 }
 
-/**
-* Reads the directory content from the disk and reursively
-* loads its subfolders' content.
-**/
+/** \brief Load the content of the directory.
+ *
+ * \param  disk A reference to the CDIDisk containing the directory.
+ *
+ * Reads the directory content from the disk and recursively loads its subdirectories' content.
+ */
 void CDIDirectory::LoadContent(CDIDisk& disk)
 {
     const uint32_t pos = disk.Tell();
@@ -82,9 +84,14 @@ void CDIDirectory::LoadContent(CDIDisk& disk)
     disk.Seek(pos);
 }
 
-/**
-* Returns a pointer to the file named {filename}, or nullptr is not found
-**/
+/** \brief Get file from its path in the directory.
+ *
+ * \param  filename The path from the current directory to the file.
+ * \return A pointer to the file, or nullptr is not found.
+ *
+ * The path must not start with a '/'.
+ * e.g. "CMDS/cdi_gate" for file "cdi_gate" in the "CMDS" folder inside this directory.
+ */
 CDIFile* CDIDirectory::GetFile(std::string filename)
 {
     const size_t pos = filename.find('/');
@@ -109,18 +116,28 @@ CDIFile* CDIDirectory::GetFile(std::string filename)
     }
 }
 
-/**
-* Clear the directory content.
-**/
+/** \brief Clear the directory content.
+ *
+ * Delete the loaded files and subdirectories of this directory (does not delete them from the disk).
+ */
 void CDIDirectory::Clear()
 {
     files.clear();
     subdirectories.clear();
 }
 
-/**
-* Returns the directory organization.
-**/
+/** \brief Returns the directory structure as a stringstream.
+ *
+ * \return A stringstream containing the directory structure
+ *
+ * The structure is designed as follow:
+ * Dir: <dirname>/
+ * LBN: <logical block number of the directory>
+ * Then for each file inside the directory:
+ *     File: <file name>
+ *     Size: <file size>
+ *     LBN : <logical block number of the file>
+ */
 std::stringstream CDIDirectory::ExportInfo() const
 {
     std::stringstream ss;
@@ -128,18 +145,18 @@ std::stringstream CDIDirectory::ExportInfo() const
     ss << "LBN: " << dirLBN << std::endl;
     for(std::pair<std::string, CDIFile> file : files)
     {
-        ss << "    file: " << file.second.filename << std::endl;
-        ss << "    Size: " << file.second.filesize << std::endl;
-        ss << "    LBN : " << file.second.fileLBN << std::endl << std::endl;
+        ss << "\tFile: " << file.second.filename << std::endl;
+        ss << "\tSize: " << file.second.filesize << std::endl;
+        ss << "\tLBN : " << file.second.fileLBN << std::endl << std::endl;
     }
     ss << std::endl;
     return ss;
 }
 
-/**
-* Exports the files audio data, and recursively exports its subdirectories'
-* files audio data.
-**/
+/** \brief Export the audio data from each file in the directory and its subdirectories recursively.
+ *
+ * \param  basePath The directory where the files will be written.
+ */
 void CDIDirectory::ExportAudio(std::string basePath) const
 {
     if(dirname != "/")
@@ -160,10 +177,10 @@ void CDIDirectory::ExportAudio(std::string basePath) const
     }
 }
 
-/**
-* Exports the files content, and recursively exports its subdirectories'
-* files content.
-**/
+/** \brief Export the content of each file in the directory and its subdirectories recursively.
+ *
+ * \param basePath The directory where the files will be written.
+ */
 void CDIDirectory::ExportFiles(std::string basePath) const
 {
     if(dirname != "/")

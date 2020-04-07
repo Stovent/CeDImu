@@ -14,6 +14,11 @@ CDI::~CDI()
     CloseROM();
 }
 
+/** \brief Open the given ROM.
+ *
+ * \param  rom Path to the ROM to open.
+ * \return true if the ROM have been openend successfully, false otherwise.
+ */
 bool CDI::OpenROM(const std::string& rom)
 {
     CloseROM();
@@ -32,6 +37,9 @@ bool CDI::OpenROM(const std::string& rom)
     return true;
 }
 
+
+/** \brief Close the opened ROM.
+ */
 void CDI::CloseROM()
 {
     rootDirectory.Clear();
@@ -43,6 +51,9 @@ void CDI::CloseROM()
     gameFolder = "";
 }
 
+
+/** \brief Load every file and directory from the disk.
+ */
 void CDI::LoadCDIFileSystem()
 {
     const uint32_t pos = disk.Tell();
@@ -90,10 +101,18 @@ void CDI::LoadCDIFileSystem()
     disk.Seek(pos);
 }
 
-/**
-*   path must not start with an '/' and must end with an '/'
-*   an empty string only creates the game folder (romPath + gameName)
-**/
+/** \brief Create subdirectories inside the game folder.
+ *
+ * \param  path The directories to create, separated by '/'.
+ * \return false if a folder could not be created, true otherwise.
+ *
+ * The game folder is the directory where the ROM is located +
+ * the game name inside the ROM.
+ * Path must not start with an '/' and must end with an '/'.
+ * An empty string only creates the game folder only (romPath + gameName).
+ * Example: if the game is Alien Gate, and the ROM is in C:/ROMs/
+ * then sending path = "files/CMDS/" will create C:/ROMs/Alien Gate/files/CMDS/
+ */
 bool CDI::CreateSubfoldersFromROMDirectory(std::string path)
 {
     std::string newFolder(gameFolder);
@@ -111,10 +130,15 @@ bool CDI::CreateSubfoldersFromROMDirectory(std::string path)
     return true;
 }
 
-/**
-* Returns a pointer to the file named {name}, or nullptr is not found
-**/
-CDIFile* CDI::GetFile(std::string name)
+/** \brief Get file from its path on the disk.
+ *
+ * \param  path The full path from the root directory of the disk to the file.
+ * \return A pointer to the file, or nullptr is not found.
+ *
+ * The path must not start with a '/'.
+ * e.g. "CMDS/cdi_gate" for file "cdi_gate" in the "CMDS" folder in the root directory.
+ */
+CDIFile* CDI::GetFile(std::string path)
 {
-    return rootDirectory.GetFile(name);
+    return rootDirectory.GetFile(path);
 }

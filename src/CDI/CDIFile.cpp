@@ -54,12 +54,15 @@ static void writeWAV(std::ofstream& out, const Audio::WAVHeader& wavHeader, cons
     }
 }
 
-/**
-* Converts and writes the audio data from the disk to 16-bit PCM on a
-* file in the directory {directoryPath}, each channel is exported individualy.
-* Special thanks to this thread (http://www.cdinteractive.co.uk/forums/cdinteractive/viewtopic.php?t=3191)
-* for making me understand how the k0 and k1 filters worked in ADCPM decoder
-**/
+/** \brief Export the audio data of the file.
+ *
+ * \param  directoryPath Path to the directory where the files will be written.
+ *
+ * Converts and writes the audio data from the ROM to 16-bit PCM.
+ * Each channel and logical records are exported individualy.
+ * Special thanks to this thread (http://www.cdinteractive.co.uk/forums/cdinteractive/viewtopic.php?t=3191)
+ * for making me understand how the k0 and k1 filters worked in ADCPM decoder
+ */
 void CDIFile::ExportAudio(std::string directoryPath)
 {
     uint32_t pos = disk.Tell();
@@ -122,9 +125,10 @@ void CDIFile::ExportAudio(std::string directoryPath)
     disk.Seek(pos);
 }
 
-/**
-* Writes the content of the file (including empty sectors) in {directoryPath} + this->filename.
-**/
+/** \brief Write the content of the file (as stored in the ROM) on disk.
+ *
+ * \param  directoryPath Path to the directory where the file will be written (must end with a '/').
+ */
 void CDIFile::ExportFile(std::string directoryPath)
 {
     const uint32_t pos = disk.Tell();
@@ -141,11 +145,11 @@ void CDIFile::ExportFile(std::string directoryPath)
     disk.Seek(pos);
 }
 
-/**
-* The parameter is a pointer that, if not null, will contain
-* the size of the file content.
-* Remember to delete the returned pointer (allocated with new[])
-**/
+/** \brief Get the file content.
+ *
+ * \param  size A reference to a uint32_t that will contain the size of the returned array.
+ * \return An array containing the file content. It is the caller's responsability to delete the returned array (allocated with new[]).
+ */
 char* CDIFile::GetFileContent(uint32_t& size)
 {
     const uint32_t pos = disk.Tell();
