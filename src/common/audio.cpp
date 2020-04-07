@@ -4,6 +4,9 @@
 
 #include "../utils.hpp"
 
+namespace Audio
+{
+
 static const float k0[4] = {0.0, 0.9375, 1.796875, 1.53125};
 static const float k1[4] = {0.0, 0.0, -0.8125, -0.859375};
 
@@ -188,3 +191,5 @@ uint8_t decodeLevelBCSoundGroup(const bool stereo, const uint8_t data[128], std:
     }
     return index;
 }
+
+} // namespace Audio

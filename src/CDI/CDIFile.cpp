@@ -66,7 +66,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
 
     for(int channel = 0; channel < 16; channel++)
     {
-        resetAudioFiltersDelay();
+        Audio::resetAudioFiltersDelay();
         WAVHeader wavHeader;
         std::vector<int16_t> left;
         std::vector<int16_t> right;
@@ -92,7 +92,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
 
             uint8_t data[2304];
             disk.Read((char*)data, 2304);
-            decodeAudioSector(bps, ms, data, left, right);
+            Audio::decodeAudioSector(bps, ms, data, left, right);
 
             wavHeader.channelNumber = ms + 1;
             wavHeader.frequency = bps ? 37800 : (sf ? 18900 : 37800);
