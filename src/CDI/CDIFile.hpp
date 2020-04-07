@@ -7,14 +7,6 @@ class CDIFile;
 
 #include "CDIDisk.hpp"
 
-enum AudioCodingInformation
-{
-    emphasis = 0b01000000,
-    bps      = 0b00110000, // bits per sample
-    sf       = 0b00001100, // sampling frequency
-    ms       = 0b00000011  // mono/stereo
-};
-
 class CDIFile
 {
     CDIDisk& disk;
@@ -34,12 +26,6 @@ public:
     void ExportAudio(std::string directoryPath);
     void ExportFile(std::string directoryPath);
     char* GetFileContent(uint32_t& size);
-};
-
-struct WAVHeader
-{
-    uint16_t channelNumber;
-    uint32_t frequency;
 };
 
 #endif // CDIFILE_HPP

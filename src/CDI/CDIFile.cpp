@@ -18,7 +18,7 @@ CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize
     parent(parentRelpos)
 {}
 
-static void writeWAV(std::ofstream& out, const WAVHeader& wavHeader, const std::vector<int16_t>& left, const std::vector<int16_t>& right)
+static void writeWAV(std::ofstream& out, const Audio::WAVHeader& wavHeader, const std::vector<int16_t>& left, const std::vector<int16_t>& right)
 {
     uint16_t bytePerBloc = wavHeader.channelNumber * 2;
     uint32_t bytePerSec = wavHeader.frequency * bytePerBloc;
@@ -67,7 +67,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
     for(int channel = 0; channel < 16; channel++)
     {
         Audio::resetAudioFiltersDelay();
-        WAVHeader wavHeader;
+        Audio::WAVHeader wavHeader;
         std::vector<int16_t> left;
         std::vector<int16_t> right;
 
@@ -86,9 +86,9 @@ void CDIFile::ExportAudio(std::string directoryPath)
             }
 
             // bool emph = disk.subheader.CodingInformation & AudioCodingInformation::emphasis;
-            bool bps = disk.subheader.CodingInformation & AudioCodingInformation::bps;
-            bool sf = disk.subheader.CodingInformation & AudioCodingInformation::sf;
-            bool ms = disk.subheader.CodingInformation & AudioCodingInformation::ms;
+            bool bps = disk.subheader.CodingInformation & Audio::CodingInformation::bps;
+            bool sf = disk.subheader.CodingInformation & Audio::CodingInformation::sf;
+            bool ms = disk.subheader.CodingInformation & Audio::CodingInformation::ms;
 
             uint8_t data[2304];
             disk.Read((char*)data, 2304);
