@@ -22,6 +22,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
     EVT_MENU(IDOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDOnExportAudio, MainFrame::OnExportAudio)
+    EVT_MENU(IDOnExportVideo, MainFrame::OnExportVideo)
     EVT_MENU(IDOnRAMSearch, MainFrame::OnRAMSearch)
     EVT_MENU(IDOnSettings, MainFrame::OnSettings)
     EVT_MENU(IDOnAbout, MainFrame::OnAbout)
@@ -65,6 +66,7 @@ void MainFrame::CreateMenuBar()
     wxMenu* cdiexport = new wxMenu;
     cdiexport->Append(IDOnExportFiles, "Files");
     cdiexport->Append(IDOnExportAudio, "Audio");
+    cdiexport->Append(IDOnExportVideo, "Video");
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
@@ -271,6 +273,14 @@ void MainFrame::OnExportAudio(wxCommandEvent& event)
     if(app->cdi)
         app->cdi->ExportAudio();
     SetStatusText("Audio exported!");
+}
+
+void MainFrame::OnExportVideo(wxCommandEvent& event)
+{
+    SetStatusText("Exporting video...");
+    if(app->cdi)
+        app->cdi->ExportVideo();
+    SetStatusText("Video exported!");
 }
 
 void MainFrame::OnSettings(wxCommandEvent& event)

@@ -122,6 +122,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
             out.close();
         }
     }
+
     disk.Seek(pos);
 }
 
@@ -142,6 +143,65 @@ void CDIFile::ExportFile(std::string directoryPath)
     delete[] data;
 
     out.close();
+    disk.Seek(pos);
+}
+
+/** \brief Export the video data of the file.
+ *
+ * \param  directoryPath Path to the directory where the files will be written.
+ *
+ * Converts and writes the video data from the ROM.
+ * Each channel and logical records are exported individualy.
+ */
+void CDIFile::ExportVideo(std::string directoryPath)
+{
+    uint32_t pos = disk.Tell();
+    int maxChannel = 0;
+
+    for(int channel = 0; channel <= maxChannel; channel++)
+    {
+        std::vector<uint8_t> data; // RGB
+
+        disk.GotoLBN(fileLBN);
+
+        uint8_t record = 0;
+        int32_t sizeLeft = filesize;
+        while(sizeLeft > 0)
+        {
+            sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
+            if(disk.subheader.ChannelNumber > maxChannel)
+                maxChannel = disk.subheader.ChannelNumber;
+
+            if(!(disk.subheader.Submode & cdiv) || disk.subheader.ChannelNumber != channel)
+            {
+                disk.GotoNextSector();
+                continue;
+            }
+
+            bool ascf = disk.subheader.CodingInformation & VideoCodingInformation::ascf;
+            bool eolf = disk.subheader.CodingInformation & VideoCodingInformation::eolf;
+            uint8_t resolution  = (disk.subheader.CodingInformation & VideoCodingInformation::resolution) >> 2;
+            uint8_t coding = disk.subheader.CodingInformation & VideoCodingInformation::coding;
+
+            data.push_back(1);
+
+            if(disk.subheader.Submode & cdieor)
+            {
+                std::ofstream out(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++));
+                out.close();
+                data.clear();
+            }
+
+            disk.GotoNextSector();
+        }
+
+        if(data.size())
+        {
+            std::ofstream out(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record));
+            out.close();
+        }
+    }
+
     disk.Seek(pos);
 }
 

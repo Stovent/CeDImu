@@ -33,6 +33,7 @@ public:
     bool ExportAudio();
     bool ExportFiles();
     void ExportFilesInfo();
+    bool ExportVideo();
     void ExportSectorsInfo();
 };
 

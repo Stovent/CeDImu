@@ -76,6 +76,32 @@ void CDI::ExportFilesInfo()
     out.close();
 }
 
+/** \brief Export the video data in the ROM.
+ *
+ * \return false if no ROM have been opened or if it couls not create subfolders, true otherwise.
+ */
+bool CDI::ExportVideo()
+{
+    if(!disk.IsOpen())
+    {
+        wxMessageBox("No ROM loaded, no video to export");
+        return false;
+    }
+
+    std::string currentPath = "video/";
+    if(!CreateSubfoldersFromROMDirectory(currentPath))
+    {
+        wxMessageBox("Could not create subfolders " + currentPath);
+        return false;
+    }
+
+    currentPath = gameFolder + currentPath;
+
+    rootDirectory.ExportVideo(currentPath);
+
+    return true;
+}
+
 /** \brief Export the structure of the sectors in the ROM.
  */
 void CDI::ExportSectorsInfo()

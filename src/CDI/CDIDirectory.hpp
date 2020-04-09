@@ -31,6 +31,7 @@ struct CDIDirectory
     std::stringstream ExportInfo() const;
     void ExportAudio(std::string basePath) const;
     void ExportFiles(std::string basePath) const;
+    void ExportVideo(std::string basePath) const;
 };
 
 #endif // CDIDIRECTORY_HPP

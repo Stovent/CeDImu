@@ -7,6 +7,14 @@ class CDIFile;
 
 #include "CDIDisk.hpp"
 
+enum VideoCodingInformation
+{
+    ascf       = 0b10000000, // Application Specific Coding Flag
+    eolf       = 0b01000000, // Even/Odd Lines Flag
+    resolution = 0b00110000,
+    coding     = 0b00001111,
+};
+
 class CDIFile
 {
     CDIDisk& disk;
@@ -25,6 +33,7 @@ public:
 
     void ExportAudio(std::string directoryPath);
     void ExportFile(std::string directoryPath);
+    void ExportVideo(std::string directoryPath);
     char* GetFileContent(uint32_t& size);
 };
 
