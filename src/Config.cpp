@@ -60,4 +60,4 @@ void SetDefaultConfig()
     skipBIOS = false;
 }
 
-}
+} // namespace Config

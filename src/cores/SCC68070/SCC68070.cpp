@@ -1,6 +1,6 @@
-#include <cstring>
-
 #include "SCC68070.hpp"
+
+#include <cstring>
 
 SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
 {

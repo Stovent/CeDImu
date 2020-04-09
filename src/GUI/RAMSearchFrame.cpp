@@ -1,6 +1,3 @@
-#include <wx/msgdlg.h>
-#include <wx/textctrl.h>
-
 #include "RAMSearchFrame.hpp"
 
 wxBEGIN_EVENT_TABLE(RAMSearchFrame, wxFrame)

@@ -1,7 +1,7 @@
+#include "SCC66470.hpp"
+
 #include <cstdio>
 #include <cstring>
-
-#include "SCC66470.hpp"
 
 SCC66470::SCC66470(CeDImu* appp) : VDSC(appp)
 {

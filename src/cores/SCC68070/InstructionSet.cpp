@@ -1,5 +1,3 @@
-#include <wx/msgdlg.h>
-
 #include "SCC68070.hpp"
 
 #include "../../utils.hpp"

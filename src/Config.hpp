@@ -12,6 +12,6 @@ bool saveConfig();
 bool loadConfig();
 void SetDefaultConfig();
 
-}
+} // namespace Config
 
 #endif // CONFIG_HPP

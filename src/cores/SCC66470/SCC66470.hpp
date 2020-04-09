@@ -4,7 +4,6 @@
 class SCC66470;
 
 #include <cstdint>
-#include <string>
 
 #include "../VDSC.hpp"
 

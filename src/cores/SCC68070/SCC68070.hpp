@@ -4,11 +4,11 @@
 class SCC68070;
 
 #include <cstdint>
+#include <fstream>
 #include <vector>
+#include <string>
 
-#include <wx/msgdlg.h>
-
-#include "../../CeDImu.hpp"
+#include "../VDSC.hpp"
 #include "../../utils.hpp"
 
 #define UNCHANGED 2
@@ -204,7 +204,7 @@ class SCC68070
 {
 public:
     int32_t D[8];
-    int32_t A[8];
+    uint32_t A[8];
     uint32_t PC;
     uint16_t SR;
     uint32_t USP;

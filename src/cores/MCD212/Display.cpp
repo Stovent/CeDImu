@@ -1,5 +1,7 @@
 #include "MCD212.hpp"
 
+#include <wx/msgdlg.h>
+
 #define   SET_DA_BIT() internalRegisters[CSR1R] |= 0x80;
 #define UNSET_DA_BIT() internalRegisters[CSR1R] &= 0x20;
 

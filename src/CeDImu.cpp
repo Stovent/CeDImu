@@ -1,4 +1,7 @@
 #include "CeDImu.hpp"
+
+#include <wx/msgdlg.h>
+
 #include "Config.hpp"
 #include "cores/SCC66470/SCC66470.hpp"
 #include "cores/MCD212/MCD212.hpp"
