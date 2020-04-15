@@ -155,6 +155,8 @@ bool CDIDisk::GotoNextSector(uint8_t submodeMask)
 bool CDIDisk::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
 {
     uint32_t index = 0;
+    if(!includeEmptySectors && IsEmptySector())
+        GotoNextSector(cdiany);
     while(size && disk.good())
     {
         uint16_t length = GetSectorDataSize();
