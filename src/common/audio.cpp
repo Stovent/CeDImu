@@ -94,6 +94,7 @@ uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::
                     rk1 = rk0;
                     rk0 = data;
                     right.push_back(lim16(data));
+                    index++;
                 }
                 else
                 {
@@ -101,6 +102,7 @@ uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::
                     lk1 = lk0;
                     lk0 = data;
                     left.push_back(lim16(data));
+                    index++;
                 }
             }
         }
@@ -112,6 +114,10 @@ uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::
                 lk1 = lk0;
                 lk0 = data;
                 left.push_back(lim16(data));
+                // in case of a mono sector between 2 stereo, fill to avoid channel data size mismatch
+                if(right.size())
+                    right.push_back(0);
+                index++;
             }
         }
     }
@@ -185,6 +191,9 @@ uint8_t decodeLevelBCSoundGroup(const bool stereo, const uint8_t data[128], std:
                 lk1 = lk0;
                 lk0 = data;
                 left.push_back(lim16(data));
+                // in case of a mono sector between 2 stereo, fill to avoid channel data size mismatch
+                if(right.size())
+                    right.push_back(0);
                 index++;
             }
         }
