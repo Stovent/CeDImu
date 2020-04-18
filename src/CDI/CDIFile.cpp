@@ -18,42 +18,6 @@ CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize
     parent(parentRelpos)
 {}
 
-static void writeWAV(std::ofstream& out, const Audio::WAVHeader& wavHeader, const std::vector<int16_t>& left, const std::vector<int16_t>& right)
-{
-    uint16_t bytePerBloc = wavHeader.channelNumber * 2;
-    uint32_t bytePerSec = wavHeader.frequency * bytePerBloc;
-    uint32_t dataSize = left.size()*2 + right.size()*2;
-    uint32_t wavSize = 36 + dataSize;
-
-    out.write("RIFF", 4);
-    out.write((char*)&wavSize, 4);
-    out.write("WAVE", 4);
-    out.write("fmt ", 4);
-    out.write("\x10\0\0\0", 4);
-    out.write("\1\0", 2); // audio format
-
-    out.write((char*)&wavHeader.channelNumber, 2);
-    out.write((char*)&wavHeader.frequency, 4);
-    out.write((char*)&bytePerSec, 4);
-    out.write((char*)&bytePerBloc, 2);
-    out.write("\x10\0", 2);
-    out.write("data", 4);
-    out.write((char*)&dataSize, 4);
-
-    if(right.size()) // stereo
-    {
-        for(uint32_t i = 0; i < left.size() && i < right.size(); i++)
-        {
-            out.write((char*)&left[i], 2);
-            out.write((char*)&right[i], 2);
-        }
-    }
-    else // mono
-    {
-        out.write((char*)&left[0], left.size() * 2);
-    }
-}
-
 /** \brief Export the audio data of the file.
  *
  * \param  directoryPath Path to the directory where the files will be written.
@@ -106,7 +70,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
             if(disk.subheader.Submode & cdieor)
             {
                 std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + ".wav", std::ios::binary | std::ios::out);
-                writeWAV(out, wavHeader, left, right);
+                Audio::writeWAV(out, wavHeader, left, right);
                 out.close();
                 left.clear();
                 right.clear();
@@ -118,7 +82,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
         if(left.size())
         {
             std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record) + ".wav", std::ios::binary | std::ios::out);
-            writeWAV(out, wavHeader, left, right);
+            Audio::writeWAV(out, wavHeader, left, right);
             out.close();
         }
     }
