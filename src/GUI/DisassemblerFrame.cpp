@@ -1,7 +1,7 @@
-#include <wx/msgdlg.h>
+#include "DisassemblerFrame.hpp"
+
 #include <wx/dcclient.h>
 
-#include "DisassemblerFrame.hpp"
 #include "../utils.hpp"
 
 wxBEGIN_EVENT_TABLE(DisassemblerFrame, wxFrame)

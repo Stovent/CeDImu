@@ -14,23 +14,22 @@ class MainFrame;
 
 enum
 {
-    IDOnOpenROM = wxID_HIGHEST + 1,
-    IDOnLoadBIOS,
-    IDOnCloseROM,
-    IDOnPause,
-    IDOnExecuteXInstructions,
-    IDOnRebootCore,
-    IDOnExportFiles,
-    IDOnExportAudio,
-    IDOnExportVideo,
-    IDOnVDSCViewer,
-    IDOnDisassembler,
-    IDOnRAMSearch,
-    IDOnSettings,
-    IDOnAbout,
+    IDMainFrameOnOpenROM = wxID_HIGHEST + 1,
+    IDMainFrameOnLoadBIOS,
+    IDMainFrameOnCloseROM,
+    IDMainFrameOnPause,
+    IDMainFrameOnExecuteXInstructions,
+    IDMainFrameOnRebootCore,
+    IDMainFrameOnExportFiles,
+    IDMainFrameOnExportAudio,
+    IDMainFrameOnExportVideo,
+    IDMainFrameOnVDSCViewer,
+    IDMainFrameOnDisassembler,
+    IDMainFrameOnRAMSearch,
+    IDMainFrameOnSettings,
+    IDMainFrameOnAbout,
 
     IDDisassemblerOnClose,
-
     IDDisassemblerpc, IDDisassemblersr,
 
     IDRAMSearchListCheckMisaligned,

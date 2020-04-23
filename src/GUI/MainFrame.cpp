@@ -1,3 +1,5 @@
+#include "MainFrame.hpp"
+
 #include <cstdio>
 
 #include <wx/menu.h>
@@ -7,25 +9,24 @@
 #include <wx/notebook.h>
 #include <wx/checkbox.h>
 
-#include "MainFrame.hpp"
 #include "../Config.hpp"
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-    EVT_MENU(IDOnOpenROM, MainFrame::OnOpenROM)
-    EVT_MENU(IDOnLoadBIOS, MainFrame::OnLoadBIOS)
-    EVT_MENU(IDOnCloseROM, MainFrame::OnCloseROM)
+    EVT_MENU(IDMainFrameOnOpenROM, MainFrame::OnOpenROM)
+    EVT_MENU(IDMainFrameOnLoadBIOS, MainFrame::OnLoadBIOS)
+    EVT_MENU(IDMainFrameOnCloseROM, MainFrame::OnCloseROM)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
-    EVT_MENU(IDOnPause, MainFrame::OnPause)
-    EVT_MENU(IDOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
-    EVT_MENU(IDOnRebootCore, MainFrame::OnRebootCore)
-    EVT_MENU(IDOnVDSCViewer, MainFrame::OnVDSCViewer)
-    EVT_MENU(IDOnDisassembler, MainFrame::OnDisassembler)
-    EVT_MENU(IDOnExportFiles, MainFrame::OnExportFiles)
-    EVT_MENU(IDOnExportAudio, MainFrame::OnExportAudio)
-    EVT_MENU(IDOnExportVideo, MainFrame::OnExportVideo)
-    EVT_MENU(IDOnRAMSearch, MainFrame::OnRAMSearch)
-    EVT_MENU(IDOnSettings, MainFrame::OnSettings)
-    EVT_MENU(IDOnAbout, MainFrame::OnAbout)
+    EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
+    EVT_MENU(IDMainFrameOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
+    EVT_MENU(IDMainFrameOnRebootCore, MainFrame::OnRebootCore)
+    EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
+    EVT_MENU(IDMainFrameOnDisassembler, MainFrame::OnDisassembler)
+    EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
+    EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
+    EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
+    EVT_MENU(IDMainFrameOnRAMSearch, MainFrame::OnRAMSearch)
+    EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
+    EVT_MENU(IDMainFrameOnAbout, MainFrame::OnAbout)
     EVT_TIMER(wxID_ANY, MainFrame::RefreshTitle)
 wxEND_EVENT_TABLE()
 
@@ -50,35 +51,35 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
 void MainFrame::CreateMenuBar()
 {
     wxMenu* file = new wxMenu;
-    file->Append(IDOnOpenROM, "Open ROM\tCtrl+O", "Choose the ROM to load");
-    file->Append(IDOnLoadBIOS, "Load BIOS\tCtrl+B", "Load a CD-I BIOS");
+    file->Append(IDMainFrameOnOpenROM, "Open ROM\tCtrl+O", "Choose the ROM to load");
+    file->Append(IDMainFrameOnLoadBIOS, "Load BIOS\tCtrl+B", "Load a CD-I BIOS");
     file->AppendSeparator();
-    file->Append(IDOnCloseROM, "Close ROM\tCtrl+Maj+C", "Close the ROM currently playing");
+    file->Append(IDMainFrameOnCloseROM, "Close ROM\tCtrl+Maj+C", "Close the ROM currently playing");
     file->Append(wxID_EXIT);
 
     wxMenu* emulation = new wxMenu;
-    pause = emulation->AppendCheckItem(IDOnPause, "Pause");
-    emulation->Append(IDOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
+    pause = emulation->AppendCheckItem(IDMainFrameOnPause, "Pause");
+    emulation->Append(IDMainFrameOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
     emulation->AppendSeparator();
-    emulation->Append(IDOnRebootCore, "Reboot Core\tCtrl+R");
+    emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+R");
 
     wxMenu* cdi = new wxMenu;
     wxMenu* cdiexport = new wxMenu;
-    cdiexport->Append(IDOnExportFiles, "Files");
-    cdiexport->Append(IDOnExportAudio, "Audio");
-    cdiexport->Append(IDOnExportVideo, "Video");
+    cdiexport->Append(IDMainFrameOnExportFiles, "Files");
+    cdiexport->Append(IDMainFrameOnExportAudio, "Audio");
+    cdiexport->Append(IDMainFrameOnExportVideo, "Video");
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
-    tools->Append(IDOnVDSCViewer, "VDSC Viewer");
-    tools->Append(IDOnDisassembler, "Disassembler\tCtrl+D");
-    tools->Append(IDOnRAMSearch, "RAM Search\tCtrl+S");
+    tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer");
+    tools->Append(IDMainFrameOnDisassembler, "Disassembler\tCtrl+D");
+    tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+S");
 
     wxMenu* config = new wxMenu;
-    config->Append(IDOnSettings, "Settings");
+    config->Append(IDMainFrameOnSettings, "Settings");
 
     wxMenu* help = new wxMenu;
-    help->Append(IDOnAbout, "About");
+    help->Append(IDMainFrameOnAbout, "About");
 
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(file, "File");
