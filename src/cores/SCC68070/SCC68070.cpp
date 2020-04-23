@@ -33,8 +33,8 @@ void SCC68070::RebootCore()
 {
     run = false;
     LOG(out << "RESET" << std::endl; instruction << "RESET" << std::endl;)
-    cycleCount = 0;
-    totalCycleCount = 0;
+    cycleCount = 146;
+    totalCycleCount = 146;
     currentOpcode = 0;
     currentPC = 0;
     lastAddress = 0;
