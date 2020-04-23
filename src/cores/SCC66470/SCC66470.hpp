@@ -40,6 +40,8 @@ public:
     }
 
     virtual void OnFrameCompleted() override;
+
+    virtual std::map<std::string, VDSCRegister> GetInternalRegisters() override;
 };
 
 #endif // SCC66470_HPP

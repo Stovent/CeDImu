@@ -51,3 +51,8 @@ void SCC66470::OnFrameCompleted()
 {
 
 }
+
+std::map<std::string, VDSCRegister> SCC66470::GetInternalRegisters()
+{
+    return std::map<std::string, VDSCRegister>();
+}

@@ -258,3 +258,21 @@ void MCD212::ReloadDisplayParameters2(const bool CM, const uint8_t MF, const uin
     internalRegisters[DDR2] |= MF << 10;
     internalRegisters[DDR2] |= FT << 8;
 }
+
+std::map<std::string, VDSCRegister> MCD212::GetInternalRegisters()
+{
+    std::map<std::string, VDSCRegister> registers;
+    registers.emplace("CSR1R", VDSCRegister({CSR1R + 0x4FFFE0, GetCSR1RRegister()}));
+    registers.emplace("CSR2R", VDSCRegister({CSR2R + 0x4FFFE0, GetCSR2RRegister()}));
+    registers.emplace("CSR1W", VDSCRegister({CSR1W + 0x4FFFE0, GetCSR1WRegister()}));
+    registers.emplace("CSR2W", VDSCRegister({CSR2W + 0x4FFFE0, GetCSR2WRegister()}));
+    registers.emplace("DCR1",  VDSCRegister({DCR1  + 0x4FFFE0,  GetDCR1Register()}));
+    registers.emplace("DCR2",  VDSCRegister({DCR2  + 0x4FFFE0,  GetDCR2Register()}));
+    registers.emplace("DDR1",  VDSCRegister({DDR1  + 0x4FFFE0,  GetDDR1Register()}));
+    registers.emplace("DDR2",  VDSCRegister({DDR2  + 0x4FFFE0,  GetDDR2Register()}));
+    registers.emplace("VSR1",  VDSCRegister({VSR1  + 0x4FFFE0,  GetVSR1Register()}));
+    registers.emplace("VSR2",  VDSCRegister({VSR2  + 0x4FFFE0,  GetVSR2Register()}));
+    registers.emplace("DCP1",  VDSCRegister({DCP1  + 0x4FFFE0,  GetDCP1Register()}));
+    registers.emplace("DCP2",  VDSCRegister({DCP2  + 0x4FFFE0,  GetDCP2Register()}));
+    return registers;
+}

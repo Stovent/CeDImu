@@ -3,7 +3,16 @@
 
 class VDSC;
 
+#include <string>
+#include <map>
+
 #include "../CeDImu.hpp"
+
+struct VDSCRegister
+{
+    uint32_t address;
+    uint16_t value;
+};
 
 class VDSC
 {
@@ -46,6 +55,8 @@ public:
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() { return 0; }
 
     virtual void OnFrameCompleted() = 0;
+
+    virtual std::map<std::string, VDSCRegister> GetInternalRegisters() = 0;
 };
 
 #endif // VDSC_HPP

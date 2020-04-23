@@ -174,6 +174,8 @@ public:
     virtual void OnFrameCompleted() override;
 
     virtual void DisplayLine() override;
+
+    virtual std::map<std::string, VDSCRegister> GetInternalRegisters() override;
 };
 
 #endif // MCD212_HPP
