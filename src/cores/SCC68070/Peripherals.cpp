@@ -2,12 +2,14 @@
 
 uint8_t SCC68070::GetPeripheral(const uint32_t addr)
 {
+    const uint8_t data = internal[addr - SCC68070Peripherals::Base];
+
     if(addr == 0x8000201B)
     {
         internal[URHR] = ReadUART();
     }
 
-    return internal[addr - SCC68070Peripherals::Base];
+    return data;
 }
 
 void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
@@ -35,7 +37,7 @@ void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
     internal[addr - SCC68070Peripherals::Base] = data;
 }
 
-uint8_t SCC68070::ReadUART() // 1st byte is discarded by BIOS 220
+uint8_t SCC68070::ReadUART()
 {
     int c = uart_in.get();
     LOG(out << std::hex << currentPC << "\tURHR: 0x" << c << std::endl)
