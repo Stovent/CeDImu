@@ -66,8 +66,7 @@ void SCC68070::SingleStep()
 
 void SCC68070::Run()
 {
-    if(!run)
-        (this->*Execute)(true);
+    (this->*Execute)(true);
 }
 
 uint16_t SCC68070::GetNextWord()
