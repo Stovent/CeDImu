@@ -1,10 +1,12 @@
 #include "SCC68070.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <iterator>
 
 void SCC68070::Interpreter(const bool loop)
 {
+    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long double, std::nano>> start = std::chrono::steady_clock::now();
     run = loop;
     do
     {
@@ -40,5 +42,8 @@ void SCC68070::Interpreter(const bool loop)
             vdsc->DisplayLine();
             cycleCount = 0;
         }
+
+        start += std::chrono::duration<long double, std::nano>(executionTime * cycleDelay);
+        std::this_thread::sleep_until(start);
     } while(run);
 }

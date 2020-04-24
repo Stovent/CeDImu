@@ -227,7 +227,7 @@ public:
     void RebootCore();
     void SingleStep();
     void ResetOperation();
-    unsigned long long instructionCount;
+    uint64_t instructionCount;
 
 private:
     VDSC* vdsc;
