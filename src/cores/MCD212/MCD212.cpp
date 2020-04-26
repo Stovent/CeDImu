@@ -307,7 +307,7 @@ void MCD212::OnFrameCompleted()
     {
         stopOnNextCompletedFrame = false;
         app->cpu->run = false;
-        app->mainFrame->pause->Check(true);
+        app->mainFrame->pauseItem->Check(true);
         app->mainFrame->SetStatusText("pause");
     }
 }

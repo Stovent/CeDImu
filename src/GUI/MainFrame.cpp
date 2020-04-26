@@ -17,6 +17,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnCloseROM, MainFrame::OnCloseROM)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
+    EVT_MENU(IDMainFrameOnLimitFPS, MainFrame::OnLimitFPS)
     EVT_MENU(IDMainFrameOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
     EVT_MENU(IDMainFrameOnRebootCore, MainFrame::OnRebootCore)
     EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
@@ -58,7 +59,9 @@ void MainFrame::CreateMenuBar()
     file->Append(wxID_EXIT);
 
     wxMenu* emulation = new wxMenu;
-    pause = emulation->AppendCheckItem(IDMainFrameOnPause, "Pause");
+    pauseItem = emulation->AppendCheckItem(IDMainFrameOnPause, "Pause");
+    limitFPSItem = emulation->AppendCheckItem(IDMainFrameOnLimitFPS, "Limit FPS");
+    limitFPSItem->Check(Config::limitFPS);
     emulation->Append(IDMainFrameOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
     emulation->AppendSeparator();
     emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+R");
@@ -147,7 +150,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
     }
 
     if(app->vdsc->biosLoaded)
-        if(!pause->IsChecked())
+        if(!pauseItem->IsChecked())
             app->StartGameThread();
 }
 
@@ -181,7 +184,7 @@ void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 
 void MainFrame::OnPause(wxCommandEvent& event)
 {
-    if(pause->IsChecked())
+    if(pauseItem->IsChecked())
     {
         app->StopGameThread();
         SetStatusText("Pause");
@@ -195,17 +198,29 @@ void MainFrame::OnPause(wxCommandEvent& event)
 
 void MainFrame::Pause()
 {
-    if(pause->IsChecked())
+    if(pauseItem->IsChecked())
     {
         app->StartGameThread();
-        pause->Check(false);
+        pauseItem->Check(false);
         SetStatusText("Running");
     }
     else
     {
         app->StopGameThread();
-        pause->Check(true);
+        pauseItem->Check(true);
         SetStatusText("Pause");
+    }
+}
+
+void MainFrame::OnLimitFPS(wxCommandEvent& event)
+{
+    if(limitFPSItem->IsChecked())
+    {
+        Config::limitFPS = true;
+    }
+    else
+    {
+        Config::limitFPS = false;
     }
 }
 

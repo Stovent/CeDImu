@@ -48,7 +48,7 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
         break;
 
     case 'E':
-        if(app->cpu && app->mainFrame->pause->IsChecked())
+        if(app->cpu && app->mainFrame->pauseItem->IsChecked())
             app->cpu->SingleStep();
         break;
     }

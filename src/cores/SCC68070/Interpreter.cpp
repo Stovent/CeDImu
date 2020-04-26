@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <chrono>
 #include <iterator>
+#include <thread>
+
+#include "../../Config.hpp"
 
 void SCC68070::Interpreter(const bool loop)
 {
@@ -20,7 +23,7 @@ void SCC68070::Interpreter(const bool loop)
         currentPC = PC;
         currentOpcode = GetNextWord();
 
-        uint16_t executionTime = (this->*ILUT[currentOpcode])();
+        const uint16_t executionTime = (this->*ILUT[currentOpcode])();
         cycleCount += executionTime;
         totalCycleCount += executionTime;
 
@@ -43,7 +46,10 @@ void SCC68070::Interpreter(const bool loop)
             cycleCount = 0;
         }
 
-        start += std::chrono::duration<long double, std::nano>(executionTime * cycleDelay);
-        std::this_thread::sleep_until(start);
+        if(Config::limitFPS)
+        {
+            start += std::chrono::duration<long double, std::nano>(executionTime * cycleDelay);
+            std::this_thread::sleep_until(start);
+        }
     } while(run);
 }

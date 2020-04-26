@@ -18,6 +18,7 @@ enum
     IDMainFrameOnLoadBIOS,
     IDMainFrameOnCloseROM,
     IDMainFrameOnPause,
+    IDMainFrameOnLimitFPS,
     IDMainFrameOnExecuteXInstructions,
     IDMainFrameOnRebootCore,
     IDMainFrameOnExportFiles,
@@ -46,7 +47,8 @@ class MainFrame : public wxFrame
 public:
     CeDImu* app;
     GamePanel* gamePanel;
-    wxMenuItem* pause;
+    wxMenuItem* pauseItem;
+    wxMenuItem* limitFPSItem;
 
     MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size);
     DisassemblerFrame* disassemblerFrame;
@@ -68,6 +70,7 @@ private:
     void OnExit(wxCommandEvent& event);
 
     void OnPause(wxCommandEvent& event);
+    void OnLimitFPS(wxCommandEvent& event);
     void OnExecuteXInstructions(wxCommandEvent& event);
     void OnRebootCore(wxCommandEvent& event);
 

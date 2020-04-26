@@ -122,7 +122,7 @@ void RAMSearchFrame::RefreshLoop(wxTimerEvent& event)
 
 void RAMSearchFrame::PaintEvent()
 {
-    if(!mainFrame->pause->IsChecked())
+    if(!mainFrame->pauseItem->IsChecked())
         ramSearchList->Refresh();
 }
 

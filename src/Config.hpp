@@ -1,16 +1,21 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+#include <string>
+
 namespace Config
 {
-
-extern bool skipBIOS;
-extern std::string ROMPath;
+// General
 extern std::string BIOSPath;
+extern std::string ROMPath;
+
+// Emulation
+extern bool skipBIOS;
+extern bool limitFPS;
 
 bool saveConfig();
 bool loadConfig();
-void SetDefaultConfig();
+void loadDefaultConfig();
 
 } // namespace Config
 

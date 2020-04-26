@@ -13,13 +13,10 @@ bool CeDImu::OnInit()
     cpu = nullptr;
     gameThread = nullptr;
 
+    Config::loadConfig();
+
     mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
     mainFrame->Show(true);
-
-    if(!Config::loadConfig())
-    {
-        Config::SetDefaultConfig();
-    }
 
     return true;
 }
