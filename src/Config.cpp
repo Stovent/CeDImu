@@ -12,6 +12,13 @@ std::string ROMPath;
 bool skipBIOS;
 bool limitFPS;
 
+/** \brief Loads the emulator configuration from a file named "CeDImu.ini".
+ *
+ * \return false if the file could not be opened, true otherwise.
+ *
+ * The file should be in the same folder as the emulator.
+ * If the file cannot be opened, the emulator will use the default configuration.
+ */
 bool loadConfig()
 {
     loadDefaultConfig();
@@ -42,6 +49,10 @@ bool loadConfig()
     return true;
 }
 
+/** \brief Save the emulator configuration in a file named "CeDImu.ini".
+ *
+ * \return false if the file could not be written, true otherwise.
+ */
 bool saveConfig()
 {
     std::ofstream out("CeDImu.ini");
@@ -60,6 +71,8 @@ bool saveConfig()
     return true;
 }
 
+/** \brief Loads the default emulator configuration.
+ */
 void loadDefaultConfig()
 {
     BIOSPath = "";
