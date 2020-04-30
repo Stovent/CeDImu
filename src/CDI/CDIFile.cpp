@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 
-#include "../common/audio.hpp"
+#include "../common/Audio.hpp"
 
 #include <wx/msgdlg.h>
 
@@ -55,7 +55,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
                 continue;
             }
 
-            // bool emph = disk.subheader.CodingInformation & AudioCodingInformation::emphasis;
+            // bool emph = disk.subheader.CodingInformation & Audio::CodingInformation::emphasis;
             bool bps = disk.subheader.CodingInformation & Audio::CodingInformation::bps;
             bool sf = disk.subheader.CodingInformation & Audio::CodingInformation::sf;
             bool ms = disk.subheader.CodingInformation & Audio::CodingInformation::ms;
