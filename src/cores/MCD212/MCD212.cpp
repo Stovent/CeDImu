@@ -13,10 +13,6 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
 
     OPEN_LOG(out, "MCD212.txt")
 
-    backgroundPlane.Create(1, 1);
-    if(!backgroundPlane.HasAlpha())
-        backgroundPlane.InitAlpha();
-
     cursorPlane.Create(16, 16);
     if(!cursorPlane.HasAlpha())
         cursorPlane.InitAlpha();

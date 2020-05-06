@@ -18,11 +18,24 @@ void MCD212::DisplayLine()
                 wxMessageBox("Could not create plane A image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
                 return;
             }
+            if(!planeA.HasAlpha())
+                planeA.InitAlpha();
+
             if(!planeB.Create(GetHorizontalResolution2(), GetVerticalResolution()))
             {
                 wxMessageBox("Could not create plane B image (" + std::to_string(GetHorizontalResolution2()) + "x" + std::to_string(GetVerticalResolution()) + ")");
                 return;
             }
+            if(!planeB.HasAlpha())
+                planeB.InitAlpha();
+
+            if(backgroundPlane.Create(GetHorizontalResolution1(), GetVerticalResolution()))
+            {
+                wxMessageBox("Could not create background image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
+                return;
+            }
+            if(!backgroundPlane.HasAlpha())
+                backgroundPlane.InitAlpha();
         }
 
         DisplayLineA();
@@ -190,12 +203,20 @@ uint32_t MCD212::DecodeCLUT(uint8_t pixel)
 
 void MCD212::DrawBackground()
 {
-    uint8_t* data  = backgroundPlane.GetData();
-    uint8_t* alpha = backgroundPlane.GetAlpha();
-    *alpha  = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-    data[0] = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-    data[1] = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-    data[2] = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
+    uint8_t* data  = backgroundPlane.GetData() + 3*lineNumber;
+    uint8_t* alpha = backgroundPlane.GetAlpha() + lineNumber;
+    uint8_t A = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
+    uint8_t R = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
+    uint8_t G = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
+    uint8_t B = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
+
+    for(uint16_t i = 0; i < backgroundPlane.GetWidth(); i++)
+    {
+        alpha[i]    = A;
+        data[3*i]   = R;
+        data[3*i+1] = G;
+        data[3*i+2] = B;
+    }
 }
 
 void MCD212::DrawCursor()
