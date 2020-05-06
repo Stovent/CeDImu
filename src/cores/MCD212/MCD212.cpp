@@ -144,7 +144,6 @@ void MCD212::ExecuteICA1()
     }
 end_ICA1:
     isCA = false;
-    return;
 }
 
 void MCD212::ExecuteDCA1()
@@ -205,7 +204,6 @@ void MCD212::ExecuteDCA1()
     }
 end_DCA1:
     isCA = false;
-    return;
 }
 
 void MCD212::ExecuteICA2()
@@ -266,7 +264,6 @@ void MCD212::ExecuteICA2()
     }
 end_ICA2:
     isCA = false;
-    return;
 }
 
 void MCD212::ExecuteDCA2()
@@ -328,7 +325,6 @@ void MCD212::ExecuteDCA2()
     }
 end_DCA2:
     isCA = false;
-    return;
 }
 
 void MCD212::OnFrameCompleted()

@@ -200,6 +200,11 @@ void MCD212::DrawBackground()
 
 void MCD212::DrawCursor()
 {
+    // check if Y position starts at 0 or 1 (assuming 0 in this code)
+    uint16_t yPosition = (controlRegisters[CursorPosition] & 0x003FF000) >> 12;
+    if(lineNumber < yPosition || lineNumber + 16 > yPosition)
+        return;
+
     uint8_t yAddress = controlRegisters[CursorPattern] >> 16 & 0x0F;
     uint8_t* data = cursorPlane.GetData() + 3*yAddress*16;
     uint8_t* alpha = cursorPlane.GetAlpha() + yAddress*16;
@@ -209,8 +214,8 @@ void MCD212::DrawCursor()
     {
         if(controlRegisters[CursorPattern] & mask)
         {
-            alpha[i]  = (controlRegisters[CursorPattern] & 0x000008) ? 255 : 128;
-            data[3*i] = (controlRegisters[CursorPattern] & 0x000004) ? 255 : 0;
+            alpha[i]      = (controlRegisters[CursorPattern] & 0x000008) ? 255 : 128;
+            data[3*i]     = (controlRegisters[CursorPattern] & 0x000004) ? 255 : 0;
             data[3*i + 1] = (controlRegisters[CursorPattern] & 0x000002) ? 255 : 0;
             data[3*i + 2] = (controlRegisters[CursorPattern] & 0x000001) ? 255 : 0;
         }
