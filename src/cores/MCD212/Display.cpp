@@ -29,7 +29,7 @@ void MCD212::DrawLine()
             if(!planeB.HasAlpha())
                 planeB.InitAlpha();
 
-            if(backgroundPlane.Create(GetHorizontalResolution1(), GetVerticalResolution()))
+            if(!backgroundPlane.Create(GetHorizontalResolution1(), GetVerticalResolution()))
             {
                 wxMessageBox("Could not create background image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
                 return;
@@ -50,8 +50,28 @@ void MCD212::DrawLine()
         UNSET_DA_BIT()
         if(GetDE())
         {
-            // do planeA + planeB + cursor + background here
-            app->mainFrame->gamePanel->RefreshScreen(backgroundPlane);
+            wxImage screen(backgroundPlane.GetWidth(), backgroundPlane.GetHeight());
+            screen.Paste(backgroundPlane, 0, 0);
+
+            if(controlRegisters[PlaneOrder])
+            {
+                screen.Paste(planeA, 0, 0);
+                screen.Paste(planeB, 0, 0);
+            }
+            else
+            {
+                screen.Paste(planeB, 0, 0);
+                screen.Paste(planeA, 0, 0);
+            }
+
+            if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
+            {
+                uint16_t x =  controlRegisters[CursorPosition] & 0x000003FF;
+                uint16_t y = (controlRegisters[CursorPosition] & 0x003FF000) >> 12;
+                screen.Paste(cursorPlane, y, x);
+            }
+
+            app->mainFrame->gamePanel->RefreshScreen(screen);
         }
         totalFrameCount++;
         OnFrameCompleted();
