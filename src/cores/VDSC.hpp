@@ -51,7 +51,7 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data) = 0;
     virtual void SetLong(const uint32_t addr, const uint32_t data) = 0;
 
-    virtual void DisplayLine() = 0;
+    virtual void DrawLine() = 0;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() { return 0; }
 
     virtual void OnFrameCompleted() = 0;

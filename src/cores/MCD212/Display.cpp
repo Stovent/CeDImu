@@ -5,7 +5,7 @@
 #define   SET_DA_BIT() internalRegisters[CSR1R] |= 0x80;
 #define UNSET_DA_BIT() internalRegisters[CSR1R] &= 0x20;
 
-void MCD212::DisplayLine()
+void MCD212::DrawLine()
 {
     SET_DA_BIT()
 
@@ -38,8 +38,9 @@ void MCD212::DisplayLine()
                 backgroundPlane.InitAlpha();
         }
 
-        DisplayLineA();
-        DisplayLineB();
+        DrawLineA();
+        DrawLineB();
+        DrawBackground();
         if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
             DrawCursor();
     }
@@ -49,8 +50,6 @@ void MCD212::DisplayLine()
         UNSET_DA_BIT()
         if(GetDE())
         {
-            DrawBackground();
-
             // do planeA + planeB + cursor + background here
             app->mainFrame->gamePanel->RefreshScreen(backgroundPlane);
         }
@@ -60,7 +59,7 @@ void MCD212::DisplayLine()
     }
 }
 
-void MCD212::DisplayLineA()
+void MCD212::DrawLineA()
 {
     if(controlRegisters[ImageCodingMethod] & 0x00000F) // plane on
     {
@@ -85,7 +84,7 @@ void MCD212::DisplayLineA()
         ExecuteICA1();
 }
 
-void MCD212::DisplayLineB()
+void MCD212::DrawLineB()
 {
 
     if(controlRegisters[ImageCodingMethod] & 0x000F00) // plane on
@@ -109,6 +108,51 @@ void MCD212::DisplayLineB()
 
     if(GetIC2() && lineNumber >= GetVerticalResolution()-1)
         ExecuteICA2();
+}
+
+void MCD212::DrawBackground()
+{
+    uint8_t* data  = backgroundPlane.GetData() + 3*lineNumber;
+    uint8_t* alpha = backgroundPlane.GetAlpha() + lineNumber;
+    uint8_t A = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
+    uint8_t R = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
+    uint8_t G = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
+    uint8_t B = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
+
+    for(uint16_t i = 0; i < backgroundPlane.GetWidth(); i++)
+    {
+        alpha[i]    = A;
+        data[3*i]   = R;
+        data[3*i+1] = G;
+        data[3*i+2] = B;
+    }
+}
+
+void MCD212::DrawCursor()
+{
+    // check if Y position starts at 0 or 1 (assuming 0 in this code)
+    uint16_t yPosition = (controlRegisters[CursorPosition] & 0x003FF000) >> 12;
+    if(lineNumber < yPosition || lineNumber + 16 > yPosition)
+        return;
+
+    uint8_t yAddress = controlRegisters[CursorPattern] >> 16 & 0x0F;
+    uint8_t* data = cursorPlane.GetData() + 3*yAddress*16;
+    uint8_t* alpha = cursorPlane.GetAlpha() + yAddress*16;
+
+    uint16_t mask = 1 << 15;
+    for(uint8_t i = 0; i < 16; i++)
+    {
+        if(controlRegisters[CursorPattern] & mask)
+        {
+            alpha[i]      = (controlRegisters[CursorPattern] & 0x000008) ? 255 : 128;
+            data[3*i]     = (controlRegisters[CursorPattern] & 0x000004) ? 255 : 0;
+            data[3*i + 1] = (controlRegisters[CursorPattern] & 0x000002) ? 255 : 0;
+            data[3*i + 2] = (controlRegisters[CursorPattern] & 0x000001) ? 255 : 0;
+        }
+        else
+            alpha[i] = 0;
+        mask >>= 1;
+    }
 }
 
 void MCD212::DecodeBitmap(wxImage& plane, uint8_t* data, bool cm)
@@ -199,49 +243,4 @@ uint32_t MCD212::DecodeCLUT(uint8_t pixel)
 {
     const uint8_t bank = controlRegisters[CLUTBank] << 6;
     return CLUT[bank + pixel];
-}
-
-void MCD212::DrawBackground()
-{
-    uint8_t* data  = backgroundPlane.GetData() + 3*lineNumber;
-    uint8_t* alpha = backgroundPlane.GetAlpha() + lineNumber;
-    uint8_t A = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-    uint8_t R = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-    uint8_t G = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-    uint8_t B = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
-
-    for(uint16_t i = 0; i < backgroundPlane.GetWidth(); i++)
-    {
-        alpha[i]    = A;
-        data[3*i]   = R;
-        data[3*i+1] = G;
-        data[3*i+2] = B;
-    }
-}
-
-void MCD212::DrawCursor()
-{
-    // check if Y position starts at 0 or 1 (assuming 0 in this code)
-    uint16_t yPosition = (controlRegisters[CursorPosition] & 0x003FF000) >> 12;
-    if(lineNumber < yPosition || lineNumber + 16 > yPosition)
-        return;
-
-    uint8_t yAddress = controlRegisters[CursorPattern] >> 16 & 0x0F;
-    uint8_t* data = cursorPlane.GetData() + 3*yAddress*16;
-    uint8_t* alpha = cursorPlane.GetAlpha() + yAddress*16;
-
-    uint16_t mask = 1 << 15;
-    for(uint8_t i = 0; i < 16; i++)
-    {
-        if(controlRegisters[CursorPattern] & mask)
-        {
-            alpha[i]      = (controlRegisters[CursorPattern] & 0x000008) ? 255 : 128;
-            data[3*i]     = (controlRegisters[CursorPattern] & 0x000004) ? 255 : 0;
-            data[3*i + 1] = (controlRegisters[CursorPattern] & 0x000002) ? 255 : 0;
-            data[3*i + 2] = (controlRegisters[CursorPattern] & 0x000001) ? 255 : 0;
-        }
-        else
-            alpha[i] = 0;
-        mask >>= 1;
-    }
 }

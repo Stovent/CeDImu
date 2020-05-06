@@ -66,6 +66,11 @@ class MCD212 : public VDSC
     uint32_t CLUT[256];
     std::ofstream out;
 
+    void DrawLineA();
+    void DrawLineB();
+    void DrawCursor();
+    void DrawBackground();
+
     // Display File Decoders
     void DecodeBitmap(wxImage& plane, uint8_t* data, bool cm);
     void DecodeRunLength(wxImage& plane, uint8_t* data, bool cm);
@@ -75,12 +80,6 @@ class MCD212 : public VDSC
     uint32_t DecodeRGB555(uint16_t pixel);
     void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6]);
     uint32_t DecodeCLUT(uint8_t pixel);
-
-
-    void DisplayLineA();
-    void DisplayLineB();
-    void DrawCursor();
-    void DrawBackground();
 
     void ExecuteICA1();
     void ExecuteDCA1();
@@ -174,7 +173,7 @@ public:
 
     virtual void OnFrameCompleted() override;
 
-    virtual void DisplayLine() override;
+    virtual void DrawLine() override;
 
     virtual std::map<std::string, VDSCRegister> GetInternalRegisters() override;
 };

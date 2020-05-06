@@ -42,7 +42,7 @@ void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int po
     memcpy(&memory[position], s, size);
 }
 
-void SCC66470::DisplayLine()
+void SCC66470::DrawLine()
 {
 
 }

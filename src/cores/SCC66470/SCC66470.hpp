@@ -33,7 +33,7 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data) override;
     virtual void SetLong(const uint32_t addr, const uint32_t data) override;
 
-    virtual void DisplayLine() override;
+    virtual void DrawLine() override;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override
     {
         return 700;
