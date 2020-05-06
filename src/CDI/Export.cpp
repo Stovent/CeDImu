@@ -9,7 +9,7 @@
 
 /** \brief Export the audio data in the ROM.
  *
- * \return false if no ROM have been opened or if it couls not create subfolders, true otherwise.
+ * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
 bool CDI::ExportAudio()
 {
@@ -35,7 +35,7 @@ bool CDI::ExportAudio()
 
 /** \brief Exports the files contained in the ROM.
  *
- * \return false if no ROM have been opened or if it couls not create subfolders, true otherwise.
+ * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
 bool CDI::ExportFiles()
 {
@@ -78,7 +78,7 @@ void CDI::ExportFilesInfo()
 
 /** \brief Export the video data in the ROM.
  *
- * \return false if no ROM have been opened or if it couls not create subfolders, true otherwise.
+ * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
 bool CDI::ExportVideo()
 {
