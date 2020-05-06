@@ -63,6 +63,7 @@ class MCD212 : public VDSC
 
     uint32_t* controlRegisters;
     uint16_t* internalRegisters;
+    uint32_t CLUT[256];
     std::ofstream out;
 
     // Display File Decoders

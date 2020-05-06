@@ -184,8 +184,8 @@ void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6])
 
 uint32_t MCD212::DecodeCLUT(uint8_t pixel)
 {
-    uint8_t address = (controlRegisters[CLUTBank] & 0x00000003) << 6;
-    return 0;
+    const uint8_t bank = controlRegisters[CLUTBank] << 6;
+    return CLUT[bank + pixel];
 }
 
 void MCD212::DrawBackground()

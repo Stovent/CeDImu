@@ -131,7 +131,14 @@ void MCD212::ExecuteICA1()
             break;
 
         default:
-            controlRegisters[(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
+            if(ica < 0xC0000000) // CLUT RAM
+            {
+                const uint8_t bank = controlRegisters[CLUTBank] << 6;
+                const uint8_t addr = (uint8_t)(ica >> 24) - 0x80;
+                CLUT[bank + addr] = ica & 0x00FFFFFF;
+            }
+            else
+                controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
         LOG(out << std::hex << (addr + 4*i) << "\tICA1 instruction: 0x" << ica << std::endl)
     }
@@ -184,7 +191,14 @@ void MCD212::ExecuteDCA1()
             break;
 
         default:
-            controlRegisters[(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
+            if(dca < 0xC0000000) // CLUT RAM
+            {
+                const uint8_t bank = controlRegisters[CLUTBank] << 6;
+                const uint8_t addr = (uint8_t)(dca >> 24) - 0x80;
+                CLUT[bank + addr] = dca & 0x00FFFFFF;
+            }
+            else
+                controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
         LOG(out << std::hex << addr << "\tDCA1 instruction: 0x" << dca << std::endl)
         addr += 4;
@@ -238,7 +252,15 @@ void MCD212::ExecuteICA2()
             break;
 
         default:
-            controlRegisters[(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
+            if(ica < 0xC0000000) // CLUT RAM
+            {
+                const uint8_t bank = controlRegisters[CLUTBank] << 6;
+                LOG(if(bank > 1) { out << "WARNING: writing CLUT bank " << (int)bank << " from channel #2 is forbidden!" << std::endl;})
+                const uint8_t addr = (uint8_t)(ica >> 24) - 0x80;
+                CLUT[bank + addr] = ica & 0x00FFFFFF;
+            }
+            else
+                controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
         LOG(out << std::hex << (addr + 4*i) << "\tICA2 instruction: 0x" << ica << std::endl)
     }
@@ -291,7 +313,15 @@ void MCD212::ExecuteDCA2()
             break;
 
         default:
-            controlRegisters[(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
+            if(dca < 0xC0000000) // CLUT RAM
+            {
+                const uint8_t bank = controlRegisters[CLUTBank] << 6;
+                LOG(if(bank > 1) { out << "WARNING: writing CLUT bank " << (int)bank << " from channel #2 is forbidden!" << std::endl;})
+                const uint8_t addr = (uint8_t)(dca >> 24) - 0x80;
+                CLUT[bank + addr] = dca & 0x00FFFFFF;
+            }
+            else
+                controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
         LOG(out << std::hex << addr << "\tDCA2 instruction: 0x" << dca << std::endl)
         addr += 4;
