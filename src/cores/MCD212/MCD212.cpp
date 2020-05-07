@@ -131,8 +131,8 @@ void MCD212::ExecuteICA1()
             if(ica < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                const uint8_t addr = (uint8_t)(ica >> 24) - 0x80;
-                CLUT[bank + addr] = ica & 0x00FFFFFF;
+                const uint8_t index = (uint8_t)(ica >> 24) - 0x80;
+                CLUT[bank + index] = ica & 0x00FFFFFF;
             }
             else
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
@@ -190,8 +190,8 @@ void MCD212::ExecuteDCA1()
             if(dca < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                const uint8_t addr = (uint8_t)(dca >> 24) - 0x80;
-                CLUT[bank + addr] = dca & 0x00FFFFFF;
+                const uint8_t index = (uint8_t)(dca >> 24) - 0x80;
+                CLUT[bank + index] = dca & 0x00FFFFFF;
             }
             else
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
@@ -251,8 +251,8 @@ void MCD212::ExecuteICA2()
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
                 LOG(if(bank > 1) { out << "WARNING: writing CLUT bank " << (int)bank << " from channel #2 is forbidden!" << std::endl;})
-                const uint8_t addr = (uint8_t)(ica >> 24) - 0x80;
-                CLUT[bank + addr] = ica & 0x00FFFFFF;
+                const uint8_t index = (uint8_t)(ica >> 24) - 0x80;
+                CLUT[bank + index] = ica & 0x00FFFFFF;
             }
             else
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
@@ -311,8 +311,8 @@ void MCD212::ExecuteDCA2()
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
                 LOG(if(bank > 1) { out << "WARNING: writing CLUT bank " << (int)bank << " from channel #2 is forbidden!" << std::endl;})
-                const uint8_t addr = (uint8_t)(dca >> 24) - 0x80;
-                CLUT[bank + addr] = dca & 0x00FFFFFF;
+                const uint8_t index = (uint8_t)(dca >> 24) - 0x80;
+                CLUT[bank + index] = dca & 0x00FFFFFF;
             }
             else
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
