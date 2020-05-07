@@ -76,10 +76,10 @@ class MCD212 : public VDSC
     void DecodeRunLength(wxImage& plane, uint8_t* data, bool cm);
     void DecodeMosaic(wxImage& plane, uint8_t* data, bool cm);
 
-    // Real-Time Decoders (returns pixels in ARGB format)
-    uint32_t DecodeRGB555(uint16_t pixel);
+    // Real-Time Decoders (set pixels in RGB format)
+    uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]); // returns the alpha byte
     void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6]);
-    uint32_t DecodeCLUT(uint8_t pixel);
+    void DecodeCLUT(const uint8_t pixel, uint8_t pixels[3]);
 
     void ExecuteICA1();
     void ExecuteDCA1();

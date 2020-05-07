@@ -232,13 +232,12 @@ void MCD212::DecodeMosaic(wxImage& plane, uint8_t* data, bool cm)
 {
 }
 
-uint32_t DecodeRGB555(uint16_t pixel) // to check
+uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3])
 {
-    uint8_t r = (pixel & 0x7C00) >> 7;
-    uint8_t g = (pixel & 0x03E0) >> 2;
-    uint8_t b = (pixel & 0x001F) << 3;
-    uint32_t a = (pixel & 0x8000) ? 0xFF000000 : 0;
-    return a | (r << 16) | (g << 8) | b;
+    pixels[0] = (pixel & 0x7C00) >> 7;
+    pixels[1] = (pixel & 0x03E0) >> 2;
+    pixels[2] = (pixel & 0x001F) << 3;
+    return (pixel & 0x8000) ? 0xFF : 0;
 }
 
 void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6])
@@ -259,8 +258,10 @@ void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6])
 
 }
 
-uint32_t MCD212::DecodeCLUT(uint8_t pixel)
+void MCD212::DecodeCLUT(const uint8_t pixel, uint8_t pixels[3])
 {
-    const uint8_t bank = controlRegisters[CLUTBank] << 6;
-    return CLUT[bank + pixel];
+    const uint8_t addr = (controlRegisters[CLUTBank] << 6) + pixel;
+    pixels[0] = CLUT[addr] >> 16;
+    pixels[1] = CLUT[addr] >> 8;
+    pixels[2] = CLUT[addr];
 }
