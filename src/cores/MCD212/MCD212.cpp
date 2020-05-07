@@ -20,6 +20,7 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
     memset(controlRegisters, 0, 0x80*sizeof(uint32_t));
     memset(internalRegisters, 0, 32*sizeof(uint16_t));
     memset(memory, 0, allocatedMemory);
+    memset(CLUT, 0, 256 * sizeof(uint32_t));
     Reset();
 }
 

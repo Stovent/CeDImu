@@ -258,9 +258,53 @@ void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6])
 
 }
 
-void MCD212::DecodeCLUT(const uint8_t pixel, uint8_t pixels[3])
+void MCD212::DecodeCLUTA(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType)
 {
-    const uint8_t addr = (controlRegisters[CLUTBank] << 6) + pixel;
+    uint8_t addr;
+    if(CLUTType == CLUT8)
+    {
+        addr = pixel;
+    }
+    else if(CLUTType == CLUT7)
+    {
+        addr = (pixel & 0x7F);
+    }
+    else if(CLUTType == CLUT77)
+    {
+        addr = (pixel & 0x7F) + (controlRegisters[ImageCodingMethod] & 0x00400000 ? 128 : 0);
+    }
+    else if(CLUTType == CLUT4)
+    {
+        addr = (pixel >> 4);
+    }
+    else
+    {
+        LOG(out << "WARNING: wrong CLUT type in channel A: " << (int)CLUTType << std::endl)
+        addr = 0;
+    }
+
+    pixels[0] = CLUT[addr] >> 16;
+    pixels[1] = CLUT[addr] >> 8;
+    pixels[2] = CLUT[addr];
+}
+
+void MCD212::DecodeCLUTB(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType)
+{
+    uint8_t addr;
+    if(CLUTType == CLUT7)
+    {
+        addr = (pixel & 0x7F) + 128;
+    }
+    else if(CLUTType == CLUT4)
+    {
+        addr = (pixel >> 4) + 128;
+    }
+    else
+    {
+        LOG(out << "WARNING: wrong CLUT type in channel B: " << (int)CLUTType << std::endl)
+        addr = 0;
+    }
+
     pixels[0] = CLUT[addr] >> 16;
     pixels[1] = CLUT[addr] >> 8;
     pixels[2] = CLUT[addr];

@@ -52,6 +52,14 @@ enum MCD212ControlRegistersMap
     WeightFactorForPlaneB,
 };
 
+enum CLUTTypes
+{
+    CLUT8  = 0b0001,
+    CLUT7  = 0b0011,
+    CLUT77 = 0b0100,
+    CLUT4  = 0b1011,
+};
+
 class MCD212 : public VDSC
 {
     wxImage planeA;
@@ -79,7 +87,8 @@ class MCD212 : public VDSC
     // Real-Time Decoders (set pixels in RGB format)
     uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]); // returns the alpha byte
     void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6]);
-    void DecodeCLUT(const uint8_t pixel, uint8_t pixels[3]);
+    void DecodeCLUTA(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType);
+    void DecodeCLUTB(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType);
 
     void ExecuteICA1();
     void ExecuteDCA1();
