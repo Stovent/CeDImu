@@ -92,6 +92,7 @@ void MCD212::ExecuteICA1()
     for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
     {
         ica = GetLong(addr + 4*i);
+        LOG(out << std::hex << (addr + 4*i) << "\tICA1 instruction: 0x" << ica << std::endl)
         switch(ica >> 28)
         {
         case 0: // STOP
@@ -137,7 +138,6 @@ void MCD212::ExecuteICA1()
             else
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
-        LOG(out << std::hex << (addr + 4*i) << "\tICA1 instruction: 0x" << ica << std::endl)
     }
 end_ICA1:
     isCA = false;
@@ -151,6 +151,7 @@ void MCD212::ExecuteDCA1()
     for(uint8_t i = 0; i < 16; i++)
     {
         dca = GetLong(addr);
+        LOG(out << std::hex << addr << "\tDCA1 instruction: 0x" << dca << std::endl)
         switch(dca >> 28)
         {
         case 0: // STOP
@@ -196,7 +197,6 @@ void MCD212::ExecuteDCA1()
             else
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-        LOG(out << std::hex << addr << "\tDCA1 instruction: 0x" << dca << std::endl)
         addr += 4;
     }
 end_DCA1:
@@ -211,6 +211,7 @@ void MCD212::ExecuteICA2()
     for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
     {
         ica = GetLong(addr + 4*i);
+        LOG(out << std::hex << (addr + 4*i) << "\tICA2 instruction: 0x" << ica << std::endl)
         switch(ica >> 28)
         {
         case 0: // STOP
@@ -257,7 +258,6 @@ void MCD212::ExecuteICA2()
             else
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
-        LOG(out << std::hex << (addr + 4*i) << "\tICA2 instruction: 0x" << ica << std::endl)
     }
 end_ICA2:
     isCA = false;
@@ -271,6 +271,7 @@ void MCD212::ExecuteDCA2()
     for(uint8_t i = 0; i < 16; i++)
     {
         dca = GetLong(addr);
+        LOG(out << std::hex << addr << "\tDCA2 instruction: 0x" << dca << std::endl)
         switch(dca >> 28)
         {
         case 0: // STOP
@@ -317,7 +318,6 @@ void MCD212::ExecuteDCA2()
             else
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-        LOG(out << std::hex << addr << "\tDCA2 instruction: 0x" << dca << std::endl)
         addr += 4;
     }
 end_DCA2:
