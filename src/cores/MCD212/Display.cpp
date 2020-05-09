@@ -85,15 +85,15 @@ void MCD212::DrawLineA()
     {
         if(GetFT12_1() <= 1)
         {
-            DecodeBitmap(planeA, &memory[GetVSR1()], GetCM1());
+            DecodeBitmapLine(planeA, &memory[GetVSR1()], GetCM1());
         }
         else if(GetFT12_1() == 2)
         {
-            DecodeRunLength(planeA, &memory[GetVSR1()], GetCM1());
+            DecodeRunLengthLine(planeA, &memory[GetVSR1()], GetCM1());
         }
         else
         {
-            DecodeMosaic(planeA, &memory[GetVSR1()], GetCM1());
+            DecodeMosaicLine(planeA, &memory[GetVSR1()], GetCM1());
         }
     }
 
@@ -111,15 +111,15 @@ void MCD212::DrawLineB()
     {
         if(GetFT12_2() <= 1)
         {
-            DecodeBitmap(planeB, &memory[GetVSR2()], GetCM2());
+            DecodeBitmapLine(planeB, &memory[GetVSR2()], GetCM2());
         }
         else if(GetFT12_2() == 2)
         {
-            DecodeRunLength(planeB, &memory[GetVSR2()], GetCM2());
+            DecodeRunLengthLine(planeB, &memory[GetVSR2()], GetCM2());
         }
         else
         {
-            DecodeMosaic(planeB, &memory[GetVSR2()], GetCM2());
+            DecodeMosaicLine(planeB, &memory[GetVSR2()], GetCM2());
         }
     }
 
@@ -175,7 +175,7 @@ void MCD212::DrawCursor()
     }
 }
 
-void MCD212::DecodeBitmap(wxImage& plane, uint8_t* data, bool cm)
+void MCD212::DecodeBitmapLine(wxImage& plane, uint8_t* data, bool cm)
 {
     uint8_t* pixels = plane.GetData();
     uint8_t* alpha = plane.GetAlpha();
@@ -193,7 +193,7 @@ void MCD212::DecodeBitmap(wxImage& plane, uint8_t* data, bool cm)
     }
 }
 
-void MCD212::DecodeRunLength(wxImage& plane, uint8_t* data, bool cm)
+void MCD212::DecodeRunLengthLine(wxImage& plane, uint8_t* data, bool cm)
 {
     uint16_t index = 0;
 
@@ -228,7 +228,7 @@ void MCD212::DecodeRunLength(wxImage& plane, uint8_t* data, bool cm)
     }
 }
 
-void MCD212::DecodeMosaic(wxImage& plane, uint8_t* data, bool cm)
+void MCD212::DecodeMosaicLine(wxImage& plane, uint8_t* data, bool cm)
 {
 }
 

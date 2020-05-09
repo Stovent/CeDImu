@@ -84,9 +84,9 @@ class MCD212 : public VDSC
     void DrawBackground();
 
     // Display File Decoders
-    void DecodeBitmap(wxImage& plane, uint8_t* data, bool cm);
-    void DecodeRunLength(wxImage& plane, uint8_t* data, bool cm);
-    void DecodeMosaic(wxImage& plane, uint8_t* data, bool cm);
+    void DecodeBitmapLine(wxImage& plane, uint8_t* data, bool cm);
+    void DecodeRunLengthLine(wxImage& plane, uint8_t* data, bool cm);
+    void DecodeMosaicLine(wxImage& plane, uint8_t* data, bool cm);
 
     // Real-Time Decoders (set pixels in RGB format)
     uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]); // returns the alpha byte
