@@ -52,11 +52,14 @@ enum MCD212ControlRegistersMap
     WeightFactorForPlaneB,
 };
 
-enum CLUTTypes
+enum CodingMethods
 {
+    OFF    = 0b0000,
     CLUT8  = 0b0001,
+    RGB555 = 0b0001,
     CLUT7  = 0b0011,
     CLUT77 = 0b0100,
+    DYUV   = 0b0101,
     CLUT4  = 0b1011,
 };
 
@@ -72,6 +75,7 @@ class MCD212 : public VDSC
     uint32_t* controlRegisters;
     uint16_t* internalRegisters;
     uint32_t CLUT[256];
+    const uint8_t dequantizer[16] = {0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
     std::ofstream out;
 
     void DrawLineA();
@@ -86,7 +90,7 @@ class MCD212 : public VDSC
 
     // Real-Time Decoders (set pixels in RGB format)
     uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]); // returns the alpha byte
-    void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6]);
+    void DecodeDYUV(const uint16_t pixel, uint8_t pixels[6], const uint32_t previous);
     void DecodeCLUTA(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType);
     void DecodeCLUTB(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType);
 

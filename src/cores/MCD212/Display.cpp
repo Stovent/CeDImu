@@ -232,7 +232,7 @@ void MCD212::DecodeMosaic(wxImage& plane, uint8_t* data, bool cm)
 {
 }
 
-uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3])
+uint8_t MCD212::DecodeRGB555(const uint16_t pixel, uint8_t pixels[3])
 {
     pixels[0] = (pixel & 0x7C00) >> 7;
     pixels[1] = (pixel & 0x03E0) >> 2;
@@ -240,22 +240,28 @@ uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3])
     return (pixel & 0x8000) ? 0xFF : 0;
 }
 
-void DecodeDYUV(uint16_t pixel, uint32_t startValue, uint8_t pixels[6])
+void MCD212::DecodeDYUV(const uint16_t pixel, uint8_t pixels[6], const uint32_t previous)
 {
-    uint8_t dequantizer[16] = {0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
-    uint8_t y, u, v, dy1, du1, dv1, dy2, du2, dv2;
+    uint8_t y1, u1, v1, y2, u2, v2, py, pu, pv;
+    u1 = (pixel & 0xF000) >> 12;
+    y1 = (pixel & 0x0F00) >> 8;
+    v1 = (pixel & 0x00F0) >> 4;
+    y2 =  pixel & 0x000F;
+    py = previous >> 16;
+    pu = previous >> 8;
+    pv = previous;
 
-    y = (startValue & 0x00FF0000) >> 16;
-    u = signExtend816((startValue & 0x0000FF00) >> 8);
-    v = signExtend816(startValue & 0x000000FF);
+    y1 = (py + dequantizer[y1]) % 256;
+    u2 = u1 = (pu + dequantizer[u1]) % 256; // u2 should be interpolated with the next u1
+    v2 = v1 = (pv + dequantizer[v1]) % 256; // v2 should be interpolated with the next v1
+    y2 = (y1 + dequantizer[y1]) % 256;
 
-    du1 = (pixel & 0xF000) >> 12;
-    dy1 = (pixel & 0x0F00) >> 8;
-    dv1 = (pixel & 0x00F0) >> 4;
-    dy2 = (pixel & 0x000F);
-    // interpolate du2 and dv2
-
-
+    pixels[0] = y1 + (v1 - 128) * 1.371; // R1
+    pixels[2] = y1 + (u1 - 128) * 1.733; // B1
+    pixels[1] = (y1 - 0.299 * pixels[0] - 0.114 * pixels[2]) / 0.587; // G1
+    pixels[3] = y2 + (v2 - 128) * 1.371; // R2
+    pixels[5] = y2 + (u2 - 128) * 1.733; // B2
+    pixels[4] = (y2 - 0.299 * pixels[3] - 0.114 * pixels[5]) / 0.587; // G2
 }
 
 void MCD212::DecodeCLUTA(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType)
