@@ -63,6 +63,12 @@ enum CodingMethods
     CLUT4  = 0b1011,
 };
 
+enum class Planes
+{
+    PlaneA,
+    PlaneB,
+};
+
 class MCD212 : public VDSC
 {
     wxImage planeA;
@@ -85,7 +91,7 @@ class MCD212 : public VDSC
 
     // Display File Decoders
     void DecodeBitmapLine(wxImage& plane, uint8_t* data, bool cm);
-    void DecodeRunLengthLine(wxImage& plane, uint8_t* data, bool cm);
+    void DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, bool cm);
     void DecodeMosaicLine(wxImage& plane, uint8_t* data, bool cm);
 
     // Real-Time Decoders (set pixels in RGB format)

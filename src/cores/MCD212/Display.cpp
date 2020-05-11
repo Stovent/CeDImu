@@ -89,7 +89,7 @@ void MCD212::DrawLineA()
         }
         else if(GetFT12_1() == 2)
         {
-            DecodeRunLengthLine(planeA, &memory[GetVSR1()], GetCM1());
+            DecodeRunLengthLine(planeA, Planes::PlaneA, &memory[GetVSR1()], GetCM1());
         }
         else
         {
@@ -115,7 +115,7 @@ void MCD212::DrawLineB()
         }
         else if(GetFT12_2() == 2)
         {
-            DecodeRunLengthLine(planeB, &memory[GetVSR2()], GetCM2());
+            DecodeRunLengthLine(planeB, Planes::PlaneB, &memory[GetVSR2()], GetCM2());
         }
         else
         {
@@ -193,37 +193,44 @@ void MCD212::DecodeBitmapLine(wxImage& plane, uint8_t* data, bool cm)
     }
 }
 
-void MCD212::DecodeRunLengthLine(wxImage& plane, uint8_t* data, bool cm)
+void MCD212::DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, bool cm)
 {
     uint16_t index = 0;
+    uint8_t* pixels = plane.GetData() + lineNumber * plane.GetWidth() * 3;
+    void (MCD212::*DecodeCLUT)(const uint8_t, uint8_t[3], const uint8_t) = (channel == Planes::PlaneA) ? &MCD212::DecodeCLUTA : &MCD212::DecodeCLUTB;
 
     for(int x = 0; x < plane.GetWidth();)
     {
         uint8_t format = data[index++];
-        if(format & 0x80) // multiple pixels
+        if(cm) // RL3
         {
-            uint8_t num = data[index];
-            if(cm) // 4 bits / pixel
+            uint8_t color1 =  format & 0x70;
+            uint8_t color2 = (format & 0x07) << 4;
+            uint16_t count = 1;
+            if(format & 0x80) // run of pixels pairs
+                count = data[index++];
+
+            if(count == 0)
+                count = plane.GetWidth() - x;
+
+            for(int i = 0; i < count; i++)
             {
-                uint8_t color1 = (format & 0x70) >> 4;
-                uint8_t color2 = (format & 0x07);
-            }
-            else // 8 bits / pixels
-            {
-                uint8_t color = format & 0x7F;
+                (this->*DecodeCLUT)(color1, &pixels[x++ * 3], CLUT4);
+                (this->*DecodeCLUT)(color2, &pixels[x++ * 3], CLUT4);
             }
         }
-        else // single pixel
+        else // RL7
         {
-            if(cm) // 4 bits / pixel
-            {
-                uint8_t color1 = (format & 0x70) >> 4;
-                uint8_t color2 = (format & 0x07);
-            }
-            else // 8 bits / pixels
-            {
-                uint8_t color = format & 0x7F;
-            }
+            uint8_t color =  format & 0x7F;
+            uint16_t count = 1;
+            if(format & 0x80) // run of pixels pairs
+                count = data[index++];
+
+            if(count == 0)
+                count = plane.GetWidth() - x;
+
+            for(int i = 0; i < count; i++)
+                (this->*DecodeCLUT)(color, &pixels[x++ * 3], CLUT7);
         }
     }
 }
