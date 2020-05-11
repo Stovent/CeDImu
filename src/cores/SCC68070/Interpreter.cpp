@@ -51,5 +51,7 @@ void SCC68070::Interpreter(const bool loop)
             start += std::chrono::duration<long double, std::nano>(executionTime * cycleDelay);
             std::this_thread::sleep_until(start);
         }
+//        else // Uncomment to remove delay when enabling limitFPS.
+//            start = std::chrono::steady_clock::now();
     } while(run);
 }
