@@ -292,7 +292,7 @@ void MCD212::DecodeCLUTA(const uint8_t pixel, uint8_t pixels[3], const uint8_t C
     }
     else
     {
-        LOG(out << "WARNING: wrong CLUT type in channel A: " << (int)CLUTType << std::endl)
+        LOG(out_display << "WARNING: wrong CLUT type in channel A: " << (int)CLUTType << std::endl)
         addr = 0;
     }
 
@@ -314,7 +314,7 @@ void MCD212::DecodeCLUTB(const uint8_t pixel, uint8_t pixels[3], const uint8_t C
     }
     else
     {
-        LOG(out << "WARNING: wrong CLUT type in channel B: " << (int)CLUTType << std::endl)
+        LOG(out_display << "WARNING: wrong CLUT type in channel B: " << (int)CLUTType << std::endl)
         addr = 0;
     }
 
