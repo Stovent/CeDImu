@@ -32,17 +32,21 @@ Find the executable in the bin folder
 
 ## TODO
 - [ ] Fix potential bugs in SCC68070 emulation
-- [ ] MCD212 and SCC66470 emulation
+- [ ] MCD212
+- [ ] SCC66470
 - [x] Export files
 - [x] Export audio
 - [ ] Export video
 - [ ] Sound emulation
-- [ ] Basic TAS Tools (RAM Watch, save states, movie recording, avi recording)
-
-Release 1.0 when this TODO list will be implemented.
+- [ ] Tools
+  - [ ] RAM Search
+  - [ ] Memory Viewer
+  - [ ] CPU Viewer
+  - [ ] VDSC Viewer
+  - [ ] Savestates
 
 ### TODO later
 * MCD251 (MPEG Full Motion Video Decoder (FMV))
 
 ## libCDI
-If I get everything listed upper (except TAS Tools) working, stable and fully functional, the goal is to create libCDI, a complete library (static and/or dynamic) to allow any program to implement CDI application (other emulators like Bizhawk, MAME, etc)
+If I get everything listed upper working, stable and fully functional, the goal is to create libCDI, a complete library (static and/or dynamic) to allow any program to implement CDI application (other emulators like Bizhawk, MAME, etc)
