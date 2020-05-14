@@ -2,79 +2,30 @@
 
 #include <iomanip>
 
-uint8_t MCD212::GetByteNoDebug(const uint32_t addr)
+uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
 {
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr <= 0x4FFFDF)
     {
-        return internalRegisters[addr-0x4FFFE0] & 0x00FF;
-    }
-    else if(addr <= 0x4FFFDF)
-    {
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get byte at 0x" << std::setw(6) << std::setfill('0') << addr << " : (0x" << std::setw(8) << (int)memory[addr] << ") " << std::dec << (int8_t)memory[addr] << std::endl; })
         return memory[addr];
     }
-    else
-    {
-        return 0;
-    }
-}
 
-uint16_t MCD212::GetWordNoDebug(const uint32_t addr)
-{
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr <= 0x4FFFFF)
     {
-        return internalRegisters[addr-0x4FFFE0];
-    }
-    else if(addr <= 0x4FFFDF)
-    {
-        return memory[addr] << 8 | memory[addr + 1];
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint32_t MCD212::GetLongNoDebug(const uint32_t addr)
-{
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
-    {
-        return internalRegisters[addr-0x4FFFE0] << 16 | internalRegisters[addr-0x4FFFDF];
-    }
-    else if(addr <= 0x4FFFDF)
-    {
-        return memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3];
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint8_t MCD212::GetByte(const uint32_t addr)
-{
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
-    {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << (internalRegisters[addr-0x4FFFE0] & 0x00FF) << std::endl)
-        const uint8_t ret = internalRegisters[addr-0x4FFFE0] & 0x00FF;
-        if(addr == 0x4FFFE1)
+        const uint8_t data = internalRegisters[addr-0x4FFFE0] & 0x00FF;
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << std::endl; })
+        if(addr == 0x4FFFE1 && flags & Trigger)
         {
             internalRegisters[CSR2R] &= 0x00FE; // clear BE bit on status read
         }
-        return ret;
+        return data;
     }
-    else if(addr <= 0x4FFFDF)
-    {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get byte at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << (int)memory[addr] << ") " << std::dec << (int)memory[addr] << std::endl)
-        return memory[addr];
-    }
-    else
-    {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get byte out of range: 0x" << addr)
-        return 0;
-    }
+
+    LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get byte out of range: 0x" << addr)
+    return 0;
 }
 
-uint16_t MCD212::GetWord(const uint32_t addr)
+uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 {
     if(memorySwapCount < 4)
     {
@@ -82,25 +33,24 @@ uint16_t MCD212::GetWord(const uint32_t addr)
         return memory[addr + 0x400000] << 8 | memory[addr + 0x400001];
     }
 
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
-    {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << internalRegisters[addr-0x4FFFE0] << " WARNING: unexpected word size" << std::endl)
-        return internalRegisters[addr-0x4FFFE0];
-    }
-    else if(addr < 0x4FFFDF)
+    if(addr < 0x4FFFDF)
     {
         const uint16_t data = memory[addr] << 8 | memory[addr + 1];
-        LOG(if(addr != app->cpu->currentPC) out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get word at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int)data << std::endl)
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get word at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int16_t)data << std::endl; })
         return data;
     }
-    else
+
+    if(addr < 0x4FFFFF)
     {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get word out of range: 0x" << addr)
-        return 0;
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << internalRegisters[addr-0x4FFFE0] << " WARNING: unexpected word size" << std::endl; })
+        return internalRegisters[addr-0x4FFFE0];
     }
+
+    LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get word out of range: 0x" << addr)
+    return 0;
 }
 
-uint32_t MCD212::GetLong(const uint32_t addr)
+uint32_t MCD212::GetLong(const uint32_t addr, const uint8_t flags)
 {
     if(memorySwapCount < 4)
     {
@@ -108,35 +58,34 @@ uint32_t MCD212::GetLong(const uint32_t addr)
         return memory[addr + 0x400000] << 24 | memory[addr + 0x400001] << 16 | memory[addr + 0x400002] << 8 | memory[addr + 0x400003];
     }
 
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
-    {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << internalRegisters[addr-0x4FFFE0] << " WARNING: unexpected long size" << std::endl)
-        return internalRegisters[addr-0x4FFFE0] << 16 | internalRegisters[addr-0x4FFFDF];
-    }
-    else if(addr < 0x4FFFDF)
+    if(addr < 0x4FFFDF)
     {
         const uint32_t data = memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3];
-        LOG(if(!isCA) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get long at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int)data << std::endl; })
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get long at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int32_t)data << std::endl; })
         return data;
     }
-    else
+
+    if(addr < 0x4FFFFF)
     {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get long out of range: 0x" << addr)
-        return 0;
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << internalRegisters[addr-0x4FFFE0] << " WARNING: unexpected long size" << std::endl; })
+        return internalRegisters[addr-0x4FFFE0];
     }
+
+    LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Get long out of range: 0x" << addr)
+    return 0;
 }
 
-void MCD212::SetByte(const uint32_t addr, const uint8_t data)
+void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
 {
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr <= 0x4FFFDF)
     {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << " WARNING: unexpected size byte" << std::endl)
-        internalRegisters[addr-0x4FFFE0] = data;
-    }
-    else if(addr <= 0x4FFFDF)
-    {
-        LOG(if(addr >= 0x400000) out_dram << "WARNING: writing to System ROM "; out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set byte at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << (int)data << ") " << std::dec << (int)data << std::endl)
+        LOG(if(addr >= 0x400000) { out_dram << "WARNING: writing to System ROM ";} if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set byte at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << (int)data << ") " << std::dec << (int8_t)data << std::endl; })
         memory[addr] = data;
+    }
+    else if(addr <= 0x4FFFFF)
+    {
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << " WARNING: unexpected size byte" << std::endl; })
+        internalRegisters[addr-0x4FFFE0] = data;
     }
     else
     {
@@ -144,18 +93,18 @@ void MCD212::SetByte(const uint32_t addr, const uint8_t data)
     }
 }
 
-void MCD212::SetWord(const uint32_t addr, const uint16_t data)
+void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr < 0x4FFFDF)
     {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << std::endl)
-        internalRegisters[addr-0x4FFFE0] = data;
-    }
-    else if(addr <= 0x4FFFDF)
-    {
-        LOG(if(addr >= 0x400000) out_dram << "WARNING: writing to System ROM "; out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set word at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int)data << std::endl)
+        LOG(if(addr >= 0x400000) { out_dram << "WARNING: writing to System ROM ";} if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set word at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int16_t)data << std::endl; })
         memory[addr] = data >> 8;
         memory[addr+1] = data;
+    }
+    else if(addr < 0x4FFFFF)
+    {
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << std::endl; })
+        internalRegisters[addr-0x4FFFE0] = data;
     }
     else
     {
@@ -163,20 +112,20 @@ void MCD212::SetWord(const uint32_t addr, const uint16_t data)
     }
 }
 
-void MCD212::SetLong(const uint32_t addr, const uint32_t data)
+void MCD212::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
-    if(addr >= 0x4FFFE0 && addr <= 0x4FFFFF)
+    if(addr < 0x4FFFDF)
     {
-        LOG(out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << " WARNING: unexpected size long" << std::endl)
-        internalRegisters[addr-0x4FFFE0] = data;
-    }
-    else if(addr <= 0x4FFFDF)
-    {
-        LOG(if(addr >= 0x400000) out_dram << "WARNING: writing to System ROM "; out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set long at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int)data << std::endl)
+        LOG(if(addr >= 0x400000) { out_dram << "WARNING: writing to System ROM ";} if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set long at 0x" << std::setfill('0') << std::setw(6) << addr << " : (0x" << std::setw(8) << data << ") " << std::dec << (int32_t)data << std::endl; })
         memory[addr]   = data >> 24;
         memory[addr+1] = (data & 0x00FF0000) >> 16;
         memory[addr+2] = (data & 0x0000FF00) >> 8;
         memory[addr+3] = data;
+    }
+    else if(addr < 0x4FFFFF)
+    {
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << app->cpu->currentPC << " Set register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << " WARNING: unexpected size long" << std::endl; })
+        internalRegisters[addr-0x4FFFE0] = data;
     }
     else
     {

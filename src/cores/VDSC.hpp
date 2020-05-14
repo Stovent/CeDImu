@@ -7,6 +7,7 @@ class VDSC;
 #include <map>
 
 #include "../CeDImu.hpp"
+#include "../common/flags.hpp"
 
 struct VDSCRegister
 {
@@ -37,19 +38,13 @@ public:
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void MemorySwap() = 0;
 
-    // do NOT use those for emulation
-    // they are here for reading memory without logs and without affecting emulation
-    virtual uint8_t  GetByteNoDebug(const uint32_t addr) = 0;
-    virtual uint16_t GetWordNoDebug(const uint32_t addr) = 0;
-    virtual uint32_t GetLongNoDebug(const uint32_t addr) = 0;
+    virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) = 0;
+    virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) = 0;
+    virtual uint32_t GetLong(const uint32_t addr, const uint8_t flags = Log | Trigger) = 0;
 
-    virtual uint8_t  GetByte(const uint32_t addr) = 0;
-    virtual uint16_t GetWord(const uint32_t addr) = 0;
-    virtual uint32_t GetLong(const uint32_t addr) = 0;
-
-    virtual void SetByte(const uint32_t addr, const uint8_t data) = 0;
-    virtual void SetWord(const uint32_t addr, const uint16_t data) = 0;
-    virtual void SetLong(const uint32_t addr, const uint32_t data) = 0;
+    virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) = 0;
+    virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) = 0;
+    virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) = 0;
 
     virtual void DrawLine() = 0;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() { return 0; }

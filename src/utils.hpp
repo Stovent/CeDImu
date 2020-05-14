@@ -56,7 +56,7 @@ inline std::string toBinString(const uint32_t value, uint8_t lengthInBits)
     return tmp;
 }
 
-inline uint32_t binStringToInt(std::string s)
+inline uint32_t binStringToInt(const std::string& s)
 {
     uint32_t ret = 0;
     uint32_t base = 1 << (s.length()-1);
@@ -70,10 +70,11 @@ inline int16_t lim16(const int32_t data)
 {
     if(data > INT16_MAX)
         return INT16_MAX;
-    else if(data < INT16_MIN)
+
+    if(data < INT16_MIN)
         return INT16_MIN;
-    else
-        return data;
+
+    return data;
 }
 
 #ifdef DEBUG
