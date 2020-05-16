@@ -18,7 +18,7 @@ int32_t SCC68070::GetIndexRegister(const uint16_t bew)
 
 uint32_t SCC68070::AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte)
 {
-    const int32_t addr = A[reg];
+    const uint32_t addr = A[reg];
     A[reg] += (reg == 7 && sizeInByte == 1) ? 2 : sizeInByte;
     return addr;
 }
@@ -42,13 +42,15 @@ uint32_t SCC68070::AddressRegisterIndirectWithIndex8(const uint8_t reg)
 
 uint32_t SCC68070::ProgramCounterIndirectWithDisplacement()
 {
-    return PC + signExtend16(GetNextWord());
+    const uint32_t pc = PC;
+    return pc + signExtend16(GetNextWord());
 }
 
 uint32_t SCC68070::ProgramCounterIndirectWithIndex8()
 {
+    const uint32_t pc = PC;
     const uint16_t bew = GetNextWord();
-    return (PC-2) + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
+    return pc + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
 }
 
 uint32_t SCC68070::AbsoluteShortAddressing()
@@ -58,7 +60,9 @@ uint32_t SCC68070::AbsoluteShortAddressing()
 
 uint32_t SCC68070::AbsoluteLongAddressing()
 {
-    return GetNextWord() << 16 | GetNextWord();
+    const uint16_t high = GetNextWord();
+    const uint16_t low = GetNextWord();
+    return high << 16 | low;
 }
 
 std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData)
