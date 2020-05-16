@@ -82,25 +82,24 @@ bool SCC68070::LE()
 
 std::string SCC68070::DisassembleConditionalCode(uint8_t cc)
 {
-    std::string ret;
     switch(cc)
     {
-    case 0: ret = "T"; break;
-    case 1: ret = "F"; break;
-    case 2: ret = "HI"; break;
-    case 3: ret = "LS"; break;
-    case 4: ret = "CC"; break;
-    case 5: ret = "CS"; break;
-    case 6: ret = "NE"; break;
-    case 7: ret = "EQ"; break;
-    case 8: ret = "VC"; break;
-    case 9: ret = "VS"; break;
-    case 10: ret = "PL"; break;
-    case 11: ret = "MI"; break;
-    case 12: ret = "GE"; break;
-    case 13: ret = "LT"; break;
-    case 14: ret = "GT"; break;
-    case 15: ret = "LE"; break;
+    case 0: return "T";
+    case 1: return "F";
+    case 2: return "HI";
+    case 3: return "LS";
+    case 4: return "CC";
+    case 5: return "CS";
+    case 6: return "NE";
+    case 7: return "EQ";
+    case 8: return "VC";
+    case 9: return "VS";
+    case 10: return "PL";
+    case 11: return "MI";
+    case 12: return "GE";
+    case 13: return "LT";
+    case 14: return "GT";
+    case 15: return "LE";
+    default: return "Unknown";
     }
-    return ret;
 }
