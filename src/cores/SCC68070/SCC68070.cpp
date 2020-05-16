@@ -69,9 +69,9 @@ void SCC68070::Run()
     (this->*Execute)(true);
 }
 
-uint16_t SCC68070::GetNextWord()
+uint16_t SCC68070::GetNextWord(const uint8_t flags)
 {
-    uint16_t opcode = vdsc->GetWord(PC);
+    uint16_t opcode = vdsc->GetWord(PC, flags);
     PC += 2;
     return opcode;
 }

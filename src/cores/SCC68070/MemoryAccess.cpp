@@ -1,6 +1,6 @@
 #include "SCC68070.hpp"
 
-uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime)
+uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
 {
     if(mode == 0)
     {
@@ -65,10 +65,10 @@ uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcT
             return GetNextWord() & 0x00FF;
         }
     }
-    return GetByte(lastAddress);
+    return GetByte(lastAddress, flags);
 }
 
-uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime)
+uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
 {
     if(mode == 0)
     {
@@ -133,10 +133,10 @@ uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calc
             return GetNextWord();
         }
     }
-    return GetWord(lastAddress);
+    return GetWord(lastAddress, flags);
 }
 
-uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime)
+uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
 {
     if(mode == 0)
     {
@@ -201,10 +201,10 @@ uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calc
             return GetNextWord() << 16 | GetNextWord();
         }
     }
-    return GetLong(lastAddress);
+    return GetLong(lastAddress, flags);
 }
 
-void SCC68070::SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t data)
+void SCC68070::SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t data, const uint8_t flags)
 {
     if(mode == 0)
     {
@@ -261,10 +261,10 @@ void SCC68070::SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
             calcTime += ITPCIWI8BW;
         }
     }
-    SetByte(lastAddress, data);
+    SetByte(lastAddress, data, flags);
 }
 
-void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint16_t data)
+void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint16_t data, const uint8_t flags)
 {
     if(mode == 0)
     {
@@ -327,10 +327,10 @@ void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
             calcTime += ITPCIWI8BW;
         }
     }
-    SetWord(lastAddress, data);
+    SetWord(lastAddress, data, flags);
 }
 
-void SCC68070::SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint32_t data)
+void SCC68070::SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint32_t data, const uint8_t flags)
 {
     if(mode == 0)
     {
@@ -392,15 +392,15 @@ void SCC68070::SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
             calcTime += ITPCIWI8L;
         }
     }
-    SetLong(lastAddress, data);
+    SetLong(lastAddress, data, flags);
 }
 
-uint8_t SCC68070::GetByte(const uint32_t addr)
+uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        LOG(out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl)
-        return vdsc->GetByte(addr);
+        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl; })
+        return vdsc->GetByte(addr, flags);
     }
     else if(addr >= SCC68070Peripherals::Base && addr <= SCC68070Peripherals::Last)
     {
@@ -410,8 +410,8 @@ uint8_t SCC68070::GetByte(const uint32_t addr)
         }
         else
         {
-            LOG(out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl)
-            return vdsc->GetByte(addr);
+            LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl; })
+            return vdsc->GetByte(addr, flags);
         }
     }
     else
@@ -421,12 +421,12 @@ uint8_t SCC68070::GetByte(const uint32_t addr)
     }
 }
 
-uint16_t SCC68070::GetWord(const uint32_t addr)
+uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        LOG(out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl)
-        return vdsc->GetWord(addr);
+        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl; })
+        return vdsc->GetWord(addr, flags);
     }
     else
     {
@@ -435,12 +435,12 @@ uint16_t SCC68070::GetWord(const uint32_t addr)
     }
 }
 
-uint32_t SCC68070::GetLong(const uint32_t addr)
+uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        LOG(out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl)
-        return vdsc->GetLong(addr);
+        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl; })
+        return vdsc->GetLong(addr, flags);
     }
     else
     {
@@ -449,10 +449,10 @@ uint32_t SCC68070::GetLong(const uint32_t addr)
     }
 }
 
-void SCC68070::SetByte(const uint32_t addr, const uint8_t data)
+void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc->SetByte(addr, data);
+        vdsc->SetByte(addr, data, flags);
     else if(addr >= SCC68070Peripherals::Base && addr <= SCC68070Peripherals::Last)
     {
         if(GetS())
@@ -461,34 +461,34 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data)
         }
         else
         {
-            vdsc->SetByte(addr, data);
+            vdsc->SetByte(addr, data, flags);
         }
     }
     else
     {
         LOG(out << "OUT OF RANGE:")
     }
-    LOG(out << std::hex << currentPC << "\tSet byte: 0x" << addr << " value: " << std::to_string(data) << std::endl)
+    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet byte: 0x" << addr << " value: " << std::to_string(data) << std::endl; })
 }
 
-void SCC68070::SetWord(const uint32_t addr, const uint16_t data)
+void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc->SetWord(addr, data);
+        vdsc->SetWord(addr, data, flags);
     else
     {
         LOG(out << "OUT OF RANGE:")
     }
-    LOG(out << std::hex << currentPC << "\tSet word: 0x" << addr << " value: " << std::to_string(data) << std::endl)
+    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet word: 0x" << addr << " value: " << std::to_string(data) << std::endl; })
 }
 
-void SCC68070::SetLong(const uint32_t addr, const uint32_t data)
+void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc->SetLong(addr, data);
+        vdsc->SetLong(addr, data, flags);
     else
     {
         LOG(out << "OUT OF RANGE:")
     }
-    LOG(out << std::hex << currentPC << "\tSet Long: 0x" << addr << " value: " << std::to_string(data) << std::endl)
+    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet Long: 0x" << addr << " value: " << std::to_string(data) << std::endl; })
 }

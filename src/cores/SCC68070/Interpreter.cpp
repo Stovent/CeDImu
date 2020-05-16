@@ -21,7 +21,7 @@ void SCC68070::Interpreter(const bool loop)
         }
 
         currentPC = PC;
-        currentOpcode = GetNextWord();
+        currentOpcode = GetNextWord(Trigger);
 
         const uint16_t executionTime = (this->*ILUT[currentOpcode])();
         cycleCount += executionTime;
