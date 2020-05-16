@@ -67,7 +67,7 @@ bool SCC68070::GE()
 
 bool SCC68070::LT()
 {
-    return (GetN() && !GetV()) || (GetN() && GetV());
+    return (GetN() && !GetV()) || (!GetN() && GetV());
 }
 
 bool SCC68070::GT()
