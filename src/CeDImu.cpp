@@ -47,7 +47,10 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
     delete cpu;
 
     if(biosSize == 523264)
+    {
         vdsc = new SCC66470(this);
+        wxMessageBox("WARNING: this BIOS is not implemented yet, it may not work correctly. Please use another one");
+    }
     else
         vdsc = new MCD212(this);
 
