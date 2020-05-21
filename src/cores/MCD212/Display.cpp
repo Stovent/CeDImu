@@ -85,7 +85,7 @@ void MCD212::DrawLineA()
     {
         if(GetFT12_1() <= 1)
         {
-            DecodeBitmapLine(planeA, &memory[GetVSR1()], GetCM1());
+            DecodeBitmapLineA();
         }
         else if(GetFT12_1() == 2)
         {
@@ -111,7 +111,7 @@ void MCD212::DrawLineB()
     {
         if(GetFT12_2() <= 1)
         {
-            DecodeBitmapLine(planeB, &memory[GetVSR2()], GetCM2());
+            DecodeBitmapLineB();
         }
         else if(GetFT12_2() == 2)
         {
@@ -175,21 +175,70 @@ void MCD212::DrawCursor()
     }
 }
 
-void MCD212::DecodeBitmapLine(wxImage& plane, uint8_t* data, bool cm)
+void MCD212::DecodeBitmapLineA()
 {
-    uint8_t* pixels = plane.GetData();
-    uint8_t* alpha = plane.GetAlpha();
-    uint32_t index = 0;
-    uint32_t curPixel = 0;
+    const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
+    uint8_t* data = &memory[GetVSR1()];
+    uint8_t* pixels = planeA.GetData() + lineNumber * planeA.GetWidth() * 3;
+    uint8_t index = 0;
+    uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
 
-    if(cm) // 4 bits per pixel
+    for(uint16_t x = 0; x < planeA.GetWidth();)
     {
-        for(uint16_t i = 0; i < plane.GetWidth(); i++)
+        if(codingMethod == DYUV)
         {
+            DecodeDYUV(data[index++], &pixels[x * 3], previous);
+            previous = 0;
+            previous |= pixels[x * 3] << 16;
+            previous |= pixels[x * 3 + 1] << 8;
+            previous |= pixels[x++ * 3 + 2];
+        }
+        else if(codingMethod == CLUT4)
+        {
+            DecodeCLUTA(data[index] & 0xF0, &pixels[x++ * 3], codingMethod);
+            DecodeCLUTA(data[index++] << 4, &pixels[x++ * 3], codingMethod);
+        }
+        else // CLUT
+        {
+            DecodeCLUTA(data[index++], &pixels[x++ * 3], codingMethod);
         }
     }
-    else // 8 bits per pixel
+}
+
+void MCD212::DecodeBitmapLineB()
+{
+    const uint8_t codingMethod = (controlRegisters[ImageCodingMethod] & 0x000F00) >> 8;
+    uint8_t* dataA = &memory[GetVSR1()];
+    uint8_t* dataB = &memory[GetVSR2()];
+    uint8_t* pixels = planeB.GetData() + lineNumber * planeB.GetWidth() * 3;
+    uint8_t index = 0;
+    uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
+
+    for(uint16_t x = 0; x < planeA.GetWidth();)
     {
+        if(codingMethod == DYUV)
+        {
+            DecodeDYUV(dataB[index++], &pixels[x * 3], previous);
+            previous = 0;
+            previous |= pixels[x * 3] << 16;
+            previous |= pixels[x * 3 + 1] << 8;
+            previous |= pixels[x++ * 3 + 2];
+        }
+        else if(codingMethod == RGB555)
+        {
+            uint16_t color  = dataA[index] << 8;
+            color |= dataB[index++];
+            DecodeRGB555(color, &pixels[x++ * 3]);
+        }
+        else if(codingMethod == CLUT4)
+        {
+            DecodeCLUTB(dataB[index] & 0xF0, &pixels[x++ * 3], codingMethod);
+            DecodeCLUTB(dataB[index++] << 4, &pixels[x++ * 3], codingMethod);
+        }
+        else // CLUT
+        {
+            DecodeCLUTB(dataB[index++], &pixels[x++ * 3], codingMethod);
+        }
     }
 }
 

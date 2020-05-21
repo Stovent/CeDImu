@@ -91,7 +91,8 @@ class MCD212 : public VDSC
     void DrawBackground();
 
     // Display File Decoders
-    void DecodeBitmapLine(wxImage& plane, uint8_t* data, bool cm);
+    void DecodeBitmapLineA();
+    void DecodeBitmapLineB();
     void DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, bool cm);
     void DecodeMosaicLine(wxImage& plane, uint8_t* data, bool cm);
 
