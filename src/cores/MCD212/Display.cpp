@@ -302,7 +302,8 @@ void MCD212::DecodeMosaicLineA()
             previous = 0;
             previous |= pixels[x * 3] << 16;
             previous |= pixels[x * 3 + 1] << 8;
-            previous |= pixels[x++ * 3 + 2];
+            previous |= pixels[x * 3 + 2];
+            x += GetMF12_1();
         }
         else if(codingMethod == CLUT4)
         {
@@ -310,14 +311,14 @@ void MCD212::DecodeMosaicLineA()
             DecodeCLUTA(data[index++] << 4, &pixels[(x+1) * 3], codingMethod);
             for(uint16_t i = 1; i < GetMF12_1(); i++)
                 memcpy(&pixels[(i * 2 + x) * 3], &pixels[x * 3], 6);
-            x += 2;
+            x += GetMF12_1() * 2;
         }
         else // CLUT
         {
             DecodeCLUTA(data[index++], &pixels[x * 3], codingMethod);
             for(uint16_t i = 1; i < GetMF12_1(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
-            x++;
+            x += GetMF12_1();
         }
     }
 }
@@ -341,7 +342,8 @@ void MCD212::DecodeMosaicLineB()
             previous = 0;
             previous |= pixels[x * 3] << 16;
             previous |= pixels[x * 3 + 1] << 8;
-            previous |= pixels[x++ * 3 + 2];
+            previous |= pixels[x * 3 + 2];
+            x += GetMF12_2();
         }
         else if(codingMethod == RGB555)
         {
@@ -350,7 +352,7 @@ void MCD212::DecodeMosaicLineB()
             DecodeRGB555(color, &pixels[x++ * 3]);
             for(uint16_t i = 1; i < GetMF12_2(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
-            x++;
+            x += GetMF12_2();
         }
         else if(codingMethod == CLUT4)
         {
@@ -358,14 +360,14 @@ void MCD212::DecodeMosaicLineB()
             DecodeCLUTB(dataB[index++] << 4, &pixels[(x+1) * 3], codingMethod);
             for(uint16_t i = 1; i < GetMF12_2(); i++)
                 memcpy(&pixels[(i * 2 + x) * 3], &pixels[x * 3], 6);
-            x += 2;
+            x += GetMF12_2() * 2;
         }
         else // CLUT
         {
             DecodeCLUTB(dataB[index++], &pixels[x * 3], codingMethod);
             for(uint16_t i = 1; i < GetMF12_2(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
-            x++;
+            x += GetMF12_2();
         }
     }
 }
