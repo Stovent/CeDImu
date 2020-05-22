@@ -93,7 +93,7 @@ void MCD212::DrawLineA()
         }
         else
         {
-            DecodeMosaicLine(planeA, &memory[GetVSR1()], GetCM1());
+            DecodeMosaicLineA();
         }
     }
 
@@ -119,7 +119,7 @@ void MCD212::DrawLineB()
         }
         else
         {
-            DecodeMosaicLine(planeB, &memory[GetVSR2()], GetCM2());
+            DecodeMosaicLineB();
         }
     }
 
@@ -284,8 +284,90 @@ void MCD212::DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, 
     }
 }
 
-void MCD212::DecodeMosaicLine(wxImage& plane, uint8_t* data, bool cm)
+void MCD212::DecodeMosaicLineA()
 {
+    const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
+    uint8_t* data = &memory[GetVSR1()];
+    uint8_t* pixels = planeA.GetData() + lineNumber * planeA.GetWidth() * 3;
+    uint8_t index = 0;
+    uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
+
+    for(uint16_t x = 0; x < planeA.GetWidth();)
+    {
+        if(codingMethod == DYUV)
+        {
+            DecodeDYUV(data[index++], &pixels[x * 3], previous);
+            for(uint16_t i = 1; i < GetMF12_1(); i++)
+                memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
+            previous = 0;
+            previous |= pixels[x * 3] << 16;
+            previous |= pixels[x * 3 + 1] << 8;
+            previous |= pixels[x++ * 3 + 2];
+        }
+        else if(codingMethod == CLUT4)
+        {
+            DecodeCLUTA(data[index] & 0xF0, &pixels[x * 3], codingMethod);
+            DecodeCLUTA(data[index++] << 4, &pixels[(x+1) * 3], codingMethod);
+            for(uint16_t i = 1; i < GetMF12_1(); i++)
+                memcpy(&pixels[(i * 2 + x) * 3], &pixels[x * 3], 6);
+            x += 2;
+        }
+        else // CLUT
+        {
+            DecodeCLUTA(data[index++], &pixels[x * 3], codingMethod);
+            for(uint16_t i = 1; i < GetMF12_1(); i++)
+                memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
+            x++;
+        }
+    }
+}
+
+void MCD212::DecodeMosaicLineB()
+{
+    const uint8_t codingMethod = (controlRegisters[ImageCodingMethod] & 0x000F00) >> 8;
+    uint8_t* dataA = &memory[GetVSR1()];
+    uint8_t* dataB = &memory[GetVSR2()];
+    uint8_t* pixels = planeB.GetData() + lineNumber * planeB.GetWidth() * 3;
+    uint8_t index = 0;
+    uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
+
+    for(uint16_t x = 0; x < planeA.GetWidth();)
+    {
+        if(codingMethod == DYUV)
+        {
+            DecodeDYUV(dataB[index++], &pixels[x * 3], previous);
+            for(uint16_t i = 1; i < GetMF12_2(); i++)
+                memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
+            previous = 0;
+            previous |= pixels[x * 3] << 16;
+            previous |= pixels[x * 3 + 1] << 8;
+            previous |= pixels[x++ * 3 + 2];
+        }
+        else if(codingMethod == RGB555)
+        {
+            uint16_t color  = dataA[index] << 8;
+            color |= dataB[index];
+            DecodeRGB555(color, &pixels[x++ * 3]);
+            for(uint16_t i = 1; i < GetMF12_2(); i++)
+                memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
+            x++;
+        }
+        else if(codingMethod == CLUT4)
+        {
+            DecodeCLUTB(dataB[index] & 0xF0, &pixels[x * 3], codingMethod);
+            DecodeCLUTB(dataB[index++] << 4, &pixels[(x+1) * 3], codingMethod);
+            for(uint16_t i = 1; i < GetMF12_2(); i++)
+                memcpy(&pixels[(i * 2 + x) * 3], &pixels[x * 3], 6);
+            x += 2;
+        }
+        else // CLUT
+        {
+            DecodeCLUTB(dataB[index++], &pixels[x * 3], codingMethod);
+            for(uint16_t i = 1; i < GetMF12_2(); i++)
+                memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
+            x++;
+        }
+    }
 }
 
 uint8_t MCD212::DecodeRGB555(const uint16_t pixel, uint8_t pixels[3])

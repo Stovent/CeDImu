@@ -94,7 +94,8 @@ class MCD212 : public VDSC
     void DecodeBitmapLineA();
     void DecodeBitmapLineB();
     void DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, bool cm);
-    void DecodeMosaicLine(wxImage& plane, uint8_t* data, bool cm);
+    void DecodeMosaicLineA();
+    void DecodeMosaicLineB();
 
     // Real-Time Decoders (set pixels in RGB format)
     uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]); // returns the alpha byte
