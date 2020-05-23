@@ -180,7 +180,7 @@ void MCD212::DecodeBitmapLineA()
     const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
     uint8_t* data = &memory[GetVSR1()];
     uint8_t* pixels = planeA.GetData() + lineNumber * planeA.GetWidth() * 3;
-    uint8_t index = 0;
+    uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
 
     for(uint16_t x = 0; x < planeA.GetWidth();)
@@ -211,7 +211,7 @@ void MCD212::DecodeBitmapLineB()
     uint8_t* dataA = &memory[GetVSR1()];
     uint8_t* dataB = &memory[GetVSR2()];
     uint8_t* pixels = planeB.GetData() + lineNumber * planeB.GetWidth() * 3;
-    uint8_t index = 0;
+    uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
 
     for(uint16_t x = 0; x < planeA.GetWidth();)
@@ -289,7 +289,7 @@ void MCD212::DecodeMosaicLineA()
     const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
     uint8_t* data = &memory[GetVSR1()];
     uint8_t* pixels = planeA.GetData() + lineNumber * planeA.GetWidth() * 3;
-    uint8_t index = 0;
+    uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
 
     for(uint16_t x = 0; x < planeA.GetWidth();)
@@ -329,7 +329,7 @@ void MCD212::DecodeMosaicLineB()
     uint8_t* dataA = &memory[GetVSR1()];
     uint8_t* dataB = &memory[GetVSR2()];
     uint8_t* pixels = planeB.GetData() + lineNumber * planeB.GetWidth() * 3;
-    uint8_t index = 0;
+    uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
 
     for(uint16_t x = 0; x < planeA.GetWidth();)
@@ -417,7 +417,7 @@ void MCD212::DecodeCLUTA(const uint8_t pixel, uint8_t pixels[3], const uint8_t C
     }
     else if(CLUTType == CLUT77)
     {
-        addr = (pixel & 0x7F) + (controlRegisters[ImageCodingMethod] & 0x00400000 ? 128 : 0);
+        addr = (pixel & 0x7F) + (controlRegisters[ImageCodingMethod] & 0x400000 ? 128 : 0);
     }
     else if(CLUTType == CLUT4)
     {
