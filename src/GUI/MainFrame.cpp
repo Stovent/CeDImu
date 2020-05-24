@@ -37,6 +37,7 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
     gamePanel = new GamePanel(this, appp);
     disassemblerFrame = nullptr;
     ramSearchFrame = nullptr;
+    vdscViewer = nullptr;
     oldFrameCount = 0;
     oldCycleCount = 0;
 
@@ -74,7 +75,7 @@ void MainFrame::CreateMenuBar()
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
-    tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer");
+    tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer\tCtrl+V");
     tools->Append(IDMainFrameOnDisassembler, "Disassembler\tCtrl+D");
     tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+S");
 
@@ -254,7 +255,10 @@ void MainFrame::OnRebootCore(wxCommandEvent& event)
 
 void MainFrame::OnVDSCViewer(wxCommandEvent& event)
 {
-    wxMessageBox("Unimplemented yet");
+    if(vdscViewer != nullptr || !app->vdsc)
+        return;
+    vdscViewer = new VDSCViewer(this, app->vdsc);
+    vdscViewer->Show();
 }
 
 void MainFrame::OnDisassembler(wxCommandEvent& event)

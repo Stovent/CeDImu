@@ -52,7 +52,32 @@ void SCC66470::OnFrameCompleted()
 
 }
 
-std::map<std::string, VDSCRegister> SCC66470::GetInternalRegisters()
+std::vector<VDSCRegister> SCC66470::GetInternalRegisters()
 {
-    return std::map<std::string, VDSCRegister>();
+    return std::vector<VDSCRegister>();
+}
+
+std::vector<VDSCRegister> SCC66470::GetControlRegisters()
+{
+    return std::vector<VDSCRegister>();
+}
+
+wxImage SCC66470::GetPlaneA()
+{
+    return wxImage();
+}
+
+wxImage SCC66470::GetPlaneB()
+{
+    return wxImage();
+}
+
+wxImage SCC66470::GetBackground()
+{
+    return wxImage();
+}
+
+wxImage SCC66470::GetCursor()
+{
+    return wxImage();
 }

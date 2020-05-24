@@ -76,6 +76,10 @@ void MCD212::DrawLine()
         totalFrameCount++;
         OnFrameCompleted();
         lineNumber = 0;
+        ICA1.clear();
+        DCA1.clear();
+        ICA2.clear();
+        DCA2.clear();
     }
 }
 

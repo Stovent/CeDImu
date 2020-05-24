@@ -4,15 +4,19 @@
 class VDSC;
 
 #include <string>
-#include <map>
+#include <vector>
+
+#include <wx/image.h>
 
 #include "../CeDImu.hpp"
 #include "../common/flags.hpp"
 
 struct VDSCRegister
 {
+    std::string name;
     uint32_t address;
-    uint16_t value;
+    uint32_t value;
+    std::string disassembledValue;
 };
 
 class VDSC
@@ -28,6 +32,10 @@ public:
     uint32_t allocatedMemory;
     uint32_t totalFrameCount;
     std::string biosFilename;
+    std::vector<std::string> ICA1;
+    std::vector<std::string> DCA1;
+    std::vector<std::string> ICA2;
+    std::vector<std::string> DCA2;
 
     VDSC(CeDImu* appp) : lineNumber(0), app(appp), memory(nullptr), biosLoaded(false), stopOnNextCompletedFrame(false), allocatedMemory(0), totalFrameCount(0) {}
     virtual ~VDSC() { delete[] memory; }
@@ -51,7 +59,12 @@ public:
 
     virtual void OnFrameCompleted() = 0;
 
-    virtual std::map<std::string, VDSCRegister> GetInternalRegisters() = 0;
+    virtual std::vector<VDSCRegister> GetInternalRegisters() = 0;
+    virtual std::vector<VDSCRegister> GetControlRegisters() = 0;
+    virtual wxImage GetPlaneA() = 0;
+    virtual wxImage GetPlaneB() = 0;
+    virtual wxImage GetBackground() = 0;
+    virtual wxImage GetCursor() = 0;
 };
 
 #endif // VDSC_HPP

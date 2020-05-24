@@ -11,6 +11,7 @@ class MainFrame;
 #include "GamePanel.hpp"
 #include "DisassemblerFrame.hpp"
 #include "RAMSearchFrame.hpp"
+#include "VDSCViewer.hpp"
 
 enum
 {
@@ -40,6 +41,8 @@ enum
     IDRAMSearchListByte1,
     IDRAMSearchListByte2,
     IDRAMSearchListByte4,
+
+    IDVDSCViewerTimer,
 };
 
 class MainFrame : public wxFrame
@@ -53,6 +56,7 @@ public:
     MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size);
     DisassemblerFrame* disassemblerFrame;
     RAMSearchFrame* ramSearchFrame;
+    VDSCViewer* vdscViewer;
 
     void Pause();
     void RefreshTitle(wxTimerEvent& event);

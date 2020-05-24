@@ -1,5 +1,7 @@
 #include "MCD212.hpp"
 
+#include <cmath>
+
 // internal registers
 uint16_t MCD212::GetCSR1RRegister()
 {
@@ -71,14 +73,24 @@ bool MCD212::GetPA()
     return (internalRegisters[CSR1R] & 0x0020) >> 5;
 }
 
-uint8_t MCD212::GetIT12()
+bool MCD212::GetIT1()
 {
-    return (internalRegisters[CSR2R] & 0x0006) >> 1;
+    return (internalRegisters[CSR2R] & 0x0004) >> 2;
 }
 
-bool MCD212::GetBE()
+bool MCD212::GetIT2()
+{
+    return (internalRegisters[CSR2R] & 0x0002) >> 1;
+}
+
+bool MCD212::GetBE_R()
 {
     return internalRegisters[CSR2R] & 0x0001;
+}
+
+bool MCD212::GetBE_W()
+{
+    return internalRegisters[CSR1W] & 0x0001;
 }
 
 bool MCD212::GetDI1()
@@ -259,20 +271,124 @@ void MCD212::ReloadDisplayParameters2(const bool CM, const uint8_t MF, const uin
     internalRegisters[DDR2] |= FT << 8;
 }
 
-std::map<std::string, VDSCRegister> MCD212::GetInternalRegisters()
+std::vector<VDSCRegister> MCD212::GetInternalRegisters()
 {
-    std::map<std::string, VDSCRegister> registers;
-    registers.emplace("CSR1R", VDSCRegister({CSR1R + 0x4FFFE0, GetCSR1RRegister()}));
-    registers.emplace("CSR2R", VDSCRegister({CSR2R + 0x4FFFE0, GetCSR2RRegister()}));
-    registers.emplace("CSR1W", VDSCRegister({CSR1W + 0x4FFFE0, GetCSR1WRegister()}));
-    registers.emplace("CSR2W", VDSCRegister({CSR2W + 0x4FFFE0, GetCSR2WRegister()}));
-    registers.emplace("DCR1",  VDSCRegister({DCR1  + 0x4FFFE0,  GetDCR1Register()}));
-    registers.emplace("DCR2",  VDSCRegister({DCR2  + 0x4FFFE0,  GetDCR2Register()}));
-    registers.emplace("DDR1",  VDSCRegister({DDR1  + 0x4FFFE0,  GetDDR1Register()}));
-    registers.emplace("DDR2",  VDSCRegister({DDR2  + 0x4FFFE0,  GetDDR2Register()}));
-    registers.emplace("VSR1",  VDSCRegister({VSR1  + 0x4FFFE0,  GetVSR1Register()}));
-    registers.emplace("VSR2",  VDSCRegister({VSR2  + 0x4FFFE0,  GetVSR2Register()}));
-    registers.emplace("DCP1",  VDSCRegister({DCP1  + 0x4FFFE0,  GetDCP1Register()}));
-    registers.emplace("DCP2",  VDSCRegister({DCP2  + 0x4FFFE0,  GetDCP2Register()}));
+    std::vector<VDSCRegister> registers;
+    registers.push_back(VDSCRegister({"CSR1R", CSR1R + 0x4FFFE0, GetCSR1RRegister(), DisassembleCSR1RRegister()}));
+    registers.push_back(VDSCRegister({"CSR2R", CSR2R + 0x4FFFE0, GetCSR2RRegister(), DisassembleCSR2RRegister()}));
+    registers.push_back(VDSCRegister({"CSR1W", CSR1W + 0x4FFFE0, GetCSR1WRegister(), DisassembleCSR1WRegister()}));
+    registers.push_back(VDSCRegister({"CSR2W", CSR2W + 0x4FFFE0, GetCSR2WRegister(), DisassembleCSR2WRegister()}));
+    registers.push_back(VDSCRegister({"DCR1",  DCR1  + 0x4FFFE0,  GetDCR1Register(), DisassembleDCR1Register()}));
+    registers.push_back(VDSCRegister({"DCR2",  DCR2  + 0x4FFFE0,  GetDCR2Register(), DisassembleDCR2Register()}));
+    registers.push_back(VDSCRegister({"DDR1",  DDR1  + 0x4FFFE0,  GetDDR1Register(), DisassembleDDR1Register()}));
+    registers.push_back(VDSCRegister({"DDR2",  DDR2  + 0x4FFFE0,  GetDDR2Register(), DisassembleDDR2Register()}));
+    registers.push_back(VDSCRegister({"VSR1",  VSR1  + 0x4FFFE0,  GetVSR1Register(), DisassembleVSR1Register()}));
+    registers.push_back(VDSCRegister({"VSR2",  VSR2  + 0x4FFFE0,  GetVSR2Register(), DisassembleVSR2Register()}));
+    registers.push_back(VDSCRegister({"DCP1",  DCP1  + 0x4FFFE0,  GetDCP1Register(), DisassembleDCP1Register()}));
+    registers.push_back(VDSCRegister({"DCP2",  DCP2  + 0x4FFFE0,  GetDCP2Register(), DisassembleDCP2Register()}));
     return registers;
+}
+
+std::vector<VDSCRegister> MCD212::GetControlRegisters()
+{
+    std::vector<VDSCRegister> registers;
+    for(uint32_t i = 0; i < 256; i++)
+        registers.push_back(VDSCRegister({"CLUT Color " + std::to_string(i), i, CLUT[i]}));
+    registers.push_back(VDSCRegister({"Image Coding Method",              ImageCodingMethod          + 0x80, controlRegisters[ImageCodingMethod]}));
+    registers.push_back(VDSCRegister({"Transparency Control",             TransparencyControl        + 0x80, controlRegisters[TransparencyControl]}));
+    registers.push_back(VDSCRegister({"Plane Order",                      PlaneOrder                 + 0x80, controlRegisters[PlaneOrder]}));
+    registers.push_back(VDSCRegister({"CLUT Bank",                        CLUTBank                   + 0x80, controlRegisters[CLUTBank]}));
+    registers.push_back(VDSCRegister({"Transparent Color For Plane A",    TransparentColorForPlaneA  + 0x80, controlRegisters[TransparentColorForPlaneA]}));
+    registers.push_back(VDSCRegister({"Transparent Color For Plane B",    TransparentColorForPlaneB  + 0x80, controlRegisters[TransparentColorForPlaneB]}));
+    registers.push_back(VDSCRegister({"Mask Color For Plane A",           MaskColorForPlaneA         + 0x80, controlRegisters[MaskColorForPlaneA]}));
+    registers.push_back(VDSCRegister({"Mask Color For Plane B",           MaskColorForPlaneB         + 0x80, controlRegisters[MaskColorForPlaneB]}));
+    registers.push_back(VDSCRegister({"DYUV Abs Start Value For Plane A", DYUVAbsStartValueForPlaneA + 0x80, controlRegisters[DYUVAbsStartValueForPlaneA]}));
+    registers.push_back(VDSCRegister({"DYUV Abs Start Value For Plane B", DYUVAbsStartValueForPlaneB + 0x80, controlRegisters[DYUVAbsStartValueForPlaneB]}));
+    registers.push_back(VDSCRegister({"Cursor Position",                  CursorPosition             + 0x80, controlRegisters[CursorPosition]}));
+    registers.push_back(VDSCRegister({"Cursor Control",                   CursorControl              + 0x80, controlRegisters[CursorControl]}));
+    registers.push_back(VDSCRegister({"Cursor Pattern",                   CursorPattern              + 0x80, controlRegisters[CursorPattern]}));
+    registers.push_back(VDSCRegister({"Region Control",                   RegionControl              + 0x80, controlRegisters[RegionControl]}));
+    registers.push_back(VDSCRegister({"Backdrop Color",                   BackdropColor              + 0x80, controlRegisters[BackdropColor]}));
+    registers.push_back(VDSCRegister({"Mosaic Pixel Hold For Plane A",    MosaicPixelHoldForPlaneA   + 0x80, controlRegisters[MosaicPixelHoldForPlaneA]}));
+    registers.push_back(VDSCRegister({"Mosaic Pixel Hold For Plane B",    MosaicPixelHoldForPlaneB   + 0x80, controlRegisters[MosaicPixelHoldForPlaneB]}));
+    registers.push_back(VDSCRegister({"Weight Factor For Plane A",        WeightFactorForPlaneA      + 0x80, controlRegisters[WeightFactorForPlaneA]}));
+    registers.push_back(VDSCRegister({"Weight Factor For Plane B",        WeightFactorForPlaneB      + 0x80, controlRegisters[WeightFactorForPlaneB]}));
+    return registers;
+}
+
+std::string MCD212::DisassembleCSR1RRegister()
+{
+    return ("Display Active: " + std::string(GetDA() ? "1; " : "0; ")) + \
+           ("Parity: " + std::string(GetSM() ? (GetPA() ? "odd" : "even") : "none"));
+}
+
+std::string MCD212::DisassembleCSR1WRegister()
+{
+    return std::string(GetDI2() ? "Disable Interrupts 1: yes; " : "Disable Interrupts 1: no; ") + \
+           ("DTACK Delay: " + std::string(GetDD() ? (std::to_string(3 + 2 * GetDD12()) + " >= " + std::to_string(4 + 2 * GetDD12()) + "; ") : "11 >= 12; ")) + \
+           ("Type of DRAM: " + std::string(GetTD() ? "1M x 4; " : "256k x 4/16; ")) + \
+           ("Standard Bit: " + std::string(GetST() ? "1; " : "0; ")) + \
+           ("Bus Error: " + std::string(GetBE_W() ? "enabled;" : "disabled;"));
+}
+
+std::string MCD212::DisassembleDCR1Register()
+{
+    return ("Display Enable: " + std::string(GetDE() ? "yes; " : "no; ")) + \
+           ("Crystal Frequency: " + std::string(GetCF() ? "30, 30.2097 MHz; " : "28 MHz; ")) + \
+           ("Frame Duration: " + std::string(GetFD() ? "60 Hz; " : "50 Hz; ")) + \
+           ("Scan Mode: " + std::string(GetSM() ? "Interlace; " : "Non-interlace; ")) + \
+           ("Bits per pixel plane A: " + std::string(GetCM1() ? "4; " : "8; ")) + \
+           ("ICA1: " + std::string(GetIC1() ? "yes; " : "no; ")) + \
+           ("DCA1: " + std::string(GetIC1() ? (GetDC1() ? "yes;" : "no;") : "no;"));
+}
+
+std::string MCD212::DisassembleVSR1Register()
+{
+    return "0x" + toHex(GetVSR1());
+}
+
+std::string MCD212::DisassembleDDR1Register()
+{
+    return ("Mosaic Factor plane A: " + std::string(GetFT12_1() == 3 ? (std::to_string(2 * pow(1, GetMF12_1())) + "; ") : "none; ")) + \
+           ("File Type plane A: " + std::string(GetFT12_1() < 2 ? "Bitmap;" : (GetFT12_1() == 2 ? "Run-Length;" : "Mosaic;")));
+}
+
+std::string MCD212::DisassembleDCP1Register()
+{
+    return "0x" + toHex(GetDCP1());
+}
+
+std::string MCD212::DisassembleCSR2RRegister()
+{
+    return ("Interrupt 1: " + std::string(GetIT1() ? "yes; " : "no; ")) + \
+           ("Interrupt 2: " + std::string(GetIT2() ? "yes; " : "no; ")) + \
+           ("Bus Error: " + std::string(GetBE_R() ? "yes;" : "no;"));
+}
+
+std::string MCD212::DisassembleCSR2WRegister()
+{
+    return GetDI2() ? "Disable Interrupts 2: yes;" : "Disable Interrupts 2: no;";
+}
+
+std::string MCD212::DisassembleDCR2Register()
+{
+    return ("Bits per pixel plane B: " + std::string(GetCM2() ? "4; " : "8; ")) + \
+           ("ICA2: " + std::string(GetIC2() ? "yes; " : "no; ")) + \
+           ("DCA2: " + std::string(GetIC2() ? (GetDC2() ? "yes;" : "no;") : "no;"));
+}
+
+std::string MCD212::DisassembleVSR2Register()
+{
+    return "0x" + toHex(GetVSR2());
+}
+
+std::string MCD212::DisassembleDDR2Register()
+{
+    return ("Mosaic Factor plane B: " + std::string(GetFT12_2() == 3 ? (std::to_string(2 * pow(1, GetMF12_2())) + "; ") : "none; ")) + \
+           ("File Type plane B: " + std::string(GetFT12_2() < 2 ? "Bitmap;" : (GetFT12_2() == 2 ? "Run-Length;" : "Mosaic;")));
+}
+
+std::string MCD212::DisassembleDCP2Register()
+{
+    return "0x" + toHex(GetDCP2());
 }

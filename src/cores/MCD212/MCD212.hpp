@@ -5,8 +5,6 @@ class MCD212;
 
 #include <fstream>
 
-#include <wx/image.h>
-
 #include "../VDSC.hpp"
 
 enum MCD212Registers
@@ -123,10 +121,26 @@ class MCD212 : public VDSC
     uint16_t GetDDR2Register();
     uint16_t GetDCP2Register();
 
+    std::string DisassembleCSR1RRegister();
+    std::string DisassembleCSR1WRegister();
+    std::string DisassembleDCR1Register();
+    std::string DisassembleVSR1Register();
+    std::string DisassembleDDR1Register();
+    std::string DisassembleDCP1Register();
+
+    std::string DisassembleCSR2RRegister();
+    std::string DisassembleCSR2WRegister();
+    std::string DisassembleDCR2Register();
+    std::string DisassembleVSR2Register();
+    std::string DisassembleDDR2Register();
+    std::string DisassembleDCP2Register();
+
     bool GetDA();
     bool GetPA();
-    uint8_t GetIT12();
-    bool GetBE();
+    bool GetIT1();
+    bool GetIT2();
+    bool GetBE_R();
+    bool GetBE_W();
     bool GetDI1();
     uint8_t GetDD12();
     bool GetTD();
@@ -193,7 +207,12 @@ public:
 
     virtual void DrawLine() override;
 
-    virtual std::map<std::string, VDSCRegister> GetInternalRegisters() override;
+    virtual std::vector<VDSCRegister> GetInternalRegisters() override;
+    virtual std::vector<VDSCRegister> GetControlRegisters() override;
+    virtual wxImage GetPlaneA() override;
+    virtual wxImage GetPlaneB() override;
+    virtual wxImage GetBackground() override;
+    virtual wxImage GetCursor() override;
 };
 
 #endif // MCD212_HPP

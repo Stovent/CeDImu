@@ -32,7 +32,7 @@ Find the executable in the bin folder
 
 ## TODO
 - [ ] Fix potential bugs in SCC68070 emulation
-- [ ] MCD212
+- [x] MCD212
 - [ ] SCC66470
 - [x] Export files
 - [x] Export audio
@@ -42,7 +42,7 @@ Find the executable in the bin folder
   - [ ] RAM Search
   - [ ] Memory Viewer
   - [ ] CPU Viewer
-  - [ ] VDSC Viewer
+  - [x] VDSC Viewer
   - [ ] Savestates
 
 ### TODO later
