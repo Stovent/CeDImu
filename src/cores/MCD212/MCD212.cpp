@@ -11,7 +11,6 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
     allocatedMemory = 0x500000;
     memory = new uint8_t[allocatedMemory];
     memorySwapCount = 0;
-    isCA = false;
 
     OPEN_LOG(out_dram, "MCD212_DRAM.txt")
     OPEN_LOG(out_display, "MCD212.txt")
@@ -89,7 +88,6 @@ void MCD212::MemorySwap()
 
 void MCD212::ExecuteICA1()
 {
-    isCA = true;
     uint32_t ica;
     uint32_t addr = 0x400;
     for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
@@ -147,12 +145,11 @@ void MCD212::ExecuteICA1()
         }
     }
 end_ICA1:
-    isCA = false;
+    return;
 }
 
 void MCD212::ExecuteDCA1()
 {
-    isCA = true;
     uint32_t dca;
     uint32_t addr = GetDCP1() + 64*lineNumber;
     for(uint8_t i = 0; i < 16; i++)
@@ -211,12 +208,11 @@ void MCD212::ExecuteDCA1()
         addr += 4;
     }
 end_DCA1:
-    isCA = false;
+    return;
 }
 
 void MCD212::ExecuteICA2()
 {
-    isCA = true;
     uint32_t ica;
     uint32_t addr = 0x200400;
     for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
@@ -275,12 +271,11 @@ void MCD212::ExecuteICA2()
         }
     }
 end_ICA2:
-    isCA = false;
+    return;
 }
 
 void MCD212::ExecuteDCA2()
 {
-    isCA = true;
     uint32_t dca;
     uint32_t addr = GetDCP2() + 64*lineNumber;
     for(uint8_t i = 0; i < 16; i++)
@@ -340,7 +335,7 @@ void MCD212::ExecuteDCA2()
         addr += 4;
     }
 end_DCA2:
-    isCA = false;
+    return;
 }
 
 void MCD212::OnFrameCompleted()

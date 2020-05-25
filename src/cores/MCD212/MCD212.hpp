@@ -74,7 +74,6 @@ class MCD212 : public VDSC
     wxImage cursorPlane;
     wxImage backgroundPlane;
     uint8_t memorySwapCount;
-    bool isCA;
 
     uint32_t* controlRegisters;
     uint16_t* internalRegisters;
