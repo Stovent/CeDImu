@@ -47,7 +47,7 @@ uint8_t SCC68070::ReadUART()
 void SCC68070::WriteUART(const uint8_t data)
 {
     internal[UTHR] = data;
-    LOG(uart_out.write((char*)&data, 1))
+    uart_out.write((char*)&data, 1);
     LOG(out << std::hex << currentPC << "\tUTHR: 0x" << (uint32_t)internal[UTHR] << std::endl)
     internal[USR] |= 0x08; // set TXEMT bit
 }
