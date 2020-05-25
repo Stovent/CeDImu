@@ -14,7 +14,7 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
 
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instruction, "instructions.txt")
-    uart_out.open("uart_out.txt", std::ios::binary | std::ios::out);
+    uart_out.open("uart_out", std::ios::binary | std::ios::out);
     uart_in.open("uart_in", std::ios::binary | std::ios::in);
 
     GenerateInstructionSet();
