@@ -9,6 +9,7 @@ set(SRCS
 	src/CDI/CDIFile.cpp
 	src/CDI/Export.cpp
 	src/common/Audio.cpp
+	src/common/Video.cpp
 	src/cores/MCD212/DRAMInterface.cpp
 	src/cores/MCD212/MCD212.cpp
 	src/cores/MCD212/Display.cpp
