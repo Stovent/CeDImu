@@ -147,7 +147,7 @@ void MCD212::ExecuteICA1()
 
 void MCD212::ExecuteDCA1()
 {
-    for(uint8_t i = 0; i < 16; i++) // 64 bytes/line
+    for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++) // 64 bytes/line
     {
         const uint32_t addr = GetDCP1();
         const uint32_t dca = GetLong(addr);
@@ -266,7 +266,7 @@ void MCD212::ExecuteICA2()
 
 void MCD212::ExecuteDCA2()
 {
-    for(uint8_t i = 0; i < 16; i++)
+    for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++)
     {
         const uint32_t addr = GetDCP2();
         const uint32_t dca = GetLong(addr);
