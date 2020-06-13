@@ -261,278 +261,278 @@ void SCC68070::GenerateInstructionSet()
         {0, 1, 2, 3, 4, 5, 6, 7}, // aaa
         {0, 1}, // b
         {0, 1, 2, 3, 4, 5, 6, 7}, // ccc
-    }, &SCC68070::Abcd, &SCC68070::DisassembleAbcd);
+    }, &SCC68070::ABCD, &SCC68070::DisassembleABCD);
 
-    GenerateInstructionOpcodes("1101aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Add, &SCC68070::DisassembleAdd);
-    GenerateInstructionOpcodes("1101aaabbb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Add, &SCC68070::DisassembleAdd);
-    GenerateInstructionOpcodes("1101aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Add, &SCC68070::DisassembleAdd);
-    GenerateInstructionOpcodes("1101aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},       {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Add, &SCC68070::DisassembleAdd);
-    GenerateInstructionOpcodes("1101aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},/*effective mode 7*/ {0, 1} }, &SCC68070::Add, &SCC68070::DisassembleAdd);
+    GenerateInstructionOpcodes("1101aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ADD, &SCC68070::DisassembleADD);
+    GenerateInstructionOpcodes("1101aaabbb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ADD, &SCC68070::DisassembleADD);
+    GenerateInstructionOpcodes("1101aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::ADD, &SCC68070::DisassembleADD);
+    GenerateInstructionOpcodes("1101aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},       {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ADD, &SCC68070::DisassembleADD);
+    GenerateInstructionOpcodes("1101aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},/*effective mode 7*/ {0, 1} }, &SCC68070::ADD, &SCC68070::DisassembleADD);
 
-    GenerateInstructionOpcodes("1101aaab11cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Adda, &SCC68070::DisassembleAdda);
-    GenerateInstructionOpcodes("1101aaab11111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, /* effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::Adda, &SCC68070::DisassembleAdda);
+    GenerateInstructionOpcodes("1101aaab11cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ADDA, &SCC68070::DisassembleADDA);
+    GenerateInstructionOpcodes("1101aaab11111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, /* effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::ADDA, &SCC68070::DisassembleADDA);
 
-    GenerateInstructionOpcodes("00000110aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6},  {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Addi, &SCC68070::DisassembleAddi);
-    GenerateInstructionOpcodes("00000110aa111ccc", {{0, 1, 2}, /*effective mode 7*/ {0, 1} }, &SCC68070::Addi, &SCC68070::DisassembleAddi);
+    GenerateInstructionOpcodes("00000110aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6},  {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ADDI, &SCC68070::DisassembleADDI);
+    GenerateInstructionOpcodes("00000110aa111ccc", {{0, 1, 2}, /*effective mode 7*/ {0, 1} }, &SCC68070::ADDI, &SCC68070::DisassembleADDI);
 
-    GenerateInstructionOpcodes("0101aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Addq, &SCC68070::DisassembleAddq);
-    GenerateInstructionOpcodes("0101aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1} }, &SCC68070::Addq, &SCC68070::DisassembleAddq);
-    GenerateInstructionOpcodes("0101aaa0bb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Addq, &SCC68070::DisassembleAddq);
+    GenerateInstructionOpcodes("0101aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ADDQ, &SCC68070::DisassembleADDQ);
+    GenerateInstructionOpcodes("0101aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1} }, &SCC68070::ADDQ, &SCC68070::DisassembleADDQ);
+    GenerateInstructionOpcodes("0101aaa0bb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ADDQ, &SCC68070::DisassembleADDQ);
 
-    GenerateInstructionOpcodes("1101aaa1bb00cddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Addx, &SCC68070::DisassembleAddx);
+    GenerateInstructionOpcodes("1101aaa1bb00cddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ADDX, &SCC68070::DisassembleADDX);
 
-    GenerateInstructionOpcodes("1100aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::And, &SCC68070::DisassembleAnd);
-    GenerateInstructionOpcodes("1100aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/* effective mode 7*/{0, 1, 2, 3, 4} }, &SCC68070::And, &SCC68070::DisassembleAnd);
-    GenerateInstructionOpcodes("1100aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::And, &SCC68070::DisassembleAnd);
-    GenerateInstructionOpcodes("1100aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},/* effective mode 7*/{0, 1} }, &SCC68070::And, &SCC68070::DisassembleAnd);
+    GenerateInstructionOpcodes("1100aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::AND, &SCC68070::DisassembleAND);
+    GenerateInstructionOpcodes("1100aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/* effective mode 7*/{0, 1, 2, 3, 4} }, &SCC68070::AND, &SCC68070::DisassembleAND);
+    GenerateInstructionOpcodes("1100aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::AND, &SCC68070::DisassembleAND);
+    GenerateInstructionOpcodes("1100aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},/* effective mode 7*/{0, 1} }, &SCC68070::AND, &SCC68070::DisassembleAND);
 
-    GenerateInstructionOpcodes("00000010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Andi, &SCC68070::DisassembleAndi);
-    GenerateInstructionOpcodes("00000010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Andi, &SCC68070::DisassembleAndi);
+    GenerateInstructionOpcodes("00000010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ANDI, &SCC68070::DisassembleANDI);
+    GenerateInstructionOpcodes("00000010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::ANDI, &SCC68070::DisassembleANDI);
 
-    ILUT[0x023C] = &SCC68070::Andiccr;
-    DLUT[0x023C] = &SCC68070::DisassembleAndiccr;
+    ILUT[0x023C] = &SCC68070::ANDICCR;
+    DLUT[0x023C] = &SCC68070::DisassembleANDICCR;
 
-    ILUT[0x027C] = &SCC68070::Andisr;
-    DLUT[0x027C] = &SCC68070::DisassembleAndisr;
+    ILUT[0x027C] = &SCC68070::ANDISR;
+    DLUT[0x027C] = &SCC68070::DisassembleANDISR;
 
-    GenerateInstructionOpcodes("1110000a11bbbccc", {{0, 1}, {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::AsM, &SCC68070::DisassembleAsM);
-    GenerateInstructionOpcodes("1110000a11111ccc", {{0, 1}, /* effective mode 7 */ {0, 1} }, &SCC68070::AsM, &SCC68070::DisassembleAsM);
+    GenerateInstructionOpcodes("1110000a11bbbccc", {{0, 1}, {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ASm, &SCC68070::DisassembleASm);
+    GenerateInstructionOpcodes("1110000a11111ccc", {{0, 1}, /* effective mode 7 */ {0, 1} }, &SCC68070::ASm, &SCC68070::DisassembleASm);
 
-    GenerateInstructionOpcodes("1110aaabccd00eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::AsR, &SCC68070::DisassembleAsR);
+    GenerateInstructionOpcodes("1110aaabccd00eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ASr, &SCC68070::DisassembleASr);
 
-    GenerateInstructionOpcodes("0110aaaabbbbbbbb", {{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, FULL_BYTE }, &SCC68070::BCC, &SCC68070::DisassembleBCC);
+    GenerateInstructionOpcodes("0110aaaabbbbbbbb", {{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, FULL_BYTE }, &SCC68070::Bcc, &SCC68070::DisassembleBcc);
 
-    GenerateInstructionOpcodes("0000aaa101bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Bchg, &SCC68070::DisassembleBchg);
-    GenerateInstructionOpcodes("0000aaa101111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} }, &SCC68070::Bchg, &SCC68070::DisassembleBchg);
-    GenerateInstructionOpcodes("0000100001aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Bchg, &SCC68070::DisassembleBchg);
-    ILUT[0x0878] = &SCC68070::Bchg; ILUT[0x0879] = &SCC68070::Bchg; /*effective mode 7*/
-    DLUT[0x0878] = &SCC68070::DisassembleBchg;
-    DLUT[0x0879] = &SCC68070::DisassembleBchg;
+    GenerateInstructionOpcodes("0000aaa101bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::BCHG, &SCC68070::DisassembleBCHG);
+    GenerateInstructionOpcodes("0000aaa101111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} }, &SCC68070::BCHG, &SCC68070::DisassembleBCHG);
+    GenerateInstructionOpcodes("0000100001aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::BCHG, &SCC68070::DisassembleBCHG);
+    ILUT[0x0878] = &SCC68070::BCHG; ILUT[0x0879] = &SCC68070::BCHG; /*effective mode 7*/
+    DLUT[0x0878] = &SCC68070::DisassembleBCHG;
+    DLUT[0x0879] = &SCC68070::DisassembleBCHG;
 
-    GenerateInstructionOpcodes("0000aaa110bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Bclr, &SCC68070::DisassembleBclr);
-    GenerateInstructionOpcodes("0000aaa110111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} }, &SCC68070::Bclr, &SCC68070::DisassembleBclr);
-    GenerateInstructionOpcodes("0000100010aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Bclr, &SCC68070::DisassembleBclr);
-    ILUT[0x08B8] = &SCC68070::Bclr; ILUT[0x08B9] = &SCC68070::Bclr; /*effective mode 7*/
-    DLUT[0x08B8] = &SCC68070::DisassembleBclr;
-    DLUT[0x08B9] = &SCC68070::DisassembleBclr;
+    GenerateInstructionOpcodes("0000aaa110bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::BCLR, &SCC68070::DisassembleBCLR);
+    GenerateInstructionOpcodes("0000aaa110111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} }, &SCC68070::BCLR, &SCC68070::DisassembleBCLR);
+    GenerateInstructionOpcodes("0000100010aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::BCLR, &SCC68070::DisassembleBCLR);
+    ILUT[0x08B8] = &SCC68070::BCLR; ILUT[0x08B9] = &SCC68070::BCLR; /*effective mode 7*/
+    DLUT[0x08B8] = &SCC68070::DisassembleBCLR;
+    DLUT[0x08B9] = &SCC68070::DisassembleBCLR;
 
-    GenerateInstructionOpcodes("01100000aaaaaaaa", {FULL_BYTE }, &SCC68070::Bra, &SCC68070::DisassembleBra);
+    GenerateInstructionOpcodes("01100000aaaaaaaa", {FULL_BYTE }, &SCC68070::BRA, &SCC68070::DisassembleBRA);
 
-    GenerateInstructionOpcodes("0000aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Bset, &SCC68070::DisassembleBset);
-    GenerateInstructionOpcodes("0000aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} }, &SCC68070::Bset, &SCC68070::DisassembleBset);
-    GenerateInstructionOpcodes("0000100011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Bset, &SCC68070::DisassembleBset);
-    ILUT[0x08F8] = &SCC68070::Bset; ILUT[0x08F9] = &SCC68070::Bset; /*effective mode 7*/
-    DLUT[0x08F8] = &SCC68070::DisassembleBset;
-    DLUT[0x08F9] = &SCC68070::DisassembleBset;
+    GenerateInstructionOpcodes("0000aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::BSET, &SCC68070::DisassembleBSET);
+    GenerateInstructionOpcodes("0000aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1} }, &SCC68070::BSET, &SCC68070::DisassembleBSET);
+    GenerateInstructionOpcodes("0000100011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::BSET, &SCC68070::DisassembleBSET);
+    ILUT[0x08F8] = &SCC68070::BSET; ILUT[0x08F9] = &SCC68070::BSET; /*effective mode 7*/
+    DLUT[0x08F8] = &SCC68070::DisassembleBSET;
+    DLUT[0x08F9] = &SCC68070::DisassembleBSET;
 
-    GenerateInstructionOpcodes("01100001aaaaaaaa", {FULL_BYTE }, &SCC68070::Bsr, &SCC68070::DisassembleBsr);
+    GenerateInstructionOpcodes("01100001aaaaaaaa", {FULL_BYTE }, &SCC68070::BSR, &SCC68070::DisassembleBSR);
 
-    GenerateInstructionOpcodes("0000aaa100bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Btst, &SCC68070::DisassembleBtst);
-    GenerateInstructionOpcodes("0000aaa100111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Btst, &SCC68070::DisassembleBtst);
-    GenerateInstructionOpcodes("0000100000aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Btst, &SCC68070::DisassembleBtst);
-    ILUT[0x0838] = &SCC68070::Btst; ILUT[0x0839] = &SCC68070::Btst; ILUT[0x083A] = &SCC68070::Btst; ILUT[0x083B] = &SCC68070::Btst; /*effective mode 7*/
-    DLUT[0x0838] = &SCC68070::DisassembleBtst;
-    DLUT[0x0839] = &SCC68070::DisassembleBtst;
-    DLUT[0x083A] = &SCC68070::DisassembleBtst;
-    DLUT[0x083B] = &SCC68070::DisassembleBtst;
+    GenerateInstructionOpcodes("0000aaa100bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::BTST, &SCC68070::DisassembleBTST);
+    GenerateInstructionOpcodes("0000aaa100111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::BTST, &SCC68070::DisassembleBTST);
+    GenerateInstructionOpcodes("0000100000aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::BTST, &SCC68070::DisassembleBTST);
+    ILUT[0x0838] = &SCC68070::BTST; ILUT[0x0839] = &SCC68070::BTST; ILUT[0x083A] = &SCC68070::BTST; ILUT[0x083B] = &SCC68070::BTST; /*effective mode 7*/
+    DLUT[0x0838] = &SCC68070::DisassembleBTST;
+    DLUT[0x0839] = &SCC68070::DisassembleBTST;
+    DLUT[0x083A] = &SCC68070::DisassembleBTST;
+    DLUT[0x083B] = &SCC68070::DisassembleBTST;
 
-    GenerateInstructionOpcodes("0100aaa110bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Chk, &SCC68070::DisassembleChk);
-    GenerateInstructionOpcodes("0100aaa110111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Chk, &SCC68070::DisassembleChk);
+    GenerateInstructionOpcodes("0100aaa110bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::CHK, &SCC68070::DisassembleCHK);
+    GenerateInstructionOpcodes("0100aaa110111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::CHK, &SCC68070::DisassembleCHK);
 
-    GenerateInstructionOpcodes("01000010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Clr, &SCC68070::DisassembleClr);
-    GenerateInstructionOpcodes("01000010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Clr, &SCC68070::DisassembleClr);
+    GenerateInstructionOpcodes("01000010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::CLR, &SCC68070::DisassembleCLR);
+    GenerateInstructionOpcodes("01000010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::CLR, &SCC68070::DisassembleCLR);
 
-    GenerateInstructionOpcodes("1011aaa000cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, /* byte */ {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Cmp, &SCC68070::DisassembleCmp);
-    GenerateInstructionOpcodes("1011aaa000111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, /* byte    effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::Cmp, &SCC68070::DisassembleCmp);
-    GenerateInstructionOpcodes("1011aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Cmp, &SCC68070::DisassembleCmp);
-    GenerateInstructionOpcodes("1011aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::Cmp, &SCC68070::DisassembleCmp);
+    GenerateInstructionOpcodes("1011aaa000cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, /* byte */ {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::CMP, &SCC68070::DisassembleCMP);
+    GenerateInstructionOpcodes("1011aaa000111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, /* byte    effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::CMP, &SCC68070::DisassembleCMP);
+    GenerateInstructionOpcodes("1011aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::CMP, &SCC68070::DisassembleCMP);
+    GenerateInstructionOpcodes("1011aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::CMP, &SCC68070::DisassembleCMP);
 
-    GenerateInstructionOpcodes("1011aaab11cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Cmpa, &SCC68070::DisassembleCmpa);
-    GenerateInstructionOpcodes("1011aaab11111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, /* effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::Cmpa, &SCC68070::DisassembleCmpa);
+    GenerateInstructionOpcodes("1011aaab11cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::CMPA, &SCC68070::DisassembleCMPA);
+    GenerateInstructionOpcodes("1011aaab11111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, /* effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::CMPA, &SCC68070::DisassembleCMPA);
 
-    GenerateInstructionOpcodes("00001100aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Cmpi, &SCC68070::DisassembleCmpi);
-    GenerateInstructionOpcodes("00001100aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Cmpi, &SCC68070::DisassembleCmpi);
+    GenerateInstructionOpcodes("00001100aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::CMPI, &SCC68070::DisassembleCMPI);
+    GenerateInstructionOpcodes("00001100aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::CMPI, &SCC68070::DisassembleCMPI);
 
-    GenerateInstructionOpcodes("1011aaa1bb001ccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Cmpm, &SCC68070::DisassembleCmpm);
+    GenerateInstructionOpcodes("1011aaa1bb001ccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::CMPM, &SCC68070::DisassembleCMPM);
 
-    GenerateInstructionOpcodes("0101aaaa11001bbb", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::DbCC, &SCC68070::DisassembleDbCC);
+    GenerateInstructionOpcodes("0101aaaa11001bbb", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::DBcc, &SCC68070::DisassembleDBcc);
 
-    GenerateInstructionOpcodes("1000aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Divs, &SCC68070::DisassembleDivs);
-    GenerateInstructionOpcodes("1000aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Divs, &SCC68070::DisassembleDivs);
+    GenerateInstructionOpcodes("1000aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::DIVS, &SCC68070::DisassembleDIVS);
+    GenerateInstructionOpcodes("1000aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::DIVS, &SCC68070::DisassembleDIVS);
 
-    GenerateInstructionOpcodes("1000aaa011bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Divu, &SCC68070::DisassembleDivu);
-    GenerateInstructionOpcodes("1000aaa011111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Divu, &SCC68070::DisassembleDivu);
+    GenerateInstructionOpcodes("1000aaa011bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::DIVU, &SCC68070::DisassembleDIVU);
+    GenerateInstructionOpcodes("1000aaa011111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::DIVU, &SCC68070::DisassembleDIVU);
 
-    GenerateInstructionOpcodes("1011aaa1bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Eor, &SCC68070::DisassembleEor);
-    GenerateInstructionOpcodes("1011aaa1bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Eor, &SCC68070::DisassembleEor);
+    GenerateInstructionOpcodes("1011aaa1bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::EOR, &SCC68070::DisassembleEOR);
+    GenerateInstructionOpcodes("1011aaa1bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::EOR, &SCC68070::DisassembleEOR);
 
-    GenerateInstructionOpcodes("00001010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Eori, &SCC68070::DisassembleEori);
-    GenerateInstructionOpcodes("00001010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Eori, &SCC68070::DisassembleEori);
+    GenerateInstructionOpcodes("00001010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::EORI, &SCC68070::DisassembleEORI);
+    GenerateInstructionOpcodes("00001010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::EORI, &SCC68070::DisassembleEORI);
 
-    ILUT[0x0A3C] = &SCC68070::Eoriccr;
-    DLUT[0x0A3C] = &SCC68070::DisassembleEoriccr;
+    ILUT[0x0A3C] = &SCC68070::EORICCR;
+    DLUT[0x0A3C] = &SCC68070::DisassembleEORICCR;
 
-    ILUT[0x0A7C] = &SCC68070::Eorisr;
-    DLUT[0x0A7C] = &SCC68070::DisassembleEorisr;
+    ILUT[0x0A7C] = &SCC68070::EORISR;
+    DLUT[0x0A7C] = &SCC68070::DisassembleEORISR;
 
-    GenerateInstructionOpcodes("1100aaa1bbbbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0b01000, 0b01001, 0b10001}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Exg, &SCC68070::DisassembleExg);
+    GenerateInstructionOpcodes("1100aaa1bbbbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0b01000, 0b01001, 0b10001}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::EXG, &SCC68070::DisassembleEXG);
 
-    GenerateInstructionOpcodes("0100100aaa000bbb", {{0b010, 0b011, 0b111}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Ext, &SCC68070::DisassembleExt);
+    GenerateInstructionOpcodes("0100100aaa000bbb", {{0b010, 0b011, 0b111}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::EXT, &SCC68070::DisassembleEXT);
 
-    ILUT[0x4AFC] = &SCC68070::Illegal;
-    DLUT[0x4AFC] = &SCC68070::DisassembleIllegal;
+    ILUT[0x4AFC] = &SCC68070::ILLEGAL;
+    DLUT[0x4AFC] = &SCC68070::DisassembleILLEGAL;
 
-    GenerateInstructionOpcodes("0100111011aaabbb", {{2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Jmp, &SCC68070::DisassembleJmp);
-    GenerateInstructionOpcodes("0100111011111bbb", {/*mode 7*/ {0, 1, 2, 3} }, &SCC68070::Jmp, &SCC68070::DisassembleJmp);
+    GenerateInstructionOpcodes("0100111011aaabbb", {{2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::JMP, &SCC68070::DisassembleJMP);
+    GenerateInstructionOpcodes("0100111011111bbb", {/*mode 7*/ {0, 1, 2, 3} }, &SCC68070::JMP, &SCC68070::DisassembleJMP);
 
-    GenerateInstructionOpcodes("0100111010aaabbb", {{2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Jsr, &SCC68070::DisassembleJsr);
-    GenerateInstructionOpcodes("0100111010111bbb", {/*mode 7*/ {0, 1, 2, 3} }, &SCC68070::Jsr, &SCC68070::DisassembleJsr);
+    GenerateInstructionOpcodes("0100111010aaabbb", {{2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::JSR, &SCC68070::DisassembleJSR);
+    GenerateInstructionOpcodes("0100111010111bbb", {/*mode 7*/ {0, 1, 2, 3} }, &SCC68070::JSR, &SCC68070::DisassembleJSR);
 
-    GenerateInstructionOpcodes("0100aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Lea, &SCC68070::DisassembleLea);
-    GenerateInstructionOpcodes("0100aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/* mode 7*/ {0, 1, 2, 3} }, &SCC68070::Lea, &SCC68070::DisassembleLea);
+    GenerateInstructionOpcodes("0100aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::LEA, &SCC68070::DisassembleLEA);
+    GenerateInstructionOpcodes("0100aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/* mode 7*/ {0, 1, 2, 3} }, &SCC68070::LEA, &SCC68070::DisassembleLEA);
 
-    GenerateInstructionOpcodes("0100111001010aaa", {{0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Link, &SCC68070::DisassembleLink);
+    GenerateInstructionOpcodes("0100111001010aaa", {{0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::LINK, &SCC68070::DisassembleLINK);
 
-    GenerateInstructionOpcodes("1110001a11bbbccc", {{0, 1}, {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::LsM, &SCC68070::DisassembleLsM);
-    GenerateInstructionOpcodes("1110001a11111ccc", {{0, 1}, {0, 1} }, &SCC68070::LsM, &SCC68070::DisassembleLsM);
+    GenerateInstructionOpcodes("1110001a11bbbccc", {{0, 1}, {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::LSm, &SCC68070::DisassembleLSm);
+    GenerateInstructionOpcodes("1110001a11111ccc", {{0, 1}, {0, 1} }, &SCC68070::LSm, &SCC68070::DisassembleLSm);
 
-    GenerateInstructionOpcodes("1110aaabccd01eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::LsR, &SCC68070::DisassembleLsR);
+    GenerateInstructionOpcodes("1110aaabccd01eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::LSr, &SCC68070::DisassembleLSr);
 
-    GenerateInstructionOpcodes("00aabbbcccdddeee", {{1, 2, 3}, {0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Move, &SCC68070::DisassembleMove);
-    GenerateInstructionOpcodes("00aabbb111dddeee", {{1, 2, 3}, {0, 1}, /* effective mode 7 */ {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Move, &SCC68070::DisassembleMove);
-    GenerateInstructionOpcodes("00aabbbccc111eee", {{1, 2, 3}, {0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Move, &SCC68070::DisassembleMove);
-    GenerateInstructionOpcodes("00aabbb111111eee", {{1, 2, 3}, {0, 1}, /* effective mode 7  effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::Move, &SCC68070::DisassembleMove);
-    GenerateInstructionOpcodes("00aabbbccc001eee", {{2, 3}, {0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Move, &SCC68070::DisassembleMove);
-    GenerateInstructionOpcodes("00aabbb111001eee", {{2, 3}, {0, 1}, /* effective mode 7 effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Move, &SCC68070::DisassembleMove);
+    GenerateInstructionOpcodes("00aabbbcccdddeee", {{1, 2, 3}, {0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVE, &SCC68070::DisassembleMOVE);
+    GenerateInstructionOpcodes("00aabbb111dddeee", {{1, 2, 3}, {0, 1}, /* effective mode 7 */ {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVE, &SCC68070::DisassembleMOVE);
+    GenerateInstructionOpcodes("00aabbbccc111eee", {{1, 2, 3}, {0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::MOVE, &SCC68070::DisassembleMOVE);
+    GenerateInstructionOpcodes("00aabbb111111eee", {{1, 2, 3}, {0, 1}, /* effective mode 7  effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::MOVE, &SCC68070::DisassembleMOVE);
+    GenerateInstructionOpcodes("00aabbbccc001eee", {{2, 3}, {0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVE, &SCC68070::DisassembleMOVE);
+    GenerateInstructionOpcodes("00aabbb111001eee", {{2, 3}, {0, 1}, /* effective mode 7 effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVE, &SCC68070::DisassembleMOVE);
 
-    GenerateInstructionOpcodes("001abbb001cccddd", {{0, 1}, {0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Movea, &SCC68070::DisassembleMovea);
-    GenerateInstructionOpcodes("001abbb001111ddd", {{0, 1}, {0, 1, 2, 3, 4, 5, 6, 7}, /* effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::Movea, &SCC68070::DisassembleMovea);
+    GenerateInstructionOpcodes("001abbb001cccddd", {{0, 1}, {0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVEA, &SCC68070::DisassembleMOVEA);
+    GenerateInstructionOpcodes("001abbb001111ddd", {{0, 1}, {0, 1, 2, 3, 4, 5, 6, 7}, /* effective mode 7 */ {0, 1, 2, 3, 4} }, &SCC68070::MOVEA, &SCC68070::DisassembleMOVEA);
 
-    GenerateInstructionOpcodes("0100010011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Moveccr, &SCC68070::DisassembleMoveccr);
-    GenerateInstructionOpcodes("0100010011111bbb", {/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Moveccr, &SCC68070::DisassembleMoveccr);
+    GenerateInstructionOpcodes("0100010011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVECCR, &SCC68070::DisassembleMOVECCR);
+    GenerateInstructionOpcodes("0100010011111bbb", {/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::MOVECCR, &SCC68070::DisassembleMOVECCR);
 
-    GenerateInstructionOpcodes("0100000011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MoveFsr, &SCC68070::DisassembleMoveFsr);
-    ILUT[0x40F8] = &SCC68070::MoveFsr; ILUT[0x40F9] = &SCC68070::MoveFsr;
-    DLUT[0x40F8] = &SCC68070::DisassembleMoveFsr;
-    DLUT[0x40F9] = &SCC68070::DisassembleMoveFsr;
+    GenerateInstructionOpcodes("0100000011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVEfSR, &SCC68070::DisassembleMOVEfSR);
+    ILUT[0x40F8] = &SCC68070::MOVEfSR; ILUT[0x40F9] = &SCC68070::MOVEfSR;
+    DLUT[0x40F8] = &SCC68070::DisassembleMOVEfSR;
+    DLUT[0x40F9] = &SCC68070::DisassembleMOVEfSR;
 
-    GenerateInstructionOpcodes("0100011011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Movesr, &SCC68070::DisassembleMovesr);
-    GenerateInstructionOpcodes("0100011011111bbb", {/*effective mode 7*/{0, 1, 2, 3, 4} }, &SCC68070::Movesr, &SCC68070::DisassembleMovesr);
+    GenerateInstructionOpcodes("0100011011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVESR, &SCC68070::DisassembleMOVESR);
+    GenerateInstructionOpcodes("0100011011111bbb", {/*effective mode 7*/{0, 1, 2, 3, 4} }, &SCC68070::MOVESR, &SCC68070::DisassembleMOVESR);
 
-    GenerateInstructionOpcodes("010011100110abbb", {{0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Moveusp, &SCC68070::DisassembleMoveusp);
+    GenerateInstructionOpcodes("010011100110abbb", {{0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVEUSP, &SCC68070::DisassembleMOVEUSP);
 
-    GenerateInstructionOpcodes("010010001bcccddd", {{0, 1}, {2, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Movem, &SCC68070::DisassembleMovem);
-    GenerateInstructionOpcodes("010010001b111ddd", {{0, 1}, /* mode 7 */ {0, 1} }, &SCC68070::Movem, &SCC68070::DisassembleMovem);
-    GenerateInstructionOpcodes("010011001bcccddd", {{0, 1}, {2, 3, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Movem, &SCC68070::DisassembleMovem);
-    GenerateInstructionOpcodes("010011001b111ddd", {{0, 1}, /* mode 7 */ {0, 1, 2, 3} }, &SCC68070::Movem, &SCC68070::DisassembleMovem);
+    GenerateInstructionOpcodes("010010001bcccddd", {{0, 1}, {2, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVEM, &SCC68070::DisassembleMOVEM);
+    GenerateInstructionOpcodes("010010001b111ddd", {{0, 1}, /* mode 7 */ {0, 1} }, &SCC68070::MOVEM, &SCC68070::DisassembleMOVEM);
+    GenerateInstructionOpcodes("010011001bcccddd", {{0, 1}, {2, 3, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVEM, &SCC68070::DisassembleMOVEM);
+    GenerateInstructionOpcodes("010011001b111ddd", {{0, 1}, /* mode 7 */ {0, 1, 2, 3} }, &SCC68070::MOVEM, &SCC68070::DisassembleMOVEM);
 
-    GenerateInstructionOpcodes("0000aaabbb001ccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6, 7}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Movep, &SCC68070::DisassembleMovep);
+    GenerateInstructionOpcodes("0000aaabbb001ccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6, 7}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MOVEP, &SCC68070::DisassembleMOVEP);
 
-    GenerateInstructionOpcodes("0111aaa0bbbbbbbb", {{0, 1, 2, 3, 4, 5, 6, 7}, FULL_BYTE }, &SCC68070::Moveq, &SCC68070::DisassembleMoveq);
+    GenerateInstructionOpcodes("0111aaa0bbbbbbbb", {{0, 1, 2, 3, 4, 5, 6, 7}, FULL_BYTE }, &SCC68070::MOVEQ, &SCC68070::DisassembleMOVEQ);
 
-    GenerateInstructionOpcodes("1100aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Muls, &SCC68070::DisassembleMuls);
-    GenerateInstructionOpcodes("1100aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Muls, &SCC68070::DisassembleMuls);
+    GenerateInstructionOpcodes("1100aaa111bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MULS, &SCC68070::DisassembleMULS);
+    GenerateInstructionOpcodes("1100aaa111111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::MULS, &SCC68070::DisassembleMULS);
 
-    GenerateInstructionOpcodes("1100aaa011bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Mulu, &SCC68070::DisassembleMulu);
-    GenerateInstructionOpcodes("1100aaa011111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Mulu, &SCC68070::DisassembleMulu);
+    GenerateInstructionOpcodes("1100aaa011bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::MULU, &SCC68070::DisassembleMULU);
+    GenerateInstructionOpcodes("1100aaa011111ccc", {{0, 1, 2, 3, 4, 5, 6, 7},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::MULU, &SCC68070::DisassembleMULU);
 
-    GenerateInstructionOpcodes("0100100000aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Nbcd, &SCC68070::DisassembleNbcd);
-    ILUT[0x4838] = &SCC68070::Nbcd; ILUT[0x4839] = &SCC68070::Nbcd;
-    DLUT[0x4838] = &SCC68070::DisassembleNbcd;
-    DLUT[0x4839] = &SCC68070::DisassembleNbcd;
+    GenerateInstructionOpcodes("0100100000aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::NBCD, &SCC68070::DisassembleNBCD);
+    ILUT[0x4838] = &SCC68070::NBCD; ILUT[0x4839] = &SCC68070::NBCD;
+    DLUT[0x4838] = &SCC68070::DisassembleNBCD;
+    DLUT[0x4839] = &SCC68070::DisassembleNBCD;
 
-    GenerateInstructionOpcodes("01000100aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Neg, &SCC68070::DisassembleNeg);
-    GenerateInstructionOpcodes("01000100aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Neg, &SCC68070::DisassembleNeg);
+    GenerateInstructionOpcodes("01000100aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::NEG, &SCC68070::DisassembleNEG);
+    GenerateInstructionOpcodes("01000100aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::NEG, &SCC68070::DisassembleNEG);
 
-    GenerateInstructionOpcodes("01000000aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Negx, &SCC68070::DisassembleNegx);
-    GenerateInstructionOpcodes("01000000aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Negx, &SCC68070::DisassembleNegx);
+    GenerateInstructionOpcodes("01000000aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::NEGX, &SCC68070::DisassembleNEGX);
+    GenerateInstructionOpcodes("01000000aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::NEGX, &SCC68070::DisassembleNEGX);
 
-    ILUT[0x4E71] = &SCC68070::Nop;
-    DLUT[0x4E71] = &SCC68070::DisassembleNop;
+    ILUT[0x4E71] = &SCC68070::NOP;
+    DLUT[0x4E71] = &SCC68070::DisassembleNOP;
 
-    GenerateInstructionOpcodes("01000110aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Not, &SCC68070::DisassembleNot);
-    GenerateInstructionOpcodes("01000110aa111ccc", {{0, 1, 2}, {0, 1} }, &SCC68070::Not, &SCC68070::DisassembleNot);
+    GenerateInstructionOpcodes("01000110aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::NOT, &SCC68070::DisassembleNOT);
+    GenerateInstructionOpcodes("01000110aa111ccc", {{0, 1, 2}, {0, 1} }, &SCC68070::NOT, &SCC68070::DisassembleNOT);
 
-    GenerateInstructionOpcodes("1000aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Or, &SCC68070::DisassembleOr);
-    GenerateInstructionOpcodes("1000aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Or, &SCC68070::DisassembleOr);
-    GenerateInstructionOpcodes("1000aaa1bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Or, &SCC68070::DisassembleOr);
-    GenerateInstructionOpcodes("1000aaa1bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Or, &SCC68070::DisassembleOr);
+    GenerateInstructionOpcodes("1000aaa0bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::OR, &SCC68070::DisassembleOR);
+    GenerateInstructionOpcodes("1000aaa0bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::OR, &SCC68070::DisassembleOR);
+    GenerateInstructionOpcodes("1000aaa1bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::OR, &SCC68070::DisassembleOR);
+    GenerateInstructionOpcodes("1000aaa1bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::OR, &SCC68070::DisassembleOR);
 
-    GenerateInstructionOpcodes("00000000aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Ori, &SCC68070::DisassembleOri);
-    GenerateInstructionOpcodes("00000000aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Ori, &SCC68070::DisassembleOri);
+    GenerateInstructionOpcodes("00000000aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ORI, &SCC68070::DisassembleORI);
+    GenerateInstructionOpcodes("00000000aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::ORI, &SCC68070::DisassembleORI);
 
-    ILUT[0x003C] = &SCC68070::Oriccr;
-    DLUT[0x003C] = &SCC68070::DisassembleOriccr;
+    ILUT[0x003C] = &SCC68070::ORICCR;
+    DLUT[0x003C] = &SCC68070::DisassembleORICCR;
 
-    ILUT[0x007C] = &SCC68070::Orisr;
-    DLUT[0x007C] = &SCC68070::DisassembleOrisr;
+    ILUT[0x007C] = &SCC68070::ORISR;
+    DLUT[0x007C] = &SCC68070::DisassembleORISR;
 
-    GenerateInstructionOpcodes("0100100001aaabbb", {{2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Pea, &SCC68070::DisassemblePea);
-    GenerateInstructionOpcodes("0100100001111bbb", {/*mode 7*/ {0, 1, 2, 3} }, &SCC68070::Pea, &SCC68070::DisassemblePea);
+    GenerateInstructionOpcodes("0100100001aaabbb", {{2, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::PEA, &SCC68070::DisassemblePEA);
+    GenerateInstructionOpcodes("0100100001111bbb", {/*mode 7*/ {0, 1, 2, 3} }, &SCC68070::PEA, &SCC68070::DisassemblePEA);
 
-    ILUT[0x4E70] = &SCC68070::Reset;
-    DLUT[0x4E70] = &SCC68070::DisassembleReset;
+    ILUT[0x4E70] = &SCC68070::RESET;
+    DLUT[0x4E70] = &SCC68070::DisassembleRESET;
 
-    GenerateInstructionOpcodes("1110011a11bbbccc", {{0, 1},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::RoM, &SCC68070::DisassembleRoM);
-    GenerateInstructionOpcodes("1110011a11111ccc", {{0, 1},/*effective mode 7*/ {0, 1} }, &SCC68070::RoM, &SCC68070::DisassembleRoM);
+    GenerateInstructionOpcodes("1110011a11bbbccc", {{0, 1},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ROm, &SCC68070::DisassembleROm);
+    GenerateInstructionOpcodes("1110011a11111ccc", {{0, 1},/*effective mode 7*/ {0, 1} }, &SCC68070::ROm, &SCC68070::DisassembleROm);
 
-    GenerateInstructionOpcodes("1110aaabccd11eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::RoR, &SCC68070::DisassembleRoR);
+    GenerateInstructionOpcodes("1110aaabccd11eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ROr, &SCC68070::DisassembleROr);
 
-    GenerateInstructionOpcodes("1110010a11bbbccc", {{0, 1},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::RoxM, &SCC68070::DisassembleRoxM);
-    GenerateInstructionOpcodes("1110010a11111ccc", {{0, 1},/*effective mode 7*/ {0, 1} }, &SCC68070::RoxM, &SCC68070::DisassembleRoxM);
+    GenerateInstructionOpcodes("1110010a11bbbccc", {{0, 1},    {2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ROm, &SCC68070::DisassembleROm);
+    GenerateInstructionOpcodes("1110010a11111ccc", {{0, 1},/*effective mode 7*/ {0, 1} }, &SCC68070::ROm, &SCC68070::DisassembleROm);
 
-    GenerateInstructionOpcodes("1110aaabccd10eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::RoxR, &SCC68070::DisassembleRoxR);
+    GenerateInstructionOpcodes("1110aaabccd10eee", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::ROr, &SCC68070::DisassembleROr);
 
-    ILUT[0x4E73] = &SCC68070::Rte;
-    DLUT[0x4E73] = &SCC68070::DisassembleRte;
+    ILUT[0x4E73] = &SCC68070::RTE;
+    DLUT[0x4E73] = &SCC68070::DisassembleRTE;
 
-    ILUT[0x4E77] = &SCC68070::Rtr;
-    DLUT[0x4E77] = &SCC68070::DisassembleRtr;
+    ILUT[0x4E77] = &SCC68070::RTR;
+    DLUT[0x4E77] = &SCC68070::DisassembleRTR;
 
-    ILUT[0x4E75] = &SCC68070::Rts;
-    DLUT[0x4E75] = &SCC68070::DisassembleRts;
+    ILUT[0x4E75] = &SCC68070::RTS;
+    DLUT[0x4E75] = &SCC68070::DisassembleRTS;
 
-    GenerateInstructionOpcodes("1000aaa10000bccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Sbcd, &SCC68070::DisassembleSbcd);
+    GenerateInstructionOpcodes("1000aaa10000bccc", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SBCD, &SCC68070::DisassembleSBCD);
 
-    GenerateInstructionOpcodes("0101aaaa11bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SCC, &SCC68070::DisassembleSCC);
-    GenerateInstructionOpcodes("0101aaaa11111ccc", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},/*effective mode 7*/ {0, 1} }, &SCC68070::SCC, &SCC68070::DisassembleSCC);
+    GenerateInstructionOpcodes("0101aaaa11bbbccc", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Scc, &SCC68070::DisassembleScc);
+    GenerateInstructionOpcodes("0101aaaa11111ccc", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},/*effective mode 7*/ {0, 1} }, &SCC68070::Scc, &SCC68070::DisassembleScc);
 
-    ILUT[0x4E72] = &SCC68070::Stop;
-    DLUT[0x4E72] = &SCC68070::DisassembleStop;
+    ILUT[0x4E72] = &SCC68070::STOP;
+    DLUT[0x4E72] = &SCC68070::DisassembleSTOP;
 
-    GenerateInstructionOpcodes("1001aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Sub, &SCC68070::DisassembleSub);
-    GenerateInstructionOpcodes("1001aaabbb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Sub, &SCC68070::DisassembleSub);
-    GenerateInstructionOpcodes("1001aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::Sub, &SCC68070::DisassembleSub);
-    GenerateInstructionOpcodes("1001aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Sub, &SCC68070::DisassembleSub);
-    GenerateInstructionOpcodes("1001aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},/*effective mode 7*/ {0, 1} }, &SCC68070::Sub, &SCC68070::DisassembleSub);
+    GenerateInstructionOpcodes("1001aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SUB, &SCC68070::DisassembleSUB);
+    GenerateInstructionOpcodes("1001aaabbb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, /* effective mode 1 */ {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SUB, &SCC68070::DisassembleSUB);
+    GenerateInstructionOpcodes("1001aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2},/*effective mode 7*/ {0, 1, 2, 3, 4} }, &SCC68070::SUB, &SCC68070::DisassembleSUB);
+    GenerateInstructionOpcodes("1001aaabbbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SUB, &SCC68070::DisassembleSUB);
+    GenerateInstructionOpcodes("1001aaabbb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {4, 5, 6},/*effective mode 7*/ {0, 1} }, &SCC68070::SUB, &SCC68070::DisassembleSUB);
 
-    GenerateInstructionOpcodes("1001aaab11cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Suba, &SCC68070::DisassembleSuba);
-    GenerateInstructionOpcodes("1001aaab11111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4} }, &SCC68070::Suba, &SCC68070::DisassembleSuba);
+    GenerateInstructionOpcodes("1001aaab11cccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SUBA, &SCC68070::DisassembleSUBA);
+    GenerateInstructionOpcodes("1001aaab11111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1}, {0, 1, 2, 3, 4} }, &SCC68070::SUBA, &SCC68070::DisassembleSUBA);
 
-    GenerateInstructionOpcodes("00000100aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Subi, &SCC68070::DisassembleSubi);
-    GenerateInstructionOpcodes("00000100aa111ccc", {{0, 1, 2}, {0, 1} }, &SCC68070::Subi, &SCC68070::DisassembleSubi);
+    GenerateInstructionOpcodes("00000100aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SUBI, &SCC68070::DisassembleSUBI);
+    GenerateInstructionOpcodes("00000100aa111ccc", {{0, 1, 2}, {0, 1} }, &SCC68070::SUBI, &SCC68070::DisassembleSUBI);
 
-    GenerateInstructionOpcodes("0101aaa1bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Subq, &SCC68070::DisassembleSubq);
-    GenerateInstructionOpcodes("0101aaa1bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1} }, &SCC68070::Subq, &SCC68070::DisassembleSubq);
-    GenerateInstructionOpcodes("0101aaa1bb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Subq, &SCC68070::DisassembleSubq);
+    GenerateInstructionOpcodes("0101aaa1bbcccddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SUBQ, &SCC68070::DisassembleSUBQ);
+    GenerateInstructionOpcodes("0101aaa1bb111ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1} }, &SCC68070::SUBQ, &SCC68070::DisassembleSUBQ);
+    GenerateInstructionOpcodes("0101aaa1bb001ddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SUBQ, &SCC68070::DisassembleSUBQ);
 
-    GenerateInstructionOpcodes("1001aaa1bb00cddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Subx, &SCC68070::DisassembleSubx);
+    GenerateInstructionOpcodes("1001aaa1bb00cddd", {{0, 1, 2, 3, 4, 5, 6, 7}, {0, 1, 2}, {0, 1}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SUBX, &SCC68070::DisassembleSUBX);
 
-    GenerateInstructionOpcodes("0100100001000aaa", {{0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Swap, &SCC68070::DisassembleSwap);
+    GenerateInstructionOpcodes("0100100001000aaa", {{0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::SWAP, &SCC68070::DisassembleSWAP);
 
-    GenerateInstructionOpcodes("0100101011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Tas, &SCC68070::DisassembleTas);
-    ILUT[0x4AF8] = &SCC68070::Tas; ILUT[0x4AF9] = &SCC68070::Tas;
-    DLUT[0x4AF8] = &SCC68070::DisassembleTas;
-    DLUT[0x4AF9] = &SCC68070::DisassembleTas;
+    GenerateInstructionOpcodes("0100101011aaabbb", {{0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::TAS, &SCC68070::DisassembleTAS);
+    ILUT[0x4AF8] = &SCC68070::TAS; ILUT[0x4AF9] = &SCC68070::TAS;
+    DLUT[0x4AF8] = &SCC68070::DisassembleTAS;
+    DLUT[0x4AF9] = &SCC68070::DisassembleTAS;
 
-    GenerateInstructionOpcodes("010011100100aaaa", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15} }, &SCC68070::Trap, &SCC68070::DisassembleTrap);
+    GenerateInstructionOpcodes("010011100100aaaa", {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15} }, &SCC68070::TRAP, &SCC68070::DisassembleTRAP);
 
-    ILUT[0x4E76] = &SCC68070::Trapv;
-    DLUT[0x4E76] = &SCC68070::DisassembleTrapv;
+    ILUT[0x4E76] = &SCC68070::TRAPV;
+    DLUT[0x4E76] = &SCC68070::DisassembleTRAPV;
 
-    GenerateInstructionOpcodes("01001010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Tst, &SCC68070::DisassembleTst);
-    GenerateInstructionOpcodes("01001010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::Tst, &SCC68070::DisassembleTst);
+    GenerateInstructionOpcodes("01001010aabbbccc", {{0, 1, 2}, {0, 2, 3, 4, 5, 6}, {0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::TST, &SCC68070::DisassembleTST);
+    GenerateInstructionOpcodes("01001010aa111ccc", {{0, 1, 2},/*effective mode 7*/ {0, 1} }, &SCC68070::TST, &SCC68070::DisassembleTST);
 
-    GenerateInstructionOpcodes("0100111001011aaa", {{0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::Unlk, &SCC68070::DisassembleUnlk);
+    GenerateInstructionOpcodes("0100111001011aaa", {{0, 1, 2, 3, 4, 5, 6, 7} }, &SCC68070::UNLK, &SCC68070::DisassembleUNLK);
 #undef FULL_BYTE
 }

@@ -58,7 +58,7 @@ uint16_t SCC68070::UnknownInstruction()
     return 0;
 }
 
-uint16_t SCC68070::Abcd()
+uint16_t SCC68070::ABCD()
 {
     uint8_t Rx = (currentOpcode & 0x0E00) >> 9;
     uint8_t Ry = (currentOpcode & 0x0007);
@@ -101,7 +101,7 @@ uint16_t SCC68070::Abcd()
     return calcTime;
 }
 
-uint16_t SCC68070::Add()
+uint16_t SCC68070::ADD()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
@@ -248,7 +248,7 @@ uint16_t SCC68070::Add()
     return calcTime;
 }
 
-uint16_t SCC68070::Adda()
+uint16_t SCC68070::ADDA()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t   size = (currentOpcode & 0x0100) >> 6;
@@ -271,7 +271,7 @@ uint16_t SCC68070::Adda()
     return calcTime;
 }
 
-uint16_t SCC68070::Addi()
+uint16_t SCC68070::ADDI()
 {
     uint8_t   size = (currentOpcode & 0b0000000011000000) >> 6;
     uint8_t eamode = (currentOpcode & 0b0000000000111000) >> 3;
@@ -354,7 +354,7 @@ uint16_t SCC68070::Addi()
     return calcTime;
 }
 
-uint16_t SCC68070::Addq()
+uint16_t SCC68070::ADDQ()
 {
     uint8_t   doto = (currentOpcode & 0x0E00) >> 9;
     uint8_t   data = doto ? doto : 8;
@@ -446,7 +446,7 @@ uint16_t SCC68070::Addq()
     return calcTime;
 }
 
-uint16_t SCC68070::Addx()
+uint16_t SCC68070::ADDX()
 {
     uint8_t   Rx = (currentOpcode & 0x0E00) >> 9;
     uint8_t   Ry = (currentOpcode & 0x0007);
@@ -548,7 +548,7 @@ uint16_t SCC68070::Addx()
     return calcTime;
 }
 
-uint16_t SCC68070::And()
+uint16_t SCC68070::AND()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
@@ -655,7 +655,7 @@ uint16_t SCC68070::And()
     return calcTime;
 }
 
-uint16_t SCC68070::Andi()
+uint16_t SCC68070::ANDI()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -720,14 +720,14 @@ uint16_t SCC68070::Andi()
     return calcTime;
 }
 
-uint16_t SCC68070::Andiccr()
+uint16_t SCC68070::ANDICCR()
 {
     uint8_t data = GetNextWord() & 0x1F;
     SR |= data;
     return 14;
 }
 
-uint16_t SCC68070::Andisr()
+uint16_t SCC68070::ANDISR()
 {
     uint16_t data = GetNextWord();
     if(!GetS())
@@ -736,7 +736,7 @@ uint16_t SCC68070::Andisr()
     return 14;
 }
 
-uint16_t SCC68070::AsM()
+uint16_t SCC68070::ASm()
 {
     uint8_t     dr = (currentOpcode & 0x0100) >> 8;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -771,7 +771,7 @@ uint16_t SCC68070::AsM()
     return calcTime;
 }
 
-uint16_t SCC68070::AsR()
+uint16_t SCC68070::ASr()
 {
     uint8_t count = (currentOpcode & 0x0E00) >> 9;
     uint8_t    dr = (currentOpcode & 0x0100) >> 8;
@@ -898,7 +898,7 @@ uint16_t SCC68070::AsR()
     return 13 + 3 * shift;
 }
 
-uint16_t SCC68070::BCC()
+uint16_t SCC68070::Bcc()
 {
     uint8_t condition = (currentOpcode & 0x0F00) >> 8;
     int16_t      disp = (int8_t)(currentOpcode & 0x00FF);
@@ -921,7 +921,7 @@ uint16_t SCC68070::BCC()
     return calcTime;
 }
 
-uint16_t SCC68070::Bchg()
+uint16_t SCC68070::BCHG()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -981,7 +981,7 @@ uint16_t SCC68070::Bchg()
     return calcTime;
 }
 
-uint16_t SCC68070::Bclr()
+uint16_t SCC68070::BCLR()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1031,7 +1031,7 @@ uint16_t SCC68070::Bclr()
     return calcTime;
 }
 
-uint16_t SCC68070::Bra()
+uint16_t SCC68070::BRA()
 {
     int16_t disp = (int8_t)(currentOpcode & 0x00FF);
     uint16_t calcTime;
@@ -1051,7 +1051,7 @@ uint16_t SCC68070::Bra()
     return calcTime;
 }
 
-uint16_t SCC68070::Bset()
+uint16_t SCC68070::BSET()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1101,7 +1101,7 @@ uint16_t SCC68070::Bset()
     return calcTime;
 }
 
-uint16_t SCC68070::Bsr()
+uint16_t SCC68070::BSR()
 {
     int16_t disp = (int8_t)(currentOpcode & 0x00FF);
     uint16_t calcTime;
@@ -1123,7 +1123,7 @@ uint16_t SCC68070::Bsr()
     return calcTime;
 }
 
-uint16_t SCC68070::Btst()
+uint16_t SCC68070::BTST()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1166,7 +1166,7 @@ uint16_t SCC68070::Btst()
     return calcTime;
 }
 
-uint16_t SCC68070::Chk()
+uint16_t SCC68070::CHK()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1187,7 +1187,7 @@ uint16_t SCC68070::Chk()
     return calcTime;
 }
 
-uint16_t SCC68070::Clr()
+uint16_t SCC68070::CLR()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1208,7 +1208,7 @@ uint16_t SCC68070::Clr()
     return calcTime;
 }
 
-uint16_t SCC68070::Cmp()
+uint16_t SCC68070::CMP()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
@@ -1256,7 +1256,7 @@ uint16_t SCC68070::Cmp()
     return calcTime;
 }
 
-uint16_t SCC68070::Cmpa()
+uint16_t SCC68070::CMPA()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x0100) >> 6;
@@ -1292,7 +1292,7 @@ uint16_t SCC68070::Cmpa()
     return calcTime;
 }
 
-uint16_t SCC68070::Cmpi()
+uint16_t SCC68070::CMPI()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1339,7 +1339,7 @@ uint16_t SCC68070::Cmpi()
     return (size == 2) ? calcTime + 4 : calcTime;
 }
 
-uint16_t SCC68070::Cmpm()
+uint16_t SCC68070::CMPM()
 {
     uint8_t size = (currentOpcode & 0x00C0) >> 6;
     uint8_t Ax = (currentOpcode & 0x0E00) >> 9;
@@ -1382,7 +1382,7 @@ uint16_t SCC68070::Cmpm()
     return (size == 2) ? 26 : 18;
 }
 
-uint16_t SCC68070::DbCC()
+uint16_t SCC68070::DBcc()
 {
     uint8_t condition = (currentOpcode & 0x0F00) >> 8;
     uint8_t reg = (currentOpcode & 0x0007);
@@ -1403,7 +1403,7 @@ uint16_t SCC68070::DbCC()
     return 17;
 }
 
-uint16_t SCC68070::Divs()
+uint16_t SCC68070::DIVS()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1438,7 +1438,7 @@ uint16_t SCC68070::Divs()
     return calcTime;
 }
 
-uint16_t SCC68070::Divu()
+uint16_t SCC68070::DIVU()
 {
     const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 6;
@@ -1473,7 +1473,7 @@ uint16_t SCC68070::Divu()
     return calcTime;
 }
 
-uint16_t SCC68070::Eor()
+uint16_t SCC68070::EOR()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x001C) >> 6;
@@ -1522,7 +1522,7 @@ uint16_t SCC68070::Eor()
     return calcTime;
 }
 
-uint16_t SCC68070::Eori()
+uint16_t SCC68070::EORI()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1576,14 +1576,14 @@ uint16_t SCC68070::Eori()
     return calcTime;
 }
 
-uint16_t SCC68070::Eoriccr()
+uint16_t SCC68070::EORICCR()
 {
     uint8_t data = GetNextWord() & 0x1F;
     SR ^= data;
     return 14;
 }
 
-uint16_t SCC68070::Eorisr()
+uint16_t SCC68070::EORISR()
 {
     uint16_t data = GetNextWord();
     if(!GetS())
@@ -1592,7 +1592,7 @@ uint16_t SCC68070::Eorisr()
     return 14;
 }
 
-uint16_t SCC68070::Exg()
+uint16_t SCC68070::EXG()
 {
     uint8_t   Rx = (currentOpcode & 0x0E00) >> 9;
     uint8_t mode = (currentOpcode & 0x00F8) >> 3;
@@ -1622,7 +1622,7 @@ uint16_t SCC68070::Exg()
     return 13;
 }
 
-uint16_t SCC68070::Ext()
+uint16_t SCC68070::EXT()
 {
     uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
     uint8_t    reg = (currentOpcode & 0x0007);
@@ -1643,12 +1643,12 @@ uint16_t SCC68070::Ext()
     return 7;
 }
 
-uint16_t SCC68070::Illegal()
+uint16_t SCC68070::ILLEGAL()
 {
     return Exception(IllegalInstruction);
 }
 
-uint16_t SCC68070::Jmp()
+uint16_t SCC68070::JMP()
 {
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
@@ -1675,7 +1675,7 @@ uint16_t SCC68070::Jmp()
     return calcTime;
 }
 
-uint16_t SCC68070::Jsr()
+uint16_t SCC68070::JSR()
 {
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
@@ -1706,7 +1706,7 @@ uint16_t SCC68070::Jsr()
     return calcTime;
 }
 
-uint16_t SCC68070::Lea()
+uint16_t SCC68070::LEA()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1721,7 +1721,7 @@ uint16_t SCC68070::Lea()
     return calcTime;
 }
 
-uint16_t SCC68070::Link()
+uint16_t SCC68070::LINK()
 {
     uint8_t reg = (currentOpcode & 0x0007);
     SetLong(ARIWPr(7, 4), A[reg]);
@@ -1731,7 +1731,7 @@ uint16_t SCC68070::Link()
     return 25;
 }
 
-uint16_t SCC68070::LsM()
+uint16_t SCC68070::LSm()
 {
     uint8_t     dr = (currentOpcode & 0x0100) >> 8;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -1761,7 +1761,7 @@ uint16_t SCC68070::LsM()
     return calcTime;
 }
 
-uint16_t SCC68070::LsR()
+uint16_t SCC68070::LSr()
 {
     uint8_t count = (currentOpcode & 0x0E00) >> 9;
     uint8_t    dr = (currentOpcode & 0x0100) >> 8;
@@ -1867,7 +1867,7 @@ uint16_t SCC68070::LsR()
     return 13 + 3 * shift;
 }
 
-uint16_t SCC68070::Move()
+uint16_t SCC68070::MOVE()
 {
     uint8_t    size = (currentOpcode & 0x3000) >> 12;
     uint8_t  dstreg = (currentOpcode & 0x0E00) >> 9;
@@ -1903,7 +1903,7 @@ uint16_t SCC68070::Move()
     return calcTime;
 }
 
-uint16_t SCC68070::Movea()
+uint16_t SCC68070::MOVEA()
 {
     uint8_t   size = (currentOpcode & 0x3000) >> 12;
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
@@ -1924,7 +1924,7 @@ uint16_t SCC68070::Movea()
     return calcTime;
 }
 
-uint16_t SCC68070::Moveccr()
+uint16_t SCC68070::MOVECCR()
 {
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
@@ -1937,7 +1937,7 @@ uint16_t SCC68070::Moveccr()
     return calcTime;
 }
 
-uint16_t SCC68070::MoveFsr() // Should not be used according to the Green Book Chapter VI.2.2.2
+uint16_t SCC68070::MOVEfSR() // Should not be used according to the Green Book Chapter VI.2.2.2
 {
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
@@ -1956,7 +1956,7 @@ uint16_t SCC68070::MoveFsr() // Should not be used according to the Green Book C
     return calcTime;
 }
 
-uint16_t SCC68070::Movesr()
+uint16_t SCC68070::MOVESR()
 {
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
@@ -1977,7 +1977,7 @@ uint16_t SCC68070::Movesr()
     return calcTime;
 }
 
-uint16_t SCC68070::Moveusp()
+uint16_t SCC68070::MOVEUSP()
 {
     uint8_t  dr = (currentOpcode & 0x0008) >> 3;
     uint8_t reg = (currentOpcode & 0x0007);
@@ -1994,7 +1994,7 @@ uint16_t SCC68070::Moveusp()
     return calcTime;
 }
 
-uint16_t SCC68070::Movem()
+uint16_t SCC68070::MOVEM()
 {
     uint8_t     dr = (currentOpcode & 0x0400) >> 10;
     uint8_t   size = (currentOpcode & 0x0040) >> 6;
@@ -2134,7 +2134,7 @@ uint16_t SCC68070::Movem()
     return calcTime + n * (size == 4) ? 11 : 7;
 }
 
-uint16_t SCC68070::Movep()
+uint16_t SCC68070::MOVEP()
 {
     uint8_t data = (currentOpcode & 0x0E00) >> 9;
     uint8_t dir  = (currentOpcode & 0x0080) >> 7;
@@ -2183,7 +2183,7 @@ uint16_t SCC68070::Movep()
     return calcTime;
 }
 
-uint16_t SCC68070::Moveq()
+uint16_t SCC68070::MOVEQ()
 {
     uint8_t  reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t data = (currentOpcode & 0x00FF);
@@ -2195,7 +2195,7 @@ uint16_t SCC68070::Moveq()
     return 7;
 }
 
-uint16_t SCC68070::Muls()
+uint16_t SCC68070::MULS()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2215,7 +2215,7 @@ uint16_t SCC68070::Muls()
     return calcTime;
 }
 
-uint16_t SCC68070::Mulu()
+uint16_t SCC68070::MULU()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2235,7 +2235,7 @@ uint16_t SCC68070::Mulu()
     return calcTime;
 }
 
-uint16_t SCC68070::Nbcd()
+uint16_t SCC68070::NBCD()
 {
     uint8_t mode = (currentOpcode & 0x0038) >> 3;
     uint8_t  reg = (currentOpcode & 0x0007);
@@ -2259,7 +2259,7 @@ uint16_t SCC68070::Nbcd()
     return calcTime - 4;
 }
 
-uint16_t SCC68070::Neg()
+uint16_t SCC68070::NEG()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2344,7 +2344,7 @@ uint16_t SCC68070::Neg()
     return calcTime;
 }
 
-uint16_t SCC68070::Negx()
+uint16_t SCC68070::NEGX()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2429,12 +2429,12 @@ uint16_t SCC68070::Negx()
     return calcTime;
 }
 
-uint16_t SCC68070::Nop()
+uint16_t SCC68070::NOP()
 {
     return 7; // I love this instruction :D
 }
 
-uint16_t SCC68070::Not()
+uint16_t SCC68070::NOT()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2503,7 +2503,7 @@ uint16_t SCC68070::Not()
     return calcTime;
 }
 
-uint16_t SCC68070::Or()
+uint16_t SCC68070::OR()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x001C) >> 6;
@@ -2590,7 +2590,7 @@ uint16_t SCC68070::Or()
     return calcTime;
 }
 
-uint16_t SCC68070::Ori()
+uint16_t SCC68070::ORI()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2644,14 +2644,14 @@ uint16_t SCC68070::Ori()
     return calcTime;
 }
 
-uint16_t SCC68070::Oriccr()
+uint16_t SCC68070::ORICCR()
 {
     uint8_t data = GetNextWord() & 0x1F;
     SR |= data;
     return 14;
 }
 
-uint16_t SCC68070::Orisr()
+uint16_t SCC68070::ORISR()
 {
     uint16_t data = GetNextWord();
     if(!GetS())
@@ -2660,7 +2660,7 @@ uint16_t SCC68070::Orisr()
     return 14;
 }
 
-uint16_t SCC68070::Pea()
+uint16_t SCC68070::PEA()
 {
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
@@ -2673,7 +2673,7 @@ uint16_t SCC68070::Pea()
     return calcTime;
 }
 
-uint16_t SCC68070::Reset() // Not fully emulated I think
+uint16_t SCC68070::RESET() // Not fully emulated I think
 {
     uint16_t calcTime = 154;
     if(!GetS())
@@ -2682,7 +2682,7 @@ uint16_t SCC68070::Reset() // Not fully emulated I think
     return calcTime;
 }
 
-uint16_t SCC68070::RoM()
+uint16_t SCC68070::ROm()
 {
     uint8_t     dr = (currentOpcode & 0x0100) >> 8;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2716,7 +2716,7 @@ uint16_t SCC68070::RoM()
     return calcTime;
 }
 
-uint16_t SCC68070::RoR()
+uint16_t SCC68070::ROr()
 {
     uint8_t count = (currentOpcode & 0x0E00) >> 9;
     uint8_t    dr = (currentOpcode & 0x0100) >> 8;
@@ -2834,7 +2834,7 @@ uint16_t SCC68070::RoR()
     return 13 + 3 * shift;
 }
 
-uint16_t SCC68070::RoxM()
+uint16_t SCC68070::ROXm()
 {
     uint8_t     dr = (currentOpcode & 0x0100) >> 8;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -2866,7 +2866,7 @@ uint16_t SCC68070::RoxM()
     return calcTime;
 }
 
-uint16_t SCC68070::RoxR()
+uint16_t SCC68070::ROXr()
 {
     uint8_t count = (currentOpcode & 0x0E00) >> 9;
     uint8_t    dr = (currentOpcode & 0x0100) >> 8;
@@ -2978,7 +2978,7 @@ uint16_t SCC68070::RoxR()
     return 13 + 3 * shift;
 }
 
-uint16_t SCC68070::Rte()
+uint16_t SCC68070::RTE()
 {
     uint16_t calcTime = 39;
     if(GetS())
@@ -2997,7 +2997,7 @@ uint16_t SCC68070::Rte()
     return calcTime;
 }
 
-uint16_t SCC68070::Rtr()
+uint16_t SCC68070::RTR()
 {
     SR &= 0xFFE0;
     SR |= GetWord(ARIWPo(7, 2)) & 0x001F;
@@ -3005,13 +3005,13 @@ uint16_t SCC68070::Rtr()
     return 22;
 }
 
-uint16_t SCC68070::Rts()
+uint16_t SCC68070::RTS()
 {
     PC = GetLong(ARIWPo(7, 4));
     return 15;
 }
 
-uint16_t SCC68070::Sbcd()
+uint16_t SCC68070::SBCD()
 {
     uint8_t Ry = (currentOpcode & 0x0E00) >> 9;
     uint8_t Rx = (currentOpcode & 0x0007);
@@ -3050,7 +3050,7 @@ uint16_t SCC68070::Sbcd()
     return calcTime;
 }
 
-uint16_t SCC68070::SCC()
+uint16_t SCC68070::Scc()
 {
     uint8_t condition = (currentOpcode & 0x0F00) >> 8;
     uint8_t    eamode = (currentOpcode & 0x0038) >> 3;
@@ -3068,7 +3068,7 @@ uint16_t SCC68070::SCC()
     return calcTime;
 }
 
-uint16_t SCC68070::Stop() // Not fully emulated
+uint16_t SCC68070::STOP() // Not fully emulated
 {
     uint16_t data = GetNextWord();
     uint16_t calcTime = 17;
@@ -3096,7 +3096,7 @@ uint16_t SCC68070::Stop() // Not fully emulated
     return calcTime;
 }
 
-uint16_t SCC68070::Sub()
+uint16_t SCC68070::SUB()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
@@ -3200,7 +3200,7 @@ uint16_t SCC68070::Sub()
     return calcTime;
 }
 
-uint16_t SCC68070::Suba()
+uint16_t SCC68070::SUBA()
 {
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t opmode = (currentOpcode & 0x0100) >> 6;
@@ -3219,7 +3219,7 @@ uint16_t SCC68070::Suba()
     return calcTime;
 }
 
-uint16_t SCC68070::Subi()
+uint16_t SCC68070::SUBI()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -3281,7 +3281,7 @@ uint16_t SCC68070::Subi()
     return calcTime;
 }
 
-uint16_t SCC68070::Subq()
+uint16_t SCC68070::SUBQ()
 {
     uint8_t   doto = (currentOpcode & 0x0E00) >> 9;
     uint8_t   data = doto ? doto : 8;
@@ -3352,7 +3352,7 @@ uint16_t SCC68070::Subq()
     return calcTime;
 }
 
-uint16_t SCC68070::Subx()
+uint16_t SCC68070::SUBX()
 {
     uint8_t   ry = (currentOpcode & 0x0E00) >> 9;
     uint8_t size = (currentOpcode & 0x00C0) >> 6;
@@ -3462,7 +3462,7 @@ uint16_t SCC68070::Subx()
     return calcTime;
 }
 
-uint16_t SCC68070::Swap()
+uint16_t SCC68070::SWAP()
 {
     uint8_t reg = currentOpcode & 0x0007;
 
@@ -3486,7 +3486,7 @@ uint16_t SCC68070::Swap()
     return 7;
 }
 
-uint16_t SCC68070::Tas()
+uint16_t SCC68070::TAS()
 {
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
@@ -3514,7 +3514,7 @@ uint16_t SCC68070::Tas()
     return calcTime;
 }
 
-uint16_t SCC68070::Trap()
+uint16_t SCC68070::TRAP()
 {
     uint8_t vec = currentOpcode & 0x000F;
     uint16_t calcTime = 0;
@@ -3522,7 +3522,7 @@ uint16_t SCC68070::Trap()
     return calcTime;
 }
 
-uint16_t SCC68070::Trapv()
+uint16_t SCC68070::TRAPV()
 {
     uint16_t calcTime = 0;
 
@@ -3534,7 +3534,7 @@ uint16_t SCC68070::Trapv()
     return calcTime;
 }
 
-uint16_t SCC68070::Tst()
+uint16_t SCC68070::TST()
 {
     uint8_t   size = (currentOpcode & 0x00C0) >> 6;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
@@ -3590,7 +3590,7 @@ uint16_t SCC68070::Tst()
     return calcTime;
 }
 
-uint16_t SCC68070::Unlk()
+uint16_t SCC68070::UNLK()
 {
     uint8_t reg = currentOpcode & 0x0007;
     A[7] = A[reg];
