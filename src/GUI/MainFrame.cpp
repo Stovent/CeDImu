@@ -250,7 +250,7 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
     if(app->cpu)
-        app->cpu->RebootCore();
+        app->cpu->Reset();
 }
 
 void MainFrame::OnVDSCViewer(wxCommandEvent& event)

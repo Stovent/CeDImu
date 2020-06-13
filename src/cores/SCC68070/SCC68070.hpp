@@ -226,7 +226,7 @@ public:
 
     void Run();
     void SingleStep();
-    void RebootCore();
+    void Reset();
     uint64_t instructionCount;
 
 private:

@@ -18,7 +18,7 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
     uart_in.open("uart_in", std::ios::binary | std::ios::in);
 
     GenerateInstructionSet();
-    RebootCore();
+    Reset();
 
     SET_TX_READY
     SET_RX_READY
@@ -29,7 +29,7 @@ SCC68070::~SCC68070()
     delete[] internal;
 }
 
-void SCC68070::RebootCore()
+void SCC68070::Reset()
 {
     run = false;
     LOG(out << "RESET" << std::endl; instruction << "RESET" << std::endl;)
