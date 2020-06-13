@@ -97,7 +97,7 @@ void MCD212::ExecuteICA1()
             out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
             out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
             out_display << "\tICA1 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << ica << std::endl)
-        ICA1.push_back("Frame " + std::to_string(totalFrameCount) + "\tline " + std::to_string (lineNumber) + "\t : 0x" + toHex(ica));
+        ICA1.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
 
         switch(ica >> 28)
         {
@@ -156,7 +156,7 @@ void MCD212::ExecuteDCA1()
             out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
             out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
             out_display << "\tDCA1 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << dca << std::endl)
-        DCA1.push_back("Frame " + std::to_string(totalFrameCount) + "\tline " + std::to_string (lineNumber) + "\t : 0x" + toHex(dca));
+        DCA1.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
         {
@@ -215,7 +215,7 @@ void MCD212::ExecuteICA2()
             out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
             out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
             out_display << "\tICA2 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << ica << std::endl)
-        ICA2.push_back("Frame " + std::to_string(totalFrameCount) + "\tline " + std::to_string (lineNumber) + "\t : 0x" + toHex(ica));
+        ICA2.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
 
         switch(ica >> 28)
         {
@@ -275,7 +275,7 @@ void MCD212::ExecuteDCA2()
             out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
             out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
             out_display << "\tDCA2 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << dca << std::endl)
-        DCA2.push_back("Frame " + std::to_string(totalFrameCount) + "\tline " + std::to_string (lineNumber) + "\t : 0x" + toHex(dca));
+        DCA2.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
         {

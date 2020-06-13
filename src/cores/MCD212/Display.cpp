@@ -76,10 +76,6 @@ void MCD212::DrawLine()
         totalFrameCount++;
         OnFrameCompleted();
         lineNumber = 0;
-        ICA1.clear();
-        DCA1.clear();
-        ICA2.clear();
-        DCA2.clear();
     }
 }
 
@@ -102,10 +98,16 @@ void MCD212::DrawLineA()
     }
 
     if(GetIC1() && GetDC1())
+    {
+        DCA1.clear();
         ExecuteDCA1();
+    }
 
     if(GetIC1() && lineNumber >= GetVerticalResolution()-1)
+    {
+        ICA1.clear();
         ExecuteICA1();
+    }
 }
 
 void MCD212::DrawLineB()
@@ -128,10 +130,16 @@ void MCD212::DrawLineB()
     }
 
     if(GetIC2() && GetDC2())
+    {
+        DCA2.clear();
         ExecuteDCA2();
+    }
 
     if(GetIC2() && lineNumber >= GetVerticalResolution()-1)
+    {
+        ICA2.clear();
         ExecuteICA2();
+    }
 }
 
 void MCD212::DrawBackground()
