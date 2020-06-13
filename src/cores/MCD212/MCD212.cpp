@@ -88,7 +88,7 @@ void MCD212::MemorySwap()
 
 void MCD212::ExecuteICA1()
 {
-    uint32_t addr = 0x400;
+    uint32_t addr = GetSM() ? (GetPA() ? 0x400 : 0x404) : 0x400;
     for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
     {
         const uint32_t ica = GetLong(addr);
@@ -206,7 +206,7 @@ void MCD212::ExecuteDCA1()
 
 void MCD212::ExecuteICA2()
 {
-    uint32_t addr = 0x200400;
+    uint32_t addr = GetSM() ? (GetPA() ? 0x200400 : 0x200404) : 0x200400;
     for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
     {
         const uint32_t ica = GetLong(addr);
