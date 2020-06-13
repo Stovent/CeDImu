@@ -150,33 +150,32 @@ end_ICA1:
 
 void MCD212::ExecuteDCA1()
 {
-    uint32_t dca;
-    uint32_t addr = GetDCP1() + 64*lineNumber;
-    for(uint8_t i = 0; i < 16; i++)
+    for(uint8_t i = 0; i < 16; i++) // 64 bytes/line
     {
-        dca = GetLong(addr);
+        const uint32_t addr = GetDCP1();
+        const uint32_t dca = GetLong(addr);
+
         LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << addr; \
             out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
             out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
             out_display << "\tDCA1 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << dca << std::endl)
         DCA1.push_back("Frame " + std::to_string(totalFrameCount) + "\tline " + std::to_string (lineNumber) + "\t : 0x" + toHex(dca));
+
         switch(dca >> 28)
         {
         case 0: // STOP
-            goto end_DCA1;
-            break;
+            return;
 
         case 1: // NOP
             break;
 
         case 2: // RELOAD DCP
-            SetDCP1(dca & 0x003FFFFC);
+            SetDCP1((dca & 0x003FFFFC) - 4);
             break;
 
         case 3: // RELOAD DCP AND STOP
             SetDCP1(dca & 0x003FFFFC);
-            goto end_DCA1;
-            break;
+            return;
 
         case 4: // RELOAD VSR
             SetVSR1(dca & 0x003FFFFF);
@@ -184,8 +183,7 @@ void MCD212::ExecuteDCA1()
 
         case 5: // RELOAD VSR AND STOP
             SetVSR1(dca & 0x003FFFFF);
-            goto end_DCA1;
-            break;
+            return;
 
         case 6: // INTERRUPT
             SetIT1();
@@ -205,10 +203,8 @@ void MCD212::ExecuteDCA1()
             else
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-        addr += 4;
+        SetDCP1(addr + 4);
     }
-end_DCA1:
-    return;
 }
 
 void MCD212::ExecuteICA2()
@@ -276,33 +272,32 @@ end_ICA2:
 
 void MCD212::ExecuteDCA2()
 {
-    uint32_t dca;
-    uint32_t addr = GetDCP2() + 64*lineNumber;
     for(uint8_t i = 0; i < 16; i++)
     {
-        dca = GetLong(addr);
+        const uint32_t addr = GetDCP2();
+        const uint32_t dca = GetLong(addr);
+
         LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << addr; \
             out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
             out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
             out_display << "\tDCA2 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << dca << std::endl)
         DCA2.push_back("Frame " + std::to_string(totalFrameCount) + "\tline " + std::to_string (lineNumber) + "\t : 0x" + toHex(dca));
+
         switch(dca >> 28)
         {
         case 0: // STOP
-            goto end_DCA2;
-            break;
+            return;
 
         case 1: // NOP
             break;
 
         case 2: // RELOAD DCP
-            SetDCP2(dca & 0x003FFFFC);
+            SetDCP2((dca & 0x003FFFFC) - 4);
             break;
 
         case 3: // RELOAD DCP AND STOP
             SetDCP2(dca & 0x003FFFFC);
-            goto end_DCA2;
-            break;
+            return;
 
         case 4: // RELOAD VSR
             SetVSR2(dca & 0x003FFFFF);
@@ -310,8 +305,7 @@ void MCD212::ExecuteDCA2()
 
         case 5: // RELOAD VSR AND STOP
             SetVSR2(dca & 0x003FFFFF);
-            goto end_DCA2;
-            break;
+            return;
 
         case 6: // INTERRUPT
             SetIT2();
@@ -332,10 +326,8 @@ void MCD212::ExecuteDCA2()
             else
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-        addr += 4;
+        SetDCP2(addr + 4);
     }
-end_DCA2:
-    return;
 }
 
 void MCD212::OnFrameCompleted()
