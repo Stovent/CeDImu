@@ -88,21 +88,21 @@ void MCD212::MemorySwap()
 
 void MCD212::ExecuteICA1()
 {
-    uint32_t ica;
     uint32_t addr = 0x400;
     for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
     {
-        ica = GetLong(addr + 4*i);
-        LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << (addr + 4*i); \
+        const uint32_t ica = GetLong(addr);
+
+        LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << addr; \
             out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
             out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
             out_display << "\tICA1 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << ica << std::endl)
         ICA1.push_back("Frame " + std::to_string(totalFrameCount) + "\tline " + std::to_string (lineNumber) + "\t : 0x" + toHex(ica));
+
         switch(ica >> 28)
         {
         case 0: // STOP
-            goto end_ICA1;
-            break;
+            return;
 
         case 1: // NOP
             break;
@@ -113,17 +113,15 @@ void MCD212::ExecuteICA1()
 
         case 3: // RELOAD DCP AND STOP
             SetDCP1(ica & 0x003FFFFC);
-            goto end_ICA1;
-            break;
+            return;
 
         case 4: // RELOAD ICA
-            addr = ica & 0x003FFFFF;
+            addr = (ica & 0x003FFFFF) - 4;
             break;
 
         case 5: // RELOAD VSR AND STOP
             SetVSR1(ica & 0x003FFFFF);
-            goto end_ICA1;
-            break;
+            return;
 
         case 6: // INTERRUPT
             SetIT1();
@@ -143,9 +141,8 @@ void MCD212::ExecuteICA1()
             else
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
+        addr += 4;
     }
-end_ICA1:
-    return;
 }
 
 void MCD212::ExecuteDCA1()
@@ -209,21 +206,21 @@ void MCD212::ExecuteDCA1()
 
 void MCD212::ExecuteICA2()
 {
-    uint32_t ica;
     uint32_t addr = 0x200400;
     for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
     {
-        ica = GetLong(addr + 4*i);
-        LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << (addr + 4*i); \
+        const uint32_t ica = GetLong(addr);
+
+        LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << addr; \
             out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
             out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
             out_display << "\tICA2 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << ica << std::endl)
         ICA2.push_back("Frame " + std::to_string(totalFrameCount) + "\tline " + std::to_string (lineNumber) + "\t : 0x" + toHex(ica));
+
         switch(ica >> 28)
         {
         case 0: // STOP
-            goto end_ICA2;
-            break;
+            return;
 
         case 1: // NOP
             break;
@@ -234,17 +231,15 @@ void MCD212::ExecuteICA2()
 
         case 3: // RELOAD DCP AND STOP
             SetDCP2(ica & 0x003FFFFC);
-            goto end_ICA2;
-            break;
+            return;
 
         case 4: // RELOAD ICA
-            addr = ica & 0x003FFFFF;
+            addr = (ica & 0x003FFFFF) - 4;
             break;
 
         case 5: // RELOAD VSR AND STOP
             SetVSR2(ica & 0x003FFFFF);
-            goto end_ICA2;
-            break;
+            return;
 
         case 6: // INTERRUPT
             SetIT2();
@@ -265,9 +260,8 @@ void MCD212::ExecuteICA2()
             else
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
+        addr += 4;
     }
-end_ICA2:
-    return;
 }
 
 void MCD212::ExecuteDCA2()
