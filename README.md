@@ -39,6 +39,7 @@ Find the executable in the bin folder
 - [ ] Export video
 - [ ] Sound emulation
 - [ ] Tools
+  - [x] Disassembler
   - [ ] RAM Search
   - [ ] Memory Viewer
   - [ ] CPU Viewer
