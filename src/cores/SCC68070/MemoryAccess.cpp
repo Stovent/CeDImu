@@ -402,7 +402,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
         LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl; })
         return vdsc->GetByte(addr, flags);
     }
-    else if(addr >= SCC68070Peripherals::Base && addr <= SCC68070Peripherals::Last)
+    else if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
     {
         if(GetS())
         {
@@ -453,7 +453,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
         vdsc->SetByte(addr, data, flags);
-    else if(addr >= SCC68070Peripherals::Base && addr <= SCC68070Peripherals::Last)
+    else if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
     {
         if(GetS())
         {

@@ -163,8 +163,8 @@ enum ExceptionVectors
 enum SCC68070Peripherals
 {
     Base = 0x80001001,
-    Last = 0x8000807F,
-    Size = Last - Base + 1,
+    Last = 0x80008080,
+    Size = Last - Base,
 
     LIR  = 0x80001001 - Base, // Latched Interrupt priority level Register
 
