@@ -74,7 +74,7 @@ void CeDImu::StartGameThread()
     {
         StopGameThread();
         cpu->run = true;
-        gameThread = new std::thread(&SCC68070::Run, cpu);
+        gameThread = new std::thread(&SCC68070::Run, cpu, true);
     }
 }
 

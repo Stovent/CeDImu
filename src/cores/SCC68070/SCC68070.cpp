@@ -9,7 +9,6 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
 
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];
-    instructionCount = 0;
     cycleDelay = (1.0L / clockFrequency) * 1000000000;
 
     OPEN_LOG(out, "SCC68070.txt")
@@ -29,23 +28,118 @@ SCC68070::~SCC68070()
     delete[] internal;
 }
 
+void SCC68070::Run(const bool loop)
+{
+    (this->*Execute)(loop);
+}
+
 void SCC68070::Reset()
 {
     run = false;
     LOG(out << "RESET" << std::endl; instruction << "RESET" << std::endl;)
-    cycleCount = 146;
-    totalCycleCount = 146;
+    disassembledInstructions.clear();
+    cycleCount = totalCycleCount = 146;
+
+    lastAddress = 0;
     currentOpcode = 0;
     currentPC = 0;
-    lastAddress = 0;
     memset(internal, 0, SCC68070Peripherals::Size);
+
     for(uint8_t i = 0; i < 8; i++)
     {
         D[i] = 0;
         A[i] = 0;
     }
-    disassembledInstructions.clear();
     ResetOperation();
+}
+
+void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
+{
+    switch(reg)
+    {
+    case CPURegisters::D0: D[0] = value; break;
+    case CPURegisters::D1: D[1] = value; break;
+    case CPURegisters::D2: D[2] = value; break;
+    case CPURegisters::D3: D[3] = value; break;
+    case CPURegisters::D4: D[4] = value; break;
+    case CPURegisters::D5: D[5] = value; break;
+    case CPURegisters::D6: D[6] = value; break;
+    case CPURegisters::D7: D[7] = value; break;
+
+    case CPURegisters::A0: A[0] = value; break;
+    case CPURegisters::A1: A[1] = value; break;
+    case CPURegisters::A2: A[2] = value; break;
+    case CPURegisters::A3: A[3] = value; break;
+    case CPURegisters::A4: A[4] = value; break;
+    case CPURegisters::A5: A[5] = value; break;
+    case CPURegisters::A6: A[6] = value; break;
+    case CPURegisters::A7:
+        A[7] = value;
+        if(GetS())
+            SSP = value;
+        else
+            USP = value;
+        break;
+
+    case CPURegisters::PC: PC = value; break;
+    case CPURegisters::SR:
+        if((SR & 0x2000) ^ (value & 0x2000))
+            if(value & 0x2000)
+            {
+                USP = A[7];
+                A[7] = SSP;
+            }
+            else
+            {
+                SSP = A[7];
+                A[7] = USP;
+            }
+        SR = value;
+        break;
+
+    case CPURegisters::USP:
+        USP = A[7];
+        if(!GetS())
+            A[7] = value;
+
+    case CPURegisters::SSP:
+        SSP = A[7];
+        if(GetS())
+            A[7] = value;
+    }
+}
+
+std::map<std::string, uint32_t> SCC68070::GetRegisters()
+{
+    return {
+        {"D0", D[0]},
+        {"D1", D[1]},
+        {"D2", D[2]},
+        {"D3", D[3]},
+        {"D4", D[4]},
+        {"D5", D[5]},
+        {"D6", D[6]},
+        {"D7", D[7]},
+        {"A0", A[0]},
+        {"A1", A[1]},
+        {"A2", A[2]},
+        {"A3", A[3]},
+        {"A4", A[4]},
+        {"A5", A[5]},
+        {"A6", A[6]},
+        {"A7", A[7]},
+        {"PC", PC},
+        {"SR", SR},
+        {"SSP", SSP},
+        {"USP", USP},
+    };
+}
+
+uint16_t SCC68070::GetNextWord(const uint8_t flags)
+{
+    uint16_t opcode = vdsc->GetWord(PC, flags);
+    PC += 2;
+    return opcode;
 }
 
 void SCC68070::ResetOperation()
@@ -58,106 +152,74 @@ void SCC68070::ResetOperation()
     USP = 0;
 }
 
-void SCC68070::SingleStep()
-{
-    if(!run)
-        (this->*Execute)(false);
-}
-
-void SCC68070::Run()
-{
-    (this->*Execute)(true);
-}
-
-uint16_t SCC68070::GetNextWord(const uint8_t flags)
-{
-    uint16_t opcode = vdsc->GetWord(PC, flags);
-    PC += 2;
-    return opcode;
-}
-
-void SCC68070::SetCCR(const uint8_t X, const uint8_t N, const uint8_t Z, const uint8_t V, const uint8_t C) // use the define UNCHANGED to not change the value of a bit
-{
-    if(X != UNCHANGED)
-        SetX(X);
-    if(N != UNCHANGED)
-        SetN(N);
-    if(Z != UNCHANGED)
-        SetZ(Z);
-    if(V != UNCHANGED)
-        SetV(V);
-    if(C != UNCHANGED)
-        SetC(C);
-}
-
-void SCC68070::SetXC(const uint8_t XC)
+void SCC68070::SetXC(const bool XC)
 {
     SetX(XC);
     SetC(XC);
 }
 
-void SCC68070::SetVC(const uint8_t VC)
+void SCC68070::SetVC(const bool VC)
 {
     SetV(VC);
     SetC(VC);
 }
 
-void SCC68070::SetX(const uint8_t X)
+void SCC68070::SetX(const bool X)
 {
     SR &= 0b1111111111101111;
     SR |= (X << 4);
 }
 
-uint8_t SCC68070::GetX()
+bool SCC68070::GetX()
 {
-    return (SR & 0b0000000000010000) >> 4;
+    return SR & 0b0000000000010000;
 }
 
-void SCC68070::SetN(const uint8_t N)
+void SCC68070::SetN(const bool N)
 {
     SR &= 0b1111111111110111;
     SR |= (N << 3);
 }
 
-uint8_t SCC68070::GetN()
+bool SCC68070::GetN()
 {
-    return (SR & 0b0000000000001000) >> 3;
+    return SR & 0b0000000000001000;
 }
 
-void SCC68070::SetZ(const uint8_t Z)
+void SCC68070::SetZ(const bool Z)
 {
     SR &= 0b1111111111111011;
     SR |= (Z << 2);
 }
 
-uint8_t SCC68070::GetZ()
+bool SCC68070::GetZ()
 {
-    return (SR & 0b0000000000000100) >> 2;
+    return SR & 0b0000000000000100;
 }
 
-void SCC68070::SetV(const uint8_t V)
+void SCC68070::SetV(const bool V)
 {
     SR &= 0b1111111111111101;
     SR |= (V << 1);
 }
 
-uint8_t SCC68070::GetV()
+bool SCC68070::GetV()
 {
-    return (SR & 0b0000000000000010) >> 1;
+    return SR & 0b0000000000000010;
 }
 
-void SCC68070::SetC(const uint8_t C)
+void SCC68070::SetC(const bool C)
 {
     SR &= 0b1111111111111110;
     SR |= C;
 }
 
-uint8_t SCC68070::GetC()
+bool SCC68070::GetC()
 {
     return SR & 0b0000000000000001;
 }
 
-void SCC68070::SetS(const uint8_t S) // From Bizhawk
+void SCC68070::SetS(const bool S) // From Bizhawk
 {
     if(S == GetS()) return;
     if(S) // entering supervisor mode
@@ -174,9 +236,9 @@ void SCC68070::SetS(const uint8_t S) // From Bizhawk
     }
 }
 
-uint8_t SCC68070::GetS()
+bool SCC68070::GetS()
 {
-    return (SR & 0b0010000000000000) >> 13;
+    return SR & 0b0010000000000000;
 }
 
 void SCC68070::GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, uint16_t (SCC68070::*instFunc)(), void (SCC68070::*disFunc)(uint32_t))

@@ -201,19 +201,38 @@ enum SCC68070Peripherals
     MCR = 0x80008001 - Base, // MMU Control Register
 };
 
+enum class CPURegisters : uint16_t
+{
+    D0 = 0,
+    D1,
+    D2,
+    D3,
+    D4,
+    D5,
+    D6,
+    D7,
+
+    A0 = 8,
+    A1,
+    A2,
+    A3,
+    A4,
+    A5,
+    A6,
+    A7,
+
+    PC,
+    SR,
+    SSP,
+    USP,
+};
+
 class SCC68070
 {
 public:
-    int32_t D[8];
-    uint32_t A[8];
-    uint32_t PC;
-    uint16_t SR;
-    uint32_t USP;
-    uint32_t SSP;
-
-    uint32_t currentPC;
     bool run;
     bool disassemble;
+    uint32_t currentPC;
     uint64_t totalCycleCount;
 
     std::vector<std::string> disassembledInstructions;
@@ -224,10 +243,11 @@ public:
     explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = 15500000L);
     ~SCC68070();
 
-    void Run();
-    void SingleStep();
+    void Run(const bool loop = true);
     void Reset();
-    uint64_t instructionCount;
+
+    void SetRegister(CPURegisters reg, const uint32_t value);
+    std::map<std::string, uint32_t> GetRegisters();
 
 private:
     VDSC* vdsc;
@@ -250,27 +270,34 @@ private:
     uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
     void ResetOperation();
 
+    // Registers
+    int32_t D[8];
+    uint32_t A[8];
+    uint32_t PC;
+    uint16_t SR;
+    uint32_t USP;
+    uint32_t SSP;
+
     // Conditional Codes
-    void SetCCR(const uint8_t X, const uint8_t N, const uint8_t Z, const uint8_t V, const uint8_t C);
-    void SetXC(const uint8_t XC = 1); // Set both X and C at the same time
-    void SetVC(const uint8_t VC = 1); // Set both V and C at the same time
-    void SetX(const uint8_t X = 1);
-    uint8_t GetX();
-    void SetN(const uint8_t N = 1);
-    uint8_t GetN();
-    void SetZ(const uint8_t Z = 1);
-    uint8_t GetZ();
-    void SetV(const uint8_t V = 1);
-    uint8_t GetV();
-    void SetC(const uint8_t C = 1);
-    uint8_t GetC();
-    void SetS(const uint8_t S = 1);
-    uint8_t GetS();
+    void SetXC(const bool XC = 1); // Set both X and C at the same time
+    void SetVC(const bool VC = 1); // Set both V and C at the same time
+    void SetX(const bool X = 1);
+    bool GetX();
+    void SetN(const bool N = 1);
+    bool GetN();
+    void SetZ(const bool Z = 1);
+    bool GetZ();
+    void SetV(const bool V = 1);
+    bool GetV();
+    void SetC(const bool C = 1);
+    bool GetC();
+    void SetS(const bool S = 1);
+    bool GetS();
 
     uint16_t Exception(const uint8_t vectorNumber);
     std::string DisassembleException(const uint8_t vectorNumber);
 
-    // Addressing modes
+    // Addressing Modes
     int32_t GetIndexRegister(const uint16_t bew);
 
     uint32_t AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte);
@@ -286,7 +313,7 @@ private:
 
     std::string DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData = false);
 
-    // Addressing modes memory access
+    // Addressing Modes Memory Access
     uint8_t GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
     uint16_t GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
     uint32_t GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
@@ -345,7 +372,7 @@ private:
         &SCC68070::GT,
         &SCC68070::LE
     };
-    std::string DisassembleConditionalCode(uint8_t cc);
+    std::string DisassembleConditionalCode(const uint8_t cc);
 
     // Instruction Set
     void GenerateInstructionSet();

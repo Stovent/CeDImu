@@ -146,7 +146,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
             app->vdsc->PutDataInMemory(d, size, address);
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
-            app->cpu->PC = address + app->vdsc->GetLong(address + 0x30);
+            app->cpu->SetRegister(CPURegisters::PC, address + app->vdsc->GetLong(address + 0x30));
         }
     }
 
@@ -237,7 +237,7 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 
     button->Bind(wxEVT_BUTTON, [this, genericFrame, input] (wxEvent& event) {
         for(int i = 0; i < stoi(input->GetValue().ToStdString()); i++)
-            this->app->cpu->SingleStep();
+            this->app->cpu->Run(false);
     });
 
     sizer->Add(input, 1, wxEXPAND);

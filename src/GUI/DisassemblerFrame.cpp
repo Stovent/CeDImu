@@ -20,11 +20,11 @@ DisassemblerFrame::DisassemblerFrame(SCC68070* core, MainFrame* parent, const wx
     wxPanel* registersPanel = new wxPanel(this);
     for(uint8_t i = 0; i < 8; i++)
     {
-        d[i] = new wxTextCtrl(registersPanel, wxID_ANY, "D" + std::to_string(i) + ": " + std::to_string(cpu->D[i]), wxPoint(0, i * 23), wxSize(125, 23), wxTE_READONLY); d[i]->SetBackgroundColour(*wxWHITE);
-        a[i] = new wxTextCtrl(registersPanel, wxID_ANY, "A" + std::to_string(i) + ": " + toHex(cpu->A[i]),    wxPoint(0, i * 23 + 189), wxSize(125, 23), wxTE_READONLY); a[i]->SetBackgroundColour(*wxWHITE);
+        d[i] = new wxTextCtrl(registersPanel, wxID_ANY, "D" + std::to_string(i) + ": 0", wxPoint(0, i * 23), wxSize(125, 23), wxTE_READONLY); d[i]->SetBackgroundColour(*wxWHITE);
+        a[i] = new wxTextCtrl(registersPanel, wxID_ANY, "A" + std::to_string(i) + ": 0", wxPoint(0, i * 23 + 189), wxSize(125, 23), wxTE_READONLY); a[i]->SetBackgroundColour(*wxWHITE);
     }
-    pc = new wxTextCtrl(registersPanel, IDDisassemblerpc, "PC: " + toHex(cpu->PC), wxPoint(0, 377), wxSize(125, 23), wxTE_READONLY); pc->SetBackgroundColour(*wxWHITE);
-    sr = new wxTextCtrl(registersPanel, IDDisassemblersr, "SR: " + toBinString(cpu->SR, 16), wxPoint(0, 400), wxSize(125,23), wxTE_READONLY); sr->SetBackgroundColour(*wxWHITE);
+    pc = new wxTextCtrl(registersPanel, IDDisassemblerpc, "PC: 0", wxPoint(0, 377), wxSize(125, 23), wxTE_READONLY); pc->SetBackgroundColour(*wxWHITE);
+    sr = new wxTextCtrl(registersPanel, IDDisassemblersr, "SR: 0", wxPoint(0, 400), wxSize(125,23), wxTE_READONLY); sr->SetBackgroundColour(*wxWHITE);
 
     wxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(disassembler, 1, wxEXPAND);
@@ -60,13 +60,14 @@ void DisassemblerFrame::RefreshLoop(wxTimerEvent& event)
 
 void DisassemblerFrame::PaintEvent()
 {
+    std::map<std::string, uint32_t> regs = cpu->GetRegisters();
     for(uint8_t i = 0; i < 8; i++)
     {
-        d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(cpu->D[i]));
-        a[i]->SetLabelText("A" + std::to_string(i) + ": 0x" + toHex(cpu->A[i]));
+        d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(regs["D" + std::to_string(i)]));
+        a[i]->SetLabelText("A" + std::to_string(i) + ": 0x" + toHex(regs["A" + std::to_string(i)]));
     }
-    pc->SetLabelText("PC: 0x" + toHex(cpu->PC));
-    sr->SetLabelText("SR: " + toBinString(cpu->SR, 16));
+    pc->SetLabelText("PC: 0x" + toHex(regs["PC"]));
+    sr->SetLabelText("SR: " + toBinString(regs["SR"], 16));
 
     instructions.str("");
     std::ostream_iterator<std::string> ssit(instructions, "\n");

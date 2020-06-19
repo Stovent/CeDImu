@@ -38,8 +38,6 @@ void SCC68070::Interpreter(const bool loop)
             Exception(AddressError);
         }
 
-        instructionCount++;
-
         if(cycleCount * cycleDelay >= vdsc->GetLineDisplayTimeNanoSeconds())
         {
             vdsc->DrawLine();
