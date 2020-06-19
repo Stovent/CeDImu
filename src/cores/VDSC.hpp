@@ -5,6 +5,7 @@ class VDSC;
 
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <wx/image.h>
 
@@ -26,9 +27,7 @@ protected:
 
 public:
     CeDImu* app;
-    uint8_t* memory;
     bool biosLoaded;
-    bool stopOnNextCompletedFrame;
     uint32_t allocatedMemory;
     uint32_t totalFrameCount;
     std::string biosFilename;
@@ -37,8 +36,8 @@ public:
     std::vector<std::string> ICA2;
     std::vector<std::string> DCA2;
 
-    VDSC(CeDImu* appp) : lineNumber(0), app(appp), memory(nullptr), biosLoaded(false), stopOnNextCompletedFrame(false), allocatedMemory(0), totalFrameCount(0) {}
-    virtual ~VDSC() { delete[] memory; }
+    VDSC(CeDImu* appp) : lineNumber(0), app(appp), biosLoaded(false), allocatedMemory(0), totalFrameCount(0) {}
+    virtual ~VDSC() {}
 
     virtual void Reset() = 0;
 
@@ -54,10 +53,15 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) = 0;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) = 0;
 
-    virtual void DrawLine() = 0;
+    /** \brief Draw the next line to be drawn. Meant to be called by the CPU.
+     *
+     * \return false to stop instruction execution, true otherwise.
+     */
+    virtual bool DrawLine() = 0;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() { return 0; }
 
-    virtual void OnFrameCompleted() = 0;
+    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
+    virtual void StopOnNextFrame(const bool stop = true) = 0;
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() = 0;

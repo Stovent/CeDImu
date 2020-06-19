@@ -69,18 +69,22 @@ enum class Planes
 
 class MCD212 : public VDSC
 {
+    uint8_t* memory;
+
     wxImage planeA;
     wxImage planeB;
     wxImage cursorPlane;
     wxImage backgroundPlane;
     uint8_t memorySwapCount;
 
+    bool stopOnNextFrame;
     uint32_t* controlRegisters;
     uint16_t* internalRegisters;
     uint32_t CLUT[256];
     const uint8_t dequantizer[16] = {0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
     std::ofstream out_dram;
     std::ofstream out_display;
+    std::function<void()> OnFrameCompleted;
 
     void DrawLineA();
     void DrawLineB();
@@ -202,9 +206,10 @@ public:
         return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
     }
 
-    virtual void OnFrameCompleted() override;
+    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
+    virtual void StopOnNextFrame(const bool stop = true) override;
 
-    virtual void DrawLine() override;
+    virtual bool DrawLine() override;
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() override;
     virtual std::vector<VDSCRegister> GetControlRegisters() override;

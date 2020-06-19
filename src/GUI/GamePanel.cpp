@@ -42,7 +42,7 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
 
     case 'Z':
         if(!app->cpu) break;
-        app->vdsc->stopOnNextCompletedFrame = true;
+        app->vdsc->StopOnNextFrame();
         if(!app->cpu->run)
             app->StartGameThread();
         break;

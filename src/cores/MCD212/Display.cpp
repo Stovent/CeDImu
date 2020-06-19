@@ -5,7 +5,7 @@
 #define   SET_DA_BIT() internalRegisters[CSR1R] |= 0x80;
 #define UNSET_DA_BIT() internalRegisters[CSR1R] &= 0x20;
 
-void MCD212::DrawLine()
+bool MCD212::DrawLine()
 {
     SET_DA_BIT()
 
@@ -16,7 +16,7 @@ void MCD212::DrawLine()
             if(!planeA.Create(GetHorizontalResolution1(), GetVerticalResolution()))
             {
                 wxMessageBox("Could not create plane A image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return;
+                return false;
             }
             if(!planeA.HasAlpha())
                 planeA.InitAlpha();
@@ -24,7 +24,7 @@ void MCD212::DrawLine()
             if(!planeB.Create(GetHorizontalResolution2(), GetVerticalResolution()))
             {
                 wxMessageBox("Could not create plane B image (" + std::to_string(GetHorizontalResolution2()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return;
+                return false;
             }
             if(!planeB.HasAlpha())
                 planeB.InitAlpha();
@@ -32,7 +32,7 @@ void MCD212::DrawLine()
             if(!backgroundPlane.Create(GetHorizontalResolution1(), GetVerticalResolution()))
             {
                 wxMessageBox("Could not create background image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return;
+                return false;
             }
             if(!backgroundPlane.HasAlpha())
                 backgroundPlane.InitAlpha();
@@ -74,9 +74,14 @@ void MCD212::DrawLine()
             app->mainFrame->gamePanel->RefreshScreen(screen);
         }
         totalFrameCount++;
-        OnFrameCompleted();
+        if(OnFrameCompleted)
+            OnFrameCompleted();
         lineNumber = 0;
+        if(stopOnNextFrame)
+            return stopOnNextFrame = false;
     }
+
+    return true;
 }
 
 void MCD212::DrawLineA()

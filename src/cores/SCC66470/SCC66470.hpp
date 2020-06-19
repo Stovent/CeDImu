@@ -9,7 +9,10 @@ class SCC66470;
 
 class SCC66470 : public VDSC
 {
+    uint8_t* memory;
     uint8_t memorySwapCount;
+    bool stopOnNextframe;
+    std::function<void()> OnFrameCompleted;
 
 public:
     SCC66470(CeDImu* appp);
@@ -29,13 +32,14 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) override;
 
-    virtual void DrawLine() override;
+    virtual bool DrawLine() override;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override
     {
         return 700;
     }
 
-    virtual void OnFrameCompleted() override;
+    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
+    virtual void StopOnNextFrame(const bool stop = true) override;
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() override;
     virtual std::vector<VDSCRegister> GetControlRegisters() override;

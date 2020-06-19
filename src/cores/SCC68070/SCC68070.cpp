@@ -84,6 +84,7 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
     case CPURegisters::PC: PC = value; break;
     case CPURegisters::SR:
         if((SR & 0x2000) ^ (value & 0x2000))
+        {
             if(value & 0x2000)
             {
                 USP = A[7];
@@ -94,6 +95,7 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
                 SSP = A[7];
                 A[7] = USP;
             }
+        }
         SR = value;
         break;
 

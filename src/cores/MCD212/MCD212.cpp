@@ -6,6 +6,7 @@
 
 MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
 {
+    stopOnNextFrame = false;
     controlRegisters = new uint32_t[0x80];
     internalRegisters = new uint16_t[32];
     allocatedMemory = 0x500000;
@@ -28,8 +29,19 @@ MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
 
 MCD212::~MCD212()
 {
+    delete[] memory;
     delete[] controlRegisters;
     delete[] internalRegisters;
+}
+
+void MCD212::StopOnNextFrame(const bool stop)
+{
+    stopOnNextFrame = stop;
+}
+
+void MCD212::SetOnFrameCompletedCallback(std::function<void()> callback)
+{
+    OnFrameCompleted = callback;
 }
 
 void MCD212::Reset()
@@ -321,17 +333,6 @@ void MCD212::ExecuteDCA2()
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
         SetDCP2(addr + 4);
-    }
-}
-
-void MCD212::OnFrameCompleted()
-{
-    if(stopOnNextCompletedFrame)
-    {
-        stopOnNextCompletedFrame = false;
-        app->cpu->run = false;
-        app->mainFrame->pauseItem->Check(true);
-        app->mainFrame->SetStatusText("pause");
     }
 }
 

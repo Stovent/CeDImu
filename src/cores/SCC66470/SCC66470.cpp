@@ -9,11 +9,12 @@ SCC66470::SCC66470(CeDImu* appp) : VDSC(appp)
     memory = new uint8_t[allocatedMemory];
     memset(memory, 0, 1024 * 1024);
     memorySwapCount = 0;
+    stopOnNextframe = false;
 }
 
 SCC66470::~SCC66470()
 {
-
+    delete[] memory;
 }
 
 void SCC66470::Reset()
@@ -42,14 +43,19 @@ void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int po
     memcpy(&memory[position], s, size);
 }
 
-void SCC66470::DrawLine()
+bool SCC66470::DrawLine()
 {
-
+    return !stopOnNextframe;
 }
 
-void SCC66470::OnFrameCompleted()
+void SCC66470::SetOnFrameCompletedCallback(std::function<void()> callback)
 {
+    OnFrameCompleted = callback;
+}
 
+void SCC66470::StopOnNextFrame(const bool stop)
+{
+    stopOnNextframe = stop;
 }
 
 std::vector<VDSCRegister> SCC66470::GetInternalRegisters()
