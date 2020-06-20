@@ -56,7 +56,7 @@ void SCC68070::Stop()
 
 void SCC68070::Reset()
 {
-    run = false;
+    loop = false;
     LOG(out << "RESET" << std::endl; instruction << "RESET" << std::endl;)
     disassembledInstructions.clear();
     cycleCount = totalCycleCount = 146;
