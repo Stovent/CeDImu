@@ -54,8 +54,6 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
     else
         vdsc = new MCD212(this);
 
-    vdsc->SetOnFrameCompletedCallback([=] () -> void { this->mainFrame->pauseItem->Check(); });
-
     if(!vdsc->LoadBIOS(pathToBIOS))
         return false;
 
