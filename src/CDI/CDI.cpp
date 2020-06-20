@@ -1,5 +1,11 @@
 #include "CDI.hpp"
 
+#ifdef USE_STD_FILE_SYSTEM
+#include <filesystem>
+#else
+#include <wx/filefn.h>
+#endif // USE_STD_FILE_SYSTEM
+
 #include <wx/msgdlg.h>
 
 #include "../utils.hpp"
@@ -118,9 +124,14 @@ bool CDI::CreateSubfoldersFromROMDirectory(std::string path)
     std::string newFolder(gameFolder);
     do
     {
+#ifdef USE_STD_FILE_SYSTEM
+        if(!std::create_directory(newFolder))
+            return false;
+#else
         if(!wxDirExists(newFolder))
             if(!wxMkdir(newFolder))
                 return false;
+#endif // USE_STD_FILE_SYSTEM
 
         uint32_t pos = path.find('/');
         newFolder += path.substr(0, pos+1);
