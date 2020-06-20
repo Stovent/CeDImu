@@ -5,14 +5,14 @@ class SCC68070;
 
 #include <cstdint>
 #include <fstream>
-#include <vector>
 #include <string>
+#include <thread>
+#include <vector>
 
 #include "../../common/flags.hpp"
 #include "../VDSC.hpp"
 #include "../../utils.hpp"
 
-#define UNCHANGED 2
 #define OPCODESNBR 84
 
 // Actually, figure VI.1 of the Green Book
@@ -230,7 +230,6 @@ enum class CPURegisters : uint16_t
 class SCC68070
 {
 public:
-    bool run;
     bool disassemble;
     uint32_t currentPC;
     uint64_t totalCycleCount;
@@ -243,7 +242,9 @@ public:
     explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = 15500000L);
     ~SCC68070();
 
+    bool IsRunning();
     void Run(const bool loop = true);
+    void Stop();
     void Reset();
 
     void SetRegister(CPURegisters reg, const uint32_t value);
@@ -251,6 +252,9 @@ public:
 
 private:
     VDSC* vdsc;
+    std::thread executionThread;
+    bool loop;
+    bool isRunning;
 
     std::ofstream out;
     std::ofstream instruction;
@@ -265,8 +269,8 @@ private:
     uint32_t cycleCount;
     long double cycleDelay; // Time between two clock cycles in nanoseconds
 
-    void (SCC68070::*Execute)(const bool loop) = nullptr;
-    void Interpreter(const bool loop);
+    void (SCC68070::*Execute)() = nullptr;
+    void Interpreter();
     uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
     void ResetOperation();
 

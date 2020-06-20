@@ -3,14 +3,13 @@
 #include <algorithm>
 #include <chrono>
 #include <iterator>
-#include <thread>
 
 #include "../../Config.hpp"
 
-void SCC68070::Interpreter(const bool loop)
+void SCC68070::Interpreter()
 {
+    isRunning = true;
     std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long double, std::nano>> start = std::chrono::steady_clock::now();
-    run = loop;
     do
     {
         if(cycleCount == 0)
@@ -51,5 +50,6 @@ void SCC68070::Interpreter(const bool loop)
         }
 //        else // Uncomment to remove delay when enabling limitFPS.
 //            start = std::chrono::steady_clock::now();
-    } while(run);
+    } while(loop);
+    isRunning = false;
 }

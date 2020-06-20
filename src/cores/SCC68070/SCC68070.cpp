@@ -6,6 +6,7 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
 {
     vdsc = gpu;
     disassemble = false;
+    isRunning = false;
 
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];
@@ -25,12 +26,32 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
 
 SCC68070::~SCC68070()
 {
+    Stop();
     delete[] internal;
+}
+
+bool SCC68070::IsRunning()
+{
+    return isRunning;
 }
 
 void SCC68070::Run(const bool loop)
 {
-    (this->*Execute)(loop);
+    if(!isRunning)
+    {
+        if(executionThread.joinable())
+            executionThread.join();
+
+        this->loop = loop;
+        executionThread = std::thread(Execute, this);
+    }
+}
+
+void SCC68070::Stop()
+{
+    loop = false;
+    if(executionThread.joinable())
+        executionThread.join();
 }
 
 void SCC68070::Reset()
