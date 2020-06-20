@@ -36,14 +36,14 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     switch(event.GetKeyCode())
     {
     case 'A':
-        if(!app->cpu) break;
-        mainFrame->Pause();
+        if(app->cpu)
+            mainFrame->Pause();
         break;
 
     case 'Z':
         if(!app->cpu) break;
         app->vdsc->StopOnNextFrame();
-        if(!app->cpu->run)
+        if(!app->cpu->IsRunning())
             app->StartGameThread();
         break;
 

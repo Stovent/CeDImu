@@ -70,21 +70,12 @@ bool CeDImu::InitializeCDI(const char* pathToROM)
 
 void CeDImu::StartGameThread()
 {
-    if(cpu != nullptr)
-    {
-        StopGameThread();
-        cpu->run = true;
-        gameThread = new std::thread(&SCC68070::Run, cpu, true);
-    }
+    if(cpu)
+        cpu->Run(true);
 }
 
 void CeDImu::StopGameThread()
 {
-    if(gameThread == nullptr)
-        return;
-    cpu->run = false;
-    if(gameThread->joinable())
-        gameThread->join();
-    delete gameThread;
-    gameThread = nullptr;
+    if(cpu)
+        cpu->Stop();
 }
