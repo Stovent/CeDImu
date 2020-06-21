@@ -244,7 +244,7 @@ public:
 
     bool IsRunning();
     void Run(const bool loop = true);
-    void Stop();
+    void Stop(const bool wait = true);
     void Reset();
 
     void SetRegister(CPURegisters reg, const uint32_t value);

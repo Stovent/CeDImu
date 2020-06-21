@@ -50,11 +50,12 @@ void SCC68070::Run(const bool loop)
     }
 }
 
-void SCC68070::Stop()
+void SCC68070::Stop(const bool wait)
 {
     loop = false;
-    if(executionThread.joinable())
-        executionThread.join();
+    if(wait)
+        if(executionThread.joinable())
+            executionThread.join();
 }
 
 void SCC68070::Reset()
