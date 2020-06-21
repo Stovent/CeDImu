@@ -8,6 +8,9 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
     disassemble = false;
     isRunning = false;
 
+    ILUT = new ILUTFunctionPointer[UINT16_MAX+1];
+    DLUT = new DLUTFunctionPointer[UINT16_MAX+1];
+
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];
     cycleDelay = (1.0L / clockFrequency) * 1000000000;

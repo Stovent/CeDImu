@@ -382,7 +382,7 @@ private:
     void GenerateInstructionSet();
     void GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, uint16_t (SCC68070::*instFunc)(), void (SCC68070::*disFunc)(uint32_t));
 
-    uint16_t (SCC68070::*ILUT[UINT16_MAX+1])(); // Instructions Look Up Table
+    uint16_t (SCC68070::**ILUT)(); // Instructions Look Up Table
     uint16_t UnknownInstruction();
     uint16_t ABCD();
     uint16_t ADD();
@@ -469,7 +469,7 @@ private:
     uint16_t TST();
     uint16_t UNLK();
 
-    void (SCC68070::*DLUT[UINT16_MAX+1])(uint32_t); // Disassembler Look Up Table
+    void (SCC68070::**DLUT)(uint32_t); // Disassembler Look Up Table
     void DisassembleUnknownInstruction(uint32_t pc);
     void DisassembleABCD(uint32_t pc);
     void DisassembleADD(uint32_t pc);
@@ -556,6 +556,9 @@ private:
     void DisassembleTST(uint32_t pc);
     void DisassembleUNLK(uint32_t pc);
 };
+
+typedef uint16_t (SCC68070::*ILUTFunctionPointer)();
+typedef void     (SCC68070::*DLUTFunctionPointer)(uint32_t);
 
 #define SET_TX_READY internal[USR] |= 0x04;
 #define SET_RX_READY internal[USR] |= 0x01;
