@@ -53,11 +53,7 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) = 0;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) = 0;
 
-    /** \brief Draw the next line to be drawn. Meant to be called by the CPU.
-     *
-     * \return false to stop instruction execution, true otherwise.
-     */
-    virtual bool DrawLine() = 0;
+    virtual void DrawLine() = 0;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() { return 0; }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;

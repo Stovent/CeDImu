@@ -32,7 +32,7 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) override;
 
-    virtual bool DrawLine() override;
+    virtual void DrawLine() override;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override
     {
         return 700;

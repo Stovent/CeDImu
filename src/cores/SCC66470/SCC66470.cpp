@@ -43,9 +43,9 @@ void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int po
     memcpy(&memory[position], s, size);
 }
 
-bool SCC66470::DrawLine()
+void SCC66470::DrawLine()
 {
-    return !stopOnNextframe;
+
 }
 
 void SCC66470::SetOnFrameCompletedCallback(std::function<void()> callback)

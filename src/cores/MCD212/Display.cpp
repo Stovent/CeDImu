@@ -5,7 +5,7 @@
 #define   SET_DA_BIT() internalRegisters[CSR1R] |= 0x80;
 #define UNSET_DA_BIT() internalRegisters[CSR1R] &= 0x20;
 
-bool MCD212::DrawLine()
+void MCD212::DrawLine()
 {
     SET_DA_BIT()
 
@@ -16,7 +16,7 @@ bool MCD212::DrawLine()
             if(!planeA.Create(GetHorizontalResolution1(), GetVerticalResolution()))
             {
                 wxMessageBox("Could not create plane A image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return false;
+                return;
             }
             if(!planeA.HasAlpha())
                 planeA.InitAlpha();
@@ -24,7 +24,7 @@ bool MCD212::DrawLine()
             if(!planeB.Create(GetHorizontalResolution2(), GetVerticalResolution()))
             {
                 wxMessageBox("Could not create plane B image (" + std::to_string(GetHorizontalResolution2()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return false;
+                return;
             }
             if(!planeB.HasAlpha())
                 planeB.InitAlpha();
@@ -32,7 +32,7 @@ bool MCD212::DrawLine()
             if(!backgroundPlane.Create(GetHorizontalResolution1(), GetVerticalResolution()))
             {
                 wxMessageBox("Could not create background image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return false;
+                return;
             }
             if(!backgroundPlane.HasAlpha())
                 backgroundPlane.InitAlpha();
@@ -73,15 +73,18 @@ bool MCD212::DrawLine()
 
             app->mainFrame->gamePanel->RefreshScreen(screen);
         }
-        totalFrameCount++;
+
         if(OnFrameCompleted)
             OnFrameCompleted();
-        lineNumber = 0;
-        if(stopOnNextFrame)
-            return stopOnNextFrame = false;
-    }
 
-    return true;
+        lineNumber = 0;
+        totalFrameCount++;
+        if(stopOnNextFrame)
+        {
+            app->cpu->Stop(false);
+            stopOnNextFrame = false;
+        }
+    }
 }
 
 void MCD212::DrawLineA()

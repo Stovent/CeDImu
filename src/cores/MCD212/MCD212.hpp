@@ -209,7 +209,7 @@ public:
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
     virtual void StopOnNextFrame(const bool stop = true) override;
 
-    virtual bool DrawLine() override;
+    virtual void DrawLine() override;
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() override;
     virtual std::vector<VDSCRegister> GetControlRegisters() override;

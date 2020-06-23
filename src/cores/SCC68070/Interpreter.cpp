@@ -39,7 +39,7 @@ void SCC68070::Interpreter()
 
         if(cycleCount * cycleDelay >= vdsc->GetLineDisplayTimeNanoSeconds())
         {
-            loop = vdsc->DrawLine();
+            vdsc->DrawLine();
             cycleCount = 0;
         }
 
