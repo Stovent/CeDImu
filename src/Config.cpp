@@ -10,7 +10,6 @@ std::string ROMPath;
 
 // Emulation
 bool skipBIOS;
-bool limitFPS;
 
 /** \brief Loads the emulator configuration from a file named "CeDImu.ini".
  *
@@ -40,8 +39,6 @@ bool loadConfig()
                 ROMPath = value;
             else if(key == "skipBIOS")
                 skipBIOS = stoi(value);
-            else if(key == "limitFPS")
-                limitFPS = stoi(value);
         }
     }
 
@@ -65,7 +62,6 @@ bool saveConfig()
 
     out << "[Emulation]" << std::endl;
     out << "skipBIOS=" << skipBIOS << std::endl;
-    out << "limitFPS=" << limitFPS << std::endl;
 
     out.close();
     return true;
@@ -78,7 +74,6 @@ void loadDefaultConfig()
     BIOSPath = "";
     ROMPath = "";
     skipBIOS = false;
-    limitFPS = true;
 }
 
 } // namespace Config

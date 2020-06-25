@@ -11,7 +11,6 @@ extern std::string ROMPath;
 
 // Emulation
 extern bool skipBIOS;
-extern bool limitFPS;
 
 bool saveConfig();
 bool loadConfig();
