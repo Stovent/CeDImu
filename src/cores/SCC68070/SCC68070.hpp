@@ -11,9 +11,6 @@ class SCC68070;
 
 #include "../../common/flags.hpp"
 #include "../VDSC.hpp"
-#include "../../utils.hpp"
-
-#define OPCODESNBR 84
 
 // Actually, figure VI.1 of the Green Book
 // and Table 2-2 of the MC68000UM
@@ -243,6 +240,8 @@ public:
     ~SCC68070();
 
     bool IsRunning();
+    void SetFrequency(const uint32_t frequency);
+
     void Run(const bool loop = true);
     void Stop(const bool wait = true);
     void Reset();

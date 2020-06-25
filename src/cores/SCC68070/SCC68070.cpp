@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include "../../utils.hpp"
+
 SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
 {
     vdsc = gpu;
@@ -13,18 +15,18 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
 
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];
-    cycleDelay = (1.0L / clockFrequency) * 1000000000;
-
-    OPEN_LOG(out, "SCC68070.txt")
-    OPEN_LOG(instruction, "instructions.txt")
-    uart_out.open("uart_out", std::ios::binary | std::ios::out);
-    uart_in.open("uart_in", std::ios::binary | std::ios::in);
+    SetFrequency(clockFrequency);
 
     GenerateInstructionSet();
     Reset();
 
     SET_TX_READY
     SET_RX_READY
+
+    OPEN_LOG(out, "SCC68070.txt")
+    OPEN_LOG(instruction, "instructions.txt")
+    uart_out.open("uart_out", std::ios::binary | std::ios::out);
+    uart_in.open("uart_in", std::ios::binary | std::ios::in);
 }
 
 SCC68070::~SCC68070()
@@ -36,6 +38,11 @@ SCC68070::~SCC68070()
 bool SCC68070::IsRunning()
 {
     return isRunning;
+}
+
+void SCC68070::SetFrequency(const uint32_t frequency)
+{
+    cycleDelay = (1.0L / frequency) * 1'000'000'000;
 }
 
 void SCC68070::Run(const bool loop)

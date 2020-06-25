@@ -1,5 +1,7 @@
 #include "SCC68070.hpp"
 
+#include "../../utils.hpp"
+
 uint8_t SCC68070::GetPeripheral(const uint32_t addr)
 {
     const uint8_t data = internal[addr - SCC68070Peripherals::Base];
