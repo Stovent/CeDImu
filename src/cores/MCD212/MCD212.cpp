@@ -4,6 +4,8 @@
 
 #include <wx/msgdlg.h>
 
+#include "../../utils.hpp"
+
 MCD212::MCD212(CeDImu* appp) : VDSC(appp) // TD = 0
 {
     stopOnNextFrame = false;

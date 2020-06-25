@@ -2,6 +2,8 @@
 
 #include <iomanip>
 
+#include "../../utils.hpp"
+
 uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
 {
     if(addr <= 0x4FFFDF)

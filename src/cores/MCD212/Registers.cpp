@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "../../utils.hpp"
+
 // internal registers
 uint16_t MCD212::GetCSR1RRegister()
 {
