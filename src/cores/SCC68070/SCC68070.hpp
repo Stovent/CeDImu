@@ -3,6 +3,8 @@
 
 class SCC68070;
 
+#define SCC68070_DEFAULT_FREQUENCY (15500000L)
+
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -236,7 +238,7 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = 15500000L);
+    explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
     ~SCC68070();
 
     bool IsRunning();

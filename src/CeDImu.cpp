@@ -15,6 +15,8 @@ bool CeDImu::OnInit()
 
     Config::loadConfig();
 
+    cpuFrequencyIndex = 5;
+
     mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
     mainFrame->Show(true);
 
@@ -58,6 +60,7 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
         return false;
 
     cpu = new SCC68070(vdsc);
+    cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     return true;
 }
 
@@ -66,6 +69,26 @@ bool CeDImu::InitializeCDI(const char* pathToROM)
     delete cdi;
     cdi = new CDI();
     return cdi->OpenROM(pathToROM);
+}
+
+void CeDImu::IncreaseEmulationSpeed()
+{
+    if(cpuFrequencyIndex < 11)
+    {
+        cpuFrequencyIndex++;
+        if(cpu)
+            cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+    }
+}
+
+void CeDImu::DecreaseEmulationSpeed()
+{
+    if(cpuFrequencyIndex > 0)
+    {
+        cpuFrequencyIndex--;
+        if(cpu)
+            cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+    }
 }
 
 void CeDImu::StartGameThread()

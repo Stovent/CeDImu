@@ -20,11 +20,28 @@ public:
     SCC68070* cpu;
 
     MainFrame* mainFrame;
+    uint32_t cpuFrequencies[12] = {
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 0.12),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 0.25),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 0.33),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 0.5),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 0.75),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 1.5),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 2),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 3),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 4),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 8),
+        uint32_t(SCC68070_DEFAULT_FREQUENCY * 16),
+    };
+    uint16_t cpuFrequencyIndex;
 
     virtual bool OnInit() override;
     virtual int OnExit() override;
     bool InitializeCores(const char* pathToBIOS);
     bool InitializeCDI(const char* pathToROM);
+    void IncreaseEmulationSpeed();
+    void DecreaseEmulationSpeed();
     void StartGameThread();
     void StopGameThread();
 

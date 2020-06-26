@@ -51,5 +51,11 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
         if(app->cpu && app->mainFrame->pauseItem->IsChecked())
             app->cpu->Run(false);
         break;
+    case 'M':
+        app->DecreaseEmulationSpeed();
+        break;
+    case 61:
+        app->IncreaseEmulationSpeed();
+        break;
     }
 }
