@@ -3,8 +3,6 @@
 
 class SCC66470;
 
-#include <cstdint>
-
 #include "../VDSC.hpp"
 
 class SCC66470 : public VDSC
@@ -15,7 +13,7 @@ class SCC66470 : public VDSC
     std::function<void()> OnFrameCompleted;
 
 public:
-    SCC66470(CeDImu* appp);
+    explicit SCC66470(CeDImu* appp);
     virtual ~SCC66470();
 
     virtual void Reset() override;
@@ -35,7 +33,7 @@ public:
     virtual void DrawLine() override;
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override
     {
-        return 700;
+        return 41000;
     }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;

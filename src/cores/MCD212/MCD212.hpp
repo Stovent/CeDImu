@@ -69,6 +69,42 @@ enum class Planes
 
 class MCD212 : public VDSC
 {
+public:
+    explicit MCD212(CeDImu* appp);
+    virtual ~MCD212();
+
+    virtual void Reset() override;
+
+    virtual bool LoadBIOS(const char* filename) override;
+    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
+    virtual void MemorySwap() override;
+
+    virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
+    virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
+    virtual uint32_t GetLong(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
+
+    virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) override;
+    virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
+    virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) override;
+
+    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override // as nano seconds
+    {
+        return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
+    }
+
+    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
+    virtual void StopOnNextFrame(const bool stop = true) override;
+
+    virtual void DrawLine() override;
+
+    virtual std::vector<VDSCRegister> GetInternalRegisters() override;
+    virtual std::vector<VDSCRegister> GetControlRegisters() override;
+    virtual wxImage GetPlaneA() override;
+    virtual wxImage GetPlaneB() override;
+    virtual wxImage GetBackground() override;
+    virtual wxImage GetCursor() override;
+
+private:
     uint8_t* memory;
 
     wxImage planeA;
@@ -181,42 +217,6 @@ class MCD212 : public VDSC
     inline uint16_t GetHorizontalResolution1() { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM1() ? a*2 : a; }
     inline uint16_t GetHorizontalResolution2() { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }
     inline uint16_t GetVerticalResolution() { return GetFD() ? 240 : (GetST() ? 240 : 280); }
-
-
-public:
-    MCD212(CeDImu* appp);
-    virtual ~MCD212();
-
-    virtual void Reset() override;
-
-    virtual bool LoadBIOS(const char* filename) override;
-    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
-    virtual void MemorySwap() override;
-
-    virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
-    virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
-    virtual uint32_t GetLong(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
-
-    virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) override;
-    virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
-    virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) override;
-
-    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override // as nano seconds
-    {
-        return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
-    }
-
-    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
-    virtual void StopOnNextFrame(const bool stop = true) override;
-
-    virtual void DrawLine() override;
-
-    virtual std::vector<VDSCRegister> GetInternalRegisters() override;
-    virtual std::vector<VDSCRegister> GetControlRegisters() override;
-    virtual wxImage GetPlaneA() override;
-    virtual wxImage GetPlaneB() override;
-    virtual wxImage GetBackground() override;
-    virtual wxImage GetCursor() override;
 };
 
 #endif // MCD212_HPP

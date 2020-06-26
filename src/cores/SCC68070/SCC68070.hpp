@@ -319,20 +319,20 @@ private:
     std::string DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData = false);
 
     // Addressing Modes Memory Access
-    uint8_t GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
+    uint8_t  GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
     uint16_t GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
     uint32_t GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
 
-    void SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t data, const uint8_t flags = Log | Trigger);
+    void SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t  data, const uint8_t flags = Log | Trigger);
     void SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint16_t data, const uint8_t flags = Log | Trigger);
     void SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint32_t data, const uint8_t flags = Log | Trigger);
 
     // Direct Memory Access
-    uint8_t GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
+    uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
     uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);
     uint32_t GetLong(const uint32_t addr, const uint8_t flags = Log | Trigger);
 
-    void SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags = Log | Trigger);
+    void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger);
     void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger);
     void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger);
 
