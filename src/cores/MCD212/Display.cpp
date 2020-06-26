@@ -52,7 +52,12 @@ void MCD212::DrawLine()
         UNSET_DA_BIT()
         if(GetDE())
         {
-            wxImage screen(backgroundPlane.GetWidth(), backgroundPlane.GetHeight());
+            if(!screen.Create(backgroundPlane.GetWidth(), backgroundPlane.GetHeight()))
+            {
+                wxMessageBox("Could not create screen (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
+                return;
+            }
+
             screen.Paste(backgroundPlane, 0, 0);
 
             if(controlRegisters[PlaneOrder])
@@ -72,8 +77,6 @@ void MCD212::DrawLine()
                 uint16_t y = (controlRegisters[CursorPosition] & 0x003FF000) >> 12;
                 screen.Paste(cursorPlane, y, x);
             }
-
-            app->mainFrame->gamePanel->RefreshScreen(screen);
         }
 
         if(OnFrameCompleted)

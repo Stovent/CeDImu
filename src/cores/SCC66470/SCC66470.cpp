@@ -68,6 +68,11 @@ std::vector<VDSCRegister> SCC66470::GetControlRegisters()
     return std::vector<VDSCRegister>();
 }
 
+wxImage SCC66470::GetScreen()
+{
+    return wxImage();
+}
+
 wxImage SCC66470::GetPlaneA()
 {
     return wxImage();

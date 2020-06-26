@@ -99,6 +99,7 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() override;
     virtual std::vector<VDSCRegister> GetControlRegisters() override;
+    virtual wxImage GetScreen() override;
     virtual wxImage GetPlaneA() override;
     virtual wxImage GetPlaneB() override;
     virtual wxImage GetBackground() override;
@@ -107,6 +108,7 @@ public:
 private:
     uint8_t* memory;
 
+    wxImage screen;
     wxImage planeA;
     wxImage planeB;
     wxImage cursorPlane;

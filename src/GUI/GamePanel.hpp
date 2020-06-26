@@ -12,15 +12,13 @@ class GamePanel;
 class GamePanel : public wxPanel
 {
 public:
+    CeDImu* app;
+    MainFrame* mainFrame;
+
     GamePanel(MainFrame* parent, CeDImu* appp);
     ~GamePanel();
 
-    void RefreshScreen(const wxImage& img);
-
-private:
-    CeDImu* app;
-    MainFrame* mainFrame;
-    wxImage screen;
+    void RefreshScreen();
 
     void OnKeyDown(wxKeyEvent& event);
     void RefreshLoop(wxPaintEvent& event);

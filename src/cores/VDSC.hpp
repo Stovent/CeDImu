@@ -61,6 +61,7 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() = 0;
+    virtual wxImage GetScreen() = 0;
     virtual wxImage GetPlaneA() = 0;
     virtual wxImage GetPlaneB() = 0;
     virtual wxImage GetBackground() = 0;

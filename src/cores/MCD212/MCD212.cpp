@@ -338,6 +338,11 @@ void MCD212::ExecuteDCA2()
     }
 }
 
+wxImage MCD212::GetScreen()
+{
+    return screen;
+}
+
 wxImage MCD212::GetPlaneA()
 {
     return planeA;

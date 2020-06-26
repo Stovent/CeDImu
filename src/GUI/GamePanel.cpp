@@ -8,7 +8,6 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu* appp) : wxPanel(parent)
 {
     mainFrame = parent;
     app = appp;
-    screen.Create(1, 1);
 }
 
 GamePanel::~GamePanel()
@@ -17,6 +16,10 @@ GamePanel::~GamePanel()
 
 void GamePanel::RefreshLoop(wxPaintEvent& event)
 {
+    wxImage screen = app->vdsc->GetScreen();
+    if(!screen.IsOk())
+        return;
+
     wxPaintDC dc(this);
     dc.Clear();
     dc.SetBrush(*wxBLACK_BRUSH);
@@ -24,10 +27,13 @@ void GamePanel::RefreshLoop(wxPaintEvent& event)
     dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
 }
 
-void GamePanel::RefreshScreen(const wxImage& img)
+void GamePanel::RefreshScreen()
 {
+    wxImage screen = app->vdsc->GetScreen();
+    if(!screen.IsOk())
+        return;
+
     wxClientDC dc(this);
-    screen = img.Copy();
     dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
 }
 

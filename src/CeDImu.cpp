@@ -59,6 +59,10 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
     if(!vdsc->LoadBIOS(pathToBIOS))
         return false;
 
+    vdsc->SetOnFrameCompletedCallback([=] () -> void {
+        mainFrame->gamePanel->RefreshScreen();
+    });
+
     cpu = new SCC68070(vdsc);
     cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     return true;
