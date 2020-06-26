@@ -39,7 +39,7 @@ set(CMAKE_SOURCE_DIRECTORY ".")
 
 # comment to use wxWidgets file system functions.
 # uncomment to use C++17 file system header
-# add_definitions(-DUSE_STD_FILE_SYSTEM)
+# add_definitions(-DUSE_STD_FILESYSTEM)
 
 if(UNIX)
 	set(CMAKE_GENERATOR "Unix Makefiles")
@@ -48,7 +48,7 @@ endif()
 find_package(wxWidgets REQUIRED COMPONENTS adv core base)
 
 if(wxWidgets_FOUND)
-    add_executable(CeDImu ${SRCS})
+	add_executable(CeDImu ${SRCS})
 	include("${wxWidgets_USE_FILE}")
 	target_compile_features(CeDImu PUBLIC cxx_std_17)
 	target_include_directories(CeDImu PUBLIC ${wxWidgets_INCLUDE_DIRS})

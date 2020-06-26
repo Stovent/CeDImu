@@ -1,10 +1,10 @@
 #include "CDIDirectory.hpp"
 
-#ifdef USE_STD_FILE_SYSTEM
+#ifdef USE_STD_FILESYSTEM
 #include <filesystem>
 #else
 #include <wx/filefn.h>
-#endif // USE_STD_FILE_SYSTEM
+#endif // USE_STD_FILESYSTEM
 
 #include <wx/msgdlg.h>
 
@@ -177,14 +177,14 @@ void CDIDirectory::ExportAudio(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-#ifdef USE_STD_FILE_SYSTEM
-        if(!std::create_directory(basePath))
-            return;
+#ifdef USE_STD_FILESYSTEM
+    if(!std::filesystem::create_directory(basePath))
+        return;
 #else
-        if(!wxDirExists(basePath))
-            if(!wxMkdir(basePath))
-                return;
-#endif // USE_STD_FILE_SYSTEM
+    if(!wxDirExists(basePath))
+        if(!wxMkdir(basePath))
+            return;
+#endif // USE_STD_FILESYSTEM
 
     for(std::pair<std::string, CDIFile> file : files)
     {
@@ -206,14 +206,14 @@ void CDIDirectory::ExportFiles(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-#ifdef USE_STD_FILE_SYSTEM
-        if(!std::create_directory(basePath))
-            return;
+#ifdef USE_STD_FILESYSTEM
+    if(!std::filesystem::create_directory(basePath))
+        return;
 #else
-        if(!wxDirExists(basePath))
-            if(!wxMkdir(basePath))
-                return;
-#endif // USE_STD_FILE_SYSTEM
+    if(!wxDirExists(basePath))
+        if(!wxMkdir(basePath))
+            return;
+#endif // USE_STD_FILESYSTEM
 
     for(std::pair<std::string, CDIFile> file : files)
     {
@@ -235,14 +235,14 @@ void CDIDirectory::ExportVideo(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-#ifdef USE_STD_FILE_SYSTEM
-        if(!std::create_directory(basePath))
-            return;
+#ifdef USE_STD_FILESYSTEM
+    if(!std::filesystem::create_directory(basePath))
+        return;
 #else
-        if(!wxDirExists(basePath))
-            if(!wxMkdir(basePath))
-                return;
-#endif // USE_STD_FILE_SYSTEM
+    if(!wxDirExists(basePath))
+        if(!wxMkdir(basePath))
+            return;
+#endif // USE_STD_FILESYSTEM
 
     for(std::pair<std::string, CDIFile> file : files)
     {
