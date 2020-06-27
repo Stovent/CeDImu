@@ -179,7 +179,7 @@ bool CDIDisk::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
  *
  * Simply reads the next {size} bytes, without any check.
  */
-bool CDIDisk::Read(char* dst, uint32_t size)
+bool CDIDisk::GetRaw(char* dst, uint32_t size)
 {
     disk.read(dst, size);
     return disk.good();

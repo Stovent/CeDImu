@@ -60,7 +60,7 @@ public:
     bool GotoNextSector(uint8_t submodeMask = 0);
 
     bool GetData(char* dst, uint32_t& size, const bool includeEmptySectors = true);
-    bool Read(char* dst, uint32_t size);
+    bool GetRaw(char* dst, uint32_t size);
     uint8_t  GetByte();
     uint16_t GetWord();
     uint32_t GetLong();

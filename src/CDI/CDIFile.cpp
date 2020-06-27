@@ -63,7 +63,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
             bool ms = disk.subheader.CodingInformation & Audio::CodingInformation::ms;
 
             uint8_t data[2304];
-            disk.Read((char*)data, 2304);
+            disk.GetRaw((char*)data, 2304);
             Audio::decodeAudioSector(bps, ms, data, left, right);
 
             wavHeader.channelNumber = ms + 1;
@@ -190,7 +190,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
             width = resolution == 0 ? 360 : 720;
             height = resolution == 3 ? 490 : 245;
 
-            disk.Read((char*)data, 2324);
+            disk.GetRaw((char*)data, 2324);
 
             while(index < 2324)
             {
