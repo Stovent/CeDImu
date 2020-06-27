@@ -3,11 +3,12 @@
 #include <fstream>
 #include <vector>
 
-#include "../common/Audio.hpp"
-#include "../common/Video.hpp"
-
 #include <wx/msgdlg.h>
 #include <wx/bitmap.h>
+
+#include "../common/Audio.hpp"
+#include "../common/Video.hpp"
+#include "../utils.hpp"
 
 CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
     disk(cdidisk),
@@ -141,30 +142,46 @@ void CDIFile::ExportVideo(std::string directoryPath)
 
             if(disk.subheader.Submode & cdid) // Get CLUT table from a sector before the video data
             {
-                disk.Seek(0x16, std::ios::cur);
-                const uint16_t offset = disk.GetWord();
+                uint8_t data[2048];
+                disk.GetRaw((char*)data, 2048);
 
-                disk.Seek(0x2A, std::ios::cur);
-                std::string cluts = disk.GetString(5);
+                char* clut = (char*)subarrayOfArray(data, 2048, "cluts", 5);
+                if(clut != NULL)
+                {
+                    disk.Seek(-2026, std::ios::cur);
+                    const uint16_t offset = disk.GetWord();
 
-                if(cluts.compare("cluts") != 0)
-                    continue;
+                    disk.Seek(0x2A, std::ios::cur);
+                    std::string cluts = disk.GetString(5);
 
-                disk.Seek(offset - 0x2A - 0x16 - 5 - 2, std::ios::cur);
-                for(int bank = 0; bank < 256 * 3; bank += 64 * 3)
-                    for(int i = 0; i < 64; i++)
-                    {
-                        uint8_t addr = disk.GetByte();
-                        if(addr == 0)
+                    if(cluts.compare("cluts") != 0)
+                        continue;
+
+                    disk.Seek(offset - 0x2A - 0x16 - 5 - 2, std::ios::cur);
+                    for(int bank = 0; bank < 256 * 3; bank += 64 * 3)
+                        for(int i = 0; i < 64; i++)
                         {
-                            bank = 256 * 3;
-                            break;
+                            uint8_t addr = disk.GetByte();
+                            if(addr == 0)
+                            {
+                                bank = 256 * 3;
+                                break;
+                            }
+                            addr -= 0x80;
+                            Video::CLUT[bank + 3 * addr] = disk.GetByte();
+                            Video::CLUT[bank + 3 * addr + 1] = disk.GetByte();
+                            Video::CLUT[bank + 3 * addr + 2] = disk.GetByte();
                         }
-                        addr -= 0x80;
-                        Video::CLUT[bank + 3 * addr] = disk.GetByte();
-                        Video::CLUT[bank + 3 * addr + 1] = disk.GetByte();
-                        Video::CLUT[bank + 3 * addr + 2] = disk.GetByte();
+                }
+                else // simply copy the first 128 colors
+                {
+                    for(int i = 0; i < 128*3;)
+                    {
+                        Video::CLUT[i] = data[i]; i++;
+                        Video::CLUT[i] = data[i]; i++;
+                        Video::CLUT[i] = data[i]; i++;
                     }
+                }
 
                 disk.GotoNextSector();
                 continue;

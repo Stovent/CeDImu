@@ -77,6 +77,29 @@ inline int16_t lim16(const int32_t data)
     return data;
 }
 
+inline const void* subarrayOfArray(const void* container, size_t containerSize, const void* contained, size_t containedSized)
+{
+    const uint8_t* ner = (const uint8_t*)container;
+    const uint8_t* ned = (const uint8_t*)contained;
+    for(size_t j = 0; j < containerSize; j++)
+    {
+        if(ner[j] == ned[0])
+        {
+            size_t count = 0;
+            for(size_t i = 0; i < containedSized && (j + i) < containerSize; i++)
+            {
+                if(ner[j+i] != ned[i])
+                    break;
+
+                count++;
+            }
+            if(count == containedSized)
+                return &ner[j];
+        }
+    }
+    return NULL;
+}
+
 #ifdef DEBUG
 #define OPEN_LOG(stream, name)  stream.open(name);
 #define LOG(content) content;
