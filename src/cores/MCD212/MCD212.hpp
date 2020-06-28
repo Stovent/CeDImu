@@ -61,12 +61,6 @@ enum CodingMethods
     CLUT4  = 0b1011,
 };
 
-enum class Planes
-{
-    PlaneA,
-    PlaneB,
-};
-
 class MCD212 : public VDSC
 {
 public:
@@ -132,7 +126,7 @@ private:
     // Display File Decoders
     void DecodeBitmapLineA();
     void DecodeBitmapLineB();
-    void DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, bool cm);
+    void DecodeRunLengthLine(wxImage& plane, void (MCD212::*CLUTDecoder)(const uint8_t, uint8_t[3], const uint8_t), uint8_t* data, bool cm);
     void DecodeMosaicLineA();
     void DecodeMosaicLineB();
 

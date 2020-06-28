@@ -102,7 +102,7 @@ void MCD212::DrawLineA()
         }
         else if(GetFT12_1() == 2)
         {
-            DecodeRunLengthLine(planeA, Planes::PlaneA, &memory[GetVSR1()], GetCM1());
+            DecodeRunLengthLine(planeA, &MCD212::DecodeCLUTA, &memory[GetVSR1()], GetCM1());
         }
         else
         {
@@ -134,7 +134,7 @@ void MCD212::DrawLineB()
         }
         else if(GetFT12_2() == 2)
         {
-            DecodeRunLengthLine(planeB, Planes::PlaneB, &memory[GetVSR2()], GetCM2());
+            DecodeRunLengthLine(planeB, &MCD212::DecodeCLUTB, &memory[GetVSR2()], GetCM2());
         }
         else
         {
@@ -267,11 +267,10 @@ void MCD212::DecodeBitmapLineB()
     }
 }
 
-void MCD212::DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, bool cm)
+void MCD212::DecodeRunLengthLine(wxImage& plane, void (MCD212::*CLUTDecoder)(const uint8_t, uint8_t[3], const uint8_t), uint8_t* data, bool cm)
 {
     uint16_t index = 0;
     uint8_t* pixels = plane.GetData() + lineNumber * plane.GetWidth() * 3;
-    void (MCD212::*DecodeCLUT)(const uint8_t, uint8_t[3], const uint8_t) = (channel == Planes::PlaneA) ? &MCD212::DecodeCLUTA : &MCD212::DecodeCLUTB;
 
     for(int x = 0; x < plane.GetWidth();)
     {
@@ -289,8 +288,8 @@ void MCD212::DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, 
 
             for(int i = 0; i < count; i++)
             {
-                (this->*DecodeCLUT)(color1, &pixels[x++ * 3], CLUT4);
-                (this->*DecodeCLUT)(color2, &pixels[x++ * 3], CLUT4);
+                (this->*CLUTDecoder)(color1, &pixels[x++ * 3], CLUT4);
+                (this->*CLUTDecoder)(color2, &pixels[x++ * 3], CLUT4);
             }
         }
         else // RL7
@@ -304,7 +303,7 @@ void MCD212::DecodeRunLengthLine(wxImage& plane, Planes channel, uint8_t* data, 
                 count = plane.GetWidth() - x;
 
             for(int i = 0; i < count; i++)
-                (this->*DecodeCLUT)(color, &pixels[x++ * 3], CLUT7);
+                (this->*CLUTDecoder)(color, &pixels[x++ * 3], CLUT7);
         }
     }
 }
