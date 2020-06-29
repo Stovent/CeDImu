@@ -1,4 +1,7 @@
+
+
 # CeDImu
+
 Experimental Philips CD-I emulator  
 (I use a capital `I` instead of a lower case `i` because the Green Book capitalizes it)
 
@@ -31,13 +34,29 @@ make -j$(nproc --all)
 Find the executable in the bin folder
 
 ## TODO
-- [ ] Fix potential bugs in SCC68070 emulation
+- [ ] SCC68070 (needs to be checked)
+
 - [x] MCD212
+
 - [ ] SCC66470
-- [x] Export files
-- [x] Export audio
-- [ ] Export video
-- [ ] Sound emulation
+
+- [ ] MCD221 (audio)
+
+- [ ] MC68HC05 (slave)
+
+- [ ] CDIC
+
+  
+
+- [ ] CDI-related functions
+
+  - [x] CDI file system
+  - [x] Export files
+  - [x] Export audio
+  - [ ] Export video
+
+  
+
 - [ ] Tools
   - [x] Disassembler
   - [ ] RAM Search
@@ -46,8 +65,5 @@ Find the executable in the bin folder
   - [x] VDSC Viewer
   - [ ] Savestates
 
-### TODO later
-* MCD251 (MPEG Full Motion Video Decoder (FMV))
-
-## libCDI
-If I get everything listed upper working, stable and fully functional, the goal is to create libCDI, a complete library (static and/or dynamic) to allow any program to implement CDI application (other emulators like Bizhawk, MAME, etc)
+## libCeDImu
+If I get everything listed upper working, stable and fully functional, the goal is to create libCeDImu, a complete library (static and/or dynamic) to allow any program to implement CDI applications (other emulators like Bizhawk, MAME, etc).
