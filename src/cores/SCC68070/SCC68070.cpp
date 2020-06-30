@@ -32,6 +32,8 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
 SCC68070::~SCC68070()
 {
     Stop();
+    delete[] ILUT;
+    delete[] DLUT;
     delete[] internal;
 }
 
