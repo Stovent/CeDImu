@@ -1,7 +1,7 @@
 #may not be useful anymore, bettre use CMake
 
 CXX = g++
-CXXFLAGS = -O3 -Wall -std=c++11
+CXXFLAGS = -O3 -Wall -std=c++17
 linkerFLAGS = -s -static-libstdc++ -static-libgcc -static -mwindows -mthreads
 
 defines = -D__GNUWIN32__ -D__WXMSW__ -DwxUSE_UNICODE
