@@ -5,14 +5,28 @@
 #include <sstream>
 #include <string>
 
-/** \brief Convert the Packed Binary Coded Decimal number to a byte output.
+/** \brief Convert a Packed Binary Coded Decimal number to byte.
  *
  * \param data The PBCD to convert.
- * \return The converted value of data.
+ * \return The converted PBCD to byte.
  */
-inline uint8_t convertPBCD(const uint8_t data)
+inline uint8_t PBCDToByte(const uint8_t data)
 {
     return (data >> 4) * 10 + (data & 0x0F);
+}
+
+/** \brief Convert a byte to Packed Binary Coded Decimal.
+ *
+ * \param data The byte to convert.
+ * \return The converted byte to PBCD.
+ *
+ * Because PBCD are stored on one byte, if the input is greater than 99,
+ * the conversion is modulo 100. e.g. a byte value of 103 or 203 will become 3 in PBCD.
+ */
+inline uint8_t byteToPBCD(uint8_t data)
+{
+    data %= 100;
+    return ((data / 10) << 4) | (data % 10);
 }
 
 /** \brief Sign-extend an 8-bits number to 32-bits.

@@ -65,7 +65,7 @@ uint32_t SCC68070::AbsoluteLongAddressing()
     return high << 16 | low;
 }
 
-std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData)
+std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData) const
 {
     std::string mode;
     if(eamode == 0)

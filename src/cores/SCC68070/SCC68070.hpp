@@ -276,7 +276,7 @@ private:
     void ResetOperation();
 
     // Registers
-    int32_t D[8];
+    uint32_t D[8];
     uint32_t A[8];
     uint32_t PC;
     uint16_t SR;
@@ -300,7 +300,7 @@ private:
     bool GetS();
 
     uint16_t Exception(const uint8_t vectorNumber);
-    std::string DisassembleException(const uint8_t vectorNumber);
+    std::string DisassembleException(const uint8_t vectorNumber) const;
 
     // Addressing Modes
     int32_t GetIndexRegister(const uint16_t bew);
@@ -316,7 +316,7 @@ private:
     uint32_t AbsoluteShortAddressing();
     uint32_t AbsoluteLongAddressing();
 
-    std::string DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData = false);
+    std::string DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData = false) const;
 
     // Addressing Modes Memory Access
     uint8_t  GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
@@ -377,11 +377,13 @@ private:
         &SCC68070::GT,
         &SCC68070::LE
     };
-    std::string DisassembleConditionalCode(const uint8_t cc);
+    std::string DisassembleConditionalCode(const uint8_t cc) const;
 
     // Instruction Set
+    typedef uint16_t    (SCC68070::*ILUTFunctionPointer)();
+    typedef std::string (SCC68070::*DLUTFunctionPointer)(const uint32_t) const;
     void GenerateInstructionSet();
-    void GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, uint16_t (SCC68070::*instFunc)(), void (SCC68070::*disFunc)(uint32_t));
+    void GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc);
 
     uint16_t (SCC68070::**ILUT)(); // Instructions Look Up Table
     uint16_t UnknownInstruction();
@@ -470,96 +472,93 @@ private:
     uint16_t TST();
     uint16_t UNLK();
 
-    void (SCC68070::**DLUT)(uint32_t); // Disassembler Look Up Table
-    void DisassembleUnknownInstruction(uint32_t pc);
-    void DisassembleABCD(uint32_t pc);
-    void DisassembleADD(uint32_t pc);
-    void DisassembleADDA(uint32_t pc);
-    void DisassembleADDI(uint32_t pc);
-    void DisassembleADDQ(uint32_t pc);
-    void DisassembleADDX(uint32_t pc);
-    void DisassembleAND(uint32_t pc);
-    void DisassembleANDI(uint32_t pc);
-    void DisassembleANDICCR(uint32_t pc);
-    void DisassembleANDISR(uint32_t pc);
-    void DisassembleASm(uint32_t pc);
-    void DisassembleASr(uint32_t pc);
-    void DisassembleBcc(uint32_t pc);
-    void DisassembleBCHG(uint32_t pc);
-    void DisassembleBCLR(uint32_t pc);
-    void DisassembleBRA(uint32_t pc);
-    void DisassembleBSET(uint32_t pc);
-    void DisassembleBSR(uint32_t pc);
-    void DisassembleBTST(uint32_t pc);
-    void DisassembleCHK(uint32_t pc);
-    void DisassembleCLR(uint32_t pc);
-    void DisassembleCMP(uint32_t pc);
-    void DisassembleCMPA(uint32_t pc);
-    void DisassembleCMPI(uint32_t pc);
-    void DisassembleCMPM(uint32_t pc);
-    void DisassembleDBcc(uint32_t pc);
-    void DisassembleDIVS(uint32_t pc);
-    void DisassembleDIVU(uint32_t pc);
-    void DisassembleEOR(uint32_t pc);
-    void DisassembleEORI(uint32_t pc);
-    void DisassembleEORICCR(uint32_t pc);
-    void DisassembleEORISR(uint32_t pc);
-    void DisassembleEXG(uint32_t pc);
-    void DisassembleEXT(uint32_t pc);
-    void DisassembleILLEGAL(uint32_t pc);
-    void DisassembleJMP(uint32_t pc);
-    void DisassembleJSR(uint32_t pc);
-    void DisassembleLEA(uint32_t pc);
-    void DisassembleLINK(uint32_t pc);
-    void DisassembleLSm(uint32_t pc);
-    void DisassembleLSr(uint32_t pc);
-    void DisassembleMOVE(uint32_t pc);
-    void DisassembleMOVEA(uint32_t pc);
-    void DisassembleMOVECCR(uint32_t pc);
-    void DisassembleMOVEfSR(uint32_t pc);
-    void DisassembleMOVESR(uint32_t pc);
-    void DisassembleMOVEUSP(uint32_t pc);
-    void DisassembleMOVEM(uint32_t pc);
-    void DisassembleMOVEP(uint32_t pc);
-    void DisassembleMOVEQ(uint32_t pc);
-    void DisassembleMULS(uint32_t pc);
-    void DisassembleMULU(uint32_t pc);
-    void DisassembleNBCD(uint32_t pc);
-    void DisassembleNEG(uint32_t pc);
-    void DisassembleNEGX(uint32_t pc);
-    void DisassembleNOP(uint32_t pc);
-    void DisassembleNOT(uint32_t pc);
-    void DisassembleOR(uint32_t pc);
-    void DisassembleORI(uint32_t pc);
-    void DisassembleORICCR(uint32_t pc);
-    void DisassembleORISR(uint32_t pc);
-    void DisassemblePEA(uint32_t pc);
-    void DisassembleRESET(uint32_t pc);
-    void DisassembleROm(uint32_t pc);
-    void DisassembleROr(uint32_t pc);
-    void DisassembleROXm(uint32_t pc);
-    void DisassembleROXr(uint32_t pc);
-    void DisassembleRTE(uint32_t pc);
-    void DisassembleRTR(uint32_t pc);
-    void DisassembleRTS(uint32_t pc);
-    void DisassembleSBCD(uint32_t pc);
-    void DisassembleScc(uint32_t pc);
-    void DisassembleSTOP(uint32_t pc);
-    void DisassembleSUB(uint32_t pc);
-    void DisassembleSUBA(uint32_t pc);
-    void DisassembleSUBI(uint32_t pc);
-    void DisassembleSUBQ(uint32_t pc);
-    void DisassembleSUBX(uint32_t pc);
-    void DisassembleSWAP(uint32_t pc);
-    void DisassembleTAS(uint32_t pc);
-    void DisassembleTRAP(uint32_t pc);
-    void DisassembleTRAPV(uint32_t pc);
-    void DisassembleTST(uint32_t pc);
-    void DisassembleUNLK(uint32_t pc);
+    std::string (SCC68070::**DLUT)(const uint32_t) const; // Disassembler Look Up Table
+    std::string DisassembleUnknownInstruction(const uint32_t pc) const;
+    std::string DisassembleABCD(const uint32_t pc) const;
+    std::string DisassembleADD(const uint32_t pc) const;
+    std::string DisassembleADDA(const uint32_t pc) const;
+    std::string DisassembleADDI(const uint32_t pc) const;
+    std::string DisassembleADDQ(const uint32_t pc) const;
+    std::string DisassembleADDX(const uint32_t pc) const;
+    std::string DisassembleAND(const uint32_t pc) const;
+    std::string DisassembleANDI(const uint32_t pc) const;
+    std::string DisassembleANDICCR(const uint32_t pc) const;
+    std::string DisassembleANDISR(const uint32_t pc) const;
+    std::string DisassembleASm(const uint32_t pc) const;
+    std::string DisassembleASr(const uint32_t pc) const;
+    std::string DisassembleBcc(const uint32_t pc) const;
+    std::string DisassembleBCHG(const uint32_t pc) const;
+    std::string DisassembleBCLR(const uint32_t pc) const;
+    std::string DisassembleBRA(const uint32_t pc) const;
+    std::string DisassembleBSET(const uint32_t pc) const;
+    std::string DisassembleBSR(const uint32_t pc) const;
+    std::string DisassembleBTST(const uint32_t pc) const;
+    std::string DisassembleCHK(const uint32_t pc) const;
+    std::string DisassembleCLR(const uint32_t pc) const;
+    std::string DisassembleCMP(const uint32_t pc) const;
+    std::string DisassembleCMPA(const uint32_t pc) const;
+    std::string DisassembleCMPI(const uint32_t pc) const;
+    std::string DisassembleCMPM(const uint32_t pc) const;
+    std::string DisassembleDBcc(const uint32_t pc) const;
+    std::string DisassembleDIVS(const uint32_t pc) const;
+    std::string DisassembleDIVU(const uint32_t pc) const;
+    std::string DisassembleEOR(const uint32_t pc) const;
+    std::string DisassembleEORI(const uint32_t pc) const;
+    std::string DisassembleEORICCR(const uint32_t pc) const;
+    std::string DisassembleEORISR(const uint32_t pc) const;
+    std::string DisassembleEXG(const uint32_t pc) const;
+    std::string DisassembleEXT(const uint32_t pc) const;
+    std::string DisassembleILLEGAL(const uint32_t pc) const;
+    std::string DisassembleJMP(const uint32_t pc) const;
+    std::string DisassembleJSR(const uint32_t pc) const;
+    std::string DisassembleLEA(const uint32_t pc) const;
+    std::string DisassembleLINK(const uint32_t pc) const;
+    std::string DisassembleLSm(const uint32_t pc) const;
+    std::string DisassembleLSr(const uint32_t pc) const;
+    std::string DisassembleMOVE(const uint32_t pc) const;
+    std::string DisassembleMOVEA(const uint32_t pc) const;
+    std::string DisassembleMOVECCR(const uint32_t pc) const;
+    std::string DisassembleMOVEfSR(const uint32_t pc) const;
+    std::string DisassembleMOVESR(const uint32_t pc) const;
+    std::string DisassembleMOVEUSP(const uint32_t pc) const;
+    std::string DisassembleMOVEM(const uint32_t pc) const;
+    std::string DisassembleMOVEP(const uint32_t pc) const;
+    std::string DisassembleMOVEQ(const uint32_t pc) const;
+    std::string DisassembleMULS(const uint32_t pc) const;
+    std::string DisassembleMULU(const uint32_t pc) const;
+    std::string DisassembleNBCD(const uint32_t pc) const;
+    std::string DisassembleNEG(const uint32_t pc) const;
+    std::string DisassembleNEGX(const uint32_t pc) const;
+    std::string DisassembleNOP(const uint32_t pc) const;
+    std::string DisassembleNOT(const uint32_t pc) const;
+    std::string DisassembleOR(const uint32_t pc) const;
+    std::string DisassembleORI(const uint32_t pc) const;
+    std::string DisassembleORICCR(const uint32_t pc) const;
+    std::string DisassembleORISR(const uint32_t pc) const;
+    std::string DisassemblePEA(const uint32_t pc) const;
+    std::string DisassembleRESET(const uint32_t pc) const;
+    std::string DisassembleROm(const uint32_t pc) const;
+    std::string DisassembleROr(const uint32_t pc) const;
+    std::string DisassembleROXm(const uint32_t pc) const;
+    std::string DisassembleROXr(const uint32_t pc) const;
+    std::string DisassembleRTE(const uint32_t pc) const;
+    std::string DisassembleRTR(const uint32_t pc) const;
+    std::string DisassembleRTS(const uint32_t pc) const;
+    std::string DisassembleSBCD(const uint32_t pc) const;
+    std::string DisassembleScc(const uint32_t pc) const;
+    std::string DisassembleSTOP(const uint32_t pc) const;
+    std::string DisassembleSUB(const uint32_t pc) const;
+    std::string DisassembleSUBA(const uint32_t pc) const;
+    std::string DisassembleSUBI(const uint32_t pc) const;
+    std::string DisassembleSUBQ(const uint32_t pc) const;
+    std::string DisassembleSUBX(const uint32_t pc) const;
+    std::string DisassembleSWAP(const uint32_t pc) const;
+    std::string DisassembleTAS(const uint32_t pc) const;
+    std::string DisassembleTRAP(const uint32_t pc) const;
+    std::string DisassembleTRAPV(const uint32_t pc) const;
+    std::string DisassembleTST(const uint32_t pc) const;
+    std::string DisassembleUNLK(const uint32_t pc) const;
 };
-
-typedef uint16_t (SCC68070::*ILUTFunctionPointer)();
-typedef void     (SCC68070::*DLUTFunctionPointer)(uint32_t);
 
 #define SET_TX_READY internal[USR] |= 0x04;
 #define SET_RX_READY internal[USR] |= 0x01;

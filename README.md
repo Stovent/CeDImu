@@ -34,7 +34,7 @@ make -j$(nproc --all)
 Find the executable in the bin folder
 
 ## TODO
-- [ ] SCC68070 (needs to be checked)
+- [x] SCC68070
 
 - [x] MCD212
 

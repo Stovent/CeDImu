@@ -9,12 +9,12 @@ uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcT
         lastAddress = 0;
         return D[reg] & 0x000000FF;
     }
-    else if(mode == 1)
+    if(mode == 1)
     {
         lastAddress = 0;
         return A[reg] & 0x000000FF;
     }
-    else if(mode == 2)
+    if(mode == 2)
     {
         lastAddress = A[reg];
         calcTime += ITARIBW;
@@ -77,12 +77,12 @@ uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calc
         lastAddress = 0;
         return D[reg] & 0x0000FFFF;
     }
-    else if(mode == 1)
+    if(mode == 1)
     {
         lastAddress = 0;
         return A[reg] & 0x0000FFFF;
     }
-    else if(mode == 2)
+    if(mode == 2)
     {
         lastAddress = A[reg];
         calcTime += ITARIBW;
@@ -145,12 +145,12 @@ uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calc
         lastAddress = 0;
         return D[reg];
     }
-    else if(mode == 1)
+    if(mode == 1)
     {
         lastAddress = 0;
         return A[reg];
     }
-    else if(mode == 2)
+    if(mode == 2)
     {
         lastAddress = A[reg];
         calcTime += ITARIL;
@@ -215,7 +215,7 @@ void SCC68070::SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
         D[reg] |= data;
         return;
     }
-    else if(mode == 2)
+    if(mode == 2)
     {
         lastAddress = A[reg];
         calcTime += ITARIBW;
@@ -275,13 +275,13 @@ void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
         D[reg] |= data;
         return;
     }
-    else if(mode == 1)
+    if(mode == 1)
     {
         lastAddress = 0;
         A[reg] = signExtend16(data);
         return;
     }
-    else if(mode == 2)
+    if(mode == 2)
     {
         lastAddress = A[reg];
         calcTime += ITARIBW;
@@ -340,13 +340,13 @@ void SCC68070::SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
         D[reg] = data;
         return;
     }
-    else if(mode == 1)
+    if(mode == 1)
     {
         lastAddress = 0;
         A[reg] = data;
         return;
     }
-    else if(mode == 2)
+    if(mode == 2)
     {
         lastAddress = A[reg];
         calcTime += ITARIL;

@@ -23,14 +23,14 @@ void SCC68070::Interpreter()
         currentPC = PC;
         currentOpcode = GetNextWord(Trigger);
 
+        if(disassemble)
+        {
+            disassembledInstructions.push_back((this->*DLUT[currentOpcode])(currentPC));
+        }
+
         const uint16_t executionTime = (this->*ILUT[currentOpcode])();
         cycleCount += executionTime;
         totalCycleCount += executionTime;
-
-        if(disassemble)
-        {
-            (this->*DLUT[currentOpcode])(currentPC);
-        }
 
         if(!isEven(PC))
         {

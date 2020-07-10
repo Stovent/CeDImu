@@ -58,9 +58,9 @@ void CDIDisk::UpdateSectorInfo()
     char s[8];
     disk.read(s, 8);
 
-    header.Minutes = convertPBCD(s[0]);
-    header.Seconds = convertPBCD(s[1]);
-    header.Sectors = convertPBCD(s[2]);
+    header.Minutes = PBCDToByte(s[0]);
+    header.Seconds = PBCDToByte(s[1]);
+    header.Sectors = PBCDToByte(s[2]);
     header.Mode = s[3];
     subheader.FileNumber = s[4];
     subheader.ChannelNumber = s[5];
