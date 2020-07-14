@@ -1914,7 +1914,11 @@ uint16_t SCC68070::MOVEM()
         if(eamode == 3)
             A[eareg] -= 4;
         if(eamode == 4)
+        {
             A[eareg] += 4;
+            lastAddress += 4;
+        }
+        size = 4;
     }
     else
     {
@@ -1922,10 +1926,13 @@ uint16_t SCC68070::MOVEM()
         if(eamode == 3)
             A[eareg] -= 2;
         if(eamode == 4)
+        {
             A[eareg] += 2;
+            lastAddress += 2;
+        }
+        size = 2;
     }
 
-    size = size ? 4 : 2;
     calcTime = 0;
 
     uint8_t n = 0;
@@ -1972,6 +1979,8 @@ uint16_t SCC68070::MOVEM()
         {
             if(mask & 1)
             {
+                if(eamode == 4)
+                    lastAddress -= size;
                 if(size == 4) // long
                 {
                     if(eamode == 4) // Predecrement addressing uses a different mask
@@ -1999,9 +2008,7 @@ uint16_t SCC68070::MOVEM()
                             SetWord(lastAddress, D[mod]);
                 }
                 n++;
-                if(eamode == 4)
-                    lastAddress -= size;
-                else
+                if(eamode != 4)
                     lastAddress += size;
             }
             mask >>= 1;
