@@ -34,7 +34,7 @@ void SCC68070::Interpreter()
 
         if(!isEven(PC))
         {
-            LOG(instruction << "PC NOT EVEN!" << std::endl);
+            disassembledInstructions.push_back("PC NOT EVEN! (" + toHex(PC) + ")");
             Exception(AddressError);
         }
 
