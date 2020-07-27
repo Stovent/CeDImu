@@ -243,13 +243,14 @@ public:
 
     bool IsRunning();
     void SetFrequency(const uint32_t frequency);
+    void FlushDisassembler();
 
     void Run(const bool loop = true);
     void Stop(const bool wait = true);
     void Reset();
 
     void SetRegister(CPURegisters reg, const uint32_t value);
-    std::map<std::string, uint32_t> GetRegisters();
+    std::map<std::string, uint32_t> GetRegisters() const;
 
 private:
     VDSC* vdsc;

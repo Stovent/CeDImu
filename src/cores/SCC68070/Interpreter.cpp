@@ -14,11 +14,7 @@ void SCC68070::Interpreter()
     do
     {
         if(cycleCount == 0)
-        {
-            LOG(std::ostream_iterator<std::string> osit(instruction, "\n"); \
-                std::copy(disassembledInstructions.begin(), disassembledInstructions.end(), osit);)
-            disassembledInstructions.clear();
-        }
+            FlushDisassembler();
 
         currentPC = PC;
         currentOpcode = GetNextWord(Trigger);

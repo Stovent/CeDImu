@@ -87,6 +87,13 @@ void SCC68070::Reset()
     ResetOperation();
 }
 
+void SCC68070::FlushDisassembler()
+{
+    LOG(std::ostream_iterator<std::string> osit(instruction, "\n"); \
+        std::copy(disassembledInstructions.begin(), disassembledInstructions.end(), osit);)
+    disassembledInstructions.clear();
+}
+
 void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
 {
     switch(reg)
@@ -145,7 +152,7 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
     }
 }
 
-std::map<std::string, uint32_t> SCC68070::GetRegisters()
+std::map<std::string, uint32_t> SCC68070::GetRegisters() const
 {
     return {
         {"D0", D[0]},
