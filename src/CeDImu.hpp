@@ -44,9 +44,6 @@ public:
     void DecreaseEmulationSpeed();
     void StartGameThread();
     void StopGameThread();
-
-private:
-    std::thread* gameThread;
 };
 
 #endif // CEDIMU_HPP

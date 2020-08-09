@@ -11,7 +11,6 @@ bool CeDImu::OnInit()
     cdi = nullptr;
     vdsc = nullptr;
     cpu = nullptr;
-    gameThread = nullptr;
 
     Config::loadConfig();
 

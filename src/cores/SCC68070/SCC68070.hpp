@@ -106,7 +106,7 @@ enum SCC68070InstructionSet
     UNLK // Unlink
 };
 
-enum CC // Conditional Tests
+enum CC : uint8_t // Conditional Tests
 {
     T = 0,
     F,
@@ -126,7 +126,7 @@ enum CC // Conditional Tests
     LE
 };
 
-enum ExceptionVectors
+enum ExceptionVectors : uint8_t
 {
     ResetSSP = 0,
     ResetPC,
@@ -159,7 +159,7 @@ enum ExceptionVectors
     Level7OnChipInterruptAutovector,
 };
 
-enum SCC68070Peripherals
+enum SCC68070Peripherals : uint32_t
 {
     Base = 0x80001001,
     Last = 0x80008080,
