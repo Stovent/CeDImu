@@ -2,6 +2,7 @@
 #define SCC68070_HPP
 
 class SCC68070;
+class SCC68070Exception;
 
 #define SCC68070_DEFAULT_FREQUENCY (15500000L)
 
@@ -224,6 +225,14 @@ enum class CPURegisters : uint16_t
     SR,
     SSP,
     USP,
+};
+
+class SCC68070Exception
+{
+public:
+    uint8_t vector;
+    SCC68070Exception(const uint8_t e) { vector = e; }
+    ~SCC68070Exception() {}
 };
 
 class SCC68070

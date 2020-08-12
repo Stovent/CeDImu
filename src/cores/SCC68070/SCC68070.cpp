@@ -181,7 +181,7 @@ std::map<std::string, uint32_t> SCC68070::GetRegisters() const
 
 uint16_t SCC68070::GetNextWord(const uint8_t flags)
 {
-    uint16_t opcode = vdsc->GetWord(PC, flags);
+    uint16_t opcode = GetWord(PC, flags);
     PC += 2;
     return opcode;
 }

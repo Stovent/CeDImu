@@ -425,6 +425,9 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
 
 uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 {
+    if(!isEven(addr))
+        throw SCC68070Exception(AddressError);
+
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
         LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl; })
@@ -439,6 +442,9 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 {
+    if(!isEven(addr))
+        throw SCC68070Exception(AddressError);
+
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
         LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl; })
@@ -475,6 +481,9 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 
 void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
+    if(!isEven(addr))
+        throw SCC68070Exception(AddressError);
+
     if(addr < 0x80000000 || addr >= 0xC0000000)
         vdsc->SetWord(addr, data, flags);
     else
@@ -486,6 +495,9 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
 
 void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
+    if(!isEven(addr))
+        throw SCC68070Exception(AddressError);
+
     if(addr < 0x80000000 || addr >= 0xC0000000)
         vdsc->SetLong(addr, data, flags);
     else
