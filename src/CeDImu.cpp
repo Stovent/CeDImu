@@ -42,6 +42,9 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
     }
     fseek(f, 0, SEEK_END);
     long biosSize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    uint8_t* d = new uint8_t[biosSize];
+    fread(d, 1, biosSize, f);;
     fclose(f);
 
     delete vdsc;
@@ -55,9 +58,15 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
     else
         vdsc = new MCD212(this);
 
-    if(!vdsc->LoadBIOS(pathToBIOS))
+    if(!vdsc->LoadBIOS(d, biosSize))
         return false;
 
+    std::string str(pathToBIOS);
+#ifdef _WIN32
+    biosName = str.substr(str.rfind('\\')+1);
+#else
+    biosName = str.substr(str.rfind('/')+1);
+#endif // _WIN32
     vdsc->SetOnFrameCompletedCallback([=] () -> void {
         mainFrame->gamePanel->RefreshScreen();
     });

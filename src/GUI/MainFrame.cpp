@@ -107,7 +107,7 @@ void MainFrame::RefreshTitle(wxTimerEvent& event)
         freq = (app->cpu->totalCycleCount - (long double)oldCycleCount) / 1000000.0;
         oldCycleCount = app->cpu->totalCycleCount;
     }
-    SetTitle((app->cdi ? (!app->cdi->gameName.empty() ? app->cdi->gameName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->vdsc->biosFilename + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
+    SetTitle((app->cdi ? (!app->cdi->gameName.empty() ? app->cdi->gameName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->biosName + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)

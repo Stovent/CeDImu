@@ -30,7 +30,6 @@ public:
     bool biosLoaded;
     uint32_t allocatedMemory;
     uint32_t totalFrameCount;
-    std::string biosFilename;
     std::vector<std::string> ICA1;
     std::vector<std::string> DCA1;
     std::vector<std::string> ICA2;
@@ -41,7 +40,7 @@ public:
 
     virtual void Reset() = 0;
 
-    virtual bool LoadBIOS(const char* filename) = 0;
+    virtual bool LoadBIOS(const void* bios, const uint32_t size) = 0;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void MemorySwap() = 0;
 

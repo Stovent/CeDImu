@@ -18,6 +18,7 @@ public:
     CDI* cdi;
     VDSC* vdsc;
     SCC68070* cpu;
+    std::string biosName;
 
     MainFrame* mainFrame;
     uint32_t cpuFrequencies[12] = {

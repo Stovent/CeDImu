@@ -60,33 +60,17 @@ void MCD212::Reset()
     internalRegisters[DDR2] &= 0x003F; // MF1, MF2, FT1, FT2
 }
 
-bool MCD212::LoadBIOS(const char* filename)
+bool MCD212::LoadBIOS(const void* bios, const uint32_t size)
 {
-    biosLoaded = false;
-    FILE* f = fopen(filename, "rb");
-    if(f == NULL)
-        return false;
-
-    fseek(f, 0, SEEK_END);
-    long size = ftell(f); // should be 512KB
-    fseek(f, 0, SEEK_SET);
-
     if(size > 0xFFC00)
     {
-        LOG(out_dram << "WARNING: BIOS is bigger than ROM size (0xFFC00)" << std::endl)
-        wxMessageBox("BIOS is bigger than ROM size (0xFFC00)");
-        size = 0xFFC00;
+        LOG(out_dram << "ERROR: BIOS is bigger than ROM size (0xFFC00)" << std::endl)
+        wxMessageBox("Error: BIOS is bigger than ROM size (0xFFC00)");
+        return biosLoaded = false;
     }
 
-    fread(&memory[0x400000], 1, size, f);
+    memcpy(&memory[0x400000], bios, size);
 
-    fclose(f);
-    std::string str(filename);
-#ifdef _WIN32
-    biosFilename = str.substr(str.rfind('\\')+1);
-#else
-    biosFilename = str.substr(str.rfind('/')+1);
-#endif // _WIN32
     return biosLoaded = true;
 }
 
