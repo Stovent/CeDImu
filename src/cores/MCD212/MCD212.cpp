@@ -58,6 +58,7 @@ void MCD212::Reset()
     internalRegisters[DCR2] &= 0x003F; // CM2, IC2, DC2
     internalRegisters[DDR1] &= 0x003F; // MF1, MF2, FT1, FT2
     internalRegisters[DDR2] &= 0x003F; // MF1, MF2, FT1, FT2
+    MemorySwap();
 }
 
 bool MCD212::LoadBIOS(const void* bios, const uint32_t size)

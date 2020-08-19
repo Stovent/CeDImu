@@ -85,6 +85,7 @@ void SCC68070::Reset()
         D[i] = 0;
         A[i] = 0;
     }
+    vdsc->Reset();
     ResetOperation();
 }
 
@@ -188,10 +189,9 @@ uint16_t SCC68070::GetNextWord(const uint8_t flags)
 
 void SCC68070::ResetOperation()
 {
-    vdsc->MemorySwap();
-    SSP = vdsc->GetLong(0);
+    SSP = vdsc->GetLong(0, Trigger);
     A[7] = SSP;
-    PC = vdsc->GetLong(4);
+    PC = vdsc->GetLong(4, Trigger);
     SR = 0x2700;
     USP = 0;
 }

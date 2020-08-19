@@ -19,7 +19,7 @@ SCC66470::~SCC66470()
 
 void SCC66470::Reset()
 {
-
+    MemorySwap();
 }
 
 void SCC66470::MemorySwap()
