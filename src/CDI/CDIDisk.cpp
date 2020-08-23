@@ -10,8 +10,21 @@
  */
 bool CDIDisk::Open(const std::string& filename)
 {
+    Close();
+
     disk.open(filename, std::ios::in | std::ios::binary);
-    return disk.is_open();
+    if(!disk.is_open())
+        return false;
+
+#ifdef _WIN32
+    romPath = filename.substr(0, filename.rfind('\\')+1);
+#else
+    romPath = filename.substr(0, filename.rfind('/')+1);
+#endif
+
+    LoadFileSystem();
+    gameFolder = romPath + gameName + "/";
+    return true;
 }
 
 /** \brief Checks if the disk is opened.
@@ -28,6 +41,11 @@ bool CDIDisk::IsOpen() const
 void CDIDisk::Close()
 {
     disk.close();
+    rootDirectory.Clear();
+    mainModule = "";
+    gameName = "";
+    romPath = "";
+    gameFolder = "";
     memset(&header, 0, sizeof(header));
     memset(&subheader, 0, sizeof(subheader));
 }
@@ -68,6 +86,68 @@ void CDIDisk::UpdateSectorInfo()
     subheader.CodingInformation = s[7];
 
     disk.seekg(tmp);
+}
+
+/** \brief Load every file and directory from the disk.
+ */
+void CDIDisk::LoadFileSystem()
+{
+    const uint32_t pos = Tell();
+
+    GotoLBN(16, 148); // go to disk label, Address of path Table
+
+    uint32_t lbn = GetLong();
+
+    Seek(38, std::ios_base::cur); // reserved
+
+    gameName = GetString();
+
+    Seek(256, std::ios_base::cur); // goto application identifier
+
+    mainModule = GetString();
+
+    GotoLBN(lbn); //go to path table
+
+    while((Tell() % 2352) < 2072) // read the directories on the whole sector
+    {
+        uint8_t nameSize = GetByte();
+        if(nameSize == 0)
+            break;
+
+		GetByte(); // ignore the next byte
+
+        lbn = GetLong();
+
+        /*uint16_t parent = */GetWord();
+
+        std::string dirname = GetString(nameSize);
+        if(!isEven(nameSize))
+            GetByte();
+
+        if(dirname[0] == '\0')
+        {
+            rootDirectory.dirLBN = lbn;
+        }
+    }
+    rootDirectory.LoadContent(*this);
+
+    if((rootDirectory.GetFile(mainModule)) == nullptr)
+        wxMessageBox("Could not find main module " + mainModule);
+
+    Seek(pos);
+}
+
+/** \brief Get file from its path on the disk.
+ *
+ * \param  path The full path from the root directory of the disk to the file.
+ * \return A pointer to the file, or nullptr is not found.
+ *
+ * The path must not start with a '/'.
+ * e.g. "CMDS/cdi_gate" for file "cdi_gate" in the "CMDS" folder in the root directory.
+ */
+CDIFile* CDIDisk::GetFile(std::string path)
+{
+    return rootDirectory.GetFile(path);
 }
 
 /** \brief Get the current file cursor position.

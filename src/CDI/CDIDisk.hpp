@@ -5,6 +5,9 @@ class CDIDisk;
 
 #include <fstream>
 
+#include "CDIDirectory.hpp"
+#include "CDIFile.hpp"
+
 typedef struct
 {
     uint8_t Minutes;
@@ -39,12 +42,18 @@ class CDIDisk
     std::ifstream disk;
 
     void UpdateSectorInfo();
+    bool CreateSubfoldersFromROMDirectory(std::string path = "");
 
 public:
     CDIHeader header;
     CDISubheader subheader;
+    CDIDirectory rootDirectory;
+    std::string mainModule;
+    std::string gameName;
+    std::string romPath;
+    std::string gameFolder; // romPath + gameName + "/"
 
-    CDIDisk() : disk(), header(), subheader() {}
+    CDIDisk() : disk(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
     CDIDisk(const CDIDisk&) = delete;
     CDIDisk(const CDIDisk&&) = delete;
 
@@ -53,6 +62,9 @@ public:
     void Close();
     bool Good();
     void Clear();
+
+    void LoadFileSystem();
+    CDIFile* GetFile(std::string path);
 
     uint32_t Tell();
     bool Seek(const uint32_t offset, std::ios::seekdir direction = std::ios::beg);
@@ -65,6 +77,12 @@ public:
     uint16_t GetWord();
     uint32_t GetLong();
     std::string GetString(uint16_t length = 128, const char delim = ' ');
+
+    bool ExportAudio();
+    bool ExportFiles();
+    void ExportFileSystem();
+    bool ExportVideo();
+    void ExportSectorsInfo();
 
     inline bool IsEmptySector() const { return !(subheader.Submode & 0x0E) && !subheader.ChannelNumber && !subheader.CodingInformation; };
     inline uint16_t GetSectorDataSize() const { return (subheader.Submode & cdiform) ? 2324 : 2048; }

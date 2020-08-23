@@ -1,19 +1,59 @@
-#include "CDI.hpp"
+#include "CDIDisk.hpp"
 
 #include <sstream>
 #include <iomanip>
+
+#ifdef USE_STD_FILESYSTEM
+#include <filesystem>
+#else
+#include <wx/filefn.h>
+#endif // USE_STD_FILESYSTEM
 
 #include <wx/msgdlg.h>
 
 #include "../utils.hpp"
 
+/** \brief Create subdirectories inside the game folder.
+ *
+ * \param  path The directories to create, separated by '/'.
+ * \return false if a folder could not be created, true otherwise.
+ *
+ * The game folder is the directory where the ROM is located +
+ * the game name inside the ROM.
+ * Path must not start with an '/' and must end with an '/'.
+ * An empty string only creates the game folder only (romPath + gameName).
+ * Example: if the game is Alien Gate, and the ROM is in C:/ROMs/
+ * then sending path = "files/CMDS/" will create C:/ROMs/Alien Gate/files/CMDS/
+ */
+bool CDIDisk::CreateSubfoldersFromROMDirectory(std::string path)
+{
+    std::string newFolder(gameFolder);
+    do
+    {
+#ifdef USE_STD_FILESYSTEM
+        if(!std::filesystem::create_directory(newFolder))
+            return false;
+#else
+        if(!wxDirExists(newFolder))
+            if(!wxMkdir(newFolder))
+                return false;
+#endif // USE_STD_FILESYSTEM
+
+        uint32_t pos = path.find('/');
+        newFolder += path.substr(0, pos+1);
+        path = path.substr(pos+1);
+    } while(path.length() > 1);
+
+    return true;
+}
+
 /** \brief Export the audio data in the ROM.
  *
  * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
-bool CDI::ExportAudio()
+bool CDIDisk::ExportAudio()
 {
-    if(!disk.IsOpen())
+    if(!IsOpen())
     {
         wxMessageBox("No ROM loaded, no audio to export");
         return false;
@@ -37,16 +77,16 @@ bool CDI::ExportAudio()
  *
  * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
-bool CDI::ExportFiles()
+bool CDIDisk::ExportFiles()
 {
-    if(!disk.IsOpen())
+    if(!IsOpen())
     {
         wxMessageBox("No ROM loaded, no files to export");
         return false;
     }
 
     ExportSectorsInfo();
-    ExportFilesInfo();
+    ExportFileSystem();
 
     std::string currentPath = "files/";
     if(!CreateSubfoldersFromROMDirectory(currentPath))
@@ -64,14 +104,14 @@ bool CDI::ExportFiles()
 
 /** \brief Export the strucure of the ROM's file system.
  */
-void CDI::ExportFilesInfo()
+void CDIDisk::ExportFileSystem()
 {
     if(!CreateSubfoldersFromROMDirectory())
         wxMessageBox("Could not create subfolders " + gameFolder);
 
     std::ofstream out(gameFolder + "files_info.txt");
 
-    out << rootDirectory.ExportInfo().str();
+    out << rootDirectory.ExportContent().str();
 
     out.close();
 }
@@ -80,9 +120,9 @@ void CDI::ExportFilesInfo()
  *
  * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
-bool CDI::ExportVideo()
+bool CDIDisk::ExportVideo()
 {
-    if(!disk.IsOpen())
+    if(!IsOpen())
     {
         wxMessageBox("No ROM loaded, no video to export");
         return false;
@@ -104,7 +144,7 @@ bool CDI::ExportVideo()
 
 /** \brief Export the structure of the sectors in the ROM.
  */
-void CDI::ExportSectorsInfo()
+void CDIDisk::ExportSectorsInfo()
 {
     if(!CreateSubfoldersFromROMDirectory())
     {
@@ -112,28 +152,28 @@ void CDI::ExportSectorsInfo()
         return;
     }
 
-    const uint32_t pos = disk.Tell();
+    const uint32_t pos = Tell();
     uint32_t LBN = 0;
-    disk.Seek(0);
+    Seek(0);
 
     std::ofstream out(gameFolder + "sectors.txt");
     out << "   LBN Min secs sect mode file channel  submode codingInfo" << std::endl;
 
-    while(disk.Good())
+    while(Good())
     {
         out << std::right << std::setw(6) << std::to_string(LBN++) \
-            << std::setw(4) << std::to_string(disk.header.Minutes) \
-            << std::setw(5) << std::to_string(disk.header.Seconds) \
-            << std::setw(5) << std::to_string(disk.header.Sectors) \
-            << std::setw(5) << std::to_string(disk.header.Mode) \
-            << std::setw(5) << std::to_string(disk.subheader.FileNumber) \
-            << std::setw(8) << std::to_string(disk.subheader.ChannelNumber) \
-            << std::setw(9) << toBinString(disk.subheader.Submode, 8) \
-            << std::setw(11) << toBinString(disk.subheader.CodingInformation, 8) << std::endl;
-        disk.GotoNextSector(); // pass 'cdiany' argument to remove empty sectors
+            << std::setw(4) << std::to_string(header.Minutes) \
+            << std::setw(5) << std::to_string(header.Seconds) \
+            << std::setw(5) << std::to_string(header.Sectors) \
+            << std::setw(5) << std::to_string(header.Mode) \
+            << std::setw(5) << std::to_string(subheader.FileNumber) \
+            << std::setw(8) << std::to_string(subheader.ChannelNumber) \
+            << std::setw(9) << toBinString(subheader.Submode, 8) \
+            << std::setw(11) << toBinString(subheader.CodingInformation, 8) << std::endl;
+        GotoNextSector();
     }
-    disk.Clear();
+    Clear();
 
     out.close();
-    disk.Seek(pos);
+    Seek(pos);
 }

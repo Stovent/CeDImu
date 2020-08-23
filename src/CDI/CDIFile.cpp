@@ -6,6 +6,7 @@
 #include <wx/msgdlg.h>
 #include <wx/bitmap.h>
 
+#include "CDIDisk.hpp"
 #include "../common/Audio.hpp"
 #include "../common/Video.hpp"
 #include "../utils.hpp"
