@@ -13,7 +13,7 @@ class SCC66470 : public VDSC
     std::function<void()> OnFrameCompleted;
 
 public:
-    explicit SCC66470(CeDImu* appp);
+    explicit SCC66470(Board* board);
     virtual ~SCC66470();
 
     virtual void Reset() override;

@@ -8,12 +8,13 @@ class SCC68070Exception;
 
 #include <cstdint>
 #include <fstream>
+#include <map>
 #include <string>
 #include <thread>
 #include <vector>
 
 #include "../../common/flags.hpp"
-#include "../VDSC.hpp"
+class Board;
 
 // Actually, figure VI.1 of the Green Book
 // and Table 2-2 of the MC68000UM
@@ -247,7 +248,7 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
+    explicit SCC68070(Board* board, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
     ~SCC68070();
 
     bool IsRunning();
@@ -262,7 +263,7 @@ public:
     std::map<std::string, uint32_t> GetRegisters() const;
 
 private:
-    VDSC* vdsc;
+    Board* board;
     std::thread executionThread;
     bool loop;
     bool isRunning;

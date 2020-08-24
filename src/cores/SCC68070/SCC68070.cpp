@@ -2,11 +2,12 @@
 
 #include <cstring>
 
+#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
 
-SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
+SCC68070::SCC68070(Board* board, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
 {
-    vdsc = gpu;
+    this->board = board;
     disassemble = false;
     isRunning = false;
 
@@ -85,7 +86,7 @@ void SCC68070::Reset()
         D[i] = 0;
         A[i] = 0;
     }
-    vdsc->Reset();
+    board->Reset();
     ResetOperation();
 }
 
@@ -189,9 +190,9 @@ uint16_t SCC68070::GetNextWord(const uint8_t flags)
 
 void SCC68070::ResetOperation()
 {
-    SSP = vdsc->GetLong(0, Trigger);
+    SSP = board->GetLong(0, Trigger);
     A[7] = SSP;
-    PC = vdsc->GetLong(4, Trigger);
+    PC = board->GetLong(4, Trigger);
     SR = 0x2700;
     USP = 0;
 }

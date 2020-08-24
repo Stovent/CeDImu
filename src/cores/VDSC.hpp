@@ -11,6 +11,7 @@ class VDSC;
 
 #include "../CeDImu.hpp"
 #include "../common/flags.hpp"
+class Board;
 
 struct VDSCRegister
 {
@@ -26,7 +27,7 @@ protected:
     uint16_t lineNumber; // lines starts at 0
 
 public:
-    CeDImu* app;
+    Board* board;
     bool biosLoaded;
     uint32_t allocatedMemory;
     uint32_t totalFrameCount;
@@ -35,7 +36,7 @@ public:
     std::vector<std::string> ICA2;
     std::vector<std::string> DCA2;
 
-    VDSC(CeDImu* appp) : lineNumber(0), app(appp), biosLoaded(false), allocatedMemory(0), totalFrameCount(0) {}
+    VDSC(Board* baord) : lineNumber(0), board(baord), biosLoaded(false), allocatedMemory(0), totalFrameCount(0) {}
     virtual ~VDSC() {}
 
     virtual void Reset() = 0;

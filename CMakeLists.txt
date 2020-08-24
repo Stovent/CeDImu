@@ -8,6 +8,7 @@ set(SRCS
 	src/CDI/CDIDirectory.cpp
 	src/CDI/CDIFile.cpp
 	src/CDI/Export.cpp
+	src/Boards/Mono3.cpp
 	src/common/Audio.cpp
 	src/common/Video.cpp
 	src/cores/MCD212/DRAMInterface.cpp

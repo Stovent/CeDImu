@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstring>
 
-SCC66470::SCC66470(CeDImu* appp) : VDSC(appp)
+SCC66470::SCC66470(Board* board) : VDSC(board)
 {
     allocatedMemory = 0x200000;
     memory = new uint8_t[allocatedMemory];

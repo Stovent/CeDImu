@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iterator>
 
+#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
 
 void SCC68070::Interpreter()
@@ -32,9 +33,9 @@ void SCC68070::Interpreter()
         cycleCount += executionTime;
         totalCycleCount += executionTime;
 
-        if(cycleCount * cycleDelay >= vdsc->GetLineDisplayTimeNanoSeconds())
+        if(cycleCount * cycleDelay >= board->GetLineDisplayTime())
         {
-            vdsc->DrawLine();
+            board->DrawLine();
             cycleCount = 0;
         }
 

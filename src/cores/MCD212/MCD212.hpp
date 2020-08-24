@@ -64,7 +64,7 @@ enum CodingMethods
 class MCD212 : public VDSC
 {
 public:
-    explicit MCD212(CeDImu* appp);
+    explicit MCD212(Board* board);
     virtual ~MCD212();
 
     virtual void Reset() override;

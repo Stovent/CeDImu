@@ -86,7 +86,7 @@ void MCD212::DrawLine()
         totalFrameCount++;
         if(stopOnNextFrame)
         {
-            app->cpu->Stop(false);
+            board->cpu->Stop(false);
             stopOnNextFrame = false;
         }
     }
