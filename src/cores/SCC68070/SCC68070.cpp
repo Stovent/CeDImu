@@ -1,13 +1,14 @@
 #include "SCC68070.hpp"
 
 #include <cstring>
+#include <iterator>
 
 #include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
 
-SCC68070::SCC68070(Board* board, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
+SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
 {
-    this->board = board;
+    board = baord;
     disassemble = false;
     isRunning = false;
 

@@ -96,23 +96,23 @@ void MainFrame::CreateMenuBar()
 void MainFrame::RefreshTitle(wxTimerEvent& event)
 {
     uint16_t fps = 0;
-    if(app->vdsc)
+    if(app->cdi->board)
     {
-        fps = app->vdsc->totalFrameCount - oldFrameCount;
-        oldFrameCount = app->vdsc->totalFrameCount;
+        fps = app->cdi->board->vdsc->totalFrameCount - oldFrameCount;
+        oldFrameCount = app->cdi->board->vdsc->totalFrameCount;
     }
     long double freq = 0.0;
-    if(app->cpu)
+    if(app->cdi->board)
     {
-        freq = (app->cpu->totalCycleCount - (long double)oldCycleCount) / 1000000.0;
-        oldCycleCount = app->cpu->totalCycleCount;
+        freq = (app->cdi->board->cpu->totalCycleCount - (long double)oldCycleCount) / 1000000.0;
+        oldCycleCount = app->cdi->board->cpu->totalCycleCount;
     }
-    SetTitle((app->cdi ? (!app->cdi->gameName.empty() ? app->cdi->gameName + " | " : "") : "") + (app->vdsc ? (app->vdsc->biosLoaded ? app->biosName + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
+    SetTitle((!app->cdi->disk.gameName.empty() ? app->cdi->disk.gameName + " | " : "") + (app->cdi->board ? (app->cdi->board->vdsc->biosLoaded ? app->biosName + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
-    if(app->vdsc == nullptr || !app->vdsc->biosLoaded)
+    if(app->cdi->board->vdsc == nullptr || !app->cdi->board->vdsc->biosLoaded)
     {
         wxMessageBox("The BIOS has not been loaded yet, please choose one.");
         OnLoadBIOS(event);
@@ -135,19 +135,19 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 
     if(Config::skipBIOS)
     {
-        CDIFile* module = app->cdi->GetFile(app->cdi->mainModule);
+        CDIFile* module = app->cdi->disk.GetFile(app->cdi->disk.mainModule);
         uint32_t size, address = 0;
         char* d = module->GetFileContent(size);
         if(d != nullptr && size)
         {
-            app->vdsc->PutDataInMemory(d, size, address);
+            app->cdi->board->vdsc->PutDataInMemory(d, size, address);
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
-            app->cpu->SetRegister(CPURegisters::PC, address + app->vdsc->GetLong(address + 0x30));
+            app->cdi->board->cpu->SetRegister(CPURegisters::PC, address + app->cdi->board->vdsc->GetLong(address + 0x30));
         }
     }
 
-    if(app->vdsc->biosLoaded)
+    if(app->cdi->board->vdsc->biosLoaded)
         if(!pauseItem->IsChecked())
             app->StartGameThread();
 }
@@ -171,7 +171,7 @@ void MainFrame::OnLoadBIOS(wxCommandEvent& event)
 void MainFrame::OnCloseROM(wxCommandEvent& event)
 {
     app->StopGameThread();
-    app->cdi->CloseROM();
+    app->cdi->disk.Close();
 }
 
 void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
@@ -212,7 +212,7 @@ void MainFrame::Pause()
 
 void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 {
-    if(!app->cpu)
+    if(!app->cdi->board)
         return;
 
     wxFrame* genericFrame = new wxFrame(this, wxID_ANY, "Execute instructions", GetPosition(), wxSize(200, 60));
@@ -222,7 +222,7 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 
     button->Bind(wxEVT_BUTTON, [this, genericFrame, input] (wxEvent& event) {
         for(int i = 0; i < stoi(input->GetValue().ToStdString()); i++)
-            this->app->cpu->Run(false);
+            this->app->cdi->board->cpu->Run(false);
     });
 
     sizer->Add(input, 1, wxEXPAND);
@@ -234,31 +234,31 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
-    if(app->cpu)
-        app->cpu->Reset();
+    if(app->cdi->board)
+        app->cdi->board->cpu->Reset();
 }
 
 void MainFrame::OnVDSCViewer(wxCommandEvent& event)
 {
-    if(vdscViewer != nullptr || !app->vdsc)
+    if(vdscViewer != nullptr || !app->cdi->board)
         return;
-    vdscViewer = new VDSCViewer(this, app->vdsc);
+    vdscViewer = new VDSCViewer(this, app->cdi->board->vdsc);
     vdscViewer->Show();
 }
 
 void MainFrame::OnDisassembler(wxCommandEvent& event)
 {
-    if(disassemblerFrame != nullptr || !app->cpu)
+    if(disassemblerFrame != nullptr || !app->cdi->board)
         return;
-    disassemblerFrame = new DisassemblerFrame(app->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
+    disassemblerFrame = new DisassemblerFrame(app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
     disassemblerFrame->Show();
 }
 
 void MainFrame::OnRAMSearch(wxCommandEvent& event)
 {
-    if(ramSearchFrame != nullptr || !app->vdsc)
+    if(ramSearchFrame != nullptr || !app->cdi->board)
         return;
-    ramSearchFrame = new RAMSearchFrame(app->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
+    ramSearchFrame = new RAMSearchFrame(app->cdi->board->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
     ramSearchFrame->Show();
 }
 
@@ -266,7 +266,7 @@ void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
     SetStatusText("Exporting files...");
     if(app->cdi)
-        app->cdi->ExportFiles();
+        app->cdi->disk.ExportFiles();
     else
         wxMessageBox("No ROM loaded, no file to export");
     SetStatusText("Files exported!");
@@ -276,7 +276,7 @@ void MainFrame::OnExportAudio(wxCommandEvent& event)
 {
     SetStatusText("Exporting audio...");
     if(app->cdi)
-        app->cdi->ExportAudio();
+        app->cdi->disk.ExportAudio();
     SetStatusText("Audio exported!");
 }
 
@@ -284,7 +284,7 @@ void MainFrame::OnExportVideo(wxCommandEvent& event)
 {
     SetStatusText("Exporting video...");
     if(app->cdi)
-        app->cdi->ExportVideo();
+        app->cdi->disk.ExportVideo();
     SetStatusText("Video exported!");
 }
 

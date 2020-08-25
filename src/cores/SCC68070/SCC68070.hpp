@@ -248,7 +248,7 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    explicit SCC68070(Board* board, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
+    explicit SCC68070(Board* baord, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
     ~SCC68070();
 
     bool IsRunning();

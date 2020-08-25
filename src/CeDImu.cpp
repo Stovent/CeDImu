@@ -6,9 +6,7 @@
 
 bool CeDImu::OnInit()
 {
-    cdi = nullptr;
-    vdsc = nullptr;
-    cpu = nullptr;
+    cdi = new CDI();
 
     Config::loadConfig();
 
@@ -24,8 +22,6 @@ int CeDImu::OnExit()
 {
     StopGameThread();
     delete cdi;
-    delete vdsc;
-    delete cpu;
     Config::saveConfig();
     return 0;
 }
@@ -38,26 +34,16 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
         wxMessageBox("Could not open BIOS file!");
         return false;
     }
+
     fseek(f, 0, SEEK_END);
     long biosSize = ftell(f);
     fseek(f, 0, SEEK_SET);
-    uint8_t* d = new uint8_t[biosSize];
-    fread(d, 1, biosSize, f);;
+    uint8_t* bios = new uint8_t[biosSize];
+    fread(bios, 1, biosSize, f);;
     fclose(f);
 
-    delete vdsc;
-    delete cpu;
-
-    if(biosSize == 523264)
-    {
-        vdsc = new SCC66470(this);
-        wxMessageBox("WARNING: this BIOS is not implemented yet, it may not work correctly. Please use another one");
-    }
-    else
-        vdsc = new MCD212(this);
-
-    if(!vdsc->LoadBIOS(d, biosSize))
-        return false;
+    cdi->LoadBoard(bios, biosSize);
+    delete[] bios;
 
     std::string str(pathToBIOS);
 #ifdef _WIN32
@@ -65,20 +51,18 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
 #else
     biosName = str.substr(str.rfind('/')+1);
 #endif // _WIN32
-    vdsc->SetOnFrameCompletedCallback([=] () -> void {
+
+    cdi->board->vdsc->SetOnFrameCompletedCallback([=] () -> void {
         mainFrame->gamePanel->RefreshScreen();
     });
 
-    cpu = new SCC68070(vdsc);
-    cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+    cdi->board->cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     return true;
 }
 
 bool CeDImu::InitializeCDI(const char* pathToROM)
 {
-    delete cdi;
-    cdi = new CDI();
-    return cdi->OpenROM(pathToROM);
+    return cdi->disk.Open(pathToROM);
 }
 
 void CeDImu::IncreaseEmulationSpeed()
@@ -86,8 +70,8 @@ void CeDImu::IncreaseEmulationSpeed()
     if(cpuFrequencyIndex < 11)
     {
         cpuFrequencyIndex++;
-        if(cpu)
-            cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+        if(cdi->board)
+            cdi->board->cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     }
 }
 
@@ -96,19 +80,19 @@ void CeDImu::DecreaseEmulationSpeed()
     if(cpuFrequencyIndex > 0)
     {
         cpuFrequencyIndex--;
-        if(cpu)
-            cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+        if(cdi->board)
+            cdi->board->cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     }
 }
 
 void CeDImu::StartGameThread()
 {
-    if(cpu)
-        cpu->Run(true);
+    if(cdi->board)
+        cdi->board->cpu->Run(true);
 }
 
 void CeDImu::StopGameThread()
 {
-    if(cpu)
-        cpu->Stop();
+    if(cdi->board)
+        cdi->board->cpu->Stop();
 }

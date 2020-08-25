@@ -16,7 +16,7 @@ GamePanel::~GamePanel()
 
 void GamePanel::RefreshLoop(wxPaintEvent& event)
 {
-    wxImage screen = app->vdsc->GetScreen();
+    wxImage screen = app->cdi->board->vdsc->GetScreen();
     if(!screen.IsOk())
         return;
 
@@ -29,7 +29,7 @@ void GamePanel::RefreshLoop(wxPaintEvent& event)
 
 void GamePanel::RefreshScreen()
 {
-    wxImage screen = app->vdsc->GetScreen();
+    wxImage screen = app->cdi->board->vdsc->GetScreen();
     if(!screen.IsOk())
         return;
 
@@ -42,20 +42,20 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     switch(event.GetKeyCode())
     {
     case 'A':
-        if(app->cpu)
+        if(app->cdi->board)
             mainFrame->Pause();
         break;
 
     case 'Z':
-        if(!app->cpu) break;
-        app->vdsc->StopOnNextFrame();
-        if(!app->cpu->IsRunning())
+        if(!app->cdi->board) break;
+        app->cdi->board->vdsc->StopOnNextFrame();
+        if(!app->cdi->board->cpu->IsRunning())
             app->StartGameThread();
         break;
 
     case 'E':
-        if(app->cpu && app->mainFrame->pauseItem->IsChecked())
-            app->cpu->Run(false);
+        if(app->cdi->board && app->mainFrame->pauseItem->IsChecked())
+            app->cdi->board->cpu->Run(false);
         break;
     case 'M':
         app->DecreaseEmulationSpeed();

@@ -4,8 +4,9 @@
 
 Mono3::Mono3(const void* bios, const uint32_t size) : Board()
 {
-    mcd212 = new MCD212(this);
-    mcd212->LoadBIOS(bios, size);
+    vdsc = new MCD212(this);
+    vdsc->LoadBIOS(bios, size);
+    cpu = new SCC68070(this);
 
     OPEN_LOG(out, "Mono3.txt")
     uart_out.open("uart_out", std::ios::binary | std::ios::out);
@@ -14,20 +15,21 @@ Mono3::Mono3(const void* bios, const uint32_t size) : Board()
 
 Mono3::~Mono3()
 {
-    delete mcd212;
+    delete cpu;
+    delete vdsc;
 }
 
 void Mono3::Reset()
 {
-    mcd212->Reset();
+    vdsc->Reset();
 }
 
 uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
 {
     if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
     {
-        uint8_t data = mcd212->GetByte(addr, flags);
-        LOG(out << std::hex << cpu->currentPC << "\tGet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl)
+        uint8_t data = vdsc->GetByte(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
         return data;
     }
 
@@ -39,8 +41,8 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
 {
     if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
     {
-        uint16_t data = mcd212->GetWord(addr, flags);
-        LOG(out << std::hex << cpu->currentPC << "\tGet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl)
+        uint16_t data = vdsc->GetWord(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
         return data;
     }
 
@@ -52,8 +54,8 @@ uint32_t Mono3::GetLong(const uint32_t addr, const uint8_t flags)
 {
     if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
     {
-        uint32_t data = mcd212->GetLong(addr, flags);
-        LOG(out << std::hex << cpu->currentPC << "\tGet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl)
+        uint32_t data = vdsc->GetLong(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
         return data;
     }
 
@@ -65,8 +67,8 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
 {
     if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
     {
-        mcd212->SetByte(addr, data, flags);
-        LOG(out << std::hex << cpu->currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl)
+        vdsc->SetByte(addr, data, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
         return;
     }
 
@@ -77,8 +79,8 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
 {
     if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
     {
-        mcd212->SetWord(addr, data, flags);
-        LOG(out << std::hex << cpu->currentPC << "\tSet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl)
+        vdsc->SetWord(addr, data, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
         return;
     }
 
@@ -89,8 +91,8 @@ void Mono3::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flag
 {
     if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
     {
-        mcd212->SetLong(addr, data, flags);
-        LOG(out << std::hex << cpu->currentPC << "\tSet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl)
+        vdsc->SetLong(addr, data, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
         return;
     }
 
@@ -112,10 +114,10 @@ void Mono3::CPUSetUART(const uint8_t data, const uint8_t flags)
 
 void Mono3::DrawLine()
 {
-    mcd212->DrawLine();
+    vdsc->DrawLine();
 }
 
 uint32_t Mono3::GetLineDisplayTime()
 {
-    return mcd212->GetLineDisplayTimeNanoSeconds();
+    return vdsc->GetLineDisplayTimeNanoSeconds();
 }

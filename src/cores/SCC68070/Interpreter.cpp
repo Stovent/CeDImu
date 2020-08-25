@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <iterator>
 
 #include "../../Boards/Board.hpp"
 #include "../../utils.hpp"

@@ -4,15 +4,17 @@
 class Board;
 
 #include "../cores/SCC68070/SCC68070.hpp"
+#include "../cores/VDSC.hpp"
 #include "../common/flags.hpp"
 
 class Board
 {
 public:
     SCC68070* cpu;
+    VDSC* vdsc;
 
-    Board() { cpu = new SCC68070(this); }
-    virtual ~Board() { delete cpu; }
+    Board() {  }
+    virtual ~Board() {  }
     virtual void Reset() = 0;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) = 0;

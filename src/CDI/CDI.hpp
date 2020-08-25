@@ -14,6 +14,8 @@ public:
 
     CDI();
     ~CDI();
+
+    void LoadBoard(const void* bios, const uint32_t size);
 };
 
 #endif // CDI_HPP
