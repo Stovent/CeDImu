@@ -270,8 +270,6 @@ private:
 
     std::ofstream out;
     std::ofstream instruction;
-    std::ofstream uart_out;
-    std::ifstream uart_in;
 
     uint8_t* internal;
 
@@ -350,8 +348,6 @@ private:
     // Peripherals
     uint8_t GetPeripheral(const uint32_t addr);
     void SetPeripheral(const uint32_t addr, const uint8_t data);
-    uint8_t ReadUART();
-    void WriteUART(const uint8_t data);
 
     // Conditional Codes
     bool T();

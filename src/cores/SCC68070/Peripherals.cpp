@@ -1,5 +1,6 @@
 #include "SCC68070.hpp"
 
+#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
 
 uint8_t SCC68070::GetPeripheral(const uint32_t addr)
@@ -8,7 +9,8 @@ uint8_t SCC68070::GetPeripheral(const uint32_t addr)
 
     if(addr == 0x8000201B)
     {
-        internal[URHR] = ReadUART();
+        internal[URHR] = board->CPUGetUART();
+        LOG(disassembledInstructions.push_back(toHex(currentPC) + "\tURHR: 0x" + toHex(internal[URHR]))) // this or data ?
     }
 
     return data;
@@ -16,6 +18,8 @@ uint8_t SCC68070::GetPeripheral(const uint32_t addr)
 
 void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
 {
+    internal[addr - SCC68070Peripherals::Base] = data;
+
     if(addr == 0x80002017) // UART Command Register
     {
         switch(data & 0x70)
@@ -33,25 +37,8 @@ void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
     }
     else if(addr == 0x80002019) // UART Transmit Holding Register
     {
-        WriteUART(data);
+        board->CPUSetUART(data);
+        internal[USR] |= 0x08; // set TXEMT bit
+        LOG(disassembledInstructions.push_back(toHex(currentPC) + "\tUTHR: 0x" + toHex(internal[UTHR])))
     }
-
-    internal[addr - SCC68070Peripherals::Base] = data;
-}
-
-uint8_t SCC68070::ReadUART()
-{
-    int c = uart_in.get();
-    LOG(out << std::hex << currentPC << "\tURHR: 0x" << c << std::endl)
-    LOG(disassembledInstructions.push_back(toHex(currentPC) + "\tURHR: 0x" + toHex(c)))
-    return (c != EOF) ? c : 0;
-}
-
-void SCC68070::WriteUART(const uint8_t data)
-{
-    internal[UTHR] = data;
-    uart_out.write((char*)&data, 1);
-    LOG(out << std::hex << currentPC << "\tUTHR: 0x" << (uint32_t)internal[UTHR] << std::endl)
-    LOG(disassembledInstructions.push_back(toHex(currentPC) + "\tUTHR: 0x" + toHex(internal[UTHR])))
-    internal[USR] |= 0x08; // set TXEMT bit
 }

@@ -23,8 +23,8 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Trigger | Log) = 0;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Trigger | Log) = 0;
 
-    virtual uint8_t GetUART(const uint8_t flags = Trigger | Log) = 0;
-    virtual void SetUART(const uint8_t data, const uint8_t flags = Trigger | Log) = 0;
+    virtual uint8_t CPUGetUART(const uint8_t flags = Trigger | Log) = 0;
+    virtual void CPUSetUART(const uint8_t data, const uint8_t flags = Trigger | Log) = 0;
 
     virtual void DrawLine() = 0;
     virtual uint32_t GetLineDisplayTime() = 0;

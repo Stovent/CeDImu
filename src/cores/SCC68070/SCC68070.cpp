@@ -16,8 +16,6 @@ SCC68070::SCC68070(Board* board, const uint32_t clockFrequency) : disassembledIn
 
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instruction, "instructions.txt")
-    uart_out.open("uart_out", std::ios::binary | std::ios::out);
-    uart_in.open("uart_in", std::ios::binary | std::ios::in);
 
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];
