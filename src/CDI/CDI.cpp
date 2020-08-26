@@ -1,5 +1,6 @@
 #include "CDI.hpp"
 
+#include "../Boards/MiniMMC.hpp"
 #include "../Boards/Mono3.hpp"
 
 CDI::CDI() : disk()
@@ -18,9 +19,7 @@ void CDI::LoadBoard(const void* bios, const uint32_t size)
     delete board;
 
     if(size == 523264)
-    {
-
-    }
+        board = new MiniMMC(bios, size);
     else
         board = new Mono3(bios, size);
 }
