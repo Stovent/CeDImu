@@ -55,7 +55,7 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
 
 uint16_t SCC68070::UnknownInstruction()
 {
-    return 0;
+    throw SCC68070Exception(IllegalInstruction);
 }
 
 uint16_t SCC68070::ABCD()
