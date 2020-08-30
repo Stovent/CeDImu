@@ -4,8 +4,9 @@
 
 MiniMMC::MiniMMC(const void* bios, const uint32_t size) : Board()
 {
-    vdsc = new SCC66470(this);
-    vdsc->LoadBIOS(bios, size);
+    masterVDSC = new SCC66470(this, true);
+    masterVDSC->LoadBIOS(bios, size);
+    slaveVDSC = new SCC66470(this, false);
     cpu = new SCC68070(this);
 
     OPEN_LOG(out, "MiniMMC.txt")
@@ -16,19 +17,28 @@ MiniMMC::MiniMMC(const void* bios, const uint32_t size) : Board()
 MiniMMC::~MiniMMC()
 {
     delete cpu;
-    delete vdsc;
+    delete masterVDSC;
+    delete slaveVDSC;
 }
 
 void MiniMMC::Reset()
 {
-    vdsc->Reset();
+    masterVDSC->Reset();
+    slaveVDSC->Reset();
 }
 
 uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
 {
-    if(addr < 0x100000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFC0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
-        uint8_t data = vdsc->GetByte(addr, flags);
+        uint8_t data = masterVDSC->GetByte(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
+        return data;
+    }
+
+    if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
+    {
+        uint8_t data = slaveVDSC->GetByte(addr, flags);
         LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
         return data;
     }
@@ -39,9 +49,16 @@ uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
 
 uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
 {
-    if(addr < 0x100000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFC0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
-        uint16_t data = vdsc->GetWord(addr, flags);
+        uint16_t data = masterVDSC->GetWord(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
+        return data;
+    }
+
+    if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
+    {
+        uint16_t data = slaveVDSC->GetWord(addr, flags);
         LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
         return data;
     }
@@ -52,9 +69,16 @@ uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t MiniMMC::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    if(addr < 0x100000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFC0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
-        uint32_t data = vdsc->GetLong(addr, flags);
+        uint32_t data = masterVDSC->GetLong(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
+        return data;
+    }
+
+    if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
+    {
+        uint32_t data = slaveVDSC->GetLong(addr, flags);
         LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tGet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
         return data;
     }
@@ -65,9 +89,16 @@ uint32_t MiniMMC::GetLong(const uint32_t addr, const uint8_t flags)
 
 void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
 {
-    if(addr < 0x100000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFC0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
-        vdsc->SetByte(addr, data, flags);
+        masterVDSC->SetByte(addr, data, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
+        return;
+    }
+
+    if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
+    {
+        slaveVDSC->SetByte(addr, data, flags);
         LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
         return;
     }
@@ -77,9 +108,16 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
 
 void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
-    if(addr < 0x100000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFC0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
-        vdsc->SetWord(addr, data, flags);
+        masterVDSC->SetWord(addr, data, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
+        return;
+    }
+
+    if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
+    {
+        slaveVDSC->SetWord(addr, data, flags);
         LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
         return;
     }
@@ -89,9 +127,16 @@ void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fl
 
 void MiniMMC::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
-    if(addr < 0x100000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFC0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
-        vdsc->SetLong(addr, data, flags);
+        masterVDSC->SetLong(addr, data, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
+        return;
+    }
+
+    if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
+    {
+        slaveVDSC->SetLong(addr, data, flags);
         LOG(if(flags & Log) { out << std::hex << cpu->currentPC << "\tSet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
         return;
     }
@@ -114,10 +159,11 @@ void MiniMMC::CPUSetUART(const uint8_t data, const uint8_t flags)
 
 void MiniMMC::DrawLine()
 {
-    vdsc->DrawLine();
+    masterVDSC->DrawLine();
+    slaveVDSC->DrawLine();
 }
 
 uint32_t MiniMMC::GetLineDisplayTime()
 {
-    return vdsc->GetLineDisplayTimeNanoSeconds();
+    return masterVDSC->GetLineDisplayTimeNanoSeconds();
 }

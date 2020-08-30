@@ -11,7 +11,6 @@ class Board
 {
 public:
     SCC68070* cpu;
-    VDSC* vdsc;
 
     Board() {  }
     virtual ~Board() {  }

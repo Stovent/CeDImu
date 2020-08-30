@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstring>
 
-SCC66470::SCC66470(Board* board) : VDSC(board)
+SCC66470::SCC66470(Board* board, const bool ismaster) : VDSC(board), isMaster(ismaster)
 {
     allocatedMemory = 0x200000;
     memory = new uint8_t[allocatedMemory];

@@ -10,6 +10,7 @@ class Mono3;
 
 class Mono3 : public Board
 {
+    VDSC* vdsc;
     std::ofstream out;
     std::ofstream uart_out;
     std::ifstream uart_in;

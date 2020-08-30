@@ -10,10 +10,11 @@ class SCC66470 : public VDSC
     uint8_t* memory;
     uint8_t memorySwapCount;
     bool stopOnNextframe;
+    const bool isMaster;
     std::function<void()> OnFrameCompleted;
 
 public:
-    explicit SCC66470(Board* board);
+    explicit SCC66470(Board* board, const bool ismaster);
     virtual ~SCC66470();
 
     virtual void Reset() override;
