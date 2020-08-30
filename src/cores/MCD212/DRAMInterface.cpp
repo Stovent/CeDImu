@@ -86,7 +86,7 @@ void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flag
     }
     else if(addr <= 0x4FFFFF)
     {
-        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu->currentPC << " Set register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << " WARNING: unexpected size byte" << std::endl; })
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu->currentPC << " Set register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << (int)data << " WARNING: unexpected size byte" << std::endl; })
         internalRegisters[addr-0x4FFFE0] = data;
     }
     else

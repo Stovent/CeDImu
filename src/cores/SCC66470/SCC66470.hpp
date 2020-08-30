@@ -14,6 +14,8 @@ class SCC66470 : public VDSC
     const bool isMaster;
     std::function<void()> OnFrameCompleted;
 
+    std::ofstream out_dram;
+
 public:
     explicit SCC66470(Board* board, const bool ismaster);
     virtual ~SCC66470();

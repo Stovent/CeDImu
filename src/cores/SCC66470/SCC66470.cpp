@@ -1,4 +1,5 @@
 #include "SCC66470.hpp"
+#include "../../utils.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -8,6 +9,8 @@ SCC66470::SCC66470(Board* board, const bool ismaster) : VDSC(board), isMaster(is
     memorySwapCount = 0;
     stopOnNextframe = false;
     allocatedMemory = 0x200000;
+
+    OPEN_LOG(out_dram, isMaster ? "SCC66470_master_DRAM.txt" : "SCC66470_slave_DRAM.txt")
 
     memory = new uint8_t[allocatedMemory];
     memset(memory, 0, 1024 * 1024);
