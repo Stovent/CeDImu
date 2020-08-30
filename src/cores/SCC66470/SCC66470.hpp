@@ -8,6 +8,7 @@ class SCC66470;
 class SCC66470 : public VDSC
 {
     uint8_t* memory;
+    uint16_t* internalRegisters;
     uint8_t memorySwapCount;
     bool stopOnNextframe;
     const bool isMaster;
