@@ -8,8 +8,8 @@ class MiniMMC;
 
 class MiniMMC : public Board
 {
-    VDSC* masterVDSC;
-    VDSC* slaveVDSC;
+    SCC66470* masterVDSC;
+    SCC66470* slaveVDSC;
     std::ofstream out;
     std::ofstream uart_out;
     std::ifstream uart_in;
