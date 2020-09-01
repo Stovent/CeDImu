@@ -1541,7 +1541,7 @@ uint16_t SCC68070::EXT()
 
 uint16_t SCC68070::ILLEGAL()
 {
-    return Exception(IllegalInstruction);
+    throw SCC68070Exception(IllegalInstruction);
 }
 
 uint16_t SCC68070::JMP()
