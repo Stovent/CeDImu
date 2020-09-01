@@ -98,8 +98,8 @@ void MainFrame::RefreshTitle(wxTimerEvent& event)
     uint16_t fps = 0;
     if(app->cdi->board)
     {
-        fps = app->cdi->board->vdsc->totalFrameCount - oldFrameCount;
-        oldFrameCount = app->cdi->board->vdsc->totalFrameCount;
+        fps = app->cdi->board->GetTotalFrameCount() - oldFrameCount;
+        oldFrameCount = app->cdi->board->GetTotalFrameCount();
     }
     long double freq = 0.0;
     if(app->cdi->board)
@@ -107,12 +107,12 @@ void MainFrame::RefreshTitle(wxTimerEvent& event)
         freq = (app->cdi->board->cpu->totalCycleCount - (long double)oldCycleCount) / 1000000.0;
         oldCycleCount = app->cdi->board->cpu->totalCycleCount;
     }
-    SetTitle((!app->cdi->disk.gameName.empty() ? app->cdi->disk.gameName + " | " : "") + (app->cdi->board ? (app->cdi->board->vdsc->biosLoaded ? app->biosName + " | " : "") : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
+    SetTitle((!app->cdi->disk.gameName.empty() ? app->cdi->disk.gameName + " | " : "") + (app->cdi->board ? app->biosName + " | " : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
-    if(app->cdi->board->vdsc == nullptr || !app->cdi->board->vdsc->biosLoaded)
+    if(app->cdi->board == nullptr)
     {
         wxMessageBox("The BIOS has not been loaded yet, please choose one.");
         OnLoadBIOS(event);
@@ -140,14 +140,14 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
         char* d = module->GetFileContent(size);
         if(d != nullptr && size)
         {
-            app->cdi->board->vdsc->PutDataInMemory(d, size, address);
+            app->cdi->board->PutDataInMemory(d, size, address);
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
-            app->cdi->board->cpu->SetRegister(CPURegisters::PC, address + app->cdi->board->vdsc->GetLong(address + 0x30));
+            app->cdi->board->cpu->SetRegister(CPURegisters::PC, address + app->cdi->board->GetLong(address + 0x30, NoFlags));
         }
     }
 
-    if(app->cdi->board->vdsc->biosLoaded)
+    if(app->cdi->board)
         if(!pauseItem->IsChecked())
             app->StartGameThread();
 }
@@ -242,7 +242,7 @@ void MainFrame::OnVDSCViewer(wxCommandEvent& event)
 {
     if(vdscViewer != nullptr || !app->cdi->board)
         return;
-    vdscViewer = new VDSCViewer(this, app->cdi->board->vdsc);
+    vdscViewer = new VDSCViewer(this, app->cdi->board);
     vdscViewer->Show();
 }
 
@@ -258,7 +258,7 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
 {
     if(ramSearchFrame != nullptr || !app->cdi->board)
         return;
-    ramSearchFrame = new RAMSearchFrame(app->cdi->board->vdsc, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
+    ramSearchFrame = new RAMSearchFrame(app->cdi->board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
     ramSearchFrame->Show();
 }
 

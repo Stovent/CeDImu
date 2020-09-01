@@ -10,12 +10,12 @@ class RAMSearchFrame;
 
 #include "MainFrame.hpp"
 #include "RAMSearchList.hpp"
-#include "../cores/VDSC.hpp"
+#include "../Boards/Board.hpp"
 
 class RAMSearchFrame : public wxFrame
 {
 public:
-    VDSC* vdsc;
+    Board* board;
     MainFrame* mainFrame;
     RAMSearchList* ramSearchList;
     wxTimer* renderTimer;
@@ -29,7 +29,7 @@ public:
     wxRadioButton* byte4;
     wxRadioButton* lastByte;
 
-    RAMSearchFrame(VDSC* vds, MainFrame* parent, const wxPoint& pos, const wxSize& size);
+    RAMSearchFrame(Board* board, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~RAMSearchFrame();
 
     void OnClose(wxCloseEvent& event);

@@ -16,7 +16,7 @@ GamePanel::~GamePanel()
 
 void GamePanel::RefreshLoop(wxPaintEvent& event)
 {
-    wxImage screen = app->cdi->board->vdsc->GetScreen();
+    wxImage screen = app->cdi->board->GetScreen();
     if(!screen.IsOk())
         return;
 
@@ -29,7 +29,7 @@ void GamePanel::RefreshLoop(wxPaintEvent& event)
 
 void GamePanel::RefreshScreen()
 {
-    wxImage screen = app->cdi->board->vdsc->GetScreen();
+    wxImage screen = app->cdi->board->GetScreen();
     if(!screen.IsOk())
         return;
 
@@ -48,7 +48,7 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
 
     case 'Z':
         if(!app->cdi->board) break;
-        app->cdi->board->vdsc->StopOnNextFrame();
+        app->cdi->board->StopOnNextFrame();
         if(!app->cdi->board->cpu->IsRunning())
             app->StartGameThread();
         break;

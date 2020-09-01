@@ -9,7 +9,6 @@ class VDSC;
 
 #include <wx/image.h>
 
-#include "../CeDImu.hpp"
 #include "../common/flags.hpp"
 class Board;
 

@@ -21,7 +21,7 @@ RAMSearchList::RAMSearchList(RAMSearchFrame* parent) : wxListCtrl(parent, wxID_A
     InsertColumn(1, valueCol);
 
     EnableAlternateRowColours();
-    SetItemCount(ramSearchFrame->mainFrame->app->cdi->board->vdsc->allocatedMemory);
+    SetItemCount(ramSearchFrame->mainFrame->app->cdi->board->GetAllocatedMemory());
 }
 
 wxString RAMSearchList::OnGetItemText(long item, long column) const
@@ -29,27 +29,27 @@ wxString RAMSearchList::OnGetItemText(long item, long column) const
     if(column == 1)
         if(ramSearchFrame->byte1->GetValue())
             if(ramSearchFrame->signed_->GetValue())
-                return std::to_string((int8_t)ramSearchFrame->vdsc->GetByte(item, NoFlags));
+                return std::to_string((int8_t)ramSearchFrame->board->GetByte(item, NoFlags));
             else if(ramSearchFrame->unsigned_->GetValue())
-                return std::to_string(ramSearchFrame->vdsc->GetByte(item, NoFlags));
+                return std::to_string(ramSearchFrame->board->GetByte(item, NoFlags));
             else
-                return toHex(ramSearchFrame->vdsc->GetByte(item, NoFlags));
+                return toHex(ramSearchFrame->board->GetByte(item, NoFlags));
 
         else if(ramSearchFrame->byte2->GetValue())
             if(ramSearchFrame->signed_->GetValue())
-                return std::to_string((int16_t)ramSearchFrame->vdsc->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
+                return std::to_string((int16_t)ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
             else if(ramSearchFrame->unsigned_->GetValue())
-                return std::to_string(ramSearchFrame->vdsc->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
+                return std::to_string(ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
             else
-                return toHex(ramSearchFrame->vdsc->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
+                return toHex(ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
 
         else
             if(ramSearchFrame->signed_->GetValue())
-                return std::to_string((int32_t)ramSearchFrame->vdsc->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
+                return std::to_string((int32_t)ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
             else if(ramSearchFrame->unsigned_->GetValue())
-                return std::to_string(ramSearchFrame->vdsc->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
+                return std::to_string(ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
             else
-                return toHex(ramSearchFrame->vdsc->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
+                return toHex(ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
     else
         if(ramSearchFrame->byte1->GetValue() || ramSearchFrame->checkMisaligned->GetValue())
             return toHex(item);

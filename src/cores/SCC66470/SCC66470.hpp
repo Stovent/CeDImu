@@ -5,6 +5,8 @@ class SCC66470;
 
 #include "../VDSC.hpp"
 
+#include <fstream>
+
 class SCC66470 : public VDSC
 {
     uint8_t* memory;

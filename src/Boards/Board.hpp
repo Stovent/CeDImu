@@ -7,6 +7,8 @@ class Board;
 #include "../cores/VDSC.hpp"
 #include "../common/flags.hpp"
 
+#include <wx/image.h>
+
 class Board
 {
 public:
@@ -29,6 +31,26 @@ public:
 
     virtual void DrawLine() = 0;
     virtual uint32_t GetLineDisplayTime() = 0;
+
+    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
+    virtual void StopOnNextFrame(const bool stop = true) = 0;
+
+    virtual uint32_t GetAllocatedMemory() = 0;
+    virtual uint32_t GetTotalFrameCount() = 0;
+    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
+
+    virtual std::vector<std::string> GetICA1() = 0;
+    virtual std::vector<std::string> GetDCA1() = 0;
+    virtual std::vector<std::string> GetICA2() = 0;
+    virtual std::vector<std::string> GetDCA2() = 0;
+
+    virtual std::vector<VDSCRegister> GetInternalRegisters() = 0;
+    virtual std::vector<VDSCRegister> GetControlRegisters() = 0;
+    virtual wxImage GetScreen() = 0;
+    virtual wxImage GetPlaneA() = 0;
+    virtual wxImage GetPlaneB() = 0;
+    virtual wxImage GetBackground() = 0;
+    virtual wxImage GetCursor() = 0;
 };
 
 #endif // BOARD_HPP

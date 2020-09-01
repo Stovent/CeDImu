@@ -32,6 +32,26 @@ public:
 
     virtual void DrawLine() override;
     virtual uint32_t GetLineDisplayTime() override;
+
+    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
+    virtual void StopOnNextFrame(const bool stop = true) override;
+
+    virtual uint32_t GetAllocatedMemory() override;
+    virtual uint32_t GetTotalFrameCount() override;
+    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
+
+    virtual std::vector<std::string> GetICA1() override;
+    virtual std::vector<std::string> GetDCA1() override;
+    virtual std::vector<std::string> GetICA2() override;
+    virtual std::vector<std::string> GetDCA2() override;
+
+    virtual std::vector<VDSCRegister> GetInternalRegisters() override;
+    virtual std::vector<VDSCRegister> GetControlRegisters() override;
+    virtual wxImage GetScreen() override;
+    virtual wxImage GetPlaneA() override;
+    virtual wxImage GetPlaneB() override;
+    virtual wxImage GetBackground() override;
+    virtual wxImage GetCursor() override;
 };
 
 #endif // MINIMMC_HPP

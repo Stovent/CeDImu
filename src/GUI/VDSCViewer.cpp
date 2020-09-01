@@ -12,10 +12,10 @@ wxBEGIN_EVENT_TABLE(VDSCViewer, wxFrame)
     EVT_TIMER(IDVDSCViewerTimer, VDSCViewer::RefreshLoop)
 wxEND_EVENT_TABLE()
 
-VDSCViewer::VDSCViewer(MainFrame* parent, VDSC* gpu) : wxFrame(parent, wxID_ANY, "VDSC Viewer"), timer(this, IDVDSCViewerTimer)
+VDSCViewer::VDSCViewer(MainFrame* parent, Board* board) : wxFrame(parent, wxID_ANY, "VDSC Viewer"), timer(this, IDVDSCViewerTimer)
 {
     mainFrame = parent;
-    vdsc = gpu;
+    this->board = board;
     timer.Start(16);
 
     wxPanel* notebookPanel = new wxPanel(this);
@@ -76,7 +76,7 @@ VDSCViewer::VDSCViewer(MainFrame* parent, VDSC* gpu) : wxFrame(parent, wxID_ANY,
 
         registersPage->SetSizer(listsSizer);
 
-        std::vector<VDSCRegister> iregs = vdsc->GetInternalRegisters();
+        std::vector<VDSCRegister> iregs = board->GetInternalRegisters();
         long i = 0;
         for(const VDSCRegister& reg : iregs)
         {
@@ -86,7 +86,7 @@ VDSCViewer::VDSCViewer(MainFrame* parent, VDSC* gpu) : wxFrame(parent, wxID_ANY,
             internalList->SetItem(itemIndex, 3, reg.disassembledValue);
         }
 
-        std::vector<VDSCRegister> cregs = vdsc->GetControlRegisters();
+        std::vector<VDSCRegister> cregs = board->GetControlRegisters();
         i = 0;
         for(const VDSCRegister& reg : cregs)
         {
@@ -183,7 +183,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
     const int selectedPage = notebook->GetSelection();
     if(selectedPage == 0) // Registers
     {
-        std::vector<VDSCRegister> iregs = vdsc->GetInternalRegisters();
+        std::vector<VDSCRegister> iregs = board->GetInternalRegisters();
         long i = 0;
         for(const VDSCRegister& reg : iregs)
         {
@@ -191,7 +191,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
             internalList->SetItem(i++, 3, reg.disassembledValue);
         }
 
-        std::vector<VDSCRegister> cregs = vdsc->GetControlRegisters();
+        std::vector<VDSCRegister> cregs = board->GetControlRegisters();
         i = 0;
         for(const VDSCRegister& reg : cregs)
         {
@@ -202,22 +202,26 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
     {
         std::stringstream ica1;
         std::ostream_iterator<std::string> ssica1(ica1, "\n");
-        std::copy(vdsc->ICA1.begin(), vdsc->ICA1.end(), ssica1);
+        std::vector<std::string> vica1 = board->GetICA1();
+        std::copy(vica1.begin(), vica1.end(), ssica1);
         ica1Text->SetValue(ica1.str());
 
         std::stringstream dca1;
         std::ostream_iterator<std::string> ssdca1(dca1, "\n");
-        std::copy(vdsc->DCA1.begin(), vdsc->DCA1.end(), ssdca1);
+        std::vector<std::string> vdca1 = board->GetDCA1();
+        std::copy(vdca1.begin(), vdca1.end(), ssdca1);
         dca1Text->SetValue(dca1.str());
 
         std::stringstream ica2;
         std::ostream_iterator<std::string> ssica2(ica2, "\n");
-        std::copy(vdsc->ICA2.begin(), vdsc->ICA2.end(), ssica2);
+        std::vector<std::string> vica2 = board->GetICA2();
+        std::copy(vica2.begin(), vica2.end(), ssica2);
         ica2Text->SetValue(ica2.str());
 
         std::stringstream dca2;
         std::ostream_iterator<std::string> ssdca2(dca2, "\n");
-        std::copy(vdsc->DCA2.begin(), vdsc->DCA2.end(), ssdca2);
+        std::vector<std::string> vdca2 = board->GetDCA2();
+        std::copy(vdca2.begin(), vdca2.end(), ssdca2);
         dca2Text->SetValue(dca2.str());
     }
     else if(selectedPage == 2) // Planes
@@ -227,10 +231,10 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
         wxClientDC dcBackground(backgroundPanel);
         wxClientDC dcCursor(cursorPanel);
 
-        wxImage planeA = vdsc->GetPlaneA();
-        wxImage planeB = vdsc->GetPlaneB();
-        wxImage background = vdsc->GetBackground();
-        wxImage cursor = vdsc->GetCursor();
+        wxImage planeA = board->GetPlaneA();
+        wxImage planeB = board->GetPlaneB();
+        wxImage background = board->GetBackground();
+        wxImage cursor = board->GetCursor();
 
         if(planeA.IsOk())
             dcA.DrawBitmap(wxBitmap(planeA.Scale(planeAPanel->GetClientSize().x, planeAPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);

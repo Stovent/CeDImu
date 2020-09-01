@@ -52,7 +52,7 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
     biosName = str.substr(str.rfind('/')+1);
 #endif // _WIN32
 
-    cdi->board->vdsc->SetOnFrameCompletedCallback([=] () -> void {
+    cdi->board->SetOnFrameCompletedCallback([=] () -> void {
         mainFrame->gamePanel->RefreshScreen();
     });
 

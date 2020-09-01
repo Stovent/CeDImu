@@ -3,6 +3,9 @@
 
 class VDSCViewer;
 
+#include "../Boards/Board.hpp"
+#include "MainFrame.hpp"
+
 #include <wx/frame.h>
 #include <wx/listctrl.h>
 #include <wx/panel.h>
@@ -10,12 +13,11 @@ class VDSCViewer;
 #include <wx/textctrl.h>
 #include <wx/timer.h>
 
-#include "../cores/VDSC.hpp"
 
 class VDSCViewer : public wxFrame
 {
     MainFrame* mainFrame;
-    VDSC* vdsc;
+    Board* board;
     wxTimer timer;
     wxNotebook* notebook;
     wxListCtrl* internalList;
@@ -30,7 +32,7 @@ class VDSCViewer : public wxFrame
     wxTextCtrl* dca2Text;
 
 public:
-    VDSCViewer(MainFrame* parent, VDSC* gpu);
+    VDSCViewer(MainFrame* parent, Board* board);
     ~VDSCViewer();
 
     void RefreshLoop(wxTimerEvent& event);
