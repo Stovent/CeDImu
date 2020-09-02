@@ -1,7 +1,7 @@
 #include "CDI.hpp"
 
-#include "../Boards/MiniMMC.hpp"
-#include "../Boards/Mono3.hpp"
+#include "../Boards/MiniMMC/MiniMMC.hpp"
+#include "../Boards/Mono3/Mono3.hpp"
 
 CDI::CDI() : disk()
 {

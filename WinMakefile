@@ -18,7 +18,7 @@ bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/Disa
 bin/obj/SCC66470.o bin/obj/SCC66470DRAMInterface.o \
 bin/obj/MCD212.o bin/obj/MCD212Display.o bin/obj/MCD212Registers.o bin/obj/MCD212DRAMInterface.o \
 bin/obj/CDI.o bin/obj/CDIDisk.o bin/obj/CDIDirectory.o bin/obj/CDIFile.o bin/obj/Export.o \
-bin/obj/Mono3.o
+bin/obj/Mono3.o bin/obj/MiniMMC.o bin/obj/MiniMMCBus.o
 
 CeDImu :
 	if not exist bin\obj\ mkdir bin\obj
@@ -28,7 +28,9 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIDirectory.cpp -o bin/obj/CDIDirectory.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIFile.cpp -o bin/obj/CDIFile.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/Export.cpp -o bin/obj/Export.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Boards/Mono3.cpp -o bin/obj/Mono3.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Boards/Mono3/Mono3.cpp -o bin/obj/Mono3.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Boards/MiniMMC/MiniMMC.cpp -o bin/obj/MiniMMC.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Boards/MiniMMC/Bus.cpp -o bin/obj/MiniMMCBus.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/common/Audio.cpp -o bin/obj/Audio.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/common/Video.cpp -o bin/obj/Video.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/SCC68070.cpp -o bin/obj/SCC68070.o

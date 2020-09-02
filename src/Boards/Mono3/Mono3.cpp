@@ -1,6 +1,6 @@
 #include "Mono3.hpp"
 
-#include "../utils.hpp"
+#include "../../utils.hpp"
 
 Mono3::Mono3(const void* bios, const uint32_t size) : Board()
 {

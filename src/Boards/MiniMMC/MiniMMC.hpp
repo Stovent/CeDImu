@@ -1,23 +1,22 @@
-#ifndef MONO3_HPP
-#define MONO3_HPP
+#ifndef MINIMMC_HPP
+#define MINIMMC_HPP
 
-class Mono3;
+class MiniMMC;
 
-#include <fstream>
+#include "../Board.hpp"
+#include "../../cores/SCC66470/SCC66470.hpp"
 
-#include "Board.hpp"
-#include "../cores/MCD212/MCD212.hpp"
-
-class Mono3 : public Board
+class MiniMMC : public Board
 {
-    MCD212* mcd212;
+    SCC66470* masterVDSC;
+    SCC66470* slaveVDSC;
     std::ofstream out;
     std::ofstream uart_out;
     std::ifstream uart_in;
 
 public:
-    Mono3(const void* bios, const uint32_t size);
-    virtual ~Mono3();
+    MiniMMC(const void* bios, const uint32_t size);
+    virtual ~MiniMMC();
     virtual void Reset() override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
@@ -55,4 +54,4 @@ public:
     virtual wxImage GetCursor() override;
 };
 
-#endif // MONO3_HPP
+#endif // MINIMMC_HPP
