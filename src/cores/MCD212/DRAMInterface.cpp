@@ -19,7 +19,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
         LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu->currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << (int)data << std::endl; })
         if(addr == 0x4FFFE1 && flags & Trigger)
         {
-            internalRegisters[CSR2R] &= 0x00FE; // clear BE bit on status read
+            internalRegisters[MCSR2R] &= 0x00FE; // clear BE bit on status read
         }
         return data;
     }

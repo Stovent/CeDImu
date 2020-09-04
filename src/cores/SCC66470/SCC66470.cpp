@@ -4,6 +4,9 @@
 #include <cstdio>
 #include <cstring>
 
+#define   SET_DA_BIT() internalRegisters[SCSRR] |= 0x80;
+#define UNSET_DA_BIT() internalRegisters[SCSRR] &= 0x67;
+
 SCC66470::SCC66470(Board* board, const bool ismaster) : VDSC(board), isMaster(ismaster)
 {
     memorySwapCount = 0;
@@ -54,7 +57,23 @@ void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int po
 
 void SCC66470::DrawLine()
 {
-
+//    SET_DA_BIT()
+//
+//    if(++lineNumber >= GetVerticalResolution())
+//    {
+//        UNSET_DA_BIT()
+//
+//        if(OnFrameCompleted)
+//            OnFrameCompleted();
+//
+//        lineNumber = 0;
+//        totalFrameCount++;
+//        if(stopOnNextFrame)
+//        {
+//            board->cpu->Stop(false);
+//            stopOnNextFrame = false;
+//        }
+//    }
 }
 
 void SCC66470::SetOnFrameCompletedCallback(std::function<void()> callback)
@@ -101,3 +120,6 @@ wxImage SCC66470::GetCursor()
 {
     return wxImage();
 }
+
+#undef   SET_DA_BIT
+#undef UNSET_DA_BIT

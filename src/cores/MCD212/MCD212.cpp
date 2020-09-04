@@ -52,12 +52,12 @@ void MCD212::Reset()
     controlRegisters[CursorControl] &= 0x7F800F; // reset bit 23 (cursor disabled)
     controlRegisters[BackdropColor] = 0; // reset bits 0, 1, 2, 3 (black backdrop)
 
-    internalRegisters[CSR1W] = 0; // DI1, DD1, DD2, TD, DD, ST, BE
-    internalRegisters[CSR2W] = 0; // DI2
-    internalRegisters[DCR1] &= 0x003F; // DE, CF, FD, SM, CM1, IC1, DC1
-    internalRegisters[DCR2] &= 0x003F; // CM2, IC2, DC2
-    internalRegisters[DDR1] &= 0x003F; // MF1, MF2, FT1, FT2
-    internalRegisters[DDR2] &= 0x003F; // MF1, MF2, FT1, FT2
+    internalRegisters[MCSR1W] = 0; // DI1, DD1, DD2, TD, DD, ST, BE
+    internalRegisters[MCSR2W] = 0; // DI2
+    internalRegisters[MDCR1] &= 0x003F; // DE, CF, FD, SM, CM1, IC1, DC1
+    internalRegisters[MDCR2] &= 0x003F; // CM2, IC2, DC2
+    internalRegisters[MDDR1] &= 0x003F; // MF1, MF2, FT1, FT2
+    internalRegisters[MDDR2] &= 0x003F; // MF1, MF2, FT1, FT2
     MemorySwap();
 }
 

@@ -7,6 +7,29 @@ class SCC66470;
 
 #include <fstream>
 
+enum SCC66470Registers
+{
+    SCSRW = 0x00,
+    SCSRR = 0x01,
+    SDCR  = 0x02,
+    SVSR  = 0x04,
+    SBCR  = 0x07,
+    SDCR2 = 0x08,
+    SDCP  = 0x0A,
+    SSWM  = 0x0C,
+    SSTM  = 0x0F,
+
+    SA     = 0x10,
+    SB     = 0x12,
+    SPCR   = 0x14,
+    SMASK  = 0x17,
+    SSHIFT = 0x18,
+    SINDEX = 0x1B,
+    SFC    = 0x1C,
+    SBC    = 0x1D,
+    STC    = 0x1E,
+};
+
 class SCC66470 : public VDSC
 {
     uint8_t* memory;
