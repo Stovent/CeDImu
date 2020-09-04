@@ -1,4 +1,5 @@
 #include "SCC66470.hpp"
+#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
 
 #include <cstdio>
@@ -10,7 +11,7 @@
 SCC66470::SCC66470(Board* board, const bool ismaster) : VDSC(board), isMaster(ismaster)
 {
     memorySwapCount = 0;
-    stopOnNextframe = false;
+    stopOnNextFrame = false;
     allocatedMemory = 0x200000;
 
     OPEN_LOG(out_dram, isMaster ? "SCC66470_master_DRAM.txt" : "SCC66470_slave_DRAM.txt")
@@ -57,23 +58,23 @@ void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int po
 
 void SCC66470::DrawLine()
 {
-//    SET_DA_BIT()
-//
+    SET_DA_BIT()
+
 //    if(++lineNumber >= GetVerticalResolution())
-//    {
-//        UNSET_DA_BIT()
-//
-//        if(OnFrameCompleted)
-//            OnFrameCompleted();
-//
-//        lineNumber = 0;
-//        totalFrameCount++;
-//        if(stopOnNextFrame)
-//        {
-//            board->cpu->Stop(false);
-//            stopOnNextFrame = false;
-//        }
-//    }
+    {
+        UNSET_DA_BIT()
+
+        if(OnFrameCompleted)
+            OnFrameCompleted();
+
+        lineNumber = 0;
+        totalFrameCount++;
+        if(stopOnNextFrame)
+        {
+            board->cpu->Stop(false);
+            stopOnNextFrame = false;
+        }
+    }
 }
 
 void SCC66470::SetOnFrameCompletedCallback(std::function<void()> callback)
@@ -83,17 +84,7 @@ void SCC66470::SetOnFrameCompletedCallback(std::function<void()> callback)
 
 void SCC66470::StopOnNextFrame(const bool stop)
 {
-    stopOnNextframe = stop;
-}
-
-std::vector<VDSCRegister> SCC66470::GetInternalRegisters()
-{
-    return std::vector<VDSCRegister>();
-}
-
-std::vector<VDSCRegister> SCC66470::GetControlRegisters()
-{
-    return std::vector<VDSCRegister>();
+    stopOnNextFrame = stop;
 }
 
 wxImage SCC66470::GetScreen()

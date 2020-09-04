@@ -35,7 +35,7 @@ class SCC66470 : public VDSC
     uint8_t* memory;
     uint16_t* internalRegisters;
     uint8_t memorySwapCount;
-    bool stopOnNextframe;
+    bool stopOnNextFrame;
     const bool isMaster;
     std::function<void()> OnFrameCompleted;
 
@@ -75,6 +75,26 @@ public:
     virtual wxImage GetPlaneB() override;
     virtual wxImage GetBackground() override;
     virtual wxImage GetCursor() override;
+
+    // Internal Register
+    uint16_t GetCSRWRegister();
+    uint16_t GetCSRRRegister();
+    uint16_t GetDCRRegister();
+    uint16_t GetVSRRegister();
+    uint16_t GetBCRRegister();
+    uint16_t GetDCR2Register();
+    uint16_t GetDCPRegister();
+    uint16_t GetSWMRegister();
+    uint16_t GetSTMRegister();
+    uint16_t GetARegister();
+    uint16_t GetBRegister();
+    uint16_t GetPCRRegister();
+    uint16_t GetMASKRegister();
+    uint16_t GetSHIFTRegister();
+    uint16_t GetINDEXRegister();
+    uint16_t GetFCRegister();
+    uint16_t GetBCRegister();
+    uint16_t GetTCRegister();
 };
 
 #endif // SCC66470_HPP
