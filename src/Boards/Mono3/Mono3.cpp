@@ -72,7 +72,7 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
         return;
     }
 
-    LOG(out << std::hex << cpu->currentPC << "\tSet byte OUT OF RANGE at 0x" << addr << std::endl)
+    LOG(out << std::hex << cpu->currentPC << "\tSet byte OUT OF RANGE at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl)
 }
 
 void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
@@ -84,7 +84,7 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
         return;
     }
 
-    LOG(out << std::hex << cpu->currentPC << "\tSet word OUT OF RANGE at 0x" << addr << std::endl)
+    LOG(out << std::hex << cpu->currentPC << "\tSet word OUT OF RANGE at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl)
 }
 
 void Mono3::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
@@ -96,7 +96,7 @@ void Mono3::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flag
         return;
     }
 
-    LOG(out << std::hex << cpu->currentPC << "\tSet long OUT OF RANGE at 0x" << addr << std::endl)
+    LOG(out << std::hex << cpu->currentPC << "\tSet long OUT OF RANGE at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl)
 }
 
 uint8_t Mono3::CPUGetUART(const uint8_t flags)
