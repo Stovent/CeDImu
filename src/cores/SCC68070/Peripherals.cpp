@@ -5,15 +5,13 @@
 
 uint8_t SCC68070::GetPeripheral(const uint32_t addr)
 {
-    const uint8_t data = internal[addr - SCC68070Peripherals::Base];
-
     if(addr == 0x8000201B)
     {
         internal[URHR] = board->CPUGetUART();
         LOG(disassembledInstructions.push_back(toHex(currentPC) + "\tURHR: 0x" + toHex(internal[URHR]))) // this or data ?
     }
 
-    return data;
+    return internal[addr - SCC68070Peripherals::Base];
 }
 
 void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
