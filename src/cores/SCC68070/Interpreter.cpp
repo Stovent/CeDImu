@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <chrono>
-#include <iterator>
 
+#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
 
 void SCC68070::Interpreter()
@@ -16,27 +16,25 @@ void SCC68070::Interpreter()
         if(cycleCount == 0)
             FlushDisassembler();
 
-        currentPC = PC;
-        currentOpcode = GetNextWord(Trigger);
+        uint16_t executionTime = 0;
+        try {
+            currentPC = PC;
+            currentOpcode = GetNextWord(Trigger);
+            executionTime += (this->*ILUT[currentOpcode])();
 
-        if(disassemble)
-        {
-            disassembledInstructions.push_back((this->*DLUT[currentOpcode])(currentPC));
+            if(disassemble)
+                disassembledInstructions.push_back((this->*DLUT[currentOpcode])(currentPC));
+        }
+        catch(const SCC68070Exception& e) {
+            Exception(e.vector);
         }
 
-        const uint16_t executionTime = (this->*ILUT[currentOpcode])();
         cycleCount += executionTime;
         totalCycleCount += executionTime;
 
-        if(!isEven(PC))
+        if(cycleCount * cycleDelay >= board->GetLineDisplayTime())
         {
-            disassembledInstructions.push_back("PC NOT EVEN! (" + toHex(PC) + ")");
-            Exception(AddressError);
-        }
-
-        if(cycleCount * cycleDelay >= vdsc->GetLineDisplayTimeNanoSeconds())
-        {
-            vdsc->DrawLine();
+            board->DrawLine();
             cycleCount = 0;
         }
 

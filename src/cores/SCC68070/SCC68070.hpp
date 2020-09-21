@@ -2,17 +2,19 @@
 #define SCC68070_HPP
 
 class SCC68070;
+class SCC68070Exception;
 
 #define SCC68070_DEFAULT_FREQUENCY (15500000L)
 
 #include <cstdint>
 #include <fstream>
+#include <map>
 #include <string>
 #include <thread>
 #include <vector>
 
 #include "../../common/flags.hpp"
-#include "../VDSC.hpp"
+class Board;
 
 // Actually, figure VI.1 of the Green Book
 // and Table 2-2 of the MC68000UM
@@ -226,6 +228,14 @@ enum class CPURegisters : uint16_t
     USP,
 };
 
+class SCC68070Exception
+{
+public:
+    uint8_t vector;
+    SCC68070Exception(const uint8_t e) { vector = e; }
+    ~SCC68070Exception() {}
+};
+
 class SCC68070
 {
 public:
@@ -238,7 +248,7 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    explicit SCC68070(VDSC* gpu, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
+    explicit SCC68070(Board* baord, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
     ~SCC68070();
 
     bool IsRunning();
@@ -253,15 +263,13 @@ public:
     std::map<std::string, uint32_t> GetRegisters() const;
 
 private:
-    VDSC* vdsc;
+    Board* board;
     std::thread executionThread;
     bool loop;
     bool isRunning;
 
     std::ofstream out;
     std::ofstream instruction;
-    std::ofstream uart_out;
-    std::ifstream uart_in;
 
     uint8_t* internal;
 
@@ -340,8 +348,6 @@ private:
     // Peripherals
     uint8_t GetPeripheral(const uint32_t addr);
     void SetPeripheral(const uint32_t addr, const uint8_t data);
-    uint8_t ReadUART();
-    void WriteUART(const uint8_t data);
 
     // Conditional Codes
     bool T();

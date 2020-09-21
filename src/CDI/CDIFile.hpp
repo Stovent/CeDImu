@@ -5,7 +5,7 @@ class CDIFile;
 
 #include <string>
 
-#include "CDIDisk.hpp"
+class CDIDisk;
 
 class CDIFile
 {

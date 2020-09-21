@@ -6,7 +6,7 @@ struct CDIDirectory;
 #include <map>
 #include <string>
 
-#include "CDIDisk.hpp"
+class CDIDisk;
 #include "CDIFile.hpp"
 
 struct CDIDirectory
@@ -28,7 +28,7 @@ struct CDIDirectory
     void LoadContent(CDIDisk& disk);
     CDIFile* GetFile(std::string filename);
 
-    std::stringstream ExportInfo() const;
+    std::stringstream ExportContent() const;
     void ExportAudio(std::string basePath) const;
     void ExportFiles(std::string basePath) const;
     void ExportVideo(std::string basePath) const;

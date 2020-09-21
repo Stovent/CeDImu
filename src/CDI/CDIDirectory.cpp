@@ -8,6 +8,7 @@
 
 #include <wx/msgdlg.h>
 
+#include "CDIDisk.hpp"
 #include "../utils.hpp"
 
 CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset)
@@ -144,7 +145,7 @@ void CDIDirectory::Clear()
  *     Size: <file size>
  *     LBN : <logical block number of the file>
  */
-std::stringstream CDIDirectory::ExportInfo() const
+std::stringstream CDIDirectory::ExportContent() const
 {
     std::stringstream ss;
     std::string dirName = dirname == '/' ? "" : dirname;
@@ -153,7 +154,7 @@ std::stringstream CDIDirectory::ExportInfo() const
 
     for(std::pair<std::string, CDIDirectory> dir : subdirectories)
     {
-        std::stringstream dirss = dir.second.ExportInfo();
+        std::stringstream dirss = dir.second.ExportContent();
         std::string line;
         while(std::getline(dirss, line))
             ss << "\t" << line << std::endl;

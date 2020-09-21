@@ -55,7 +55,7 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
 
 uint16_t SCC68070::UnknownInstruction()
 {
-    return 0;
+    throw SCC68070Exception(IllegalInstruction);
 }
 
 uint16_t SCC68070::ABCD()
@@ -1541,7 +1541,7 @@ uint16_t SCC68070::EXT()
 
 uint16_t SCC68070::ILLEGAL()
 {
-    return Exception(IllegalInstruction);
+    throw SCC68070Exception(IllegalInstruction);
 }
 
 uint16_t SCC68070::JMP()
@@ -1607,12 +1607,25 @@ uint16_t SCC68070::LEA()
     uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t calcTime = 3;
+    uint16_t calcTime;
 
-    GetLong(eamode, eareg, calcTime, NoFlags);
-    A[reg] = lastAddress;
-    if(eamode == 7 && eareg <= 1)
-        calcTime += 3;
+    if(eamode == 2)
+    {   A[reg] = A[eareg]; calcTime = 7; }
+    else if(eamode == 5)
+    {   A[reg] = ARIWD(eareg); calcTime = 14; }
+    else if(eamode == 6)
+    {   A[reg] = ARIWI8(eareg); calcTime = 17; }
+    else
+    {
+        if(eareg == 0)
+        {   A[reg] = ASA(); calcTime = 14; }
+        else if(eareg == 1)
+        {   A[reg] = ALA(); calcTime = 18; }
+        else if(eareg == 2)
+        {   A[reg] = PCIWD(); calcTime = 14; }
+        else
+        {   A[reg] = PCIWI8(); calcTime = 17; }
+    }
 
     return calcTime;
 }
@@ -2559,12 +2572,28 @@ uint16_t SCC68070::PEA()
 {
     uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t calcTime = 14;
+    uint16_t calcTime;
 
-    GetLong(eamode, eareg, calcTime, NoFlags);
-    SetLong(ARIWPr(7, 4), lastAddress);
-    if(eamode == 7 && eareg <= 1)
-        calcTime += 3;
+    uint32_t pc;
+    if(eamode == 2)
+    {   pc = A[eareg]; calcTime = 18; }
+    else if(eamode == 5)
+    {   pc = ARIWD(eareg); calcTime = 25; }
+    else if(eamode == 6)
+    {   pc = ARIWI8(eareg); calcTime = 28; }
+    else
+    {
+        if(eareg == 0)
+        {   pc = ASA(); calcTime = 25; }
+        else if(eareg == 1)
+        {   pc = ALA(); calcTime = 29; }
+        else if(eareg == 2)
+        {   pc = PCIWD(); calcTime = 25; }
+        else
+        {   pc = PCIWI8(); calcTime = 28; }
+    }
+
+    SetLong(ARIWPr(7, 4), pc);
 
     return calcTime;
 }

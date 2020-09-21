@@ -9,18 +9,18 @@ class MCD212;
 
 enum MCD212Registers
 {
-    CSR2W = 0x00,
-    CSR2R = 0x01,
-    DCR2  = 0x02,
-    VSR2  = 0x04,
-    DDR2  = 0x08,
-    DCP2  = 0x0A,
-    CSR1W = 0x10,
-    CSR1R = 0x11,
-    DCR1  = 0x12,
-    VSR1  = 0x14,
-    DDR1  = 0x18,
-    DCP1  = 0x1A,
+    MCSR2W = 0x00,
+    MCSR2R = 0x01,
+    MDCR2  = 0x02,
+    MVSR2  = 0x04,
+    MDDR2  = 0x08,
+    MDCP2  = 0x0A,
+    MCSR1W = 0x10,
+    MCSR1R = 0x11,
+    MDCR1  = 0x12,
+    MVSR1  = 0x14,
+    MDDR1  = 0x18,
+    MDCP1  = 0x1A,
 };
 
 enum MCD212ControlRegistersMap
@@ -64,12 +64,12 @@ enum CodingMethods
 class MCD212 : public VDSC
 {
 public:
-    explicit MCD212(CeDImu* appp);
+    explicit MCD212(Board* board);
     virtual ~MCD212();
 
     virtual void Reset() override;
 
-    virtual bool LoadBIOS(const char* filename) override;
+    virtual bool LoadBIOS(const void* bios, const uint32_t size) override;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
     virtual void MemorySwap() override;
 

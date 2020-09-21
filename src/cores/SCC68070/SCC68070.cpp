@@ -1,12 +1,14 @@
 #include "SCC68070.hpp"
 
 #include <cstring>
+#include <iterator>
 
+#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
 
-SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
+SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledInstructions(), ILUT()
 {
-    vdsc = gpu;
+    board = baord;
     disassemble = false;
     isRunning = false;
 
@@ -15,8 +17,6 @@ SCC68070::SCC68070(VDSC* gpu, const uint32_t clockFrequency) : disassembledInstr
 
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instruction, "instructions.txt")
-    uart_out.open("uart_out", std::ios::binary | std::ios::out);
-    uart_in.open("uart_in", std::ios::binary | std::ios::in);
 
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];
@@ -85,6 +85,7 @@ void SCC68070::Reset()
         D[i] = 0;
         A[i] = 0;
     }
+    board->Reset();
     ResetOperation();
 }
 
@@ -181,17 +182,16 @@ std::map<std::string, uint32_t> SCC68070::GetRegisters() const
 
 uint16_t SCC68070::GetNextWord(const uint8_t flags)
 {
-    uint16_t opcode = vdsc->GetWord(PC, flags);
+    uint16_t opcode = GetWord(PC, flags);
     PC += 2;
     return opcode;
 }
 
 void SCC68070::ResetOperation()
 {
-    vdsc->MemorySwap();
-    SSP = vdsc->GetLong(0);
+    SSP = board->GetLong(0, Trigger);
     A[7] = SSP;
-    PC = vdsc->GetLong(4);
+    PC = board->GetLong(4, Trigger);
     SR = 0x2700;
     USP = 0;
 }

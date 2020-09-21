@@ -1,7 +1,7 @@
 #ifndef FLAGS_HPP
 #define FLAGS_HPP
 
-enum ParameterFlags
+enum BusFlags : uint8_t
 {
     NoFlags = 0b00,
     Trigger = 0b01,

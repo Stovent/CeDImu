@@ -1,11 +1,11 @@
 #include "MCD212.hpp"
+#include "../../Boards/Board.hpp"
+#include "../../utils.hpp"
 
 #include <wx/msgdlg.h>
 
-#include "../../utils.hpp"
-
-#define   SET_DA_BIT() internalRegisters[CSR1R] |= 0x80;
-#define UNSET_DA_BIT() internalRegisters[CSR1R] &= 0x20;
+#define   SET_DA_BIT() internalRegisters[MCSR1R] |= 0x80;
+#define UNSET_DA_BIT() internalRegisters[MCSR1R] &= 0x20;
 
 void MCD212::DrawLine()
 {
@@ -86,7 +86,7 @@ void MCD212::DrawLine()
         totalFrameCount++;
         if(stopOnNextFrame)
         {
-            app->cpu->Stop(false);
+            board->cpu->Stop(false);
             stopOnNextFrame = false;
         }
     }
@@ -479,3 +479,6 @@ void MCD212::DecodeCLUTB(const uint8_t pixel, uint8_t pixels[3], const uint8_t C
     pixels[1] = CLUT[addr] >> 8;
     pixels[2] = CLUT[addr];
 }
+
+#undef   SET_DA_BIT
+#undef UNSET_DA_BIT

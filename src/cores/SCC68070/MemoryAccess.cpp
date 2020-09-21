@@ -1,5 +1,6 @@
 #include "SCC68070.hpp"
 
+#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
 
 uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
@@ -402,7 +403,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
         LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl; })
-        return vdsc->GetByte(addr, flags);
+        return board->GetByte(addr, flags);
     }
     else if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
     {
@@ -413,7 +414,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
         else
         {
             LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl; })
-            return vdsc->GetByte(addr, flags);
+            return board->GetByte(addr, flags);
         }
     }
     else
@@ -425,10 +426,13 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
 
 uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 {
+    if(!isEven(addr))
+        throw SCC68070Exception(AddressError);
+
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
         LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl; })
-        return vdsc->GetWord(addr, flags);
+        return board->GetWord(addr, flags);
     }
     else
     {
@@ -439,10 +443,13 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 {
+    if(!isEven(addr))
+        throw SCC68070Exception(AddressError);
+
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
         LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl; })
-        return vdsc->GetLong(addr, flags);
+        return board->GetLong(addr, flags);
     }
     else
     {
@@ -454,7 +461,7 @@ uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc->SetByte(addr, data, flags);
+        board->SetByte(addr, data, flags);
     else if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
     {
         if(GetS())
@@ -463,7 +470,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
         }
         else
         {
-            vdsc->SetByte(addr, data, flags);
+            board->SetByte(addr, data, flags);
         }
     }
     else
@@ -475,8 +482,11 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 
 void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
+    if(!isEven(addr))
+        throw SCC68070Exception(AddressError);
+
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc->SetWord(addr, data, flags);
+        board->SetWord(addr, data, flags);
     else
     {
         LOG(out << "OUT OF RANGE:")
@@ -486,8 +496,11 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
 
 void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
+    if(!isEven(addr))
+        throw SCC68070Exception(AddressError);
+
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        vdsc->SetLong(addr, data, flags);
+        board->SetLong(addr, data, flags);
     else
     {
         LOG(out << "OUT OF RANGE:")
