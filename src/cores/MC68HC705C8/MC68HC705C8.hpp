@@ -9,13 +9,11 @@ class MC68HC705C8;
 class MC68HC705C8
 {
 public:
-    MC68HC705C8();
+    MC68HC705C8(const void* bios, uint16_t size);
     ~MC68HC705C8();
 
     void Reset();
     void Interpreter();
-
-    bool LoadBIOS(const std::string& file);
 
 private:
     uint8_t A;
