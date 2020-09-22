@@ -13,8 +13,6 @@ MC68HC705C8::MC68HC705C8(const void* bios, uint16_t size)
     if(size > 0x2000)
         size = 0x2000;
     memcpy(memory, bios, size);
-
-    CCR.byte = 0;
     Reset();
 }
 
@@ -29,7 +27,7 @@ void MC68HC705C8::Reset()
     X = 0;
     PC = (GetByte(0x1FFE) << 8) | GetByte(0x1FFF);
     SP.byte = 0xFF;
-    CCR.byte |= 0xE8;
+    CCR |= 0xE8;
 
     pendingCycles = 0;
 }

@@ -3,9 +3,19 @@
 
 class MC68HC705C8;
 
+#include <bitset>
 #include <cstdint>
 #include <fstream>
 #include <string>
+
+enum CCRBits
+{
+    C = 0,
+    Z,
+    N,
+    I,
+    H,
+};
 
 class MC68HC705C8
 {
@@ -29,18 +39,7 @@ private:
         } ;
     } SP;
 //    uint8_t SP; // this or upper?
-    union {
-        uint8_t byte;
-        struct {
-            : 3;
-            uint8_t H : 1;
-            uint8_t I : 1;
-            uint8_t N : 1;
-            uint8_t Z : 1;
-            uint8_t C : 1;
-        };
-    } CCR;
-//    uint8_t CCR; // this or the same thing as SP?
+    std::bitset<8> CCR;
 
     uint8_t* memory;
 

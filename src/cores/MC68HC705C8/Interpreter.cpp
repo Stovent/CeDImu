@@ -112,8 +112,8 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint16_t result = A * X;
         X = (result & 0xFF00) >> 8;
         A = result & 0xFF;
-        CCR.H = 0;
-        CCR.C = 0;
+        CCR[H] = 0;
+        CCR[C] = 0;
         LOG(instructions << std::hex << currentPC << "\tMUL" << std::endl)
         return 1;
 
@@ -181,22 +181,22 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         return 2;
 
     CLC_INH:
-        CCR.C = 0;
+        CCR[C] = 0;
         LOG(instructions << std::hex << currentPC << "\tCLC" << std::endl)
         return 2;
 
     SEC_INH:
-        CCR.C = 1;
+        CCR[C] = 1;
         LOG(instructions << std::hex << currentPC << "\tSEC" << std::endl)
         return 2;
 
     CLI_INH:
-        CCR.I = 0;
+        CCR[I] = 0;
         LOG(instructions << std::hex << currentPC << "\tCLI" << std::endl)
         return 2;
 
     SEI_INH:
-        CCR.I = 1;
+        CCR[I] = 1;
         LOG(instructions << std::hex << currentPC << "\tSEI" << std::endl)
         return 2;
 
