@@ -1,4 +1,5 @@
 #include "MC68HC705C8.hpp"
+#include "../../utils.hpp"
 
 #include <fstream>
 
@@ -7,10 +8,12 @@ MC68HC705C8::MC68HC705C8(const void* bios, uint16_t size)
     memory = new uint8_t[0x2000];
     currentOpcode = 0;
     currentPC = 0;
+    OPEN_LOG(instructions, "slave_instructions.txt")
 
     if(size > 0x2000)
         size = 0x2000;
     memcpy(memory, bios, size);
+    Reset();
 }
 
 MC68HC705C8::~MC68HC705C8()
@@ -25,25 +28,4 @@ void MC68HC705C8::Reset()
     PC = (GetByte(0x1FFE) << 8) | GetByte(0x1FFF);
     SP.byte = 0xFF;
     CCR.byte = 0xE0;
-}
-
-uint8_t MC68HC705C8::GetByte(const uint16_t addr)
-{
-    if(addr < 0x2000)
-        return memory[addr];
-
-    return 0;
-}
-
-void MC68HC705C8::SetByte(const uint16_t addr, const uint8_t value)
-{
-    if(addr < 0x2000)
-        memory[addr] = value;
-}
-
-uint8_t MC68HC705C8::GetNextByte()
-{
-    const uint8_t byte = GetByte(PC);
-    PC++;
-    return byte;
 }

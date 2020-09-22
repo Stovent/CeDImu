@@ -4,6 +4,7 @@
 class MC68HC705C8;
 
 #include <cstdint>
+#include <fstream>
 #include <string>
 
 class MC68HC705C8
@@ -46,10 +47,24 @@ private:
     uint8_t currentOpcode;
     uint16_t currentPC;
 
+    std::ofstream instructions;
+
+    // Addressing Modes
+    uint8_t GetByteIndexed();
+    void SetByteIndexed(const uint8_t value);
+    uint8_t GetByteIndexed8();
+    void SetByteIndexed8(const uint8_t value);
+    uint8_t GetByteIndexed16();
+    void SetByteIndexed16(const uint8_t value);
+    uint8_t GetByteRelative();
+    void SetByteRelative(const uint8_t value);
+
     // Memory Access
     uint8_t GetByte(const uint16_t addr);
     void SetByte(const uint16_t addr, const uint8_t value);
     uint8_t GetNextByte();
+
+    uint8_t IndirectThreadedCode();
 
     // Instruction Set
     uint8_t UnknownInstruction();
