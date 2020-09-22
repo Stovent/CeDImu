@@ -3,15 +3,16 @@
 
 #include <wx/msgdlg.h>
 
-void MC68HC705C8::Interpreter()
+void MC68HC705C8::Execute(const int cycles)
 {
-    currentPC = PC;
-    currentOpcode = GetNextByte();
+    pendingCycles += cycles;
+    while(pendingCycles > 0)
+    {
+        currentPC = PC;
+        currentOpcode = GetNextByte();
 
-//    /*uint8_t executionTime = */(this->*ILUT[currentOpcode])();
-//    wxMessageBox((this->*DLUT[currentOpcode])());
-
-    /*uint8_t executionTime = */IndirectThreadedCode();
+        pendingCycles -= IndirectThreadedCode();
+    }
 }
 
 uint8_t MC68HC705C8::IndirectThreadedCode()
@@ -176,7 +177,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     // 0x9X
     TAX_INH:
         X = A;
-        LOG(instructions << std::hex << currentPC << "\TAX" << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tTAX" << std::endl)
         return 2;
 
     CLC_INH:

@@ -28,4 +28,6 @@ void MC68HC705C8::Reset()
     PC = (GetByte(0x1FFE) << 8) | GetByte(0x1FFF);
     SP.byte = 0xFF;
     CCR.byte = 0xE0;
+
+    pendingCycles = 0;
 }
