@@ -1,44 +1,48 @@
 #include "MC68HC705C8.hpp"
 
-uint8_t GetByteIndexed()
+uint8_t MC68HC705C8::GetByteIndexed()
 {
-
+    return GetByte(X);
 }
 
-void SetByteIndexed(const uint8_t value)
+void MC68HC705C8::SetByteIndexed(const uint8_t value)
 {
-
+    SetByte(X, value);
 }
 
-uint8_t GetByteIndexed8()
+uint8_t MC68HC705C8::GetByteIndexed8()
 {
-
+    return GetByte(GetNextByte() + X);
 }
 
-void SetByteIndexed8(const uint8_t value)
-{
+//void MC68HC705C8::SetByteIndexed8(const uint8_t value)
+//{
+//    SetByte(GetNextByte() + X, value);
+//}
 
+uint8_t MC68HC705C8::GetByteIndexed16()
+{
+    uint16_t addr = GetNextByte() << 8;
+    addr |= GetNextByte();
+    return GetByte(addr + X);
 }
 
-uint8_t GetByteIndexed16()
-{
+//void MC68HC705C8::SetByteIndexed16(const uint8_t value)
+//{
+//    uint16_t addr = GetNextByte() << 8;
+//    addr |= GetNextByte();
+//    SetByte(addr + X, value);
+//}
 
-}
-
-void SetByteIndexed16(const uint8_t value)
-{
-
-}
-
-uint8_t GetByteRelative()
-{
-
-}
-
-void SetByteRelative(const uint8_t value)
-{
-
-}
+//uint8_t MC68HC705C8::GetByteRelative()
+//{
+//
+//}
+//
+//void MC68HC705C8::SetByteRelative(const uint8_t value)
+//{
+//
+//}
 
 uint8_t MC68HC705C8::GetByte(const uint16_t addr)
 {
