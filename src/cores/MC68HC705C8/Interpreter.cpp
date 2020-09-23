@@ -37,25 +37,248 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     };
 
     goto *ITC[currentOpcode];
-    LOG(instructions << std::hex << currentPC << "\t" << std::endl)
+        LOG(instructions << std::hex << currentPC << "\t" << std::endl)
 
     // 0x0X
     BRSET0_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x01)
+        {
+            PC += offset;
+            CCR[C] = true;
+        }
+        else
+            CCR[C] = false;
+        LOG(instructions << std::hex << currentPC << "\tBRSET0 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRCLR0_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x01)
+            CCR[C] = true;
+        else
+        {
+            PC += offset;
+            CCR[C] = false;
+        }
+        LOG(instructions << std::hex << currentPC << "\tBRCLR0 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRSET1_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x02)
+        {
+            PC += offset;
+            CCR[C] = true;
+        }
+        else
+            CCR[C] = false;
+        LOG(instructions << std::hex << currentPC << "\tBRSET1 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRCLR1_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x02)
+            CCR[C] = true;
+        else
+        {
+            PC += offset;
+            CCR[C] = false;
+        }
+        LOG(instructions << std::hex << currentPC << "\tBRCLR1 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRSET2_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x04)
+        {
+            PC += offset;
+            CCR[C] = true;
+        }
+        else
+            CCR[C] = false;
+        LOG(instructions << std::hex << currentPC << "\tBRSET2 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRCLR2_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x04)
+            CCR[C] = true;
+        else
+        {
+            PC += offset;
+            CCR[C] = false;
+        }
+        LOG(instructions << std::hex << currentPC << "\tBRCLR2 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRSET3_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x08)
+        {
+            PC += offset;
+            CCR[C] = true;
+        }
+        else
+            CCR[C] = false;
+        LOG(instructions << std::hex << currentPC << "\tBRSET3 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRCLR3_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x08)
+            CCR[C] = true;
+        else
+        {
+            PC += offset;
+            CCR[C] = false;
+        }
+        LOG(instructions << std::hex << currentPC << "\tBRCLR3 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRSET4_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x10)
+        {
+            PC += offset;
+            CCR[C] = true;
+        }
+        else
+            CCR[C] = false;
+        LOG(instructions << std::hex << currentPC << "\tBRSET4 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRCLR4_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x10)
+            CCR[C] = true;
+        else
+        {
+            PC += offset;
+            CCR[C] = false;
+        }
+        LOG(instructions << std::hex << currentPC << "\tBRCLR4 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRSET5_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x20)
+        {
+            PC += offset;
+            CCR[C] = true;
+        }
+        else
+            CCR[C] = false;
+        LOG(instructions << std::hex << currentPC << "\tBRSET5 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRCLR5_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x20)
+            CCR[C] = true;
+        else
+        {
+            PC += offset;
+            CCR[C] = false;
+        }
+        LOG(instructions << std::hex << currentPC << "\tBRCLR5 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRSET6_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x40)
+        {
+            PC += offset;
+            CCR[C] = true;
+        }
+        else
+            CCR[C] = false;
+        LOG(instructions << std::hex << currentPC << "\tBRSET6 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRCLR6_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x40)
+            CCR[C] = true;
+        else
+        {
+            PC += offset;
+            CCR[C] = false;
+        }
+        LOG(instructions << std::hex << currentPC << "\tBRCLR6 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRSET7_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x80)
+        {
+            PC += offset;
+            CCR[C] = true;
+        }
+        else
+            CCR[C] = false;
+        LOG(instructions << std::hex << currentPC << "\tBRSET7 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
+
     BRCLR7_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t offset = GetNextByte();
+        if(memory[addr] & 0x80)
+            CCR[C] = true;
+        else
+        {
+            PC += offset;
+            CCR[C] = false;
+        }
+        LOG(instructions << std::hex << currentPC << "\tBRCLR7 0x" << addr << ", " << std::dec << offset << std::endl)
+        return 5;
+    }
 
     // 0x1X
     BSET0_DIR:
@@ -455,7 +678,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC += offset;
-        LOG(instructions << std::hex << currentPC << "\tBSR " << (int16_t)offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBSR " << std::dec << (int16_t)offset << std::endl)
         return 6;
     }
 
