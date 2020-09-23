@@ -109,6 +109,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     // 0x4X
     NEGA_INH:
     MUL_INH:
+    {
         const uint16_t result = A * X;
         X = (result & 0xFF00) >> 8;
         A = result & 0xFF;
@@ -116,6 +117,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[C] = 0;
         LOG(instructions << std::hex << currentPC << "\tMUL" << std::endl)
         return 1;
+    }
 
     COMA_INH:
     LSRA_INH:
@@ -201,7 +203,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         return 2;
 
     RSP_INH:
-        SP.byte = 0xFF;
+        SP = 0xFF;
         LOG(instructions << std::hex << currentPC << "\tRSP" << std::endl)
         return 2;
 
@@ -216,18 +218,145 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     // 0xAX
     SUB_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = (result == 0) ? true : false;
+        CCR[C] = (result & 0xFF00) ? true : false; // TODO: check how to detect borrow
+        A = result & 0x00FF;
+        LOG(instructions << std::hex << currentPC << "\tSUB #0x" << (uint16_t)data << std::endl)
+        return 2;
+    }
+
     CMP_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = (result == 0) ? true : false;
+        CCR[C] = (result & 0xFF00) ? true : false; // TODO: check how to detect borrow
+        LOG(instructions << std::hex << currentPC << "\tCMP #0x" << (uint16_t)data << std::endl)
+        return 2;
+    }
+
     SBC_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        const uint16_t result = A - data - CCR[C];
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = (result == 0) ? true : false;
+        CCR[C] = (result & 0xFF00) ? true : false; // TODO: check how to detect borrow
+        A = result & 0x00FF;
+        LOG(instructions << std::hex << currentPC << "\tSBC #0x" << (uint16_t)data << std::endl)
+        return 2;
+    }
+
     CPX_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        const uint16_t result = X - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = (result == 0) ? true : false;
+        CCR[C] = (result & 0xFF00) ? true : false; // TODO: check how to detect borrow
+        LOG(instructions << std::hex << currentPC << "\tCPX #0x" << (uint16_t)data << std::endl)
+        return 2;
+    }
+
     AND_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        A &= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = (A == 0) ? true : false;
+        LOG(instructions << std::hex << currentPC << "\tAND #0x" << (uint16_t)data << std::endl)
+        return 2;
+    }
+
     BIT_IMM:
+    {
+        uint8_t data = GetNextByte();
+        LOG(instructions << std::hex << currentPC << "\tBIT #0x" << (uint16_t)data << std::endl)
+        data &= A;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = (data == 0) ? true : false;
+        return 2;
+    }
+
     LDA_IMM:
+    {
+        A = GetNextByte();
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = (A == 0) ? true : false;
+        LOG(instructions << std::hex << currentPC << "\tLDA #0x" << (uint16_t)A << std::endl)
+        return 2;
+    }
+
     EOR_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        A ^= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = (A == 0) ? true : false;
+        LOG(instructions << std::hex << currentPC << "\tEOR #0x" << (uint16_t)data << std::endl)
+        return 2;
+    }
+
     ADC_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        const uint16_t result = A + data + CCR[C];
+        CCR[H] = ((A & 0xF) + (data & 0xF) + CCR[C]) & 0x10 ? true : false;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = (result == 0) ? true : false;
+        CCR[C] = (result & 0xFF00) ? true : false;
+        LOG(instructions << std::hex << currentPC << "\tADD #0x" << (uint16_t)data << std::endl)
+        A = result & 0x00FF;
+        return 2;
+    }
+
     ORA_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        A |= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = (A == 0) ? true : false;
+        LOG(instructions << std::hex << currentPC << "\tORA #0x" << (uint16_t)data << std::endl)
+        return 2;
+    }
+
     ADD_IMM:
+    {
+        const uint8_t data = GetNextByte();
+        const uint16_t result = A + data;
+        CCR[H] = ((A & 0xF) + (data & 0xF)) & 0x10 ? true : false;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = (result == 0) ? true : false;
+        CCR[C] = (result & 0xFF00) ? true : false;
+        LOG(instructions << std::hex << currentPC << "\tADD #0x" << (uint16_t)data << std::endl)
+        A = result & 0x00FF;
+        return 2;
+    }
+
     BSR_REL:
+    {
+        int8_t offset = GetNextByte();
+        PushByte(PC & 0x00FF);
+        PushByte(PC >> 8);
+        PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBSR " << (int16_t)offset << std::endl)
+        return 6;
+    }
+
     LDX_IMM:
+    {
+        X = GetNextByte();
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = (X == 0) ? true : false;
+        LOG(instructions << std::hex << currentPC << "\tLDX #0x" << (uint16_t)X << std::endl)
+        return 2;
+    }
+
 
     // 0xBX
     SUB_DIR:

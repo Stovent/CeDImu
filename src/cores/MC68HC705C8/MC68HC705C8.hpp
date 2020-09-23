@@ -30,15 +30,7 @@ private:
     uint8_t A;
     uint8_t X;
     uint16_t PC;
-    union {
-        uint8_t byte;
-        struct {
-//            const uint8_t unused : 2 = 0b11;
-            uint8_t unused : 2;
-            uint8_t SP : 6;
-        } ;
-    } SP;
-//    uint8_t SP; // this or upper?
+    uint8_t SP;
     std::bitset<8> CCR;
 
     uint8_t* memory;
@@ -62,6 +54,8 @@ private:
     uint8_t GetByte(const uint16_t addr);
     void SetByte(const uint16_t addr, const uint8_t value);
     uint8_t GetNextByte();
+    void PushByte(const uint8_t data);
+    uint8_t PopByte();
 
     uint8_t IndirectThreadedCode();
 };

@@ -64,3 +64,17 @@ uint8_t MC68HC705C8::GetNextByte()
     PC++;
     return byte;
 }
+
+void MC68HC705C8::PushByte(const uint8_t data)
+{
+    memory[SP--] = data;
+    if(SP < 0xC0)
+        SP = 0xFF;
+}
+
+uint8_t MC68HC705C8::PopByte()
+{
+    if(SP == 0xFF)
+        SP = 0xBF;
+    return memory[++SP];
+}

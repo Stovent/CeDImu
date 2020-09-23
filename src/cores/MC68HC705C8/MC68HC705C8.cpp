@@ -26,7 +26,7 @@ void MC68HC705C8::Reset()
     A = 0;
     X = 0;
     PC = (GetByte(0x1FFE) << 8) | GetByte(0x1FFF);
-    SP.byte = 0xFF;
+    SP = 0xFF;
     CCR |= 0xE8;
 
     pendingCycles = 0;
