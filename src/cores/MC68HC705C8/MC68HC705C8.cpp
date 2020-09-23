@@ -1,8 +1,6 @@
 #include "MC68HC705C8.hpp"
 #include "../../utils.hpp"
 
-#include <fstream>
-
 MC68HC705C8::MC68HC705C8(const void* bios, uint16_t size)
 {
     memory = new uint8_t[0x2000];

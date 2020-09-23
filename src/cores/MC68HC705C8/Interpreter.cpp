@@ -59,21 +59,132 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     // 0x1X
     BSET0_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] |= 0x01;
+        LOG(instructions << std::hex << currentPC << "\tBSET0 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BCLR0_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] &= 0xFE;
+        LOG(instructions << std::hex << currentPC << "\tBCLR0 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BSET1_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] |= 0x02;
+        LOG(instructions << std::hex << currentPC << "\tBSET1 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BCLR1_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] &= 0xFD;
+        LOG(instructions << std::hex << currentPC << "\tBCLR1 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BSET2_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] |= 0x04;
+        LOG(instructions << std::hex << currentPC << "\tBSET2 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BCLR2_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] &= 0xFB;
+        LOG(instructions << std::hex << currentPC << "\tBCLR2 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BSET3_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] |= 0x08;
+        LOG(instructions << std::hex << currentPC << "\tBSET3 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BCLR3_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] &= 0xF7;
+        LOG(instructions << std::hex << currentPC << "\tBCLR3 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BSET4_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] |= 0x10;
+        LOG(instructions << std::hex << currentPC << "\tBSET4 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BCLR4_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] &= 0xEF;
+        LOG(instructions << std::hex << currentPC << "\tBCLR4 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BSET5_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] |= 0x20;
+        LOG(instructions << std::hex << currentPC << "\tBSET5 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BCLR5_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] &= 0xDF;
+        LOG(instructions << std::hex << currentPC << "\tBCLR5 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BSET6_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] |= 0x40;
+        LOG(instructions << std::hex << currentPC << "\tBSET6 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BCLR6_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] &= 0xBF;
+        LOG(instructions << std::hex << currentPC << "\tBCLR6 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BSET7_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] |= 0x80;
+        LOG(instructions << std::hex << currentPC << "\tBSET7 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     BCLR7_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        memory[addr] &= 0x7F;
+        LOG(instructions << std::hex << currentPC << "\tBCLR7 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
 
     // 0x2X
     BRA_REL:
