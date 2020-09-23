@@ -44,7 +44,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x01)
+        if(GetByte(addr) & 0x01)
         {
             PC += offset;
             CCR[C] = true;
@@ -59,7 +59,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x01)
+        if(GetByte(addr) & 0x01)
             CCR[C] = true;
         else
         {
@@ -74,7 +74,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x02)
+        if(GetByte(addr) & 0x02)
         {
             PC += offset;
             CCR[C] = true;
@@ -89,7 +89,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x02)
+        if(GetByte(addr) & 0x02)
             CCR[C] = true;
         else
         {
@@ -104,7 +104,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x04)
+        if(GetByte(addr) & 0x04)
         {
             PC += offset;
             CCR[C] = true;
@@ -119,7 +119,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x04)
+        if(GetByte(addr) & 0x04)
             CCR[C] = true;
         else
         {
@@ -134,7 +134,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x08)
+        if(GetByte(addr) & 0x08)
         {
             PC += offset;
             CCR[C] = true;
@@ -149,7 +149,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x08)
+        if(GetByte(addr) & 0x08)
             CCR[C] = true;
         else
         {
@@ -164,7 +164,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x10)
+        if(GetByte(addr) & 0x10)
         {
             PC += offset;
             CCR[C] = true;
@@ -179,7 +179,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x10)
+        if(GetByte(addr) & 0x10)
             CCR[C] = true;
         else
         {
@@ -194,7 +194,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x20)
+        if(GetByte(addr) & 0x20)
         {
             PC += offset;
             CCR[C] = true;
@@ -209,7 +209,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x20)
+        if(GetByte(addr) & 0x20)
             CCR[C] = true;
         else
         {
@@ -224,7 +224,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x40)
+        if(GetByte(addr) & 0x40)
         {
             PC += offset;
             CCR[C] = true;
@@ -239,7 +239,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x40)
+        if(GetByte(addr) & 0x40)
             CCR[C] = true;
         else
         {
@@ -254,7 +254,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x80)
+        if(GetByte(addr) & 0x80)
         {
             PC += offset;
             CCR[C] = true;
@@ -269,7 +269,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         const uint8_t offset = GetNextByte();
-        if(memory[addr] & 0x80)
+        if(GetByte(addr) & 0x80)
             CCR[C] = true;
         else
         {
@@ -284,7 +284,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BSET0_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] |= 0x01;
+        SetByte(addr, GetByte(addr) | 0x01);
         LOG(instructions << std::hex << currentPC << "\tBSET0 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -292,7 +292,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BCLR0_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] &= 0xFE;
+        SetByte(addr, GetByte(addr) & 0xFE);
         LOG(instructions << std::hex << currentPC << "\tBCLR0 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -300,7 +300,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BSET1_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] |= 0x02;
+        SetByte(addr, GetByte(addr) | 0x02);
         LOG(instructions << std::hex << currentPC << "\tBSET1 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -308,7 +308,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BCLR1_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] &= 0xFD;
+        SetByte(addr, GetByte(addr) & 0xFD);
         LOG(instructions << std::hex << currentPC << "\tBCLR1 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -316,7 +316,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BSET2_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] |= 0x04;
+        SetByte(addr, GetByte(addr) | 0x04);
         LOG(instructions << std::hex << currentPC << "\tBSET2 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -324,7 +324,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BCLR2_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] &= 0xFB;
+        SetByte(addr, GetByte(addr) & 0xFB);
         LOG(instructions << std::hex << currentPC << "\tBCLR2 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -332,7 +332,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BSET3_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] |= 0x08;
+        SetByte(addr, GetByte(addr) | 0x08);
         LOG(instructions << std::hex << currentPC << "\tBSET3 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -340,7 +340,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BCLR3_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] &= 0xF7;
+        SetByte(addr, GetByte(addr) & 0xF7);
         LOG(instructions << std::hex << currentPC << "\tBCLR3 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -348,7 +348,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BSET4_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] |= 0x10;
+        SetByte(addr, GetByte(addr) | 0x10);
         LOG(instructions << std::hex << currentPC << "\tBSET4 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -356,7 +356,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BCLR4_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] &= 0xEF;
+        SetByte(addr, GetByte(addr) & 0xEF);
         LOG(instructions << std::hex << currentPC << "\tBCLR4 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -364,7 +364,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BSET5_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] |= 0x20;
+        SetByte(addr, GetByte(addr) | 0x20);
         LOG(instructions << std::hex << currentPC << "\tBSET5 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -372,7 +372,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BCLR5_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] &= 0xDF;
+        SetByte(addr, GetByte(addr) & 0xDF);
         LOG(instructions << std::hex << currentPC << "\tBCLR5 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -380,7 +380,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BSET6_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] |= 0x40;
+        SetByte(addr, GetByte(addr) | 0x40);
         LOG(instructions << std::hex << currentPC << "\tBSET6 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -388,7 +388,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BCLR6_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] &= 0xBF;
+        SetByte(addr, GetByte(addr) & 0xBF);
         LOG(instructions << std::hex << currentPC << "\tBCLR6 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -396,7 +396,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BSET7_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] |= 0x80;
+        SetByte(addr, GetByte(addr) | 0x80);
         LOG(instructions << std::hex << currentPC << "\tBSET7 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
@@ -404,7 +404,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     BCLR7_DIR:
     {
         const uint8_t addr = GetNextByte();
-        memory[addr] &= 0x7F;
+        SetByte(addr, GetByte(addr) & 0x7F);
         LOG(instructions << std::hex << currentPC << "\tBCLR7 0x" << (uint16_t)addr << std::endl)
         return 5;
     }
