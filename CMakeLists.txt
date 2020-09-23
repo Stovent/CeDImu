@@ -18,6 +18,7 @@ set(SRCS
 	src/cores/MCD212/Display.cpp
 	src/cores/MCD212/Registers.cpp
 	src/cores/SCC66470/DRAMInterface.cpp
+	src/cores/SCC66470/Registers.cpp
 	src/cores/SCC66470/SCC66470.cpp
 	src/cores/SCC68070/AddressingModes.cpp
 	src/cores/SCC68070/ConditionalTests.cpp
