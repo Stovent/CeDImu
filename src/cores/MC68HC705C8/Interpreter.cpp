@@ -414,21 +414,145 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     // 0x2X
     BRA_REL:
+    {
+        const int8_t offset = GetNextByte();
+        PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBRA " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BRN_REL:
+    {
+        const int8_t offset = GetNextByte();
+        LOG(instructions << std::hex << currentPC << "\tBRN " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BHI_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(!CCR[C] && !CCR[Z])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBHI " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BLS_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(CCR[C] || CCR[Z])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBLS " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BCC_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(!CCR[C])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBCC " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BCSBLO_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(CCR[C])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBLO/BCS " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BNE_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(!CCR[Z])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBNE " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BEQ_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(CCR[Z])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBEQ " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BHCC_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(!CCR[H])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBHCC " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BHCS_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(CCR[H])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBHCS " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BPL_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(!CCR[N])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBPL " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BMI_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(CCR[N])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBMI " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BMC_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(!CCR[I])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBMC " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BMS_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(CCR[I])
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBMS " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BIL_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(!irqPin)
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBIL " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
+
     BIH_REL:
+    {
+        const int8_t offset = GetNextByte();
+        if(irqPin)
+            PC += offset;
+        LOG(instructions << std::hex << currentPC << "\tBIH " << std::dec << (int16_t)offset << std::endl)
+        return 3;
+    }
 
     // 0x3X
     NEG_DIR:

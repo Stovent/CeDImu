@@ -31,4 +31,10 @@ void MC68HC705C8::Reset()
     waitStop = false;
 
     pendingCycles = 0;
+    irqPin = true;
+}
+
+void MC68HC705C8::IRQ()
+{
+    irqPin = false;
 }

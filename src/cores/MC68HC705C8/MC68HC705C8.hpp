@@ -25,6 +25,7 @@ public:
 
     void Reset();
     void Execute(const int cycles);
+    void IRQ();
 
 private:
     uint8_t A;
@@ -35,6 +36,7 @@ private:
 
     uint8_t* memory;
     bool waitStop;
+    bool irqPin; // true = high, false = low
 
     uint8_t currentOpcode;
     uint16_t currentPC;
