@@ -812,7 +812,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t data = GetNextByte();
         const uint16_t result = A + data + CCR[C];
-        CCR[H] = ((A & 0xF) + (data & 0xF) + CCR[C]) & 0x10 ? true : false;
+        CCR[H] = ((A&0x8) && (data&0x8)) || ((data&0x8) && !(result&0x8)) || (!(result&0x8) && (A&0x8));
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (result & 0xFF00) ? true : false;
@@ -835,7 +835,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t data = GetNextByte();
         const uint16_t result = A + data;
-        CCR[H] = ((A & 0xF) + (data & 0xF)) & 0x10 ? true : false;
+        CCR[H] = ((A&0x8) && (data&0x8)) || ((data&0x8) && !(result&0x8)) || (!(result&0x8) && (A&0x8));
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (result & 0xFF00) ? true : false;
