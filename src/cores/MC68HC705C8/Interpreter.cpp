@@ -604,8 +604,8 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetNextByte();
         const uint16_t result = A - data;
         CCR[N] = (result & 0x0080) ? true : false;
-        CCR[Z] = (result == 0) ? true : false;
-        CCR[C] = (result & 0xFF00) ? true : false; // TODO: check how to detect borrow
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
         LOG(instructions << std::hex << currentPC << "\tSUB #0x" << (uint16_t)data << std::endl)
         return 2;
@@ -616,19 +616,19 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetNextByte();
         const uint16_t result = A - data;
         CCR[N] = (result & 0x0080) ? true : false;
-        CCR[Z] = (result == 0) ? true : false;
-        CCR[C] = (result & 0xFF00) ? true : false; // TODO: check how to detect borrow
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         LOG(instructions << std::hex << currentPC << "\tCMP #0x" << (uint16_t)data << std::endl)
         return 2;
     }
 
     SBC_IMM:
     {
-        const uint8_t data = GetNextByte();
-        const uint16_t result = A - data - CCR[C];
+        const uint8_t data = GetNextByte() + CCR[C];
+        const uint16_t result = A - data;
         CCR[N] = (result & 0x0080) ? true : false;
-        CCR[Z] = (result == 0) ? true : false;
-        CCR[C] = (result & 0xFF00) ? true : false; // TODO: check how to detect borrow
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
         LOG(instructions << std::hex << currentPC << "\tSBC #0x" << (uint16_t)data << std::endl)
         return 2;
@@ -639,8 +639,8 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetNextByte();
         const uint16_t result = X - data;
         CCR[N] = (result & 0x0080) ? true : false;
-        CCR[Z] = (result == 0) ? true : false;
-        CCR[C] = (result & 0xFF00) ? true : false; // TODO: check how to detect borrow
+        CCR[Z] = result == 0;
+        CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
         LOG(instructions << std::hex << currentPC << "\tCPX #0x" << (uint16_t)data << std::endl)
         return 2;
     }
@@ -650,7 +650,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetNextByte();
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
-        CCR[Z] = (A == 0) ? true : false;
+        CCR[Z] = A == 0;
         LOG(instructions << std::hex << currentPC << "\tAND #0x" << (uint16_t)data << std::endl)
         return 2;
     }
@@ -661,7 +661,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         LOG(instructions << std::hex << currentPC << "\tBIT #0x" << (uint16_t)data << std::endl)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
-        CCR[Z] = (data == 0) ? true : false;
+        CCR[Z] = data == 0;
         return 2;
     }
 
@@ -669,7 +669,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         A = GetNextByte();
         CCR[N] = (A & 0x80) ? true : false;
-        CCR[Z] = (A == 0) ? true : false;
+        CCR[Z] = A == 0;
         LOG(instructions << std::hex << currentPC << "\tLDA #0x" << (uint16_t)A << std::endl)
         return 2;
     }
@@ -679,7 +679,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetNextByte();
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
-        CCR[Z] = (A == 0) ? true : false;
+        CCR[Z] = A == 0;
         LOG(instructions << std::hex << currentPC << "\tEOR #0x" << (uint16_t)data << std::endl)
         return 2;
     }
@@ -690,7 +690,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint16_t result = A + data + CCR[C];
         CCR[H] = ((A & 0xF) + (data & 0xF) + CCR[C]) & 0x10 ? true : false;
         CCR[N] = (result & 0x0080) ? true : false;
-        CCR[Z] = (result == 0) ? true : false;
+        CCR[Z] = result == 0;
         CCR[C] = (result & 0xFF00) ? true : false;
         LOG(instructions << std::hex << currentPC << "\tADD #0x" << (uint16_t)data << std::endl)
         A = result & 0x00FF;
@@ -702,7 +702,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetNextByte();
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
-        CCR[Z] = (A == 0) ? true : false;
+        CCR[Z] = A == 0;
         LOG(instructions << std::hex << currentPC << "\tORA #0x" << (uint16_t)data << std::endl)
         return 2;
     }
@@ -713,7 +713,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint16_t result = A + data;
         CCR[H] = ((A & 0xF) + (data & 0xF)) & 0x10 ? true : false;
         CCR[N] = (result & 0x0080) ? true : false;
-        CCR[Z] = (result == 0) ? true : false;
+        CCR[Z] = result == 0;
         CCR[C] = (result & 0xFF00) ? true : false;
         LOG(instructions << std::hex << currentPC << "\tADD #0x" << (uint16_t)data << std::endl)
         A = result & 0x00FF;
@@ -734,7 +734,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         X = GetNextByte();
         CCR[N] = (X & 0x80) ? true : false;
-        CCR[Z] = (X == 0) ? true : false;
+        CCR[Z] = X == 0;
         LOG(instructions << std::hex << currentPC << "\tLDX #0x" << (uint16_t)X << std::endl)
         return 2;
     }
