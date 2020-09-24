@@ -5,6 +5,9 @@
 
 void MC68HC705C8::Execute(const int cycles)
 {
+    if(waitStop)
+        return;
+
     pendingCycles += cycles;
     while(pendingCycles > 0)
     {
@@ -505,10 +508,55 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     // 0x8X
     RTI_INH:
+    {
+        CCR = PopByte();
+        A = PopByte();
+        X = PopByte();
+        PC = PopByte() << 8;
+        PC |= PopByte();
+        LOG(instructions << std::hex << currentPC << "\tRTI" << std::endl)
+        return 9;
+    }
+
     RTS_INH:
+    {
+        PC = PopByte() << 8;
+        PC |= PopByte();
+        LOG(instructions << std::hex << currentPC << "\tRTS" << std::endl)
+        return 6;
+    }
+
     SWI_INH:
+    {
+        PushByte(PC & 0x00FF);
+        PushByte(PC >> 8);
+        PushByte(X);
+        PushByte(A);
+        PushByte(CCR.to_ulong());
+        CCR[I] = true;
+        PC = GetByte(0x1FFC) << 8;
+        PC |= GetByte(0x1FFD);
+        LOG(instructions << std::hex << currentPC << "\tSWI" << std::endl)
+        return 1 ? 0 : 0;
+    }
+
     STOP_INH:
+    {
+        waitStop = true;
+        pendingCycles = 2;
+        CCR[I] = false;
+        LOG(instructions << std::hex << currentPC << "\tSTOP" << std::endl)
+        return 2;
+    }
+
     WAIT_INH:
+    {
+        waitStop = true;
+        pendingCycles = 2;
+        CCR[I] = false;
+        LOG(instructions << std::hex << currentPC << "\tWAIT" << std::endl)
+        return 2;
+    }
 
     // 0x9X
     TAX_INH:

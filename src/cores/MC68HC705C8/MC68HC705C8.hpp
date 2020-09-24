@@ -34,6 +34,7 @@ private:
     std::bitset<8> CCR;
 
     uint8_t* memory;
+    bool waitStop;
 
     uint8_t currentOpcode;
     uint16_t currentPC;
