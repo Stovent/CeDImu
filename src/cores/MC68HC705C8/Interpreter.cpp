@@ -556,19 +556,153 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     // 0x3X
     NEG_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t data = -GetByte(addr);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        CCR[C] = data != 0;
+        SetByte(addr, data);
+        LOG(instructions << std::hex << currentPC << "\tNEG 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     COM_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t data = ~GetByte(addr);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        CCR[C] = true;
+        LOG(instructions << std::hex << currentPC << "\tCOM 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     LSR_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        uint8_t data = GetByte(addr);
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data &= 0x7F;
+        CCR[N] = false;
+        CCR[Z] = data == 0;
+        SetByte(addr, data);
+        LOG(instructions << std::hex << currentPC << "\tLSR 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     ROR_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        uint8_t data = GetByte(addr);
+        const uint8_t bit = CCR[C] << 7;
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(addr, data);
+        LOG(instructions << std::hex << currentPC << "\tROR 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     ASR_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        uint8_t data = GetByte(addr);
+        const uint8_t bit = (data & 0x80);
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(addr, data);
+        LOG(instructions << std::hex << currentPC << "\tASR 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     ASLLSL_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        uint8_t data = GetByte(addr);
+        CCR[C] = (data & 0x80) ? true : false;
+        data <<= 1;
+        CCR[N] = (data & 0x80);
+        CCR[Z] = data == 0;
+        SetByte(addr, data);
+        LOG(instructions << std::hex << currentPC << "\tASL/LSL 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     ROL_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        uint8_t data = GetByte(addr);
+        const uint8_t bit = CCR[C];
+        CCR[C] = (data & 0x80) ? true : false;
+        data <<= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(addr, data);
+        LOG(instructions << std::hex << currentPC << "\tROL 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     DEC_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t data = GetByte(addr) - 1;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(addr, data);
+        LOG(instructions << std::hex << currentPC << "\tDEC 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     INC_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t data = GetByte(addr) + 1;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(addr, data);
+        LOG(instructions << std::hex << currentPC << "\tINC 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
+
     TST_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        const uint8_t data = GetByte(addr);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        LOG(instructions << std::hex << currentPC << "\tTST 0x" << (uint16_t)addr << std::endl)
+        return 4;
+    }
+
     CLR_DIR:
+    {
+        const uint8_t addr = GetNextByte();
+        CCR[N] = false;
+        CCR[Z] = true;
+        SetByte(addr, 0);
+        LOG(instructions << std::hex << currentPC << "\tCLR 0x" << (uint16_t)addr << std::endl)
+        return 5;
+    }
 
     // 0x4X
     NEGA_INH:
+    {
+        A = -A;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        CCR[C] = A != 0;
+        LOG(instructions << std::hex << currentPC << "\tNEGA" << std::endl)
+        return 3;
+    }
+
     MUL_INH:
     {
         const uint16_t result = A * X;
@@ -581,54 +715,484 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     }
 
     COMA_INH:
+    {
+        A = ~A;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        CCR[C] = true;
+        LOG(instructions << std::hex << currentPC << "\tCOMA" << std::endl)
+        return 3;
+    }
+
     LSRA_INH:
+    {
+        CCR[C] = (A & 1) ? true : false;
+        A >>= 1;
+        A &= 0x7F;
+        CCR[N] = false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tLSRA" << std::endl)
+        return 3;
+    }
+
     RORA_INH:
+    {
+        const uint8_t bit = CCR[C] << 7;
+        CCR[C] = (A & 1) ? true : false;
+        A >>= 1;
+        A |= bit;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tRORA" << std::endl)
+        return 3;
+    }
+
     ASRA_INH:
+    {
+        const uint8_t bit = (A & 0x80);
+        CCR[C] = (A & 1) ? true : false;
+        A >>= 1;
+        A |= bit;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tASRA" << std::endl)
+        return 3;
+    }
+
     ASLALSLA_INH:
+    {
+        CCR[C] = (A & 0x80) ? true : false;
+        A <<= 1;
+        CCR[N] = (A & 0x80);
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tASLA/LSLA" << std::endl)
+        return 3;
+    }
+
     ROLA_INH:
+    {
+        const uint8_t bit = CCR[C];
+        CCR[C] = (A & 0x80) ? true : false;
+        A <<= 1;
+        A |= bit;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tROLA" << std::endl)
+        return 3;
+    }
+
     DECA_INH:
+    {
+        A--;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tDECA" << std::endl)
+        return 3;
+    }
+
     INCA_INH:
+    {
+        A++;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tINCA" << std::endl)
+        return 3;
+    }
+
     TSTA_INH:
+    {
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tTSTA" << std::endl)
+        return 3;
+    }
+
     CLRA_INH:
+    {
+        CCR[N] = false;
+        CCR[Z] = true;
+        A = 0;
+        LOG(instructions << std::hex << currentPC << "\tCLRA" << std::endl)
+        return 3;
+    }
 
     // 0x5X
     NEGX_INH:
+    {
+        X = -X;
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        CCR[C] = X != 0;
+        LOG(instructions << std::hex << currentPC << "\tNEGX" << std::endl)
+        return 3;
+    }
+
     COMX_INH:
+    {
+        X = ~X;
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        CCR[C] = true;
+        LOG(instructions << std::hex << currentPC << "\tCOMX" << std::endl)
+        return 3;
+    }
+
     LSRX_INH:
+    {
+        CCR[C] = (X & 1) ? true : false;
+        X >>= 1;
+        X &= 0x7F;
+        CCR[N] = false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tLSRX" << std::endl)
+        return 3;
+    }
+
     RORX_INH:
+    {
+        const uint8_t bit = CCR[C] << 7;
+        CCR[C] = (X & 1) ? true : false;
+        X >>= 1;
+        X |= bit;
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tRORX" << std::endl)
+        return 3;
+    }
+
     ASRX_INH:
+    {
+        const uint8_t bit = (X & 0x80);
+        CCR[C] = (X & 1) ? true : false;
+        X >>= 1;
+        X |= bit;
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tASRX" << std::endl)
+        return 3;
+    }
+
     ASLXLSLX_INH:
+    {
+        CCR[C] = (X & 0x80) ? true : false;
+        X <<= 1;
+        CCR[N] = (X & 0x80);
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tASLX/LSLX" << std::endl)
+        return 3;
+    }
+
     ROLX_INH:
+    {
+        const uint8_t bit = CCR[C];
+        CCR[C] = (X & 0x80) ? true : false;
+        X <<= 1;
+        X |= bit;
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tROLX" << std::endl)
+        return 3;
+    }
+
     DECX_INH:
+    {
+        X--;
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tDECX" << std::endl)
+        return 3;
+    }
+
     INCX_INH:
+    {
+        X++;
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tINCX" << std::endl)
+        return 3;
+    }
+
     TSTX_INH:
+    {
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tTSTX" << std::endl)
+        return 3;
+    }
+
     CLRX_INH:
+    {
+        CCR[N] = false;
+        CCR[Z] = true;
+        X = 0;
+        LOG(instructions << std::hex << currentPC << "\tCLRX" << std::endl)
+        return 3;
+    }
 
     // 0x6X
     NEG_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        const uint8_t data = -GetByte(X + offset);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        CCR[C] = data != 0;
+        SetByte(X + offset, data);
+        LOG(instructions << std::hex << currentPC << "\tNEG 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     COM_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        const uint8_t data = ~GetByte(X + offset);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        CCR[C] = true;
+        LOG(instructions << std::hex << currentPC << "\tCOM 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     LSR_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        uint8_t data = GetByte(X + offset);
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data &= 0x7F;
+        CCR[N] = false;
+        CCR[Z] = data == 0;
+        SetByte(X + offset, data);
+        LOG(instructions << std::hex << currentPC << "\tLSR 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     ROR_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        uint8_t data = GetByte(X + offset);
+        const uint8_t bit = CCR[C] << 7;
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X + offset, data);
+        LOG(instructions << std::hex << currentPC << "\tROR 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     ASR_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        uint8_t data = GetByte(X + offset);
+        const uint8_t bit = (data & 0x80);
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X + offset, data);
+        LOG(instructions << std::hex << currentPC << "\tASR 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     ASLLSL_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        uint8_t data = GetByte(X + offset);
+        CCR[C] = (data & 0x80) ? true : false;
+        data <<= 1;
+        CCR[N] = (data & 0x80);
+        CCR[Z] = data == 0;
+        SetByte(X + offset, data);
+        LOG(instructions << std::hex << currentPC << "\tASL/LSL 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     ROL_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        uint8_t data = GetByte(X + offset);
+        const uint8_t bit = CCR[C];
+        CCR[C] = (data & 0x80) ? true : false;
+        data <<= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X + offset, data);
+        LOG(instructions << std::hex << currentPC << "\tROL 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     DEC_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        const uint8_t data = GetByte(X + offset) - 1;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X + offset, data);
+        LOG(instructions << std::hex << currentPC << "\tDEC 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     INC_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        const uint8_t data = GetByte(X + offset) + 1;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X + offset, data);
+        LOG(instructions << std::hex << currentPC << "\tINC 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
+
     TST_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        LOG(instructions << std::hex << currentPC << "\tTST 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 5;
+    }
+
     CLR_IX1:
+    {
+        const uint8_t offset = GetNextByte();
+        CCR[N] = false;
+        CCR[Z] = true;
+        SetByte(X + offset, 0);
+        LOG(instructions << std::hex << currentPC << "\tCLR 0x" << (uint16_t)offset << ", X" << std::endl)
+        return 6;
+    }
 
     // 0x7X
     NEG_IX:
+    {
+        const uint8_t data = -GetByte(X);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        CCR[C] = data != 0;
+        SetByte(X, data);
+        LOG(instructions << std::hex << currentPC << "\tNEG X" << std::endl)
+        return 5;
+    }
+
     COM_IX:
+    {
+        const uint8_t data = ~GetByte(X);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        CCR[C] = true;
+        LOG(instructions << std::hex << currentPC << "\tCOM X" << std::endl)
+        return 5;
+    }
+
     LSR_IX:
+    {
+        uint8_t data = GetByte(X);
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data &= 0x7F;
+        CCR[N] = false;
+        CCR[Z] = data == 0;
+        SetByte(X, data);
+        LOG(instructions << std::hex << currentPC << "\tLSR X" << std::endl)
+        return 5;
+    }
+
     ROR_IX:
+    {
+        uint8_t data = GetByte(X);
+        const uint8_t bit = CCR[C] << 7;
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X, data);
+        LOG(instructions << std::hex << currentPC << "\tROR X" << std::endl)
+        return 5;
+    }
+
     ASR_IX:
+    {
+        uint8_t data = GetByte(X);
+        const uint8_t bit = (data & 0x80);
+        CCR[C] = (data & 1) ? true : false;
+        data >>= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X, data);
+        LOG(instructions << std::hex << currentPC << "\tASR X" << std::endl)
+        return 5;
+    }
+
     ASLLSL_IX:
+    {
+        uint8_t data = GetByte(X);
+        CCR[C] = (data & 0x80) ? true : false;
+        data <<= 1;
+        CCR[N] = (data & 0x80);
+        CCR[Z] = data == 0;
+        SetByte(X, data);
+        LOG(instructions << std::hex << currentPC << "\tASL/LSL X" << std::endl)
+        return 5;
+    }
+
     ROL_IX:
+    {
+        uint8_t data = GetByte(X);
+        const uint8_t bit = CCR[C];
+        CCR[C] = (data & 0x80) ? true : false;
+        data <<= 1;
+        data |= bit;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X, data);
+        LOG(instructions << std::hex << currentPC << "\tROL X" << std::endl)
+        return 5;
+    }
+
     DEC_IX:
+    {
+        const uint8_t data = GetByte(X) - 1;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X, data);
+        LOG(instructions << std::hex << currentPC << "\tDEC X" << std::endl)
+        return 5;
+    }
+
     INC_IX:
+    {
+        const uint8_t data = GetByte(X) + 1;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        SetByte(X, data);
+        LOG(instructions << std::hex << currentPC << "\tINC X" << std::endl)
+        return 5;
+    }
+
     TST_IX:
+    {
+        const uint8_t data = GetByte(X);
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        LOG(instructions << std::hex << currentPC << "\tTST X" << std::endl)
+        return 4;
+    }
+
     CLR_IX:
+    {
+        CCR[N] = false;
+        CCR[Z] = true;
+        SetByte(X, 0);
+        LOG(instructions << std::hex << currentPC << "\tCLR X" << std::endl)
+        return 5;
+    }
 
     // 0x8X
     RTI_INH:
@@ -1301,7 +1865,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     LDA_IX2:
     {
         const uint16_t offset = GetNextByte() << 8 | GetNextByte();
-        const uint8_t data = GetByte(X + offset);
+        const uint8_t A = GetByte(X + offset);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
         LOG(instructions << std::hex << currentPC << "\tLDA 0x" << offset << ", X" << std::endl)
@@ -1482,7 +2046,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     LDA_IX1:
     {
         const uint8_t offset = GetNextByte();
-        const uint8_t data = GetByte(X + offset);
+        const uint8_t A = GetByte(X + offset);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
         LOG(instructions << std::hex << currentPC << "\tLDA 0x" << (uint16_t)offset << ", X" << std::endl)
