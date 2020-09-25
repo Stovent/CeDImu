@@ -1235,7 +1235,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(instructions << std::hex << currentPC << "\tSUB 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSUB 0x" << offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1247,7 +1247,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tCMP 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tCMP 0x" << offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1260,7 +1260,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(instructions << std::hex << currentPC << "\tSBC 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSBC 0x" << offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1272,7 +1272,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tCPX 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tCPX 0x" << offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1283,15 +1283,15 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tAND 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tAND 0x" << offset << ", X" << std::endl)
         return 5;
     }
 
     BIT_IX2:
     {
         const uint16_t offset = GetNextByte() << 8 | GetNextByte();
-        const uint8_t data = GetByte(X + offset);
-        LOG(instructions << std::hex << currentPC << "\tBIT 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        uint8_t data = GetByte(X + offset);
+        LOG(instructions << std::hex << currentPC << "\tBIT 0x" << offset << ", X" << std::endl)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -1304,7 +1304,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetByte(X + offset);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tLDA 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tLDA 0x" << offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1314,7 +1314,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X + offset, A);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tSTA 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSTA 0x" << offset << ", X" << std::endl)
         return 6;
     }
 
@@ -1325,7 +1325,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tEOR 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tEOR 0x" << offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1338,7 +1338,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tADC 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tADC 0x" << offset << ", X" << std::endl)
         A = result & 0x00FF;
         return 5;
     }
@@ -1350,7 +1350,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tORA 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tORA 0x" << offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1363,7 +1363,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tADD 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tADD 0x" << offset << ", X" << std::endl)
         A = result & 0x00FF;
         return 5;
     }
@@ -1372,7 +1372,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint16_t offset = GetNextByte() << 8 | GetNextByte();
         PC = X + offset;
-        LOG(instructions << std::hex << currentPC << "\tJMP 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tJMP 0x" << offset << ", X" << std::endl)
         return 4;
     }
 
@@ -1382,14 +1382,14 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC = X + offset;
-        LOG(instructions << std::hex << currentPC << "\tJSR 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tJSR 0x" << offset << ", X" << std::endl)
         return 7;
     }
 
     LDX_IX2:
     {
         const uint16_t offset = GetNextByte() << 8 | GetNextByte();
-        LOG(instructions << std::hex << currentPC << "\tLDX 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tLDX 0x" << offset << ", X" << std::endl)
         X = GetByte(X + offset);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
@@ -1402,7 +1402,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X + offset, X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(instructions << std::hex << currentPC << "\tSTX 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSTX 0x" << offset << ", X" << std::endl)
         return 6;
     }
 
@@ -1416,7 +1416,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(instructions << std::hex << currentPC << "\tSUB 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSUB 0x" << (uint16_t)offset << ", X" << std::endl)
         return 4;
     }
 
@@ -1428,7 +1428,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tCMP 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tCMP 0x" << (uint16_t)offset << ", X" << std::endl)
         return 4;
     }
 
@@ -1441,7 +1441,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(instructions << std::hex << currentPC << "\tSBC 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSBC 0x" << (uint16_t)offset << ", X" << std::endl)
         return 4;
     }
 
@@ -1453,7 +1453,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tCPX 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tCPX 0x" << (uint16_t)offset << ", X" << std::endl)
         return 4;
     }
 
@@ -1464,15 +1464,15 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tAND 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tAND 0x" << (uint16_t)offset << ", X" << std::endl)
         return 4;
     }
 
     BIT_IX1:
     {
         const uint8_t offset = GetNextByte();
-        const uint8_t data = GetByte(X + offset);
-        LOG(instructions << std::hex << currentPC << "\tBIT 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        uint8_t data = GetByte(X + offset);
+        LOG(instructions << std::hex << currentPC << "\tBIT 0x" << (uint16_t)offset << ", X" << std::endl)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -1485,7 +1485,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetByte(X + offset);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tLDA 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tLDA 0x" << (uint16_t)offset << ", X" << std::endl)
         return 4;
     }
 
@@ -1495,7 +1495,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X + offset, A);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tSTA 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSTA 0x" << (uint16_t)offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1506,7 +1506,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tEOR 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tEOR 0x" << (uint16_t)offset << ", X" << std::endl)
         return 4;
     }
 
@@ -1519,7 +1519,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tADC 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tADC 0x" << (uint16_t)offset << ", X" << std::endl)
         A = result & 0x00FF;
         return 4;
     }
@@ -1531,7 +1531,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tORA 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tORA 0x" << (uint16_t)offset << ", X" << std::endl)
         return 4;
     }
 
@@ -1544,7 +1544,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tADD 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tADD 0x" << (uint16_t)offset << ", X" << std::endl)
         A = result & 0x00FF;
         return 4;
     }
@@ -1553,7 +1553,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t offset = GetNextByte();
         PC = X + offset;
-        LOG(instructions << std::hex << currentPC << "\tJMP 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tJMP 0x" << (uint16_t)offset << ", X" << std::endl)
         return 3;
     }
 
@@ -1563,14 +1563,14 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC = X + offset;
-        LOG(instructions << std::hex << currentPC << "\tJSR 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tJSR 0x" << (uint16_t)offset << ", X" << std::endl)
         return 6;
     }
 
     LDX_IX1:
     {
         const uint8_t offset = GetNextByte();
-        LOG(instructions << std::hex << currentPC << "\tLDX 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tLDX 0x" << (uint16_t)offset << ", X" << std::endl)
         X = GetByte(X + offset);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
@@ -1583,7 +1583,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X + offset, X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(instructions << std::hex << currentPC << "\tSTX 0x" << (uint16_t)offset << ", 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSTX 0x" << (uint16_t)offset << ", X" << std::endl)
         return 5;
     }
 
@@ -1596,7 +1596,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(instructions << std::hex << currentPC << "\tSUB 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSUB X" << std::endl)
         return 3;
     }
 
@@ -1607,7 +1607,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tCMP 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tCMP X" << std::endl)
         return 3;
     }
 
@@ -1619,7 +1619,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(instructions << std::hex << currentPC << "\tSBC 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSBC X" << std::endl)
         return 3;
     }
 
@@ -1630,7 +1630,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tCPX 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tCPX X" << std::endl)
         return 3;
     }
 
@@ -1640,14 +1640,14 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tAND 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tAND X" << std::endl)
         return 3;
     }
 
     BIT_IX:
     {
         uint8_t data = GetByte(X);
-        LOG(instructions << std::hex << currentPC << "\tBIT 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBIT X" << std::endl)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -1659,7 +1659,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A = GetByte(X);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tLDA 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tLDA X" << std::endl)
         return 3;
     }
 
@@ -1668,7 +1668,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X, A);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tSTA 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSTA X" << std::endl)
         return 4;
     }
 
@@ -1678,7 +1678,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tEOR 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tEOR X" << std::endl)
         return 3;
     }
 
@@ -1690,7 +1690,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tADC 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tADC X" << std::endl)
         A = result & 0x00FF;
         return 3;
     }
@@ -1701,7 +1701,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(instructions << std::hex << currentPC << "\tORA 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tORA X" << std::endl)
         return 3;
     }
 
@@ -1713,7 +1713,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(instructions << std::hex << currentPC << "\tADD 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tADD X" << std::endl)
         A = result & 0x00FF;
         return 3;
     }
@@ -1721,7 +1721,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     JMP_IX:
     {
         PC = X;
-        LOG(instructions << std::hex << currentPC << "\tJMP 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tJMP X" << std::endl)
         return 2;
     }
 
@@ -1730,13 +1730,13 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC = X;
-        LOG(instructions << std::hex << currentPC << "\tJSR 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tJSR X" << std::endl)
         return 5;
     }
 
     LDX_IX:
     {
-        LOG(instructions << std::hex << currentPC << "\tLDX 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tLDX X" << std::endl)
         X = GetByte(X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
@@ -1748,7 +1748,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X, X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(instructions << std::hex << currentPC << "\tSTX 0x" << (uint16_t)X << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tSTX X" << std::endl)
         return 4;
     }
 
