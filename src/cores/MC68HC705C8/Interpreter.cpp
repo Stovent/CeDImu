@@ -1263,21 +1263,168 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     // 0xFX
     SUB_IX:
+    {
+        const uint8_t data = GetByte(X);
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        A = result & 0x00FF;
+        LOG(instructions << std::hex << currentPC << "\tSUB 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     CMP_IX:
+    {
+        const uint8_t data = GetByte(X);
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tCMP 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     SBC_IX:
+    {
+        const uint8_t data = GetByte(X) + CCR[C];
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        A = result & 0x00FF;
+        LOG(instructions << std::hex << currentPC << "\tSBC 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     CPX_IX:
+    {
+        const uint8_t data = GetByte(X);
+        const uint16_t result = X - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tCPX 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     AND_IX:
+    {
+        const uint8_t data = GetByte(X);
+        A &= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tAND 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     BIT_IX:
+    {
+        uint8_t data = GetByte(X);
+        LOG(instructions << std::hex << currentPC << "\tBIT 0x" << (uint16_t)X << std::endl)
+        data &= A;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        return 3;
+    }
+
     LDA_IX:
+    {
+        A = GetByte(X);
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tLDA 0x" << (uint16_t)X << std::endl)
+        return 4;
+    }
+
     STA_IX:
+    {
+        SetByte(X, A);
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tSTA 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     EOR_IX:
+    {
+        const uint8_t data = GetByte(X);
+        A ^= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tEOR 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     ADC_IX:
+    {
+        const uint8_t data = GetByte(X);
+        const uint16_t result = A + data + CCR[C];
+        CCR[H] = ((A&0x8) && (data&0x8)) || ((data&0x8) && !(result&0x8)) || (!(result&0x8) && (A&0x8));
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tADC 0x" << (uint16_t)X << std::endl)
+        A = result & 0x00FF;
+        return 3;
+    }
+
     ORA_IX:
+    {
+        const uint8_t data = GetByte(X);
+        A |= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tORA 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     ADD_IX:
+    {
+        const uint8_t data = GetByte(X);
+        const uint16_t result = A + data;
+        CCR[H] = ((A&0x8) && (data&0x8)) || ((data&0x8) && !(result&0x8)) || (!(result&0x8) && (A&0x8));
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tADD 0x" << (uint16_t)X << std::endl)
+        A = result & 0x00FF;
+        return 3;
+    }
+
     JMP_IX:
+    {
+        PC = X;
+        LOG(instructions << std::hex << currentPC << "\tJMP 0x" << (uint16_t)X << std::endl)
+        return 2;
+    }
+
     JSR_IX:
+    {
+        PushByte(PC & 0x00FF);
+        PushByte(PC >> 8);
+        PC = X;
+        LOG(instructions << std::hex << currentPC << "\tJSR 0x" << (uint16_t)X << std::endl)
+        return 5;
+    }
+
     LDX_IX:
+    {
+        LOG(instructions << std::hex << currentPC << "\tLDX 0x" << (uint16_t)X << std::endl)
+        X = GetByte(X);
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        return 3;
+    }
+
     STX_IX:
+    {
+        SetByte(X, X);
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tSTX 0x" << (uint16_t)X << std::endl)
+        return 4;
+    }
 
     unknown:
         LOG(instructions << std::hex << currentPC << "\tUnknwon instruction: 0x" << (uint16_t)currentOpcode << std::endl)
