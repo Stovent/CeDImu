@@ -33,9 +33,9 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         &&unknown,    &&unknown,    &&unknown,    &&unknown,    &&unknown,    &&unknown,    &&unknown,    &&TAX_INH,    &&CLC_INH,      &&SEC_INH,    &&CLI_INH,    &&SEI_INH,    &&RSP_INH,    &&NOP_INH,    &&unknown,    &&TXA_INH,    // 0x9X
         &&SUB_IMM,    &&CMP_IMM,    &&SBC_IMM,    &&CPX_IMM,    &&AND_IMM,    &&BIT_IMM,    &&LDA_IMM,    &&unknown,    &&EOR_IMM,      &&ADC_IMM,    &&ORA_IMM,    &&ADD_IMM,    &&unknown,    &&BSR_REL,    &&LDX_IMM,    &&unknown,    // 0xAX
         &&SUB_DIR,    &&CMP_DIR,    &&SBC_DIR,    &&CPX_DIR,    &&AND_DIR,    &&BIT_DIR,    &&LDA_DIR,    &&STA_DIR,    &&EOR_DIR,      &&ADC_DIR,    &&ORA_DIR,    &&ADD_DIR,    &&JMP_DIR,    &&JSR_DIR,    &&LDX_DIR,    &&STX_DIR,    // 0xBX
-        &&SUB_EXT,    &&CMP_EXT,    &&SBC_EXT,    &&CPX_EXT,    &&AND_EXT,    &&BIT_EXT,    &&LDA_EXT,    &&STA_EXT,    &&EOR_EXT,      &&ADC_EXT,    &&ORA_EXT,    &&ADD_EXT,    &&JMP_EXT,    &&JSR_EXT,    &&LDX_EXT,    &&SDX_EXT,    // 0xCX
-        &&SUB_IX2,    &&CMP_IX2,    &&SBC_IX2,    &&CPX_IX2,    &&AND_IX2,    &&BIT_IX2,    &&LDA_IX2,    &&STA_IX2,    &&EOR_IX2,      &&ADC_IX2,    &&ORA_IX2,    &&ADD_IX2,    &&JMP_IX2,    &&JSR_IX2,    &&LDX_IX2,    &&SDX_IX2,    // 0xDX
-        &&SUB_IX1,    &&CMP_IX1,    &&SBC_IX1,    &&CPX_IX1,    &&AND_IX1,    &&BIT_IX1,    &&LDA_IX1,    &&STA_IX1,    &&EOR_IX1,      &&ADC_IX1,    &&ORA_IX1,    &&ADD_IX1,    &&JMP_IX1,    &&JSR_IX1,    &&LDX_IX1,    &&SDX_IX1,    // 0xEX
+        &&SUB_EXT,    &&CMP_EXT,    &&SBC_EXT,    &&CPX_EXT,    &&AND_EXT,    &&BIT_EXT,    &&LDA_EXT,    &&STA_EXT,    &&EOR_EXT,      &&ADC_EXT,    &&ORA_EXT,    &&ADD_EXT,    &&JMP_EXT,    &&JSR_EXT,    &&LDX_EXT,    &&STX_EXT,    // 0xCX
+        &&SUB_IX2,    &&CMP_IX2,    &&SBC_IX2,    &&CPX_IX2,    &&AND_IX2,    &&BIT_IX2,    &&LDA_IX2,    &&STA_IX2,    &&EOR_IX2,      &&ADC_IX2,    &&ORA_IX2,    &&ADD_IX2,    &&JMP_IX2,    &&JSR_IX2,    &&LDX_IX2,    &&STX_IX2,    // 0xDX
+        &&SUB_IX1,    &&CMP_IX1,    &&SBC_IX1,    &&CPX_IX1,    &&AND_IX1,    &&BIT_IX1,    &&LDA_IX1,    &&STA_IX1,    &&EOR_IX1,      &&ADC_IX1,    &&ORA_IX1,    &&ADD_IX1,    &&JMP_IX1,    &&JSR_IX1,    &&LDX_IX1,    &&STX_IX1,    // 0xEX
         &&SUB_IX,     &&CMP_IX,     &&SBC_IX,     &&CPX_IX,     &&AND_IX,     &&BIT_IX,     &&LDA_IX,     &&STA_IX,     &&EOR_IX,       &&ADC_IX,     &&ORA_IX,     &&ADD_IX,     &&JMP_IX,     &&JSR_IX,     &&LDX_IX,     &&STX_IX,     // 0xFX
     };
 
@@ -1046,21 +1046,184 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     // 0xCX
     SUB_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr);
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        A = result & 0x00FF;
+        LOG(instructions << std::hex << currentPC << "\tSUB 0x" << addr << std::endl)
+        return 4;
+    }
+
     CMP_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr);
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tCMP 0x" << addr << std::endl)
+        return 4;
+    }
+
     SBC_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr) + CCR[C];
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        A = result & 0x00FF;
+        LOG(instructions << std::hex << currentPC << "\tSBC 0x" << addr << std::endl)
+        return 4;
+    }
+
     CPX_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr);
+        const uint16_t result = X - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tCPX 0x" << addr << std::endl)
+        return 4;
+    }
+
     AND_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr);
+        A &= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tAND 0x" << addr << std::endl)
+        return 4;
+    }
+
     BIT_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        uint8_t data = GetByte(addr);
+        LOG(instructions << std::hex << currentPC << "\tBIT 0x" << addr << std::endl)
+        data &= A;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        return 4;
+    }
+
     LDA_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        A = GetByte(addr);
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tLDA 0x" << addr << std::endl)
+        return 4;
+    }
+
     STA_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        SetByte(addr, A);
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tSTA 0x" << addr << std::endl)
+        return 5;
+    }
+
     EOR_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr);
+        A ^= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tEOR 0x" << addr << std::endl)
+        return 4;
+    }
+
     ADC_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr);
+        const uint16_t result = A + data + CCR[C];
+        CCR[H] = ((A&0x8) && (data&0x8)) || ((data&0x8) && !(result&0x8)) || (!(result&0x8) && (A&0x8));
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tADC 0x" << addr << std::endl)
+        A = result & 0x00FF;
+        return 4;
+    }
+
     ORA_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr);
+        A |= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tORA 0x" << addr << std::endl)
+        return 4;
+    }
+
     ADD_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(addr);
+        const uint16_t result = A + data;
+        CCR[H] = ((A&0x8) && (data&0x8)) || ((data&0x8) && !(result&0x8)) || (!(result&0x8) && (A&0x8));
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tADD 0x" << addr << std::endl)
+        A = result & 0x00FF;
+        return 4;
+    }
+
     JMP_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        PC = addr;
+        LOG(instructions << std::hex << currentPC << "\tJMP 0x" << addr << std::endl)
+        return 3;
+    }
+
     JSR_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        PushByte(PC & 0x00FF);
+        PushByte(PC >> 8);
+        PC = addr;
+        LOG(instructions << std::hex << currentPC << "\tJSR 0x" << addr << std::endl)
+        return 6;
+    }
+
     LDX_EXT:
-    SDX_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        X = GetByte(addr);
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tLDX 0x" << addr << std::endl)
+        return 4;
+    }
+
+    STX_EXT:
+    {
+        const uint16_t addr = GetNextByte() << 8 | GetNextByte();
+        SetByte(addr, X);
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tSTX 0x" << addr << std::endl)
+        return 5;
+    }
 
     // 0xDX
     SUB_IX2:
@@ -1078,7 +1241,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     JMP_IX2:
     JSR_IX2:
     LDX_IX2:
-    SDX_IX2:
+    STX_IX2:
 
     // 0xEX
     SUB_IX1:
@@ -1096,7 +1259,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     JMP_IX1:
     JSR_IX1:
     LDX_IX1:
-    SDX_IX1:
+    STX_IX1:
 
     // 0xFX
     SUB_IX:
