@@ -1227,21 +1227,184 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     // 0xDX
     SUB_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        A = result & 0x00FF;
+        LOG(instructions << std::hex << currentPC << "\tSUB 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     CMP_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tCMP 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     SBC_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset) + CCR[C];
+        const uint16_t result = A - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
+        A = result & 0x00FF;
+        LOG(instructions << std::hex << currentPC << "\tSBC 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     CPX_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        const uint16_t result = X - data;
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tCPX 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     AND_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        A &= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tAND 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     BIT_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        LOG(instructions << std::hex << currentPC << "\tBIT 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        data &= A;
+        CCR[N] = (data & 0x80) ? true : false;
+        CCR[Z] = data == 0;
+        return 3;
+    }
+
     LDA_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tLDA 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 4;
+    }
+
     STA_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        SetByte(X + offset, A);
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tSTA 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     EOR_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        A ^= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tEOR 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     ADC_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        const uint16_t result = A + data + CCR[C];
+        CCR[H] = ((A&0x8) && (data&0x8)) || ((data&0x8) && !(result&0x8)) || (!(result&0x8) && (A&0x8));
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tADC 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        A = result & 0x00FF;
+        return 3;
+    }
+
     ORA_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        A |= data;
+        CCR[N] = (A & 0x80) ? true : false;
+        CCR[Z] = A == 0;
+        LOG(instructions << std::hex << currentPC << "\tORA 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 3;
+    }
+
     ADD_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        const uint8_t data = GetByte(X + offset);
+        const uint16_t result = A + data;
+        CCR[H] = ((A&0x8) && (data&0x8)) || ((data&0x8) && !(result&0x8)) || (!(result&0x8) && (A&0x8));
+        CCR[N] = (result & 0x0080) ? true : false;
+        CCR[Z] = result == 0;
+        CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
+        LOG(instructions << std::hex << currentPC << "\tADD 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        A = result & 0x00FF;
+        return 3;
+    }
+
     JMP_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        PC = X + offset;
+        LOG(instructions << std::hex << currentPC << "\tJMP 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 2;
+    }
+
     JSR_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        PushByte(PC & 0x00FF);
+        PushByte(PC >> 8);
+        PC = X + offset;
+        LOG(instructions << std::hex << currentPC << "\tJSR 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 5;
+    }
+
     LDX_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        LOG(instructions << std::hex << currentPC << "\tLDX 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        X = GetByte(X + offset);
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        return 3;
+    }
+
     STX_IX2:
+    {
+        const uint16_t offset = GetNextByte() << 8 | GetNextByte();
+        SetByte(X + offset, X);
+        CCR[N] = (X & 0x80) ? true : false;
+        CCR[Z] = X == 0;
+        LOG(instructions << std::hex << currentPC << "\tSTX 0x" << offset << ", 0x" << (uint16_t)X << std::endl)
+        return 4;
+    }
 
     // 0xEX
     SUB_IX1:
