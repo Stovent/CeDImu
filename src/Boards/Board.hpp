@@ -4,6 +4,7 @@
 class Board;
 
 #include "../cores/SCC68070/SCC68070.hpp"
+#include "../cores/MC68HC705C8/MC68HC705C8.hpp"
 #include "../cores/VDSC.hpp"
 #include "../common/flags.hpp"
 
@@ -13,6 +14,7 @@ class Board
 {
 public:
     SCC68070* cpu;
+    MC68HC705C8* slave;
 
     Board() {  }
     virtual ~Board() {  }

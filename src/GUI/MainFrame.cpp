@@ -154,8 +154,8 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 
 void MainFrame::OnLoadBIOS(wxCommandEvent& event)
 {
-    wxFileDialog openFileDialog(this, "Load BIOS", Config::BIOSPath, "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-    if (openFileDialog.ShowModal() == wxID_CANCEL)
+    wxFileDialog openFileDialog(this, "Load VDSC BIOS", Config::BIOSPath, "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if(openFileDialog.ShowModal() == wxID_CANCEL)
         return;
 
 #ifdef _WIN32
@@ -164,7 +164,11 @@ void MainFrame::OnLoadBIOS(wxCommandEvent& event)
     Config::BIOSPath = openFileDialog.GetPath().BeforeLast('/');
 #endif
 
-    if(!app->InitializeCores(openFileDialog.GetPath().ToStdString().data()))
+    wxFileDialog openFileDialog2(this, "Load slave BIOS", Config::BIOSPath, "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openFileDialog2.ShowModal() == wxID_CANCEL)
+        return;
+
+    if(!app->InitializeCores(openFileDialog.GetPath().ToStdString().data(), openFileDialog2.GetPath().ToStdString().data()))
         wxMessageBox("Could not load BIOS");
 }
 

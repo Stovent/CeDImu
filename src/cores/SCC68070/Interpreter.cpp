@@ -16,11 +16,11 @@ void SCC68070::Interpreter()
         if(cycleCount == 0)
             FlushDisassembler();
 
-        uint16_t executionTime = 0;
+        uint16_t executionCycles = 0;
         try {
             currentPC = PC;
             currentOpcode = GetNextWord(Trigger);
-            executionTime += (this->*ILUT[currentOpcode])();
+            executionCycles += (this->*ILUT[currentOpcode])();
 
             if(disassemble)
                 disassembledInstructions.push_back((this->*DLUT[currentOpcode])(currentPC));
@@ -29,8 +29,9 @@ void SCC68070::Interpreter()
             Exception(e.vector);
         }
 
-        cycleCount += executionTime;
-        totalCycleCount += executionTime;
+        cycleCount += executionCycles;
+        totalCycleCount += executionCycles;
+        board->slave->Execute(executionCycles);
 
         if(cycleCount * cycleDelay >= board->GetLineDisplayTime())
         {
@@ -38,7 +39,7 @@ void SCC68070::Interpreter()
             cycleCount = 0;
         }
 
-        start += std::chrono::duration<long double, std::nano>(executionTime * cycleDelay);
+        start += std::chrono::duration<long double, std::nano>(executionCycles * cycleDelay);
         std::this_thread::sleep_until(start);
     } while(loop);
 
