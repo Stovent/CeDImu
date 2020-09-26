@@ -54,7 +54,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(instructions << std::hex << currentPC << "\tBRSET0 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRSET0 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -69,7 +69,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(instructions << std::hex << currentPC << "\tBRCLR0 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRCLR0 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -84,7 +84,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(instructions << std::hex << currentPC << "\tBRSET1 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRSET1 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -99,7 +99,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(instructions << std::hex << currentPC << "\tBRCLR1 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRCLR1 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -114,7 +114,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(instructions << std::hex << currentPC << "\tBRSET2 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRSET2 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -129,7 +129,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(instructions << std::hex << currentPC << "\tBRCLR2 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRCLR2 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -144,7 +144,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(instructions << std::hex << currentPC << "\tBRSET3 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRSET3 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -159,7 +159,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(instructions << std::hex << currentPC << "\tBRCLR3 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRCLR3 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -174,7 +174,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(instructions << std::hex << currentPC << "\tBRSET4 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRSET4 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -189,7 +189,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(instructions << std::hex << currentPC << "\tBRCLR4 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRCLR4 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -204,7 +204,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(instructions << std::hex << currentPC << "\tBRSET5 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRSET5 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -219,7 +219,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(instructions << std::hex << currentPC << "\tBRCLR5 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRCLR5 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -234,7 +234,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(instructions << std::hex << currentPC << "\tBRSET6 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRSET6 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -249,7 +249,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(instructions << std::hex << currentPC << "\tBRCLR6 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRCLR6 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -264,7 +264,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(instructions << std::hex << currentPC << "\tBRSET7 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRSET7 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
@@ -279,7 +279,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(instructions << std::hex << currentPC << "\tBRCLR7 0x" << addr << ", " << std::dec << offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRCLR7 0x" << (uint16_t)addr << ", " << std::dec << (uint16_t)offset << std::endl)
         return 5;
     }
 
