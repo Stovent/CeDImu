@@ -3,14 +3,14 @@
 
 class CeDImu;
 
-#include <thread>
-
-#include <wx/app.h>
-
 #include "CDI/CDI.hpp"
 #include "cores/VDSC.hpp"
 #include "GUI/MainFrame.hpp"
 #include "cores/SCC68070/SCC68070.hpp"
+
+#include <wx/app.h>
+
+#include <thread>
 
 class CeDImu : public wxApp
 {

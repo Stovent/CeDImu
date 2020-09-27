@@ -1,8 +1,8 @@
 #include "CeDImu.hpp"
+#include "Config.hpp"
 
 #include <wx/msgdlg.h>
 
-#include "Config.hpp"
 
 bool CeDImu::OnInit()
 {

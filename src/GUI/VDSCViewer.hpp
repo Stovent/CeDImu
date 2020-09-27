@@ -3,16 +3,16 @@
 
 class VDSCViewer;
 
-#include "../Boards/Board.hpp"
-#include "MainFrame.hpp"
+class Board;
+class MainFrame;
 
 #include <wx/frame.h>
 #include <wx/listctrl.h>
-#include <wx/panel.h>
 #include <wx/notebook.h>
+#include <wx/panel.h>
+#include <wx/sizer.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
-
 
 class VDSCViewer : public wxFrame
 {

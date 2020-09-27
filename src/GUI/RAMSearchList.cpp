@@ -1,4 +1,5 @@
 #include "RAMSearchList.hpp"
+#include "../CeDImu.hpp"
 #include "../utils.hpp"
 
 #define GET_ARRAY16(array, index) (array[(index)] << 8 | array[(index)+1])

@@ -1,8 +1,8 @@
 #include "DisassemblerFrame.hpp"
+#include "enums.hpp"
+#include "../utils.hpp"
 
 #include <wx/dcclient.h>
-
-#include "../utils.hpp"
 
 wxBEGIN_EVENT_TABLE(DisassemblerFrame, wxFrame)
     EVT_TIMER(wxID_ANY, DisassemblerFrame::RefreshLoop)

@@ -1,12 +1,15 @@
 #include "VDSCViewer.hpp"
+#include "enums.hpp"
+#include "MainFrame.hpp"
+#include "../utils.hpp"
+#include "../Boards/Board.hpp"
+#include "../cores/VDSC.hpp"
+
+#include <wx/dcclient.h>
 
 #include <algorithm>
 #include <iterator>
 #include <sstream>
-
-#include <wx/dcclient.h>
-
-#include "../utils.hpp"
 
 wxBEGIN_EVENT_TABLE(VDSCViewer, wxFrame)
     EVT_TIMER(IDVDSCViewerTimer, VDSCViewer::RefreshLoop)

@@ -1,4 +1,9 @@
 #include "RAMSearchFrame.hpp"
+#include "enums.hpp"
+#include "../CeDImu.hpp"
+
+#include <wx/panel.h>
+#include <wx/sizer.h>
 
 wxBEGIN_EVENT_TABLE(RAMSearchFrame, wxFrame)
     EVT_TIMER(wxID_ANY, RAMSearchFrame::RefreshLoop)

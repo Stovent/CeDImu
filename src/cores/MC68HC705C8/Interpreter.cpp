@@ -40,7 +40,6 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     };
 
     goto *ITC[currentOpcode];
-        LOG(instructions << std::hex << currentPC << "\t" << std::endl)
 
     // 0x0X
     BRSET0_DIR:
