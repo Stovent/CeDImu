@@ -5,13 +5,13 @@
 
 MC68HC705C8::MC68HC705C8(const void* bios, uint16_t size)
 {
-    memory = new uint8_t[0x2000];
+    memory = new uint8_t[SLAVE_MEMORY_SIZE];
     currentOpcode = 0;
     currentPC = 0;
     OPEN_LOG(instructions, "slave_instructions.txt")
 
-    if(size > 0x2000)
-        size = 0x2000;
+    if(size > SLAVE_MEMORY_SIZE)
+        size = SLAVE_MEMORY_SIZE;
     memcpy(memory, bios, size);
     Reset();
 }

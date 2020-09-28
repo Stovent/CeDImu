@@ -1,7 +1,7 @@
 #include "SlaveViewer.hpp"
 #include "enums.hpp"
 #include "MainFrame.hpp"
-#include "../utils.hpp"
+#include "../cores/MC68HC705C8/MC68HC705C8.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -10,14 +10,15 @@
 #include <wx/dcclient.h>
 
 wxBEGIN_EVENT_TABLE(SlaveViewer, wxFrame)
-    EVT_TIMER(IDVDSCViewerTimer, SlaveViewer::RefreshLoop)
+    EVT_TIMER(IDSlaveViewerTimer, SlaveViewer::RefreshLoop)
 wxEND_EVENT_TABLE()
 
-SlaveViewer::SlaveViewer(MainFrame* parent, Board* board) : wxFrame(parent, wxID_ANY, "Slave Viewer"), timer(this, IDSlaveViewerTimer)
+SlaveViewer::SlaveViewer(MainFrame* parent, MC68HC705C8* slave) : wxFrame(parent, wxID_ANY, "Slave Viewer"), timer(this, IDSlaveViewerTimer)
 {
     mainFrame = parent;
-    this->board = board;
     timer.Start(16);
+
+    memoryList = new GenericList(this, slave->GetMemory(), SLAVE_MEMORY_SIZE);
 }
 
 SlaveViewer::~SlaveViewer()
@@ -27,4 +28,5 @@ SlaveViewer::~SlaveViewer()
 
 void SlaveViewer::RefreshLoop(wxTimerEvent& event)
 {
+    memoryList->Refresh();
 }

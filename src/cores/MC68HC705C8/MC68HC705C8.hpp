@@ -8,6 +8,8 @@ class MC68HC705C8;
 #include <fstream>
 #include <string>
 
+#define SLAVE_MEMORY_SIZE (0x2000)
+
 enum CCRBits
 {
     C = 0,
@@ -26,6 +28,8 @@ public:
     void Reset();
     void Execute(const int cycles);
     void IRQ();
+
+    uint8_t* GetMemory() const { return memory; }
 
 private:
     uint8_t A;

@@ -252,7 +252,7 @@ void MainFrame::OnSlaveViewer(wxCommandEvent& event)
 {
     if(slaveViewer != nullptr || !app->cdi->board)
         return;
-    slaveViewer = new SlaveViewer(this, app->cdi->board);
+    slaveViewer = new SlaveViewer(this, app->cdi->board->slave);
     slaveViewer->Show();
 }
 

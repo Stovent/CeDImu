@@ -38,6 +38,7 @@ set(SRCS
 	src/GUI/RAMSearchFrame.cpp
 	src/GUI/VDSCViewer.cpp
 	src/GUI/SlaveViewer.cpp
+	src/GUI/GenericList.cpp
 	src/Config.cpp
 	src/CeDImu.cpp
 	src/main.cpp)
