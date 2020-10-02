@@ -22,6 +22,8 @@ enum CCRBits
 class MC68HC705C8
 {
 public:
+    MC68HC705C8() = delete;
+    MC68HC705C8(const MC68HC705C8&) = delete;
     MC68HC705C8(const void* bios, uint16_t size);
     ~MC68HC705C8();
 
