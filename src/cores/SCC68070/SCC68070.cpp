@@ -146,6 +146,7 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
         USP = A[7];
         if(!GetS())
             A[7] = value;
+        break;
 
     case CPURegisters::SSP:
         SSP = A[7];
