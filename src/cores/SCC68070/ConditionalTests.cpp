@@ -1,81 +1,81 @@
 #include "SCC68070.hpp"
 // M68000RMP p.90 Table 3-19
-bool SCC68070::T()
+bool SCC68070::T() const
 {
     return true;
 }
 
-bool SCC68070::F()
+bool SCC68070::F() const
 {
     return false;
 }
 
-bool SCC68070::HI()
+bool SCC68070::HI() const
 {
     return !GetC() && !GetZ();
 }
 
-bool SCC68070::LS()
+bool SCC68070::LS() const
 {
     return GetC() || GetZ();
 }
 
-bool SCC68070::CC()
+bool SCC68070::CC() const
 {
     return !GetC();
 }
 
-bool SCC68070::CS()
+bool SCC68070::CS() const
 {
     return GetC();
 }
 
-bool SCC68070::NE()
+bool SCC68070::NE() const
 {
     return !GetZ();
 }
 
-bool SCC68070::EQ()
+bool SCC68070::EQ() const
 {
     return GetZ();
 }
 
-bool SCC68070::VC()
+bool SCC68070::VC() const
 {
     return !GetV();
 }
 
-bool SCC68070::VS()
+bool SCC68070::VS() const
 {
     return GetV();
 }
 
-bool SCC68070::PL()
+bool SCC68070::PL() const
 {
     return !GetN();
 }
 
-bool SCC68070::MI()
+bool SCC68070::MI() const
 {
     return GetN();
 }
 
-bool SCC68070::GE()
+bool SCC68070::GE() const
 {
     return (GetN() && GetV()) || (!GetN() && !GetV());
 }
 
-bool SCC68070::LT()
+bool SCC68070::LT() const
 {
     return (GetN() && !GetV()) || (!GetN() && GetV());
 }
 
-bool SCC68070::GT()
+bool SCC68070::GT() const
 {
     return (GetN() && GetV() && !GetZ()) || (!GetN() && !GetV() && !GetZ());
 }
 
-bool SCC68070::LE()
+bool SCC68070::LE() const
 {
     return GetZ() || (GetN() && !GetV()) || (!GetN() && GetV());
 }

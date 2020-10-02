@@ -1,15 +1,18 @@
 #include "MainFrame.hpp"
+#include "VDSCViewer.hpp"
+#include "SlaveViewer.hpp"
+#include "enums.hpp"
+#include "../Config.hpp"
 
-#include <cstdio>
-
+#include <wx/button.h>
+#include <wx/checkbox.h>
+#include <wx/filedlg.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
-#include <wx/button.h>
-#include <wx/filedlg.h>
 #include <wx/notebook.h>
-#include <wx/checkbox.h>
+#include <wx/sizer.h>
 
-#include "../Config.hpp"
+#include <cstdio>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnOpenROM, MainFrame::OnOpenROM)
@@ -19,6 +22,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
     EVT_MENU(IDMainFrameOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
     EVT_MENU(IDMainFrameOnRebootCore, MainFrame::OnRebootCore)
+    EVT_MENU(IDMainFrameOnSlaveViewer, MainFrame::OnSlaveViewer)
     EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
     EVT_MENU(IDMainFrameOnDisassembler, MainFrame::OnDisassembler)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
@@ -37,6 +41,7 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
     disassemblerFrame = nullptr;
     ramSearchFrame = nullptr;
     vdscViewer = nullptr;
+    slaveViewer = nullptr;
     oldFrameCount = 0;
     oldCycleCount = 0;
 
@@ -62,7 +67,7 @@ void MainFrame::CreateMenuBar()
     pauseItem = emulation->AppendCheckItem(IDMainFrameOnPause, "Pause");
     emulation->Append(IDMainFrameOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
     emulation->AppendSeparator();
-    emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+R");
+    emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+Maj+R");
 
     wxMenu* cdi = new wxMenu;
     wxMenu* cdiexport = new wxMenu;
@@ -72,9 +77,10 @@ void MainFrame::CreateMenuBar()
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
+    tools->Append(IDMainFrameOnSlaveViewer, "Slave Viewer\tCtrl+S");
     tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer\tCtrl+V");
     tools->Append(IDMainFrameOnDisassembler, "Disassembler\tCtrl+D");
-    tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+S");
+    tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+R");
 
     wxMenu* config = new wxMenu;
     config->Append(IDMainFrameOnSettings, "Settings");
@@ -154,8 +160,8 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 
 void MainFrame::OnLoadBIOS(wxCommandEvent& event)
 {
-    wxFileDialog openFileDialog(this, "Load BIOS", Config::BIOSPath, "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-    if (openFileDialog.ShowModal() == wxID_CANCEL)
+    wxFileDialog openFileDialog(this, "Load VDSC BIOS", Config::BIOSPath, "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if(openFileDialog.ShowModal() == wxID_CANCEL)
         return;
 
 #ifdef _WIN32
@@ -164,7 +170,11 @@ void MainFrame::OnLoadBIOS(wxCommandEvent& event)
     Config::BIOSPath = openFileDialog.GetPath().BeforeLast('/');
 #endif
 
-    if(!app->InitializeCores(openFileDialog.GetPath().ToStdString().data()))
+    wxFileDialog openFileDialog2(this, "Load slave BIOS", Config::BIOSPath, "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if (openFileDialog2.ShowModal() == wxID_CANCEL)
+        return;
+
+    if(!app->InitializeCores(openFileDialog.GetPath().ToStdString().data(), openFileDialog2.GetPath().ToStdString().data()))
         wxMessageBox("Could not load BIOS");
 }
 
@@ -236,6 +246,14 @@ void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
     if(app->cdi->board)
         app->cdi->board->cpu->Reset();
+}
+
+void MainFrame::OnSlaveViewer(wxCommandEvent& event)
+{
+    if(slaveViewer != nullptr || !app->cdi->board)
+        return;
+    slaveViewer = new SlaveViewer(this, app->cdi->board->slave);
+    slaveViewer->Show();
 }
 
 void MainFrame::OnVDSCViewer(wxCommandEvent& event)

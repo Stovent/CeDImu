@@ -427,7 +427,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
 uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 {
     if(!isEven(addr))
-        throw SCC68070Exception(AddressError);
+        throw SCC68070Exception(AddressError, 0);
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
@@ -444,7 +444,7 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 {
     if(!isEven(addr))
-        throw SCC68070Exception(AddressError);
+        throw SCC68070Exception(AddressError, 0);
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
@@ -483,7 +483,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
     if(!isEven(addr))
-        throw SCC68070Exception(AddressError);
+        throw SCC68070Exception(AddressError, 0);
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
         board->SetWord(addr, data, flags);
@@ -497,7 +497,7 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
 void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
     if(!isEven(addr))
-        throw SCC68070Exception(AddressError);
+        throw SCC68070Exception(AddressError, 0);
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
         board->SetLong(addr, data, flags);

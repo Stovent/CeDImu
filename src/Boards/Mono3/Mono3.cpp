@@ -2,11 +2,12 @@
 
 #include "../../utils.hpp"
 
-Mono3::Mono3(const void* bios, const uint32_t size) : Board()
+Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const void* slaveBios, const uint16_t slaveSize) : Board()
 {
     mcd212 = new MCD212(this);
-    mcd212->LoadBIOS(bios, size);
+    mcd212->LoadBIOS(vdscBios, vdscSize);
     cpu = new SCC68070(this);
+    slave = new MC68HC705C8(slaveBios, slaveSize);
 
     OPEN_LOG(out, "Mono3.txt")
     uart_out.open("uart_out", std::ios::binary | std::ios::out);
@@ -17,6 +18,7 @@ Mono3::~Mono3()
 {
     delete cpu;
     delete mcd212;
+    delete slave;
 }
 
 void Mono3::Reset()

@@ -28,12 +28,17 @@ set(SRCS
 	src/cores/SCC68070/MemoryAccess.cpp
 	src/cores/SCC68070/Peripherals.cpp
 	src/cores/SCC68070/SCC68070.cpp
+	src/cores/MC68HC705C8/MemoryAccess.cpp
+	src/cores/MC68HC705C8/Interpreter.cpp
+	src/cores/MC68HC705C8/MC68HC705C8.cpp
 	src/GUI/DisassemblerFrame.cpp
 	src/GUI/MainFrame.cpp
 	src/GUI/GamePanel.cpp
 	src/GUI/RAMSearchList.cpp
 	src/GUI/RAMSearchFrame.cpp
 	src/GUI/VDSCViewer.cpp
+	src/GUI/SlaveViewer.cpp
+	src/GUI/GenericList.cpp
 	src/Config.cpp
 	src/CeDImu.cpp
 	src/main.cpp)

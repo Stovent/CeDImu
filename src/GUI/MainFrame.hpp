@@ -3,46 +3,16 @@
 
 class MainFrame;
 
-#include <wx/frame.h>
-#include <wx/timer.h>
-#include <wx/menuitem.h>
-
-#include "../CeDImu.hpp"
 #include "GamePanel.hpp"
+class CeDImu;
 #include "DisassemblerFrame.hpp"
 #include "RAMSearchFrame.hpp"
-#include "VDSCViewer.hpp"
+class VDSCViewer;
+class SlaveViewer;
 
-enum
-{
-    IDMainFrameOnOpenROM = wxID_HIGHEST + 1,
-    IDMainFrameOnLoadBIOS,
-    IDMainFrameOnCloseROM,
-    IDMainFrameOnPause,
-    IDMainFrameOnExecuteXInstructions,
-    IDMainFrameOnRebootCore,
-    IDMainFrameOnExportFiles,
-    IDMainFrameOnExportAudio,
-    IDMainFrameOnExportVideo,
-    IDMainFrameOnVDSCViewer,
-    IDMainFrameOnDisassembler,
-    IDMainFrameOnRAMSearch,
-    IDMainFrameOnSettings,
-    IDMainFrameOnAbout,
-
-    IDDisassemblerOnClose,
-    IDDisassemblerpc, IDDisassemblersr,
-
-    IDRAMSearchListCheckMisaligned,
-    IDRAMSearchListSigned,
-    IDRAMSearchListUnsigned,
-    IDRAMSearchListHexadecimal,
-    IDRAMSearchListByte1,
-    IDRAMSearchListByte2,
-    IDRAMSearchListByte4,
-
-    IDVDSCViewerTimer,
-};
+#include <wx/frame.h>
+#include <wx/menuitem.h>
+#include <wx/timer.h>
 
 class MainFrame : public wxFrame
 {
@@ -55,6 +25,7 @@ public:
     DisassemblerFrame* disassemblerFrame;
     RAMSearchFrame* ramSearchFrame;
     VDSCViewer* vdscViewer;
+    SlaveViewer* slaveViewer;
 
     void Pause();
     void RefreshTitle(wxTimerEvent& event);
@@ -75,6 +46,7 @@ private:
     void OnExecuteXInstructions(wxCommandEvent& event);
     void OnRebootCore(wxCommandEvent& event);
 
+    void OnSlaveViewer(wxCommandEvent& event);
     void OnVDSCViewer(wxCommandEvent& event);
     void OnDisassembler(wxCommandEvent& event);
     void OnRAMSearch(wxCommandEvent& event);

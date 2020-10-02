@@ -9,6 +9,7 @@ class SCC68070Exception;
 #include <cstdint>
 #include <fstream>
 #include <map>
+#include <queue>
 #include <string>
 #include <thread>
 #include <vector>
@@ -130,9 +131,8 @@ enum CC : uint8_t // Conditional Tests
 
 enum ExceptionVectors : uint8_t
 {
-    ResetSSP = 0,
-    ResetPC,
-    BusError,
+    ResetSSPPC = 0,
+    BusError = 2,
     AddressError,
     IllegalInstruction,
     ZeroDivide,
@@ -232,9 +232,12 @@ class SCC68070Exception
 {
 public:
     uint8_t vector;
-    SCC68070Exception(const uint8_t e) { vector = e; }
-    ~SCC68070Exception() {}
+    int8_t group;
+    SCC68070Exception(const uint8_t vec, const int8_t grp) : vector(vec), group(grp) {}
+    SCC68070Exception(const SCC68070Exception&) = default;
 };
+
+bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs);
 
 class SCC68070
 {
@@ -251,7 +254,7 @@ public:
     explicit SCC68070(Board* baord, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
     ~SCC68070();
 
-    bool IsRunning();
+    bool IsRunning() const;
     void SetFrequency(const uint32_t frequency);
     void FlushDisassembler();
 
@@ -275,9 +278,9 @@ private:
 
     uint16_t currentOpcode;
     uint32_t lastAddress;
-
     uint32_t cycleCount;
     long double cycleDelay; // Time between two clock cycles in nanoseconds
+    std::priority_queue<const SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
     void (SCC68070::*Execute)() = nullptr;
     void Interpreter();
@@ -296,17 +299,17 @@ private:
     void SetXC(const bool XC = 1); // Set both X and C at the same time
     void SetVC(const bool VC = 1); // Set both V and C at the same time
     void SetX(const bool X = 1);
-    bool GetX();
+    bool GetX() const;
     void SetN(const bool N = 1);
-    bool GetN();
+    bool GetN() const;
     void SetZ(const bool Z = 1);
-    bool GetZ();
+    bool GetZ() const;
     void SetV(const bool V = 1);
-    bool GetV();
+    bool GetV() const;
     void SetC(const bool C = 1);
-    bool GetC();
+    bool GetC() const;
     void SetS(const bool S = 1);
-    bool GetS();
+    bool GetS() const;
 
     uint16_t Exception(const uint8_t vectorNumber);
     std::string DisassembleException(const uint8_t vectorNumber) const;
@@ -350,23 +353,23 @@ private:
     void SetPeripheral(const uint32_t addr, const uint8_t data);
 
     // Conditional Codes
-    bool T();
-    bool F();
-    bool HI();
-    bool LS();
-    bool CC();
-    bool CS();
-    bool NE();
-    bool EQ();
-    bool VC();
-    bool VS();
-    bool PL();
-    bool MI();
-    bool GE();
-    bool LT();
-    bool GT();
-    bool LE();
-    bool (SCC68070::*ConditionalTests[16])() = {
+    bool T() const;
+    bool F() const;
+    bool HI() const;
+    bool LS() const;
+    bool CC() const;
+    bool CS() const;
+    bool NE() const;
+    bool EQ() const;
+    bool VC() const;
+    bool VS() const;
+    bool PL() const;
+    bool MI() const;
+    bool GE() const;
+    bool LT() const;
+    bool GT() const;
+    bool LE() const;
+    bool (SCC68070::*ConditionalTests[16])() const = {
         &SCC68070::T,
         &SCC68070::F,
         &SCC68070::HI,

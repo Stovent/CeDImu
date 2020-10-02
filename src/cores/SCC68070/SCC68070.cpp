@@ -38,7 +38,7 @@ SCC68070::~SCC68070()
     delete[] internal;
 }
 
-bool SCC68070::IsRunning()
+bool SCC68070::IsRunning() const
 {
     return isRunning;
 }
@@ -189,11 +189,9 @@ uint16_t SCC68070::GetNextWord(const uint8_t flags)
 
 void SCC68070::ResetOperation()
 {
-    SSP = board->GetLong(0, Trigger);
-    A[7] = SSP;
-    PC = board->GetLong(4, Trigger);
-    SR = 0x2700;
-    USP = 0;
+    while(exceptions.size()) // clear it
+        exceptions.pop();
+    exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top
 }
 
 void SCC68070::SetXC(const bool XC)
@@ -214,7 +212,7 @@ void SCC68070::SetX(const bool X)
     SR |= (X << 4);
 }
 
-bool SCC68070::GetX()
+bool SCC68070::GetX() const
 {
     return SR & 0b0000000000010000;
 }
@@ -225,7 +223,7 @@ void SCC68070::SetN(const bool N)
     SR |= (N << 3);
 }
 
-bool SCC68070::GetN()
+bool SCC68070::GetN() const
 {
     return SR & 0b0000000000001000;
 }
@@ -236,7 +234,7 @@ void SCC68070::SetZ(const bool Z)
     SR |= (Z << 2);
 }
 
-bool SCC68070::GetZ()
+bool SCC68070::GetZ() const
 {
     return SR & 0b0000000000000100;
 }
@@ -247,7 +245,7 @@ void SCC68070::SetV(const bool V)
     SR |= (V << 1);
 }
 
-bool SCC68070::GetV()
+bool SCC68070::GetV() const
 {
     return SR & 0b0000000000000010;
 }
@@ -258,7 +256,7 @@ void SCC68070::SetC(const bool C)
     SR |= C;
 }
 
-bool SCC68070::GetC()
+bool SCC68070::GetC() const
 {
     return SR & 0b0000000000000001;
 }
@@ -280,7 +278,7 @@ void SCC68070::SetS(const bool S) // From Bizhawk
     }
 }
 
-bool SCC68070::GetS()
+bool SCC68070::GetS() const
 {
     return SR & 0b0010000000000000;
 }

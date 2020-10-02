@@ -1,8 +1,8 @@
 #include "CeDImu.hpp"
+#include "Config.hpp"
 
 #include <wx/msgdlg.h>
 
-#include "Config.hpp"
 
 bool CeDImu::OnInit()
 {
@@ -26,12 +26,12 @@ int CeDImu::OnExit()
     return 0;
 }
 
-bool CeDImu::InitializeCores(const char* pathToBIOS)
+bool CeDImu::InitializeCores(const char* vdscBios, const char* slaveBios)
 {
-    FILE* f = fopen(pathToBIOS, "rb");
+    FILE* f = fopen(vdscBios, "rb");
     if(!f)
     {
-        wxMessageBox("Could not open BIOS file!");
+        wxMessageBox("Could not open VDSC BIOS file!");
         return false;
     }
 
@@ -42,10 +42,25 @@ bool CeDImu::InitializeCores(const char* pathToBIOS)
     fread(bios, 1, biosSize, f);;
     fclose(f);
 
-    cdi->LoadBoard(bios, biosSize);
-    delete[] bios;
+    FILE* ff = fopen(slaveBios, "rb");
+    if(!ff)
+    {
+        wxMessageBox("Could not open slave BIOS file!");
+        return false;
+    }
 
-    std::string str(pathToBIOS);
+    fseek(ff, 0, SEEK_END);
+    long slaveSize = ftell(ff);
+    fseek(ff, 0, SEEK_SET);
+    uint8_t* slave = new uint8_t[slaveSize];
+    fread(slave, 1, slaveSize, ff);;
+    fclose(ff);
+
+    cdi->LoadBoard(bios, biosSize, slave, slaveSize);
+    delete[] bios;
+    delete[] slave;
+
+    std::string str(vdscBios);
 #ifdef _WIN32
     biosName = str.substr(str.rfind('\\')+1);
 #else
