@@ -189,11 +189,9 @@ uint16_t SCC68070::GetNextWord(const uint8_t flags)
 
 void SCC68070::ResetOperation()
 {
-    SSP = board->GetLong(0, Trigger);
-    A[7] = SSP;
-    PC = board->GetLong(4, Trigger);
-    SR = 0x2700;
-    USP = 0;
+    while(exceptions.size()) // clear it
+        exceptions.pop();
+    exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top
 }
 
 void SCC68070::SetXC(const bool XC)

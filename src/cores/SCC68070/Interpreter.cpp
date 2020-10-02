@@ -17,16 +17,23 @@ void SCC68070::Interpreter()
             FlushDisassembler();
 
         uint16_t executionCycles = 0;
+
+        if(exceptions.size())
+        {
+            uint8_t vector = exceptions.top().vector;
+            exceptions.pop();
+            executionCycles += Exception(vector);
+        }
+
         try {
             currentPC = PC;
             currentOpcode = GetNextWord(Trigger);
-            executionCycles += (this->*ILUT[currentOpcode])();
-
             if(disassemble)
                 disassembledInstructions.push_back((this->*DLUT[currentOpcode])(currentPC));
+            executionCycles += (this->*ILUT[currentOpcode])();
         }
         catch(const SCC68070Exception& e) {
-            Exception(e.vector);
+            exceptions.push(e);
         }
 
         cycleCount += executionCycles;

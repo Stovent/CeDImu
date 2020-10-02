@@ -1,6 +1,11 @@
 #include "SCC68070.hpp"
-
+#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
+
+bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs)
+{
+    return lhs.group > rhs.group;
+}
 
 uint16_t SCC68070::Exception(const uint8_t vectorNumber)
 {
@@ -8,6 +13,16 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
     uint16_t sr = SR;
     SetS();
     disassembledInstructions.push_back("Exception vector " + std::to_string(vectorNumber) + ": " + DisassembleException(vectorNumber));
+
+    if(vectorNumber == ResetSSPPC)
+    {
+        SSP = board->GetLong(0, Trigger);
+        A[7] = SSP;
+        PC = board->GetLong(4, Trigger);
+        SR = 0x2700;
+        USP = 0;
+		return 0;
+    }
 
     if(vectorNumber == 2 || vectorNumber == 3) // TODO: implement long Stack format
     {
@@ -55,7 +70,8 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
 
 uint16_t SCC68070::UnknownInstruction()
 {
-    throw SCC68070Exception(IllegalInstruction);
+    exceptions.push({IllegalInstruction, 1});
+    return 0;
 }
 
 uint16_t SCC68070::ABCD()
@@ -592,7 +608,10 @@ uint16_t SCC68070::ANDISR()
     uint16_t data = GetNextWord();
 
     if(!GetS())
-        return Exception(PrivilegeViolation);
+    {
+        exceptions.push({PrivilegeViolation, 1});
+        return 0;
+    }
 
     SR |= data;
     return 14;
@@ -1068,7 +1087,7 @@ uint16_t SCC68070::CHK()
     if(data < 0 || data > source)
     {
         calcTime += 45;
-        Exception(CHKInstruction);
+        exceptions.push({CHKInstruction, 2});
         if(data < 0) SetN(); else SetN(0);
     }
 
@@ -1302,7 +1321,10 @@ uint16_t SCC68070::DIVS()
     int32_t dst = D[reg];
 
     if(src == 0)
-        return 7 + Exception(ZeroDivide); // arbitrary
+    {
+        exceptions.push({ZeroDivide, 2});
+        return 7; // arbitrary
+    }
 
     int32_t quotient = dst / src;
 
@@ -1337,7 +1359,10 @@ uint16_t SCC68070::DIVU()
     uint32_t dst = D[reg];
 
     if(src == 0)
-        return 7 + Exception(ZeroDivide); // arbitrary
+    {
+        exceptions.push({ZeroDivide, 2});
+        return 7; // arbitrary
+    }
 
     uint32_t quotient = dst / src;
 
@@ -1476,7 +1501,10 @@ uint16_t SCC68070::EORISR()
     uint16_t data = GetNextWord();
 
     if(!GetS())
-        return Exception(PrivilegeViolation);
+    {
+        exceptions.push({PrivilegeViolation, 1});
+        return 0;
+    }
 
     SR ^= data;
     return 14;
@@ -1541,7 +1569,8 @@ uint16_t SCC68070::EXT()
 
 uint16_t SCC68070::ILLEGAL()
 {
-    throw SCC68070Exception(IllegalInstruction);
+    exceptions.push({IllegalInstruction, 1});
+    return 0; // TODO
 }
 
 uint16_t SCC68070::JMP()
@@ -1890,7 +1919,10 @@ uint16_t SCC68070::MOVESR()
         SR = data;
     }
     else
-        return Exception(PrivilegeViolation);
+    {
+        exceptions.push({PrivilegeViolation, 1});
+        return 0;
+    }
 
     return calcTime;
 }
@@ -1906,7 +1938,10 @@ uint16_t SCC68070::MOVEUSP()
         else
             USP = A[reg];
     else
-        return Exception(PrivilegeViolation);
+    {
+        exceptions.push({PrivilegeViolation, 1});
+        return 0;
+    }
 
     return 7;
 }
@@ -2562,7 +2597,10 @@ uint16_t SCC68070::ORISR()
     uint16_t data = GetNextWord();
 
     if(!GetS())
-        return Exception(PrivilegeViolation);
+    {
+        exceptions.push({PrivilegeViolation, 1});
+        return 0;
+    }
 
     SR |= data;
     return 14;
@@ -2601,9 +2639,14 @@ uint16_t SCC68070::PEA()
 uint16_t SCC68070::RESET() // Not fully emulated
 {
     if(!GetS())
-        return Exception(PrivilegeViolation);
+    {
+        exceptions.push({PrivilegeViolation, 1});
+        return 0;
+    }
 
-    return 154;
+    board->Reset();
+    exceptions.push({0, 0});
+    return 0;
 }
 
 uint16_t SCC68070::ROm()
@@ -2958,7 +3001,7 @@ uint16_t SCC68070::RTE()
         }
     }
     else
-        calcTime += Exception(PrivilegeViolation);
+        exceptions.push({PrivilegeViolation, 1});
 
     return calcTime;
 }
@@ -3058,7 +3101,10 @@ uint16_t SCC68070::STOP() // Not fully emulated
         SR = data;
     }
     else
-        return Exception(PrivilegeViolation);
+    {
+        exceptions.push({PrivilegeViolation, 1});
+        return 0;
+    }
 
     return 13;
 }
@@ -3480,11 +3526,8 @@ uint16_t SCC68070::TAS()
 uint16_t SCC68070::TRAP()
 {
     uint8_t vec = currentOpcode & 0x000F;
-    uint16_t calcTime = 0;
-
-    calcTime += Exception(32 + vec);
-
-    return calcTime;
+    exceptions.push(SCC68070Exception(32 + vec, 2));
+    return 0;
 }
 
 uint16_t SCC68070::TRAPV()
@@ -3492,7 +3535,7 @@ uint16_t SCC68070::TRAPV()
     uint16_t calcTime = 0;
 
     if(GetV())
-        calcTime += Exception(TRAPVInstruction);
+        exceptions.push({TRAPVInstruction, 2});
     else
         calcTime = 10;
 

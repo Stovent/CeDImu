@@ -9,6 +9,7 @@ class SCC68070Exception;
 #include <cstdint>
 #include <fstream>
 #include <map>
+#include <queue>
 #include <string>
 #include <thread>
 #include <vector>
@@ -130,9 +131,8 @@ enum CC : uint8_t // Conditional Tests
 
 enum ExceptionVectors : uint8_t
 {
-    ResetSSP = 0,
-    ResetPC,
-    BusError,
+    ResetSSPPC = 0,
+    BusError = 2,
     AddressError,
     IllegalInstruction,
     ZeroDivide,
@@ -232,9 +232,12 @@ class SCC68070Exception
 {
 public:
     uint8_t vector;
-    SCC68070Exception(const uint8_t e) { vector = e; }
-    ~SCC68070Exception() {}
+    int8_t group;
+    SCC68070Exception(const uint8_t vec, const int8_t grp) : vector(vec), group(grp) {}
+    SCC68070Exception(const SCC68070Exception&) = default;
 };
+
+bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs);
 
 class SCC68070
 {
@@ -275,9 +278,9 @@ private:
 
     uint16_t currentOpcode;
     uint32_t lastAddress;
-
     uint32_t cycleCount;
     long double cycleDelay; // Time between two clock cycles in nanoseconds
+    std::priority_queue<const SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
     void (SCC68070::*Execute)() = nullptr;
     void Interpreter();
