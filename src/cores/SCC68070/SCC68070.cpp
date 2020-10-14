@@ -23,7 +23,6 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledIn
     SetFrequency(clockFrequency);
 
     GenerateInstructionSet();
-    Reset();
 
     SET_TX_READY
     SET_RX_READY
@@ -85,7 +84,7 @@ void SCC68070::Reset()
         D[i] = 0;
         A[i] = 0;
     }
-    board->Reset();
+//    board->Reset(); // TODO: check when reseting other processors is mandatory
     ResetOperation();
 }
 

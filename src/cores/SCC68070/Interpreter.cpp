@@ -38,7 +38,7 @@ void SCC68070::Interpreter()
 
         cycleCount += executionCycles;
         totalCycleCount += executionCycles;
-        board->slave->Execute(executionCycles);
+        board->slave.Execute(executionCycles);
 
         if(cycleCount * cycleDelay >= board->GetLineDisplayTime())
         {

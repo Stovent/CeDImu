@@ -71,7 +71,7 @@ bool CeDImu::InitializeCores(const char* vdscBios, const char* slaveBios)
         mainFrame->gamePanel->RefreshScreen();
     });
 
-    cdi->board->cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+    cdi->board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     return true;
 }
 
@@ -86,7 +86,7 @@ void CeDImu::IncreaseEmulationSpeed()
     {
         cpuFrequencyIndex++;
         if(cdi->board)
-            cdi->board->cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+            cdi->board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     }
 }
 
@@ -96,18 +96,18 @@ void CeDImu::DecreaseEmulationSpeed()
     {
         cpuFrequencyIndex--;
         if(cdi->board)
-            cdi->board->cpu->SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+            cdi->board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     }
 }
 
 void CeDImu::StartGameThread()
 {
     if(cdi->board)
-        cdi->board->cpu->Run(true);
+        cdi->board->cpu.Run(true);
 }
 
 void CeDImu::StopGameThread()
 {
     if(cdi->board)
-        cdi->board->cpu->Stop();
+        cdi->board->cpu.Stop();
 }

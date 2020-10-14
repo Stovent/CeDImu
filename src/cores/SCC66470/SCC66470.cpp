@@ -20,7 +20,6 @@ SCC66470::SCC66470(Board* board, const bool ismaster) : VDSC(board), isMaster(is
     memset(memory, 0, 1024 * 1024);
     internalRegisters = new uint16_t[0x20];
     memset(internalRegisters, 0, 0x20);
-    Reset();
 }
 
 SCC66470::~SCC66470()
@@ -71,7 +70,7 @@ void SCC66470::DrawLine()
         totalFrameCount++;
         if(stopOnNextFrame)
         {
-            board->cpu->Stop(false);
+            board->cpu.Stop(false);
             stopOnNextFrame = false;
         }
     }

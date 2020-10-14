@@ -13,10 +13,10 @@ class Board;
 class Board
 {
 public:
-    SCC68070* cpu;
-    MC68HC705C8* slave;
+    SCC68070 cpu;
+    MC68HC705C8 slave;
 
-    Board() {  }
+    Board(const void* slaveBios, const uint16_t slaveSize) : cpu(this), slave(slaveBios, slaveSize) {  }
     virtual ~Board() {  }
     virtual void Reset() = 0;
 

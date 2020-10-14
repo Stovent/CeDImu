@@ -49,13 +49,13 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     case 'Z':
         if(!app->cdi->board) break;
         app->cdi->board->StopOnNextFrame();
-        if(!app->cdi->board->cpu->IsRunning())
+        if(!app->cdi->board->cpu.IsRunning())
             app->StartGameThread();
         break;
 
     case 'E':
         if(app->cdi->board && app->mainFrame->pauseItem->IsChecked())
-            app->cdi->board->cpu->Run(false);
+            app->cdi->board->cpu.Run(false);
         break;
     case 'M':
         app->DecreaseEmulationSpeed();

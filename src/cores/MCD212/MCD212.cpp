@@ -26,7 +26,6 @@ MCD212::MCD212(Board* board) : VDSC(board) // TD = 0
     memset(internalRegisters, 0, 32*sizeof(uint16_t));
     memset(memory, 0, allocatedMemory);
     memset(CLUT, 0, 256 * sizeof(uint32_t));
-    Reset();
 }
 
 MCD212::~MCD212()

@@ -110,8 +110,8 @@ void MainFrame::RefreshTitle(wxTimerEvent& event)
     long double freq = 0.0;
     if(app->cdi->board)
     {
-        freq = (app->cdi->board->cpu->totalCycleCount - (long double)oldCycleCount) / 1000000.0;
-        oldCycleCount = app->cdi->board->cpu->totalCycleCount;
+        freq = (app->cdi->board->cpu.totalCycleCount - (long double)oldCycleCount) / 1000000.0;
+        oldCycleCount = app->cdi->board->cpu.totalCycleCount;
     }
     SetTitle((!app->cdi->disk.gameName.empty() ? app->cdi->disk.gameName + " | " : "") + (app->cdi->board ? app->biosName + " | " : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
 }
@@ -149,7 +149,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
             app->cdi->board->PutDataInMemory(d, size, address);
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
-            app->cdi->board->cpu->SetRegister(CPURegisters::PC, address + app->cdi->board->GetLong(address + 0x30, NoFlags));
+            app->cdi->board->cpu.SetRegister(CPURegisters::PC, address + app->cdi->board->GetLong(address + 0x30, NoFlags));
         }
     }
 
@@ -232,7 +232,7 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 
     button->Bind(wxEVT_BUTTON, [this, genericFrame, input] (wxEvent& event) {
         for(int i = 0; i < stoi(input->GetValue().ToStdString()); i++)
-            this->app->cdi->board->cpu->Run(false);
+            this->app->cdi->board->cpu.Run(false);
     });
 
     sizer->Add(input, 1, wxEXPAND);
@@ -245,14 +245,14 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
     if(app->cdi->board)
-        app->cdi->board->cpu->Reset();
+        app->cdi->board->cpu.Reset();
 }
 
 void MainFrame::OnSlaveViewer(wxCommandEvent& event)
 {
     if(slaveViewer != nullptr || !app->cdi->board)
         return;
-    slaveViewer = new SlaveViewer(this, app->cdi->board->slave);
+    slaveViewer = new SlaveViewer(this, &app->cdi->board->slave);
     slaveViewer->Show();
 }
 
@@ -268,7 +268,7 @@ void MainFrame::OnDisassembler(wxCommandEvent& event)
 {
     if(disassemblerFrame != nullptr || !app->cdi->board)
         return;
-    disassemblerFrame = new DisassemblerFrame(app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
+    disassemblerFrame = new DisassemblerFrame(&app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
     disassemblerFrame->Show();
 }
 
