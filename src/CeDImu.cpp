@@ -3,18 +3,18 @@
 
 #include <wx/msgdlg.h>
 
-
 bool CeDImu::OnInit()
 {
-    cdi = new CDI();
-
     Config::loadConfig();
+
+    cdi = new CDI();
 
     cpuFrequencyIndex = 5;
 
     mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
     mainFrame->Show(true);
 
+    InitializeCores();
     return true;
 }
 
@@ -26,12 +26,12 @@ int CeDImu::OnExit()
     return 0;
 }
 
-bool CeDImu::InitializeCores(const char* vdscBios, const char* slaveBios)
+bool CeDImu::InitializeCores()
 {
-    FILE* f = fopen(vdscBios, "rb");
+    FILE* f = fopen(Config::systemBIOS.c_str(), "rb");
     if(!f)
     {
-        wxMessageBox("Could not open VDSC BIOS file!");
+        wxMessageBox("Could not open system BIOS file!");
         return false;
     }
 
@@ -42,7 +42,7 @@ bool CeDImu::InitializeCores(const char* vdscBios, const char* slaveBios)
     fread(bios, 1, biosSize, f);;
     fclose(f);
 
-    FILE* ff = fopen(slaveBios, "rb");
+    FILE* ff = fopen(Config::slaveBIOS.c_str(), "rb");
     if(!ff)
     {
         wxMessageBox("Could not open slave BIOS file!");
@@ -60,11 +60,10 @@ bool CeDImu::InitializeCores(const char* vdscBios, const char* slaveBios)
     delete[] bios;
     delete[] slave;
 
-    std::string str(vdscBios);
 #ifdef _WIN32
-    biosName = str.substr(str.rfind('\\')+1);
+    biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('\\')+1);
 #else
-    biosName = str.substr(str.rfind('/')+1);
+    biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('/')+1);
 #endif // _WIN32
 
     cdi->board->SetOnFrameCompletedCallback([=] () -> void {

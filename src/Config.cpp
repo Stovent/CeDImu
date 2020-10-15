@@ -5,8 +5,9 @@
 namespace Config
 {
 // General
-std::string BIOSPath;
-std::string ROMPath;
+std::string systemBIOS;
+std::string slaveBIOS;
+std::string ROMDirectory;
 
 // Emulation
 bool skipBIOS;
@@ -33,10 +34,12 @@ bool loadConfig()
         if((pos = line.find('=')) != std::string::npos)
         {
             std::string key(line.substr(0, pos)), value(line.substr(pos+1));
-            if(key == "BIOSPath")
-                BIOSPath = value;
-            else if(key == "ROMPath")
-                ROMPath = value;
+            if(key == "systemBIOS")
+                systemBIOS = value;
+            else if(key == "slaveBIOS")
+                slaveBIOS = value;
+            else if(key == "ROMDirectory")
+                ROMDirectory = value;
             else if(key == "skipBIOS")
                 skipBIOS = stoi(value);
         }
@@ -57,8 +60,9 @@ bool saveConfig()
         return false;
 
     out << "[General]" << std::endl;
-    out << "BIOSPath=" << BIOSPath << std::endl;
-    out << "ROMPath=" << ROMPath << std::endl;
+    out << "systemBIOS=" << systemBIOS << std::endl;
+    out << "slaveBIOS=" << slaveBIOS << std::endl;
+    out << "ROMDirectory=" << ROMDirectory << std::endl;
 
     out << "[Emulation]" << std::endl;
     out << "skipBIOS=" << skipBIOS << std::endl;
@@ -71,8 +75,9 @@ bool saveConfig()
  */
 void loadDefaultConfig()
 {
-    BIOSPath = "";
-    ROMPath = "";
+    systemBIOS = "";
+    slaveBIOS = "";
+    ROMDirectory = "";
     skipBIOS = false;
 }
 

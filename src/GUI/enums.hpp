@@ -6,7 +6,6 @@
 enum
 {
     IDMainFrameOnOpenROM = wxID_HIGHEST + 1,
-    IDMainFrameOnLoadBIOS,
     IDMainFrameOnCloseROM,
     IDMainFrameOnPause,
     IDMainFrameOnExecuteXInstructions,

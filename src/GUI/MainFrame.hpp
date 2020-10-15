@@ -38,7 +38,6 @@ private:
     void CreateMenuBar();
     void OnOpenROM(wxCommandEvent& event);
     void OnOpenBinary(wxCommandEvent& event);
-    void OnLoadBIOS(wxCommandEvent& event);
     void OnCloseROM(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
 

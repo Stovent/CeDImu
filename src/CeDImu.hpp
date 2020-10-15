@@ -37,7 +37,7 @@ public:
 
     virtual bool OnInit() override;
     virtual int OnExit() override;
-    bool InitializeCores(const char* vdscBios, const char* slaveBios);
+    bool InitializeCores();
     bool InitializeCDI(const char* pathToROM);
     void IncreaseEmulationSpeed();
     void DecreaseEmulationSpeed();

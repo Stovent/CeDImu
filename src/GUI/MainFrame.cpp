@@ -16,7 +16,6 @@
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnOpenROM, MainFrame::OnOpenROM)
-    EVT_MENU(IDMainFrameOnLoadBIOS, MainFrame::OnLoadBIOS)
     EVT_MENU(IDMainFrameOnCloseROM, MainFrame::OnCloseROM)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
@@ -58,7 +57,6 @@ void MainFrame::CreateMenuBar()
 {
     wxMenu* file = new wxMenu;
     file->Append(IDMainFrameOnOpenROM, "Open ROM\tCtrl+O", "Choose the ROM to load");
-    file->Append(IDMainFrameOnLoadBIOS, "Load BIOS\tCtrl+B", "Load a CD-I BIOS");
     file->AppendSeparator();
     file->Append(IDMainFrameOnCloseROM, "Close ROM\tCtrl+Maj+C", "Close the ROM currently playing");
     file->Append(wxID_EXIT);
@@ -120,18 +118,17 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
     if(app->cdi->board == nullptr)
     {
-        wxMessageBox("The BIOS has not been loaded yet, please choose one.");
-        OnLoadBIOS(event);
+        wxMessageBox("The BIOS has not been loaded yet.");
     }
 
-    wxFileDialog openFileDialog(this, "Open ROM", Config::ROMPath, "", "All files (*.*)|*.*|Binary files (*.bin)|*.bin|.CUE File (*.cue)|*.cue", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    wxFileDialog openFileDialog(this, "Open ROM", Config::ROMDirectory, "", "All files (*.*)|*.*|Binary files (*.bin)|*.bin|.CUE File (*.cue)|*.cue", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
 
 #ifdef _WIN32
-    Config::ROMPath = openFileDialog.GetPath().BeforeLast('\\');
+    Config::ROMDirectory = openFileDialog.GetPath().BeforeLast('\\');
 #else
-    Config::ROMPath = openFileDialog.GetPath().BeforeLast('/');
+    Config::ROMDirectory = openFileDialog.GetPath().BeforeLast('/');
 #endif
     if(!app->InitializeCDI(openFileDialog.GetPath().ToStdString().c_str()))
     {
@@ -156,26 +153,6 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
     if(app->cdi->board)
         if(!pauseItem->IsChecked())
             app->StartGameThread();
-}
-
-void MainFrame::OnLoadBIOS(wxCommandEvent& event)
-{
-    wxFileDialog openFileDialog(this, "Load VDSC BIOS", Config::BIOSPath, "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-    if(openFileDialog.ShowModal() == wxID_CANCEL)
-        return;
-
-#ifdef _WIN32
-    Config::BIOSPath = openFileDialog.GetPath().BeforeLast('\\');
-#else
-    Config::BIOSPath = openFileDialog.GetPath().BeforeLast('/');
-#endif
-
-    wxFileDialog openFileDialog2(this, "Load slave BIOS", Config::BIOSPath, "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-    if (openFileDialog2.ShowModal() == wxID_CANCEL)
-        return;
-
-    if(!app->InitializeCores(openFileDialog.GetPath().ToStdString().data(), openFileDialog2.GetPath().ToStdString().data()))
-        wxMessageBox("Could not load BIOS");
 }
 
 void MainFrame::OnCloseROM(wxCommandEvent& event)
@@ -245,7 +222,7 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
     if(app->cdi->board)
-        app->cdi->board->cpu.Reset();
+        app->InitializeCores();
 }
 
 void MainFrame::OnSlaveViewer(wxCommandEvent& event)
@@ -311,9 +288,48 @@ void MainFrame::OnSettings(wxCommandEvent& event)
     wxFrame*    settingsFrame = new wxFrame(this, wxID_ANY, "Settings", GetPosition() + wxPoint(30, 30), wxDefaultSize);
     wxPanel*    settingsPanel = new wxPanel(settingsFrame);
     wxNotebook* notebook      = new wxNotebook(settingsPanel, wxID_ANY);
+#ifdef _WIN32
+    char separator = '\\';
+#else
+    char separator = '/';
+#endif // _WIN32
+    // General
+    wxPanel* generalPage = new wxPanel(notebook);
+    wxSizer* generalSizer = new wxBoxSizer(wxVERTICAL);
+    wxSizer* systemSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxSizer* slaveSizer = new wxBoxSizer(wxHORIZONTAL);
 
+    wxTextCtrl* systemText = new wxTextCtrl(generalPage, wxID_ANY, Config::systemBIOS);
+    wxButton* selectSystem = new wxButton(generalPage, wxID_ANY, "Select");
+    selectSystem->Bind(wxEVT_BUTTON, [settingsFrame, systemText, separator] (wxEvent& event) {
+               wxFileDialog openFileDialog(settingsFrame, "Load system BIOS", wxString(Config::systemBIOS).BeforeLast(separator), "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+               if(openFileDialog.ShowModal() == wxID_CANCEL)
+                   return;
 
-    wxPanel*    emulationPage = new wxPanel(notebook);
+                systemText->SetValue(openFileDialog.GetPath());
+    });
+    systemSizer->Add(systemText, 1, wxALIGN_RIGHT, 5);
+    systemSizer->Add(selectSystem, 1, wxALIGN_RIGHT, 5);
+
+    wxTextCtrl* slaveText = new wxTextCtrl(generalPage, wxID_ANY, Config::slaveBIOS);
+    wxButton* selectSlave = new wxButton(generalPage, wxID_ANY, "Select");
+    selectSlave->Bind(wxEVT_BUTTON, [settingsFrame, slaveText, separator] (wxEvent& event) {
+               wxFileDialog openFileDialog(settingsFrame, "Load slave BIOS", wxString(Config::slaveBIOS).BeforeLast(separator), "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+               if(openFileDialog.ShowModal() == wxID_CANCEL)
+                   return;
+
+                slaveText->SetValue(openFileDialog.GetPath());
+    });
+    slaveSizer->Add(slaveText, 1, wxALIGN_RIGHT, 5);
+    slaveSizer->Add(selectSlave, 1, wxALIGN_RIGHT, 5);
+
+    generalSizer->Add(systemSizer);
+    generalSizer->Add(slaveSizer);
+    generalPage->SetSizer(generalSizer);
+    notebook->AddPage(generalPage, "General");
+
+    // Emulation
+    wxPanel* emulationPage = new wxPanel(notebook);
 
     wxCheckBox* skipBIOS = new wxCheckBox(emulationPage, wxID_ANY, "skip BIOS");
     if(Config::skipBIOS) skipBIOS->SetValue(true); else skipBIOS->SetValue(false);
@@ -323,8 +339,10 @@ void MainFrame::OnSettings(wxCommandEvent& event)
 
     wxBoxSizer* saveCancelPanel = new wxBoxSizer(wxHORIZONTAL);
     wxButton* save = new wxButton(settingsPanel, wxID_ANY, "Save");
-    save->Bind(wxEVT_BUTTON, [settingsFrame, skipBIOS] (wxEvent& event) {
+    save->Bind(wxEVT_BUTTON, [settingsFrame, systemText, slaveText, skipBIOS] (wxEvent& event) {
         if(skipBIOS->GetValue()) Config::skipBIOS = true; else Config::skipBIOS = false;
+        Config::systemBIOS = systemText->GetValue();
+        Config::slaveBIOS  = slaveText->GetValue();
         Config::saveConfig();
         settingsFrame->Destroy();
     });

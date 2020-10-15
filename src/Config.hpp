@@ -6,8 +6,9 @@
 namespace Config
 {
 // General
-extern std::string BIOSPath;
-extern std::string ROMPath;
+extern std::string systemBIOS;
+extern std::string slaveBIOS;
+extern std::string ROMDirectory;
 
 // Emulation
 extern bool skipBIOS;
