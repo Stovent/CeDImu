@@ -23,9 +23,6 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledIn
     SetFrequency(clockFrequency);
 
     GenerateInstructionSet();
-
-    SET_TX_READY
-    SET_RX_READY
 }
 
 SCC68070::~SCC68070()

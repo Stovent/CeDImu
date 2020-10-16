@@ -570,8 +570,10 @@ private:
     std::string DisassembleUNLK(const uint32_t pc) const;
 };
 
-#define SET_TX_READY internal[USR] |= 0x04;
-#define SET_RX_READY internal[USR] |= 0x01;
+#define   SET_TX_READY() internal[USR] |= 0x04;
+#define   SET_RX_READY() internal[USR] |= 0x01;
+#define UNSET_TX_READY() internal[USR] &= ~0x04;
+#define UNSET_RX_READY() internal[USR] &= ~0x01;
 
 /* shorts for addressing modes */
 
