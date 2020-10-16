@@ -38,9 +38,9 @@ void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
         if(data & 0x02)
             UNSET_RX_READY();
         if(data & 0x04)
-            SET_RX_READY();
+            SET_TX_READY();
         if(data & 0x08)
-            UNSET_RX_READY();
+            UNSET_TX_READY();
     }
     else if(addr == 0x80002019) // UART Transmit Holding Register
     {
