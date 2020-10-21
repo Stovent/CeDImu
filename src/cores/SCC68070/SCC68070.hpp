@@ -280,7 +280,7 @@ private:
     uint32_t lastAddress;
     uint32_t cycleCount;
     long double cycleDelay; // Time between two clock cycles in nanoseconds
-    std::priority_queue<const SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
+    std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
     void (SCC68070::*Execute)() = nullptr;
     void Interpreter();
