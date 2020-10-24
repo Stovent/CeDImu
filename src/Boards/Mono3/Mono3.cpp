@@ -126,6 +126,11 @@ void Mono3::PutDataInMemory(const void* s, unsigned int size, unsigned int posit
     mcd212.PutDataInMemory(s, size, position);
 }
 
+void Mono3::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
+{
+    mcd212.WriteToBIOSArea(s, size, position);
+}
+
 void Mono3::StopOnNextFrame(const bool stop)
 {
     mcd212.StopOnNextFrame(stop);

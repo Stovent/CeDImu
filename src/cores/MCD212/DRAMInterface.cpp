@@ -30,7 +30,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
 
 uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 {
-    if(memorySwapCount < 4)
+    if(memorySwapCount < 4 && flags & Trigger)
     {
         memorySwapCount++;
         return memory[addr + 0x400000] << 8 | memory[addr + 0x400001];
@@ -55,7 +55,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t MCD212::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    if(memorySwapCount < 4)
+    if(memorySwapCount < 4 && flags & Trigger)
     {
         memorySwapCount += 2;
         return memory[addr + 0x400000] << 24 | memory[addr + 0x400001] << 16 | memory[addr + 0x400002] << 8 | memory[addr + 0x400003];

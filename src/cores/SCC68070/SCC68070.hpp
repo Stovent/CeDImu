@@ -1,10 +1,10 @@
 #ifndef SCC68070_HPP
 #define SCC68070_HPP
 
+#include "../../common/flags.hpp"
+class Board;
 class SCC68070;
 class SCC68070Exception;
-
-#define SCC68070_DEFAULT_FREQUENCY (15500000L)
 
 #include <cstdint>
 #include <fstream>
@@ -14,8 +14,7 @@ class SCC68070Exception;
 #include <thread>
 #include <vector>
 
-#include "../../common/flags.hpp"
-class Board;
+#define SCC68070_DEFAULT_FREQUENCY (15500000L)
 
 // Actually, figure VI.1 of the Green Book
 // and Table 2-2 of the MC68000UM

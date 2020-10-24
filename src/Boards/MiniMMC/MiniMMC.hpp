@@ -34,6 +34,7 @@ public:
     virtual uint32_t GetLineDisplayTime() override;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
+    virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
     virtual void StopOnNextFrame(const bool stop = true) override;
 
     virtual uint32_t GetAllocatedMemory() override;

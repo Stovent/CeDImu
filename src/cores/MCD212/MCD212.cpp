@@ -1,10 +1,9 @@
 #include "MCD212.hpp"
+#include "../../utils.hpp"
 
 #include <iomanip>
 
 #include <wx/msgdlg.h>
-
-#include "../../utils.hpp"
 
 MCD212::MCD212(Board* board) : VDSC(board) // TD = 0
 {
@@ -77,6 +76,11 @@ bool MCD212::LoadBIOS(const void* bios, const uint32_t size)
 void MCD212::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
 {
     memcpy(&memory[position], s, size);
+}
+
+void MCD212::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
+{
+    PutDataInMemory(s, size, position + 0x400000);
 }
 
 void MCD212::MemorySwap()

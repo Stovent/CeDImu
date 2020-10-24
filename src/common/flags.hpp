@@ -1,6 +1,8 @@
 #ifndef FLAGS_HPP
 #define FLAGS_HPP
 
+#include <cstdint>
+
 enum BusFlags : uint8_t
 {
     NoFlags = 0b00,

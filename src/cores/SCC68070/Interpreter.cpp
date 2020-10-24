@@ -1,10 +1,9 @@
 #include "SCC68070.hpp"
+#include "../../Boards/Board.hpp"
+#include "../../utils.hpp"
 
 #include <algorithm>
 #include <chrono>
-
-#include "../../Boards/Board.hpp"
-#include "../../utils.hpp"
 
 void SCC68070::Interpreter()
 {

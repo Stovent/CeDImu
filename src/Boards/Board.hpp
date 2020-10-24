@@ -35,6 +35,7 @@ public:
     virtual uint32_t GetLineDisplayTime() = 0;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
+    virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void StopOnNextFrame(const bool stop = true) = 0;
 
     virtual uint32_t GetAllocatedMemory() = 0;

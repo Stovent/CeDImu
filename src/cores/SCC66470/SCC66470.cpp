@@ -55,6 +55,11 @@ void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int po
     memcpy(&memory[position], s, size);
 }
 
+void SCC66470::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
+{
+    PutDataInMemory(s, size, position + 0x180000);
+}
+
 void SCC66470::DrawLine()
 {
     SET_DA_BIT()

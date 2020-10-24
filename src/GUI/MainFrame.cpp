@@ -1,8 +1,8 @@
 #include "MainFrame.hpp"
-#include "VDSCViewer.hpp"
-#include "SlaveViewer.hpp"
-#include "enums.hpp"
 #include "../Config.hpp"
+#include "enums.hpp"
+#include "SlaveViewer.hpp"
+#include "VDSCViewer.hpp"
 
 #include <wx/button.h>
 #include <wx/checkbox.h>
@@ -139,14 +139,17 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
     if(Config::skipBIOS)
     {
         CDIFile* module = app->cdi->disk.GetFile(app->cdi->disk.mainModule);
-        uint32_t size, address = 0;
+        uint32_t size;
         char* d = module->GetFileContent(size);
         if(d != nullptr && size)
         {
+            uint32_t address = 0;
             app->cdi->board->PutDataInMemory(d, size, address);
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
-            app->cdi->board->cpu.SetRegister(CPURegisters::PC, address + app->cdi->board->GetLong(address + 0x30, NoFlags));
+            address += app->cdi->board->GetLong(address + 0x30, NoFlags);
+            uint8_t arr[4] = {address >> 24, address >> 16, address >> 8, address};
+            app->cdi->board->WriteToBIOSArea(arr, 4, 4);
         }
     }
 

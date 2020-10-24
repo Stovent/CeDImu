@@ -45,7 +45,7 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
 
 uint16_t SCC66470::GetWord(const uint32_t addr, const uint8_t flags)
 {
-    if(memorySwapCount < 4)
+    if(memorySwapCount < 4 && flags & Trigger)
     {
         memorySwapCount += 1;
         return memory[addr+0x180000] << 8 | memory[addr+0x180001];
@@ -77,7 +77,7 @@ uint16_t SCC66470::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t SCC66470::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    if(memorySwapCount < 4)
+    if(memorySwapCount < 4 && flags & Trigger)
     {
         memorySwapCount += 2;
         return memory[addr+0x180000] << 24 | memory[addr+0x180001] << 16 | memory[addr+0x180002] << 8 | memory[addr+0x180003];

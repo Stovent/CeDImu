@@ -42,6 +42,11 @@ void MiniMMC::PutDataInMemory(const void* s, unsigned int size, unsigned int pos
         masterVDSC.PutDataInMemory(s, size, position);
 }
 
+void MiniMMC::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
+{
+    masterVDSC.WriteToBIOSArea(s, size, position);
+}
+
 void MiniMMC::StopOnNextFrame(const bool stop)
 {
     masterVDSC.StopOnNextFrame(stop);

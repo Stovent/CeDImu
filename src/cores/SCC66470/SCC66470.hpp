@@ -49,6 +49,7 @@ public:
 
     virtual bool LoadBIOS(const void* bios, const uint32_t size) override;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
+    virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
     virtual void MemorySwap() override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
