@@ -3122,7 +3122,7 @@ uint16_t SCC68070::SUB()
         int8_t src = GetByte(eamode, eareg, calcTime);
         int8_t dst = D[reg] & 0x000000FF;
         int16_t res = dst - src;
-        uint16_t ures = (uint8_t)dst - (uint8_t)res;
+        uint16_t ures = (uint8_t)dst - (uint8_t)src;
 
         if(ures & 0x100) SetXC(); else SetXC(0);
         if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
@@ -3138,7 +3138,7 @@ uint16_t SCC68070::SUB()
         int16_t src = GetWord(eamode, eareg, calcTime);
         int16_t dst = D[reg] & 0x0000FFFF;
         int32_t res = dst - src;
-        uint32_t ures = (uint16_t)dst - (uint16_t)res;
+        uint32_t ures = (uint16_t)dst - (uint16_t)src;
 
         if(ures & 0x10000) SetXC(); else SetXC(0);
         if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
@@ -3154,7 +3154,7 @@ uint16_t SCC68070::SUB()
         int32_t src = GetLong(eamode, eareg, calcTime);
         int32_t dst = D[reg];
         int64_t res = dst - src;
-        uint64_t ures = (uint32_t)dst - (uint32_t)res;
+        uint64_t ures = (uint32_t)dst - (uint32_t)src;
 
         if(ures & 0x100000000) SetXC(); else SetXC(0);
         if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
