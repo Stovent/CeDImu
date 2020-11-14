@@ -1,13 +1,11 @@
 #ifndef CDIDIRECTORY_HPP
 #define CDIDIRECTORY_HPP
 
-struct CDIDirectory;
+#include "CDIFile.hpp"
+class CDIDisk;
 
 #include <map>
 #include <string>
-
-class CDIDisk;
-#include "CDIFile.hpp"
 
 struct CDIDirectory
 {

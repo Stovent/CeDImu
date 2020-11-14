@@ -1,12 +1,10 @@
 #ifndef CDIDISK_HPP
 #define CDIDISK_HPP
 
-class CDIDisk;
-
-#include <fstream>
-
 #include "CDIDirectory.hpp"
 #include "CDIFile.hpp"
+
+#include <fstream>
 
 typedef struct
 {

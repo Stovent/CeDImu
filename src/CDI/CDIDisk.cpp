@@ -1,6 +1,6 @@
 #include "CDIDisk.hpp"
-
 #include "../utils.hpp"
+
 #include <wx/msgdlg.h>
 
 /** \brief Open a disk.

@@ -1,15 +1,14 @@
 #include "CDIFile.hpp"
-
-#include <fstream>
-#include <vector>
+#include "CDIDisk.hpp"
+#include "../utils.hpp"
+#include "../common/Audio.hpp"
+#include "../common/Video.hpp"
 
 #include <wx/msgdlg.h>
 #include <wx/bitmap.h>
 
-#include "CDIDisk.hpp"
-#include "../common/Audio.hpp"
-#include "../common/Video.hpp"
-#include "../utils.hpp"
+#include <fstream>
+#include <vector>
 
 CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
     disk(cdidisk),

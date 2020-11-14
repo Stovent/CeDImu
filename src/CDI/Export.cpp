@@ -1,7 +1,7 @@
 #include "CDIDisk.hpp"
+#include "../utils.hpp"
 
-#include <sstream>
-#include <iomanip>
+#include <wx/msgdlg.h>
 
 #ifdef USE_STD_FILESYSTEM
 #include <filesystem>
@@ -9,9 +9,8 @@
 #include <wx/filefn.h>
 #endif // USE_STD_FILESYSTEM
 
-#include <wx/msgdlg.h>
-
-#include "../utils.hpp"
+#include <sstream>
+#include <iomanip>
 
 /** \brief Create subdirectories inside the game folder.
  *

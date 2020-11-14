@@ -1,11 +1,9 @@
 #ifndef CDIFILE_HPP
 #define CDIFILE_HPP
 
-class CDIFile;
+class CDIDisk;
 
 #include <string>
-
-class CDIDisk;
 
 class CDIFile
 {

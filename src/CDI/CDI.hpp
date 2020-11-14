@@ -1,8 +1,6 @@
 #ifndef CDI_HPP
 #define CDI_HPP
 
-class CDI;
-
 #include "CDIDisk.hpp"
 #include "../Boards/Board.hpp"
 

@@ -1,15 +1,14 @@
 #include "CDIDirectory.hpp"
+#include "CDIDisk.hpp"
+#include "../utils.hpp"
+
+#include <wx/msgdlg.h>
 
 #ifdef USE_STD_FILESYSTEM
 #include <filesystem>
 #else
 #include <wx/filefn.h>
 #endif // USE_STD_FILESYSTEM
-
-#include <wx/msgdlg.h>
-
-#include "CDIDisk.hpp"
-#include "../utils.hpp"
 
 CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset)
 {
