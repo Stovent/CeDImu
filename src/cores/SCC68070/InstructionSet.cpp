@@ -1395,7 +1395,13 @@ uint16_t SCC68070::EOR()
         if(res & 0x80) SetN(); else SetN(0);
 
         calcTime += eamode ? 4 : 0;
-        SetByte(lastAddress, res);
+        if(eamode)
+            SetByte(lastAddress, res);
+        else
+        {
+            D[eareg] &= 0xFFFFFF00;
+            D[eareg] |= res;
+        }
     }
     else if(opmode == 5)
     {
@@ -1407,7 +1413,13 @@ uint16_t SCC68070::EOR()
         if(res & 0x8000) SetN(); else SetN(0);
 
         calcTime += eamode ? 4 : 0;
-        SetWord(lastAddress, res);
+        if(eamode)
+            SetWord(lastAddress, res);
+        else
+        {
+            D[eareg] &= 0xFFFF0000;
+            D[eareg] |= res;
+        }
     }
     else
     {
@@ -1419,7 +1431,10 @@ uint16_t SCC68070::EOR()
         if(res & 0x80000000) SetN(); else SetN(0);
 
         calcTime += eamode ? 8 : 0;
-        SetLong(lastAddress, res);
+        if(eamode)
+            SetLong(lastAddress, res);
+        else
+            D[eareg] = res;
     }
     SetVC(0);
 
