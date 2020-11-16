@@ -8,7 +8,7 @@ uint8_t SCC68070::GetPeripheral(const uint32_t addr)
     if(addr == 0x8000201B)
     {
         internal[URHR] = board->CPUGetUART();
-        LOG(disassembledInstructions.push_back(toHex(currentPC) + "\tURHR: 0x" + toHex(internal[URHR]))) // this or data ?
+        LOG(disassembledInstructions.push_back("\tURHR: 0x" + toHex(internal[URHR]))) // this or data ?
     }
 
     return internal[addr - SCC68070Peripherals::Base];
@@ -46,6 +46,6 @@ void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
     {
         board->CPUSetUART(data);
         internal[USR] |= 0x08; // set TXEMT bit
-        LOG(disassembledInstructions.push_back(toHex(currentPC) + "\tUTHR: 0x" + toHex(internal[UTHR])))
+        LOG(disassembledInstructions.push_back("\tUTHR: 0x" + toHex(internal[UTHR])))
     }
 }
