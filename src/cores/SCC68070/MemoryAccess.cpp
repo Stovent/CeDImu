@@ -402,26 +402,23 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl; })
-        return board->GetByte(addr, flags);
+        const uint8_t data = board->GetByte(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte at 0x" << addr << ": " << std::dec << (uint16_t)data << std::endl; })
+        return data;
     }
-    else if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
+
+    if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
     {
         if(GetS())
-        {
             return GetPeripheral(addr);
-        }
-        else
-        {
-            LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte: 0x" << addr << std::endl; })
-            return board->GetByte(addr, flags);
-        }
+
+        const uint8_t data = board->GetByte(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte at 0x" << addr << ": " << std::dec << (uint16_t)data << std::endl; })
+        return data;
     }
-    else
-    {
-        LOG(out << std::hex << currentPC << "\tGet byte OUT OF RANGE: 0x" << addr << std::endl)
-        return 0;
-    }
+
+    LOG(out << std::hex << currentPC << "\tGet byte OUT OF RANGE at 0x" << addr << std::endl)
+    return 0;
 }
 
 uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
@@ -431,14 +428,13 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet word: 0x" << addr << std::endl; })
-        return board->GetWord(addr, flags);
+        const uint16_t data = board->GetWord(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet word at 0x" << addr << ": " << std::dec << data << std::endl; })
+        return data;
     }
-    else
-    {
-        LOG(out << std::hex << currentPC << "\tGet word OUT OF RANGE: 0x" << addr << std::endl)
-        return 0;
-    }
+
+    LOG(out << std::hex << currentPC << "\tGet word OUT OF RANGE at 0x" << addr << std::endl)
+    return 0;
 }
 
 uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
@@ -448,14 +444,13 @@ uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet long: 0x" << addr << std::endl; })
-        return board->GetLong(addr, flags);
+        const uint32_t data = board->GetLong(addr, flags);
+        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet long at 0x" << addr << ": " << std::dec << data << std::endl; })
+        return data;
     }
-    else
-    {
-        LOG(out << std::hex << currentPC << "\tGet long OUT OF RANGE: 0x" << addr << std::endl)
-        return 0;
-    }
+
+    LOG(out << std::hex << currentPC << "\tGet long OUT OF RANGE at 0x" << addr << std::endl)
+    return 0;
 }
 
 void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
@@ -477,7 +472,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
     {
         LOG(out << "OUT OF RANGE:")
     }
-    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet byte: 0x" << addr << " value: " << std::to_string(data) << std::endl; })
+    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet byte at 0x" << addr << " : " << std::to_string(data) << std::endl; })
 }
 
 void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
@@ -491,7 +486,7 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
     {
         LOG(out << "OUT OF RANGE:")
     }
-    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet word: 0x" << addr << " value: " << std::to_string(data) << std::endl; })
+    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet word at 0x" << addr << " : " << std::to_string(data) << std::endl; })
 }
 
 void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
@@ -505,5 +500,5 @@ void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t f
     {
         LOG(out << "OUT OF RANGE:")
     }
-    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet Long: 0x" << addr << " value: " << std::to_string(data) << std::endl; })
+    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet long at 0x" << addr << " : " << std::to_string(data) << std::endl; })
 }
