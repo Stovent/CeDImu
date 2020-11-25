@@ -119,10 +119,10 @@ private:
     std::ofstream out_display;
     std::function<void()> OnFrameCompleted;
 
-    void DrawLineA();
-    void DrawLineB();
-    void DrawCursor();
-    void DrawBackground();
+    void DrawLinePlaneA();
+    void DrawLinePlaneB();
+    void DrawLineCursor();
+    void DrawLineBackground();
 
     // Display File Decoders
     void DecodeBitmapLineA();

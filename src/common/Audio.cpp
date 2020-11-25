@@ -7,8 +7,8 @@
 namespace Audio
 {
 
-static const float k0[4] = {0.0, 0.9375, 1.796875, 1.53125};
-static const float k1[4] = {0.0, 0.0, -0.8125, -0.859375};
+static constexpr float k0[4] = {0.0, 0.9375, 1.796875, 1.53125};
+static constexpr float k1[4] = {0.0, 0.0, -0.8125, -0.859375};
 
 static int32_t lk0 = 0;
 static int32_t rk0 = 0;

@@ -40,11 +40,11 @@ void MCD212::DrawLine()
                 backgroundPlane.InitAlpha();
         }
 
-        DrawLineA();
-        DrawLineB();
-        DrawBackground();
+        DrawLinePlaneA();
+        DrawLinePlaneB();
+        DrawLineBackground();
         if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
-            DrawCursor();
+            DrawLineCursor();
     }
 
     if(++lineNumber >= GetVerticalResolution())
@@ -92,7 +92,7 @@ void MCD212::DrawLine()
     }
 }
 
-void MCD212::DrawLineA()
+void MCD212::DrawLinePlaneA()
 {
     if(controlRegisters[ImageCodingMethod] & 0x00000F) // plane on
     {
@@ -123,7 +123,7 @@ void MCD212::DrawLineA()
     }
 }
 
-void MCD212::DrawLineB()
+void MCD212::DrawLinePlaneB()
 {
 
     if(controlRegisters[ImageCodingMethod] & 0x000F00) // plane on
@@ -155,7 +155,7 @@ void MCD212::DrawLineB()
     }
 }
 
-void MCD212::DrawBackground()
+void MCD212::DrawLineBackground()
 {
     uint8_t* data  = backgroundPlane.GetData() + 3*lineNumber;
     uint8_t* alpha = backgroundPlane.GetAlpha() + lineNumber;
@@ -173,7 +173,7 @@ void MCD212::DrawBackground()
     }
 }
 
-void MCD212::DrawCursor()
+void MCD212::DrawLineCursor()
 {
     // check if Y position starts at 0 or 1 (assuming 0 in this code)
     uint16_t yPosition = (controlRegisters[CursorPosition] & 0x003FF000) >> 12;
