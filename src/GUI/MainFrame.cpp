@@ -248,7 +248,7 @@ void MainFrame::OnCPUViewer(wxCommandEvent& event)
 {
     if(cpuViewer != nullptr || !app->cdi->board)
         return;
-    cpuViewer = new CPUViewer(&app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
+    cpuViewer = new CPUViewer(&app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(600, 600));
     cpuViewer->Show();
 }
 

@@ -9,6 +9,7 @@ class CPUViewer;
 #include <wx/frame.h>
 #include <wx/sizer.h>
 #include <wx/timer.h>
+#include <wx/aui/framemanager.h>
 
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "MainFrame.hpp"
@@ -20,6 +21,8 @@ public:
 
     CPUViewer(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~CPUViewer();
+
+    wxAuiManager auiManager;
 
     SCC68070* cpu;
     MainFrame* mainFrame;

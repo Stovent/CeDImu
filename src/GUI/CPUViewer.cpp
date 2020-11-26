@@ -10,7 +10,7 @@ wxBEGIN_EVENT_TABLE(CPUViewer, wxFrame)
     EVT_CLOSE(CPUViewer::OnClose)
 wxEND_EVENT_TABLE()
 
-CPUViewer::CPUViewer(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "SCC68070 viewer", pos, size), cpu(core)
+CPUViewer::CPUViewer(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "SCC68070 viewer", pos, size), auiManager(this), cpu(core)
 {
     cpu->disassemble = true;
     mainFrame = parent;
@@ -26,10 +26,9 @@ CPUViewer::CPUViewer(SCC68070* core, MainFrame* parent, const wxPoint& pos, cons
     pc = new wxTextCtrl(registersPanel, IDCPUViewerpc, "PC: 0", wxPoint(0, 377), wxSize(125, 23), wxTE_READONLY); pc->SetBackgroundColour(*wxWHITE);
     sr = new wxTextCtrl(registersPanel, IDCPUViewersr, "SR: 0", wxPoint(0, 400), wxSize(125,23), wxTE_READONLY); sr->SetBackgroundColour(*wxWHITE);
 
-    wxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(disassembler, 1, wxEXPAND);
-    sizer->Add(registersPanel, 0, wxEXPAND | wxALIGN_RIGHT);
-    SetSizer(sizer);
+    auiManager.AddPane(disassembler, wxAuiPaneInfo().Caption("Disassembler").Center().CloseButton(false).Resizable());
+    auiManager.AddPane(registersPanel, wxAuiPaneInfo().Caption("Registers").Right().CloseButton(false).Resizable().BestSize(130, 0));
+    auiManager.Update();
 
     renderTimer = new wxTimer(this);
     renderTimer->Start(16);
@@ -37,6 +36,7 @@ CPUViewer::CPUViewer(SCC68070* core, MainFrame* parent, const wxPoint& pos, cons
 
 CPUViewer::~CPUViewer()
 {
+    auiManager.UnInit();
     mainFrame->cpuViewer = nullptr;
     delete renderTimer;
 }
