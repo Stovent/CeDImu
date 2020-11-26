@@ -31,7 +31,7 @@ set(SRCS
 	src/cores/MC68HC705C8/MemoryAccess.cpp
 	src/cores/MC68HC705C8/Interpreter.cpp
 	src/cores/MC68HC705C8/MC68HC705C8.cpp
-	src/GUI/DisassemblerFrame.cpp
+	src/GUI/CPUViewer.cpp
 	src/GUI/MainFrame.cpp
 	src/GUI/GamePanel.cpp
 	src/GUI/RAMSearchList.cpp

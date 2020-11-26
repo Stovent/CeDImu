@@ -13,7 +13,7 @@ wxIMSWU = C:\wxWidgets-3.0.4\lib\gcc_lib\mswu
 
 obj = bin/obj/main.o bin/obj/CeDImu.o bin/obj/Config.o \
 bin/obj/Audio.o bin/obj/Video.o \
-bin/obj/MainFrame.o bin/obj/DisassemblerFrame.o bin/obj/GamePanel.o bin/obj/RAMSearchFrame.o bin/obj/RAMSearchList.o bin/obj/VDSCViewer.o bin/obj/SlaveViewer.o bin/obj/GenericList.o \
+bin/obj/MainFrame.o bin/obj/CPUViewer.o bin/obj/GamePanel.o bin/obj/RAMSearchFrame.o bin/obj/RAMSearchList.o bin/obj/VDSCViewer.o bin/obj/SlaveViewer.o bin/obj/GenericList.o \
 bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/Disassembler.o bin/obj/InstructionSet.o bin/obj/AddressingModes.o bin/obj/MemoryAccess.o bin/obj/Peripherals.o \
 bin/obj/SCC66470.o bin/obj/SCC66470DRAMInterface.o bin/obj/SCC66470Registers.o \
 bin/obj/MCD212.o bin/obj/MCD212Display.o bin/obj/MCD212Registers.o bin/obj/MCD212DRAMInterface.o \
@@ -55,7 +55,7 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/RAMSearchList.cpp -o bin/obj/RAMSearchList.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/RAMSearchFrame.cpp -o bin/obj/RAMSearchFrame.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/DisassemblerFrame.cpp -o bin/obj/DisassemblerFrame.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/CPUViewer.cpp -o bin/obj/CPUViewer.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/VDSCViewer.cpp -o bin/obj/VDSCViewer.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/SlaveViewer.cpp -o bin/obj/SlaveViewer.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/GenericList.cpp -o bin/obj/GenericList.o
