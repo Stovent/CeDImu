@@ -15,13 +15,13 @@ enum
     IDMainFrameOnExportVideo,
     IDMainFrameOnSlaveViewer,
     IDMainFrameOnVDSCViewer,
-    IDMainFrameOnDisassembler,
+    IDMainFrameOnCPUViewer,
     IDMainFrameOnRAMSearch,
     IDMainFrameOnSettings,
     IDMainFrameOnAbout,
 
-    IDDisassemblerOnClose,
-    IDDisassemblerpc, IDDisassemblersr,
+    IDCPUViewerOnClose,
+    IDCPUViewerpc, IDCPUViewersr,
 
     IDRAMSearchListCheckMisaligned,
     IDRAMSearchListSigned,

@@ -1,8 +1,8 @@
 #include "MainFrame.hpp"
-#include "../Config.hpp"
 #include "enums.hpp"
 #include "SlaveViewer.hpp"
 #include "VDSCViewer.hpp"
+#include "../Config.hpp"
 
 #include <wx/button.h>
 #include <wx/checkbox.h>
@@ -23,7 +23,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnRebootCore, MainFrame::OnRebootCore)
     EVT_MENU(IDMainFrameOnSlaveViewer, MainFrame::OnSlaveViewer)
     EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
-    EVT_MENU(IDMainFrameOnDisassembler, MainFrame::OnDisassembler)
+    EVT_MENU(IDMainFrameOnCPUViewer, MainFrame::OnCPUViewer)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
@@ -37,7 +37,7 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
 {
     app = appp;
     gamePanel = new GamePanel(this, appp);
-    disassemblerFrame = nullptr;
+    cpuViewer = nullptr;
     ramSearchFrame = nullptr;
     vdscViewer = nullptr;
     slaveViewer = nullptr;
@@ -75,10 +75,10 @@ void MainFrame::CreateMenuBar()
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
-    tools->Append(IDMainFrameOnSlaveViewer, "Slave Viewer\tCtrl+S");
+    tools->Append(IDMainFrameOnCPUViewer, "CPU Viewer\tCtrl+D");
     tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer\tCtrl+V");
-    tools->Append(IDMainFrameOnDisassembler, "Disassembler\tCtrl+D");
     tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+R");
+    tools->Append(IDMainFrameOnSlaveViewer, "Slave Viewer\tCtrl+S");
 
     wxMenu* config = new wxMenu;
     config->Append(IDMainFrameOnSettings, "Settings");
@@ -244,12 +244,12 @@ void MainFrame::OnVDSCViewer(wxCommandEvent& event)
     vdscViewer->Show();
 }
 
-void MainFrame::OnDisassembler(wxCommandEvent& event)
+void MainFrame::OnCPUViewer(wxCommandEvent& event)
 {
-    if(disassemblerFrame != nullptr || !app->cdi->board)
+    if(cpuViewer != nullptr || !app->cdi->board)
         return;
-    disassemblerFrame = new DisassemblerFrame(&app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
-    disassemblerFrame->Show();
+    cpuViewer = new CPUViewer(&app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(500, 460));
+    cpuViewer->Show();
 }
 
 void MainFrame::OnRAMSearch(wxCommandEvent& event)

@@ -5,7 +5,7 @@ class MainFrame;
 
 #include "GamePanel.hpp"
 class CeDImu;
-#include "DisassemblerFrame.hpp"
+#include "CPUViewer.hpp"
 #include "RAMSearchFrame.hpp"
 class VDSCViewer;
 class SlaveViewer;
@@ -22,7 +22,7 @@ public:
     wxMenuItem* pauseItem;
 
     MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size);
-    DisassemblerFrame* disassemblerFrame;
+    CPUViewer* cpuViewer;
     RAMSearchFrame* ramSearchFrame;
     VDSCViewer* vdscViewer;
     SlaveViewer* slaveViewer;
@@ -47,7 +47,7 @@ private:
 
     void OnSlaveViewer(wxCommandEvent& event);
     void OnVDSCViewer(wxCommandEvent& event);
-    void OnDisassembler(wxCommandEvent& event);
+    void OnCPUViewer(wxCommandEvent& event);
     void OnRAMSearch(wxCommandEvent& event);
 
     void OnExportFiles(wxCommandEvent& event);

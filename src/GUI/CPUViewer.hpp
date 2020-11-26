@@ -1,7 +1,7 @@
-#ifndef DISASSEMBLERFRAME_HPP
-#define DISASSEMBLERFRAME_HPP
+#ifndef CPUVIEWER_HPP
+#define CPUVIEWER_HPP
 
-class DisassemblerFrame;
+class CPUViewer;
 
 #include <sstream>
 
@@ -13,13 +13,13 @@ class DisassemblerFrame;
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "MainFrame.hpp"
 
-class DisassemblerFrame : public wxFrame
+class CPUViewer : public wxFrame
 {
 public:
     std::stringstream instructions;
 
-    DisassemblerFrame(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
-    ~DisassemblerFrame();
+    CPUViewer(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
+    ~CPUViewer();
 
     SCC68070* cpu;
     MainFrame* mainFrame;
@@ -38,4 +38,4 @@ public:
     wxDECLARE_EVENT_TABLE();
 };
 
-#endif // DISASSEMBLERFRAME_HPP
+#endif // CPUVIEWER_HPP
