@@ -75,7 +75,7 @@ void MainFrame::CreateMenuBar()
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
-    tools->Append(IDMainFrameOnCPUViewer, "CPU Viewer\tCtrl+D");
+    tools->Append(IDMainFrameOnCPUViewer, "CPU Viewer\tCtrl+C");
     tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer\tCtrl+V");
     tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+R");
     tools->Append(IDMainFrameOnSlaveViewer, "Slave Viewer\tCtrl+S");

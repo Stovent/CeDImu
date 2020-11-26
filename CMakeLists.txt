@@ -54,7 +54,7 @@ if(UNIX)
 	set(CMAKE_GENERATOR "Unix Makefiles")
 endif()
 
-find_package(wxWidgets REQUIRED COMPONENTS adv core base)
+find_package(wxWidgets REQUIRED COMPONENTS aui adv core base)
 
 if(wxWidgets_FOUND)
 	add_executable(CeDImu ${SRCS})
