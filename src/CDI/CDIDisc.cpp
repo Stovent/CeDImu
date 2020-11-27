@@ -1,19 +1,19 @@
-#include "CDIDisk.hpp"
+#include "CDIDisc.hpp"
 #include "../utils.hpp"
 
 #include <wx/msgdlg.h>
 
-/** \brief Open a disk.
+/** \brief Open a disc.
  *
  * \param  filename The path to the file to open.
  * \return true if opened successfully, false otherwise.
  */
-bool CDIDisk::Open(const std::string& filename)
+bool CDIDisc::Open(const std::string& filename)
 {
     Close();
 
-    disk.open(filename, std::ios::in | std::ios::binary);
-    if(!disk.is_open())
+    disc.open(filename, std::ios::in | std::ios::binary);
+    if(!disc.is_open())
         return false;
 
 #ifdef _WIN32
@@ -27,20 +27,20 @@ bool CDIDisk::Open(const std::string& filename)
     return true;
 }
 
-/** \brief Checks if the disk is opened.
+/** \brief Checks if the disc is opened.
  *
- * \return true if a disk is opened, false otherwise.
+ * \return true if a disc is opened, false otherwise.
  */
-bool CDIDisk::IsOpen() const
+bool CDIDisc::IsOpen() const
 {
-    return disk.is_open();
+    return disc.is_open();
 }
 
-/** \brief Close the opened disk.
+/** \brief Close the opened disc.
  */
-void CDIDisk::Close()
+void CDIDisc::Close()
 {
-    disk.close();
+    disc.close();
     rootDirectory.Clear();
     mainModule = "";
     gameName = "";
@@ -50,31 +50,31 @@ void CDIDisk::Close()
     memset(&subheader, 0, sizeof(subheader));
 }
 
-/** \brief Check if the disk is readable.
+/** \brief Check if the disc is readable.
  *
- * \return true if the disk is readable, false otherwise.
+ * \return true if the disc is readable, false otherwise.
  */
-bool CDIDisk::Good()
+bool CDIDisc::Good()
 {
-    if(disk.peek() == EOF)
+    if(disc.peek() == EOF)
         return false;
     else
-        return disk.good();
+        return disc.good();
 }
 
 /** \brief Clear the status bits of the file.
  */
-void CDIDisk::Clear()
+void CDIDisc::Clear()
 {
-    disk.clear();
+    disc.clear();
 }
 
-void CDIDisk::UpdateSectorInfo()
+void CDIDisc::UpdateSectorInfo()
 {
-    const uint32_t tmp = disk.tellg();
-    disk.seekg(tmp - (tmp % 2352) + 12);
+    const uint32_t tmp = disc.tellg();
+    disc.seekg(tmp - (tmp % 2352) + 12);
     char s[8];
-    disk.read(s, 8);
+    disc.read(s, 8);
 
     header.Minutes = PBCDToByte(s[0]);
     header.Seconds = PBCDToByte(s[1]);
@@ -85,16 +85,16 @@ void CDIDisk::UpdateSectorInfo()
     subheader.Submode = s[6];
     subheader.CodingInformation = s[7];
 
-    disk.seekg(tmp);
+    disc.seekg(tmp);
 }
 
-/** \brief Load every file and directory from the disk.
+/** \brief Load every file and directory from the disc.
  */
-void CDIDisk::LoadFileSystem()
+void CDIDisc::LoadFileSystem()
 {
     const uint32_t pos = Tell();
 
-    GotoLBN(16, 148); // go to disk label, Address of path Table
+    GotoLBN(16, 148); // go to disc label, Address of path Table
 
     uint32_t lbn = GetLong();
 
@@ -137,15 +137,15 @@ void CDIDisk::LoadFileSystem()
     Seek(pos);
 }
 
-/** \brief Get file from its path on the disk.
+/** \brief Get file from its path on the disc.
  *
- * \param  path The full path from the root directory of the disk to the file.
+ * \param  path The full path from the root directory of the disc to the file.
  * \return A pointer to the file, or nullptr is not found.
  *
  * The path must not start with a '/'.
  * e.g. "CMDS/cdi_gate" for file "cdi_gate" in the "CMDS" folder in the root directory.
  */
-CDIFile* CDIDisk::GetFile(std::string path)
+CDIFile* CDIDisc::GetFile(std::string path)
 {
     return rootDirectory.GetFile(path);
 }
@@ -154,21 +154,21 @@ CDIFile* CDIDisk::GetFile(std::string path)
  *
  * \return The current file cursor position.
  */
-uint32_t CDIDisk::Tell()
+uint32_t CDIDisc::Tell()
 {
-    return disk.tellg();
+    return disc.tellg();
 }
 
 /** \brief Set the file cursor position.
  *
  * \param  offset Offset from the given direction.
  * \param  direction The direction in which the offset will be applied.
- * \return true if the disk is readable, false otherwise.
+ * \return true if the disc is readable, false otherwise.
  */
-bool CDIDisk::Seek(const uint32_t offset, std::ios::seekdir direction)
+bool CDIDisc::Seek(const uint32_t offset, std::ios::seekdir direction)
 {
     Clear();
-    disk.seekg(offset, direction);
+    disc.seekg(offset, direction);
     UpdateSectorInfo();
     return Good();
 }
@@ -177,15 +177,15 @@ bool CDIDisk::Seek(const uint32_t offset, std::ios::seekdir direction)
  *
  * \param  lbn The Logical Block Number to go to.
  * \param  offset An optionnal offset from the data section of the sector.
- * \return true if the disk is readable, false otherwise.
+ * \return true if the disc is readable, false otherwise.
  *
  * Set the cursor file position at the beginning of the data section + offset
  * of the logical block number {lbn}.
  */
-bool CDIDisk::GotoLBN(const uint32_t lbn, const uint32_t offset)
+bool CDIDisc::GotoLBN(const uint32_t lbn, const uint32_t offset)
 {
     Clear();
-    disk.seekg(lbn * 2352 + 24 + offset);
+    disc.seekg(lbn * 2352 + 24 + offset);
     UpdateSectorInfo();
     return Good();
 }
@@ -193,7 +193,7 @@ bool CDIDisk::GotoLBN(const uint32_t lbn, const uint32_t offset)
 /** \brief Set the file cursor position at the data section of the next sector.
  *
  * \param  submodeMask See detailed description.
- * \return true if the disk is readable, false otherwise.
+ * \return true if the disc is readable, false otherwise.
  *
  * Go to the next sector which submode matches the given mask.
  * If no mask is provided (or one with 0 as the data, audio and video bits),
@@ -201,19 +201,19 @@ bool CDIDisk::GotoLBN(const uint32_t lbn, const uint32_t offset)
  * The mask is only applied on the data, audio and video bits of the submode.
  * Use the 'SubmodeBits.cdiany' enum to go to the next non-empty sector.
  */
-bool CDIDisk::GotoNextSector(uint8_t submodeMask)
+bool CDIDisc::GotoNextSector(uint8_t submodeMask)
 {
     if(submodeMask &= 0x0E)
     {
         do
         {
-            disk.seekg(2376 - disk.tellg() % 2352, std::ios::cur);
+            disc.seekg(2376 - disc.tellg() % 2352, std::ios::cur);
             UpdateSectorInfo();
         } while(!(subheader.Submode & submodeMask) && Good());
     }
     else
     {
-        disk.seekg(2376 - disk.tellg() % 2352, std::ios::cur);
+        disc.seekg(2376 - disc.tellg() % 2352, std::ios::cur);
         UpdateSectorInfo();
     }
     return Good();
@@ -230,28 +230,28 @@ bool CDIDisk::GotoNextSector(uint8_t submodeMask)
  * If {size} is greater than the sector data size, then it will continue reading on
  * the data section of the next sector.
  * Returns true if no problems occured, false otherwise.
- * After execution, {size} is set to the actual data size read from the disk.
+ * After execution, {size} is set to the actual data size read from the disc.
  */
-bool CDIDisk::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
+bool CDIDisc::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
 {
     uint32_t index = 0;
     if(!includeEmptySectors && IsEmptySector())
         GotoNextSector(cdiany);
-    while(size && disk.good())
+    while(size && disc.good())
     {
         uint16_t length = GetSectorDataSize();
         length = (size == 2048) ? length : ((size < length) ? size : length);
-        disk.read(&dst[index], length);
+        disc.read(&dst[index], length);
         index += length;
         size -= (size < 2048) ? size : 2048;
         if(size) // to make sure GetData let the file cursor at the last read data and not at the next sector
             includeEmptySectors ? GotoNextSector() : GotoNextSector(cdiany);
     }
     size = index;
-    return disk.good();
+    return disc.good();
 }
 
-/** \brief Read raw data from the disk.
+/** \brief Read raw data from the disc.
  *
  * \param  dst The destination buffer.
  * \param  size The size of the data to read.
@@ -259,20 +259,20 @@ bool CDIDisk::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
  *
  * Simply reads the next {size} bytes, without any check.
  */
-bool CDIDisk::GetRaw(char* dst, uint32_t size)
+bool CDIDisc::GetRaw(char* dst, uint32_t size)
 {
-    disk.read(dst, size);
-    return disk.good();
+    disc.read(dst, size);
+    return disc.good();
 }
 
 /** \brief Get the next byte value.
  *
  * \return The byte value read.
  */
-uint8_t CDIDisk::GetByte()
+uint8_t CDIDisc::GetByte()
 {
     char c;
-    disk.get(c);
+    disc.get(c);
     return c;
 }
 
@@ -282,12 +282,12 @@ uint8_t CDIDisk::GetByte()
  *
  * Word is a 2-bytes value.
  */
-uint16_t CDIDisk::GetWord()
+uint16_t CDIDisc::GetWord()
 {
     uint16_t var = 0;
     char c;
-    disk.get(c); var |= (uint8_t)c << 8;
-    disk.get(c); var |= (uint8_t)c;
+    disc.get(c); var |= (uint8_t)c << 8;
+    disc.get(c); var |= (uint8_t)c;
     return var;
 }
 
@@ -297,14 +297,14 @@ uint16_t CDIDisk::GetWord()
  *
  * Long is a 4-bytes value.
  */
-uint32_t CDIDisk::GetLong()
+uint32_t CDIDisc::GetLong()
 {
     uint32_t var = 0;
     char c;
-    disk.get(c); var |= (uint8_t)c << 24;
-    disk.get(c); var |= (uint8_t)c << 16;
-    disk.get(c); var |= (uint8_t)c << 8;
-    disk.get(c); var |= (uint8_t)c;
+    disc.get(c); var |= (uint8_t)c << 24;
+    disc.get(c); var |= (uint8_t)c << 16;
+    disc.get(c); var |= (uint8_t)c << 8;
+    disc.get(c); var |= (uint8_t)c;
     return var;
 }
 
@@ -312,19 +312,19 @@ uint32_t CDIDisk::GetLong()
  *
  * \param  length The length of the string to read.
  * \param  delim The characters to remove from the end of the string
- * \return The string read from the disk.
+ * \return The string read from the disc.
  *
  * Reads the next {length} bytes, increasing the file cursor
  * position by the same amount, and remove every {delim} characters
  * from the end of the string (if any).
- * Example: if the string read from the disk is "ABC  " and {delim} is set to ' '
+ * Example: if the string read from the disc is "ABC  " and {delim} is set to ' '
  * then the returned string will be "ABC".
  */
-std::string CDIDisk::GetString(uint16_t length, const char delim)
+std::string CDIDisc::GetString(uint16_t length, const char delim)
 {
     char* str = new (std::nothrow) char[length];
 
-    disk.read(str, length);
+    disc.read(str, length);
     for(; str[--length] == delim && length;);
 
     return std::string(str, length+1);

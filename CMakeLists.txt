@@ -4,7 +4,7 @@ project(CeDImu)
 
 set(SRCS
 	src/CDI/CDI.cpp
-	src/CDI/CDIDisk.cpp
+	src/CDI/CDIDisc.cpp
 	src/CDI/CDIDirectory.cpp
 	src/CDI/CDIFile.cpp
 	src/CDI/Export.cpp

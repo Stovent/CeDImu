@@ -29,7 +29,7 @@ void resetAudioFiltersDelay()
  *
  * \param  levelA True if input data is encoded in Level A audio, false if Level B or C.
  * \param  stereo True if input data is stereo, false if mono.
- * \param  data Raw input data from the disk.
+ * \param  data Raw input data from the disc.
  * \param  left Destination left audio channel. If audio is mono, it will contain the decoded data and right will remain untouched.
  * \param  right Destination right audio channel. If audio is mono, NULL can be passed safely.
  * \return number of samples decoded (should always be 4032).

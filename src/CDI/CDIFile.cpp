@@ -1,5 +1,5 @@
 #include "CDIFile.hpp"
-#include "CDIDisk.hpp"
+#include "CDIDisc.hpp"
 #include "../utils.hpp"
 #include "../common/Audio.hpp"
 #include "../common/Video.hpp"
@@ -10,8 +10,8 @@
 #include <fstream>
 #include <vector>
 
-CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
-    disk(cdidisk),
+CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
+    disc(cdidisc),
     fileLBN(lbn),
     filesize(size),
     nameSize(namesize),
@@ -32,7 +32,7 @@ CDIFile::CDIFile(CDIDisk& cdidisk, uint32_t lbn, uint32_t size, uint8_t namesize
  */
 void CDIFile::ExportAudio(std::string directoryPath)
 {
-    uint32_t pos = disk.Tell();
+    uint32_t pos = disc.Tell();
     int maxChannel = 0;
 
     for(int channel = 0; channel <= maxChannel; channel++)
@@ -42,35 +42,35 @@ void CDIFile::ExportAudio(std::string directoryPath)
         std::vector<int16_t> left;
         std::vector<int16_t> right;
 
-        disk.GotoLBN(fileLBN);
+        disc.GotoLBN(fileLBN);
 
         uint8_t record = 0;
         int32_t sizeLeft = filesize;
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-            if(disk.subheader.ChannelNumber > maxChannel)
-                maxChannel = disk.subheader.ChannelNumber;
+            if(disc.subheader.ChannelNumber > maxChannel)
+                maxChannel = disc.subheader.ChannelNumber;
 
-            if(!(disk.subheader.Submode & cdia) || disk.subheader.ChannelNumber != channel)
+            if(!(disc.subheader.Submode & cdia) || disc.subheader.ChannelNumber != channel)
             {
-                disk.GotoNextSector();
+                disc.GotoNextSector();
                 continue;
             }
 
-            // bool emph = disk.subheader.CodingInformation & Audio::CodingInformation::emphasis;
-            bool bps = disk.subheader.CodingInformation & Audio::CodingInformation::bps;
-            bool sf = disk.subheader.CodingInformation & Audio::CodingInformation::sf;
-            bool ms = disk.subheader.CodingInformation & Audio::CodingInformation::ms;
+            // bool emph = disc.subheader.CodingInformation & Audio::CodingInformation::emphasis;
+            bool bps = disc.subheader.CodingInformation & Audio::CodingInformation::bps;
+            bool sf = disc.subheader.CodingInformation & Audio::CodingInformation::sf;
+            bool ms = disc.subheader.CodingInformation & Audio::CodingInformation::ms;
 
             uint8_t data[2304];
-            disk.GetRaw((char*)data, 2304);
+            disc.GetRaw((char*)data, 2304);
             Audio::decodeAudioSector(bps, ms, data, left, right);
 
             wavHeader.channelNumber = ms + 1;
             wavHeader.frequency = bps ? 37800 : (sf ? 18900 : 37800);
 
-            if(disk.subheader.Submode & cdieor)
+            if(disc.subheader.Submode & cdieor)
             {
                 std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + ".wav", std::ios::binary | std::ios::out);
                 Audio::writeWAV(out, wavHeader, left, right);
@@ -79,7 +79,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
                 right.clear();
             }
 
-            disk.GotoNextSector();
+            disc.GotoNextSector();
         }
 
         if(left.size())
@@ -90,16 +90,16 @@ void CDIFile::ExportAudio(std::string directoryPath)
         }
     }
 
-    disk.Seek(pos);
+    disc.Seek(pos);
 }
 
-/** \brief Write the content of the file (as stored in the ROM) on disk.
+/** \brief Write the content of the file (as stored in the ROM) on disc.
  *
  * \param  directoryPath Path to the directory where the file will be written (must end with a '/').
  */
 void CDIFile::ExportFile(std::string directoryPath)
 {
-    const uint32_t pos = disk.Tell();
+    const uint32_t pos = disc.Tell();
 
     std::ofstream out(directoryPath + filename, std::ios::out | std::ios::binary);
 
@@ -110,7 +110,7 @@ void CDIFile::ExportFile(std::string directoryPath)
     delete[] data;
 
     out.close();
-    disk.Seek(pos);
+    disc.Seek(pos);
 }
 
 /** \brief Export the video data of the file.
@@ -122,7 +122,7 @@ void CDIFile::ExportFile(std::string directoryPath)
  */
 void CDIFile::ExportVideo(std::string directoryPath)
 {
-    uint32_t pos = disk.Tell();
+    uint32_t pos = disc.Tell();
     int maxChannel = 0;
 
     for(int channel = 0; channel <= maxChannel; channel++)
@@ -130,47 +130,47 @@ void CDIFile::ExportVideo(std::string directoryPath)
         uint16_t width, height, y = 0;
         uint8_t pixels[768 * 560 * 3] = {0};
 
-        disk.GotoLBN(fileLBN);
+        disc.GotoLBN(fileLBN);
 
         uint8_t record = 0;
         int32_t sizeLeft = filesize;
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-            if(disk.subheader.ChannelNumber > maxChannel)
-                maxChannel = disk.subheader.ChannelNumber;
+            if(disc.subheader.ChannelNumber > maxChannel)
+                maxChannel = disc.subheader.ChannelNumber;
 
-            if(disk.subheader.Submode & cdid) // Get CLUT table from a sector before the video data
+            if(disc.subheader.Submode & cdid) // Get CLUT table from a sector before the video data
             {
                 uint8_t data[2048];
-                disk.GetRaw((char*)data, 2048);
+                disc.GetRaw((char*)data, 2048);
 
                 char* clut = (char*)subarrayOfArray(data, 2048, "cluts", 5);
                 if(clut != NULL)
                 {
-                    disk.Seek(-2026, std::ios::cur);
-                    const uint16_t offset = disk.GetWord();
+                    disc.Seek(-2026, std::ios::cur);
+                    const uint16_t offset = disc.GetWord();
 
-                    disk.Seek(0x2A, std::ios::cur);
-                    std::string cluts = disk.GetString(5);
+                    disc.Seek(0x2A, std::ios::cur);
+                    std::string cluts = disc.GetString(5);
 
                     if(cluts.compare("cluts") != 0)
                         continue;
 
-                    disk.Seek(offset - 0x2A - 0x16 - 5 - 2, std::ios::cur);
+                    disc.Seek(offset - 0x2A - 0x16 - 5 - 2, std::ios::cur);
                     for(int bank = 0; bank < 256 * 3; bank += 64 * 3)
                         for(int i = 0; i < 64; i++)
                         {
-                            uint8_t addr = disk.GetByte();
+                            uint8_t addr = disc.GetByte();
                             if(addr == 0)
                             {
                                 bank = 256 * 3;
                                 break;
                             }
                             addr -= 0x80;
-                            Video::CLUT[bank + 3 * addr] = disk.GetByte();
-                            Video::CLUT[bank + 3 * addr + 1] = disk.GetByte();
-                            Video::CLUT[bank + 3 * addr + 2] = disk.GetByte();
+                            Video::CLUT[bank + 3 * addr] = disc.GetByte();
+                            Video::CLUT[bank + 3 * addr + 1] = disc.GetByte();
+                            Video::CLUT[bank + 3 * addr + 2] = disc.GetByte();
                         }
                 }
                 else // simply copy the first 128 colors
@@ -183,20 +183,20 @@ void CDIFile::ExportVideo(std::string directoryPath)
                     }
                 }
 
-                disk.GotoNextSector();
+                disc.GotoNextSector();
                 continue;
             }
 
-            if(!(disk.subheader.Submode & cdiv) || disk.subheader.ChannelNumber != channel)
+            if(!(disc.subheader.Submode & cdiv) || disc.subheader.ChannelNumber != channel)
             {
-                disk.GotoNextSector();
+                disc.GotoNextSector();
                 continue;
             }
 
-            bool ascf = disk.subheader.CodingInformation & Video::CodingInformation::ascf;
-            // bool eolf = disk.subheader.CodingInformation & Video::CodingInformation::eolf;
-            uint8_t resolution  = (disk.subheader.CodingInformation & Video::CodingInformation::resolution) >> 2;
-            uint8_t coding = disk.subheader.CodingInformation & Video::CodingInformation::coding;
+            bool ascf = disc.subheader.CodingInformation & Video::CodingInformation::ascf;
+            // bool eolf = disc.subheader.CodingInformation & Video::CodingInformation::eolf;
+            uint8_t resolution  = (disc.subheader.CodingInformation & Video::CodingInformation::resolution) >> 2;
+            uint8_t coding = disc.subheader.CodingInformation & Video::CodingInformation::coding;
 
             if(ascf)
                 continue;
@@ -207,7 +207,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
             width = resolution == 0 ? 360 : 720;
             height = resolution == 3 ? 490 : 245;
 
-            disk.GetRaw((char*)data, 2324);
+            disc.GetRaw((char*)data, 2324);
 
             while(index < 2324)
             {
@@ -239,11 +239,11 @@ void CDIFile::ExportVideo(std::string directoryPath)
                 }
             }
 
-            disk.GotoNextSector();
+            disc.GotoNextSector();
         }
     }
 
-    disk.Seek(pos);
+    disc.Seek(pos);
 }
 
 /** \brief Get the file content.
@@ -253,7 +253,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
  */
 char* CDIFile::GetFileContent(uint32_t& size)
 {
-    const uint32_t pos = disk.Tell();
+    const uint32_t pos = disc.Tell();
 
     uint32_t readSize = (double)filesize / 2048.0 * 2324.0;
     char* data = new (std::nothrow) char[readSize];
@@ -264,10 +264,10 @@ char* CDIFile::GetFileContent(uint32_t& size)
     }
 
     readSize = filesize;
-    disk.GotoLBN(fileLBN);
-    disk.GetData(data, readSize, true);
+    disc.GotoLBN(fileLBN);
+    disc.GetData(data, readSize, true);
     size = readSize;
 
-    disk.Seek(pos);
+    disc.Seek(pos);
     return data;
 }

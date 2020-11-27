@@ -2,14 +2,14 @@
 #include "../Boards/MiniMMC/MiniMMC.hpp"
 #include "../Boards/Mono3/Mono3.hpp"
 
-CDI::CDI() : disk()
+CDI::CDI() : disc()
 {
     board = nullptr;
 }
 
 CDI::~CDI()
 {
-    disk.Close();
+    disc.Close();
     delete board;
 }
 

@@ -111,7 +111,7 @@ void MainFrame::RefreshTitle(wxTimerEvent& event)
         freq = (app->cdi->board->cpu.totalCycleCount - (long double)oldCycleCount) / 1000000.0;
         oldCycleCount = app->cdi->board->cpu.totalCycleCount;
     }
-    SetTitle((!app->cdi->disk.gameName.empty() ? app->cdi->disk.gameName + " | " : "") + (app->cdi->board ? app->biosName + " | " : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
+    SetTitle((!app->cdi->disc.gameName.empty() ? app->cdi->disc.gameName + " | " : "") + (app->cdi->board ? app->biosName + " | " : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
@@ -138,7 +138,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 
     if(Config::skipBIOS)
     {
-        CDIFile* module = app->cdi->disk.GetFile(app->cdi->disk.mainModule);
+        CDIFile* module = app->cdi->disc.GetFile(app->cdi->disc.mainModule);
         uint32_t size;
         char* d = module->GetFileContent(size);
         if(d != nullptr && size)
@@ -161,7 +161,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 void MainFrame::OnCloseROM(wxCommandEvent& event)
 {
     app->StopGameThread();
-    app->cdi->disk.Close();
+    app->cdi->disc.Close();
 }
 
 void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
@@ -264,7 +264,7 @@ void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
     SetStatusText("Exporting files...");
     if(app->cdi)
-        app->cdi->disk.ExportFiles();
+        app->cdi->disc.ExportFiles();
     else
         wxMessageBox("No ROM loaded, no file to export");
     SetStatusText("Files exported!");
@@ -274,7 +274,7 @@ void MainFrame::OnExportAudio(wxCommandEvent& event)
 {
     SetStatusText("Exporting audio...");
     if(app->cdi)
-        app->cdi->disk.ExportAudio();
+        app->cdi->disc.ExportAudio();
     SetStatusText("Audio exported!");
 }
 
@@ -282,7 +282,7 @@ void MainFrame::OnExportVideo(wxCommandEvent& event)
 {
     SetStatusText("Exporting video...");
     if(app->cdi)
-        app->cdi->disk.ExportVideo();
+        app->cdi->disc.ExportVideo();
     SetStatusText("Video exported!");
 }
 

@@ -1,5 +1,5 @@
 #include "CDIDirectory.hpp"
-#include "CDIDisk.hpp"
+#include "CDIDisc.hpp"
 #include "../utils.hpp"
 
 #include <wx/msgdlg.h>
@@ -21,73 +21,73 @@ CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uin
 
 /** \brief Load the content of the directory.
  *
- * \param  disk A reference to the CDIDisk containing the directory.
+ * \param  disc A reference to the CDIDisc containing the directory.
  *
- * Reads the directory content from the disk and recursively loads its subdirectories' content.
+ * Reads the directory content from the disc and recursively loads its subdirectories' content.
  */
-void CDIDirectory::LoadContent(CDIDisk& disk)
+void CDIDirectory::LoadContent(CDIDisc& disc)
 {
-    const uint32_t pos = disk.Tell();
+    const uint32_t pos = disc.Tell();
     uint8_t c;
 
-    disk.GotoLBN(dirLBN);
-    c = disk.GetByte();
-    disk.Seek(c-1, std::ios::cur); // describe the current directory, so we skip it
-    c = disk.GetByte();
-    disk.Seek(c-1, std::ios::cur); // describe the parent directory, so we skip it
+    disc.GotoLBN(dirLBN);
+    c = disc.GetByte();
+    disc.Seek(c-1, std::ios::cur); // describe the current directory, so we skip it
+    c = disc.GetByte();
+    disc.Seek(c-1, std::ios::cur); // describe the parent directory, so we skip it
 
     do
     {
-        while((disk.Tell() % 2352) < 2072)
+        while((disc.Tell() % 2352) < 2072)
         {
             uint8_t namesize, filenumber;
             uint16_t attributes;
             uint32_t lbn, filesize;
             std::string name;
 
-            c = disk.GetByte(); // record length
+            c = disc.GetByte(); // record length
             if(c == 0)
                 break;
 
-            disk.Seek(5, std::ios::cur);
-            lbn = disk.GetLong();
+            disc.Seek(5, std::ios::cur);
+            lbn = disc.GetLong();
 
-            disk.Seek(4, std::ios::cur);
-            filesize = disk.GetLong();
+            disc.Seek(4, std::ios::cur);
+            filesize = disc.GetLong();
 
-            disk.Seek(14, std::ios::cur);
+            disc.Seek(14, std::ios::cur);
 
-            namesize = disk.GetByte();
-            name = disk.GetString(namesize, 0);
+            namesize = disc.GetByte();
+            name = disc.GetString(namesize, 0);
             if(isEven(namesize))
-                disk.GetByte();
+                disc.GetByte();
 
-            disk.Seek(4, std::ios::cur); // skip Owner ID
-            attributes = disk.GetWord();
+            disc.Seek(4, std::ios::cur); // skip Owner ID
+            attributes = disc.GetWord();
 
-            disk.Seek(2, std::ios::cur);
-            filenumber = disk.GetByte();
-            disk.GetByte(); // last byte is reserved
+            disc.Seek(2, std::ios::cur);
+            filenumber = disc.GetByte();
+            disc.GetByte(); // last byte is reserved
 
             if(attributes & 0x8000) // directory
             {
                 std::pair<std::map<std::string, CDIDirectory>::iterator, bool> dir = subdirectories.emplace(name, CDIDirectory(namesize, name, lbn, relOffset, 0));
                 if(dir.second)
                 {
-                    dir.first->second.LoadContent(disk);
+                    dir.first->second.LoadContent(disc);
                 }
                 else
                     wxMessageBox(name + " already exists in the current directory " + dirname);
             }
             else // file
             {
-                files.emplace(name, CDIFile(disk, lbn, filesize, namesize, name, attributes, filenumber, relOffset));
+                files.emplace(name, CDIFile(disc, lbn, filesize, namesize, name, attributes, filenumber, relOffset));
             }
         }
-        if(!(disk.subheader.Submode & cdieof))
-            disk.GotoNextSector();
-    } while(!(disk.subheader.Submode & cdieof)); // in case the directory structure is spreaded over several sectors
-    disk.Seek(pos);
+        if(!(disc.subheader.Submode & cdieof))
+            disc.GotoNextSector();
+    } while(!(disc.subheader.Submode & cdieof)); // in case the directory structure is spreaded over several sectors
+    disc.Seek(pos);
 }
 
 /** \brief Get file from its path in the directory.
@@ -124,7 +124,7 @@ CDIFile* CDIDirectory::GetFile(std::string filename)
 
 /** \brief Clear the directory content.
  *
- * Delete the loaded files and subdirectories of this directory (does not delete them from the disk).
+ * Delete the loaded files and subdirectories of this directory (does not delete them from the disc).
  */
 void CDIDirectory::Clear()
 {

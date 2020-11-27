@@ -1,13 +1,13 @@
 #ifndef CDI_HPP
 #define CDI_HPP
 
-#include "CDIDisk.hpp"
+#include "CDIDisc.hpp"
 #include "../Boards/Board.hpp"
 
 class CDI
 {
 public:
-    CDIDisk disk;
+    CDIDisc disc;
     Board* board;
 
     CDI();

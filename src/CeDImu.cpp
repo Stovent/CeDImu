@@ -76,7 +76,7 @@ bool CeDImu::InitializeCores()
 
 bool CeDImu::InitializeCDI(const char* pathToROM)
 {
-    return cdi->disk.Open(pathToROM);
+    return cdi->disc.Open(pathToROM);
 }
 
 void CeDImu::IncreaseEmulationSpeed()

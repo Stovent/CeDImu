@@ -1,5 +1,5 @@
-#ifndef CDIDISK_HPP
-#define CDIDISK_HPP
+#ifndef CDIDISC_HPP
+#define CDIDISC_HPP
 
 #include "CDIDirectory.hpp"
 #include "CDIFile.hpp"
@@ -35,9 +35,9 @@ enum SubmodeBits
     cdiany  = 0b00001110, // Any type of sector
 };
 
-class CDIDisk
+class CDIDisc
 {
-    std::ifstream disk;
+    std::ifstream disc;
 
     void UpdateSectorInfo();
     bool CreateSubfoldersFromROMDirectory(std::string path = "");
@@ -51,9 +51,9 @@ public:
     std::string romPath;
     std::string gameFolder; // romPath + gameName + "/"
 
-    CDIDisk() : disk(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
-    CDIDisk(const CDIDisk&) = delete;
-    CDIDisk(const CDIDisk&&) = delete;
+    CDIDisc() : disc(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
+    CDIDisc(const CDIDisc&) = delete;
+    CDIDisc(const CDIDisc&&) = delete;
 
     bool Open(const std::string& filename);
     bool IsOpen() const;
@@ -86,4 +86,4 @@ public:
     inline uint16_t GetSectorDataSize() const { return (subheader.Submode & cdiform) ? 2324 : 2048; }
 };
 
-#endif // CDIDISK_HPP
+#endif // CDIDISC_HPP

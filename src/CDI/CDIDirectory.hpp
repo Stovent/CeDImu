@@ -2,7 +2,7 @@
 #define CDIDIRECTORY_HPP
 
 #include "CDIFile.hpp"
-class CDIDisk;
+class CDIDisc;
 
 #include <map>
 #include <string>
@@ -23,7 +23,7 @@ struct CDIDirectory
     CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset);
 
     void Clear();
-    void LoadContent(CDIDisk& disk);
+    void LoadContent(CDIDisc& disc);
     CDIFile* GetFile(std::string filename);
 
     std::stringstream ExportContent() const;

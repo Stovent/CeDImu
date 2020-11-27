@@ -1,4 +1,4 @@
-#include "CDIDisk.hpp"
+#include "CDIDisc.hpp"
 #include "../utils.hpp"
 
 #include <wx/msgdlg.h>
@@ -24,7 +24,7 @@
  * Example: if the game is Alien Gate, and the ROM is in C:/ROMs/
  * then sending path = "files/CMDS/" will create C:/ROMs/Alien Gate/files/CMDS/
  */
-bool CDIDisk::CreateSubfoldersFromROMDirectory(std::string path)
+bool CDIDisc::CreateSubfoldersFromROMDirectory(std::string path)
 {
     std::string newFolder(gameFolder);
     do
@@ -50,7 +50,7 @@ bool CDIDisk::CreateSubfoldersFromROMDirectory(std::string path)
  *
  * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
-bool CDIDisk::ExportAudio()
+bool CDIDisc::ExportAudio()
 {
     if(!IsOpen())
     {
@@ -76,7 +76,7 @@ bool CDIDisk::ExportAudio()
  *
  * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
-bool CDIDisk::ExportFiles()
+bool CDIDisc::ExportFiles()
 {
     if(!IsOpen())
     {
@@ -103,7 +103,7 @@ bool CDIDisk::ExportFiles()
 
 /** \brief Export the strucure of the ROM's file system.
  */
-void CDIDisk::ExportFileSystem()
+void CDIDisc::ExportFileSystem()
 {
     if(!CreateSubfoldersFromROMDirectory())
         wxMessageBox("Could not create subfolders " + gameFolder);
@@ -119,7 +119,7 @@ void CDIDisk::ExportFileSystem()
  *
  * \return false if no ROM have been opened or if it could not create subfolders, true otherwise.
  */
-bool CDIDisk::ExportVideo()
+bool CDIDisc::ExportVideo()
 {
     if(!IsOpen())
     {
@@ -143,7 +143,7 @@ bool CDIDisk::ExportVideo()
 
 /** \brief Export the structure of the sectors in the ROM.
  */
-void CDIDisk::ExportSectorsInfo()
+void CDIDisc::ExportSectorsInfo()
 {
     if(!CreateSubfoldersFromROMDirectory())
     {
