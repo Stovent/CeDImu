@@ -7,32 +7,20 @@
 #include <sstream>
 #include <iomanip>
 
-/** \brief Create subdirectories inside the game folder.
+/** \brief Create subdirectories inside the game directory.
  *
  * \param  path The directories to create, separated by '/'.
- * \return false if a folder could not be created, true otherwise.
+ * \return false if a directory could not be created, true otherwise.
  *
- * The game folder is the directory where the ROM is located +
+ * The game directory is the directory where the ROM is located +
  * the game name inside the ROM.
- * Path must not start with an '/' and must end with an '/'.
- * An empty string only creates the game folder only (romPath + gameName).
+ * An empty string only creates the game directory only (romPath + gameName).
  * Example: if the game is Alien Gate, and the ROM is in C:/ROMs/
  * then sending path = "files/CMDS/" will create C:/ROMs/Alien Gate/files/CMDS/
  */
 bool CDIDisc::CreateSubfoldersFromROMDirectory(std::string path)
 {
-    std::string newFolder(gameFolder);
-    do
-    {
-        if(!createDirectories(newFolder))
-            return false;
-
-        uint32_t pos = path.find('/');
-        newFolder += path.substr(0, pos+1);
-        path = path.substr(pos+1);
-    } while(path.length() > 1);
-
-    return true;
+    return createDirectories(gameFolder + path);
 }
 
 /** \brief Export the audio data in the ROM.
