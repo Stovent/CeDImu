@@ -44,9 +44,6 @@ set(SRCS
 	src/CeDImu.cpp
 	src/main.cpp)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
-set(CMAKE_SOURCE_DIRECTORY ".")
-
 # comment to use wxWidgets file system functions.
 # uncomment to use C++17 file system header
 # add_definitions(-DUSE_STD_FILESYSTEM)
