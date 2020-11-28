@@ -12,7 +12,7 @@ wxIPath = C:\wxWidgets-3.0.4\include
 wxIMSWU = C:\wxWidgets-3.0.4\lib\gcc_lib\mswu
 
 obj = bin/obj/main.o bin/obj/CeDImu.o bin/obj/Config.o \
-bin/obj/Audio.o bin/obj/Video.o \
+bin/obj/Audio.o bin/obj/Video.o bin/obj/filesystem.o \
 bin/obj/MainFrame.o bin/obj/CPUViewer.o bin/obj/GamePanel.o bin/obj/RAMSearchFrame.o bin/obj/RAMSearchList.o bin/obj/VDSCViewer.o bin/obj/SlaveViewer.o bin/obj/GenericList.o \
 bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/Disassembler.o bin/obj/InstructionSet.o bin/obj/AddressingModes.o bin/obj/MemoryAccess.o bin/obj/Peripherals.o \
 bin/obj/SCC66470.o bin/obj/SCC66470DRAMInterface.o bin/obj/SCC66470Registers.o \
@@ -33,6 +33,7 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Boards/MiniMMC/Bus.cpp -o bin/obj/MiniMMCBus.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/common/Audio.cpp -o bin/obj/Audio.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/common/Video.cpp -o bin/obj/Video.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/common/filesystem.cpp -o bin/obj/filesystem.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MC68HC705C8/MC68HC705C8.cpp -o bin/obj/MC68HC705C8.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MC68HC705C8/Interpreter.cpp -o bin/obj/MC68HC705C8_Interpreter.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MC68HC705C8/MemoryAccess.cpp -o bin/obj/MC68HC705C8_MemoryAccess.o

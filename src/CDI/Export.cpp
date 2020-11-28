@@ -1,13 +1,8 @@
 #include "CDIDisc.hpp"
 #include "../utils.hpp"
+#include "../common/filesystem.hpp"
 
 #include <wx/msgdlg.h>
-
-#ifdef USE_STD_FILESYSTEM
-#include <filesystem>
-#else
-#include <wx/filefn.h>
-#endif // USE_STD_FILESYSTEM
 
 #include <sstream>
 #include <iomanip>
@@ -29,14 +24,8 @@ bool CDIDisc::CreateSubfoldersFromROMDirectory(std::string path)
     std::string newFolder(gameFolder);
     do
     {
-#ifdef USE_STD_FILESYSTEM
-        if(!std::filesystem::create_directory(newFolder))
+        if(!createDirectory(newFolder))
             return false;
-#else
-        if(!wxDirExists(newFolder))
-            if(!wxMkdir(newFolder))
-                return false;
-#endif // USE_STD_FILESYSTEM
 
         uint32_t pos = path.find('/');
         newFolder += path.substr(0, pos+1);

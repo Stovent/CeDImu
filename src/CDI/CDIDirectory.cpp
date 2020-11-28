@@ -1,14 +1,9 @@
 #include "CDIDirectory.hpp"
 #include "CDIDisc.hpp"
 #include "../utils.hpp"
+#include "../common/filesystem.hpp"
 
 #include <wx/msgdlg.h>
-
-#ifdef USE_STD_FILESYSTEM
-#include <filesystem>
-#else
-#include <wx/filefn.h>
-#endif // USE_STD_FILESYSTEM
 
 CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset) :
     nameSize(namesize),
@@ -177,14 +172,8 @@ void CDIDirectory::ExportAudio(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-#ifdef USE_STD_FILESYSTEM
-    if(!std::filesystem::create_directory(basePath))
+    if(!createDirectory(basePath))
         return;
-#else
-    if(!wxDirExists(basePath))
-        if(!wxMkdir(basePath))
-            return;
-#endif // USE_STD_FILESYSTEM
 
     for(std::pair<std::string, CDIFile> file : files)
     {
@@ -206,14 +195,8 @@ void CDIDirectory::ExportFiles(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-#ifdef USE_STD_FILESYSTEM
-    if(!std::filesystem::create_directory(basePath))
+    if(!createDirectory(basePath))
         return;
-#else
-    if(!wxDirExists(basePath))
-        if(!wxMkdir(basePath))
-            return;
-#endif // USE_STD_FILESYSTEM
 
     for(std::pair<std::string, CDIFile> file : files)
     {
@@ -235,14 +218,8 @@ void CDIDirectory::ExportVideo(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-#ifdef USE_STD_FILESYSTEM
-    if(!std::filesystem::create_directory(basePath))
+    if(!createDirectory(basePath))
         return;
-#else
-    if(!wxDirExists(basePath))
-        if(!wxMkdir(basePath))
-            return;
-#endif // USE_STD_FILESYSTEM
 
     for(std::pair<std::string, CDIFile> file : files)
     {

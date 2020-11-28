@@ -13,6 +13,7 @@ set(SRCS
 	src/Boards/MiniMMC/Bus.cpp
 	src/common/Audio.cpp
 	src/common/Video.cpp
+	src/common/filesystem.cpp
 	src/cores/MCD212/DRAMInterface.cpp
 	src/cores/MCD212/MCD212.cpp
 	src/cores/MCD212/Display.cpp
