@@ -6,21 +6,21 @@
 
 #include <fstream>
 
-typedef struct
+struct CDIHeader
 {
     uint8_t Minutes;
     uint8_t Seconds;
     uint8_t Sectors;
     uint8_t Mode; // should be 2 for CD-I tracks
-} CDIHeader;
+};
 
-typedef struct
+struct CDISubheader
 {
     uint8_t FileNumber;
     uint8_t ChannelNumber;
     uint8_t Submode;
     uint8_t CodingInformation;
-} CDISubheader;
+};
 
 enum SubmodeBits
 {

@@ -9,11 +9,11 @@ class CDIDisc;
 
 struct CDIDirectory
 {
-    uint8_t nameSize;
-    uint16_t relOffset;
-    uint16_t parentDirectory;
+    const uint8_t nameSize;
+    const uint16_t relOffset;
+    const uint16_t parentDirectory;
     uint32_t dirLBN;
-    std::string dirname;
+    const std::string dirname;
     std::string path;
 
     std::map<std::string, CDIFile> files;

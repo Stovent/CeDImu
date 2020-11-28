@@ -10,13 +10,13 @@
 #include <wx/filefn.h>
 #endif // USE_STD_FILESYSTEM
 
-CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset)
+CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset) :
+    nameSize(namesize),
+    relOffset(offset),
+    parentDirectory(parent),
+    dirLBN(lbn),
+    dirname(name)
 {
-    nameSize = namesize;
-    relOffset = offset;
-    parentDirectory = parent;
-    dirLBN = lbn;
-    dirname = name;
 }
 
 /** \brief Load the content of the directory.
