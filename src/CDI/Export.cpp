@@ -24,7 +24,7 @@ bool CDIDisc::CreateSubfoldersFromROMDirectory(std::string path)
     std::string newFolder(gameFolder);
     do
     {
-        if(!createDirectory(newFolder))
+        if(!createDirectories(newFolder))
             return false;
 
         uint32_t pos = path.find('/');

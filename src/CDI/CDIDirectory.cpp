@@ -172,7 +172,7 @@ void CDIDirectory::ExportAudio(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-    if(!createDirectory(basePath))
+    if(!createDirectories(basePath))
         return;
 
     for(std::pair<std::string, CDIFile> file : files)
@@ -195,7 +195,7 @@ void CDIDirectory::ExportFiles(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-    if(!createDirectory(basePath))
+    if(!createDirectories(basePath))
         return;
 
     for(std::pair<std::string, CDIFile> file : files)
@@ -218,7 +218,7 @@ void CDIDirectory::ExportVideo(std::string basePath) const
     if(dirname != "/")
         basePath += dirname + "/";
 
-    if(!createDirectory(basePath))
+    if(!createDirectories(basePath))
         return;
 
     for(std::pair<std::string, CDIFile> file : files)
