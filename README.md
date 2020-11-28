@@ -28,11 +28,11 @@ Package dependency: `libwxgtk3.0-dev`
 Install the dependency, then open a terminal in the root directory of the git and type:
 
 ```sh
-cmake .
+mkdir build
+cd build
+cmake ..
 make -j$(nproc --all)
 ```
-Find the executable in the bin folder
-
 ## TODO
 - [x] SCC68070
 
