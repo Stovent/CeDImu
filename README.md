@@ -58,10 +58,9 @@ make -j$(nproc --all)
   
 
 - [ ] Tools
-  - [x] Disassembler
   - [ ] RAM Search
   - [ ] Memory Viewer
-  - [ ] CPU Viewer
+  - [x] CPU Viewer
   - [x] VDSC Viewer
   - [ ] Savestates
 
