@@ -176,6 +176,85 @@ std::map<std::string, uint32_t> SCC68070::GetRegisters() const
     };
 }
 
+std::vector<CPUInternalRegister> SCC68070::GetInternalRegisters() const
+{
+    std::vector<CPUInternalRegister> v({
+        {"LIR", 0x80001001, internal[LIR], ""},
+
+        {"IDR",  0x80002001, internal[IDR],  ""},
+        {"IAR",  0x80002003, internal[IAR],  ""},
+        {"ISR",  0x80002005, internal[ISR],  ""},
+        {"ICR",  0x80002007, internal[ICR],  ""},
+        {"ICCR", 0x80002009, internal[ICCR], ""},
+
+        {"UMR",  0x80002011, internal[UMR],  ""},
+        {"USR",  0x80002013, internal[USR],  ""},
+        {"UCSR", 0x80002015, internal[UCSR], ""},
+        {"UCR",  0x80002017, internal[UCR],  ""},
+        {"UTHR", 0x80002019, internal[UTHR], "UART Transmit Holding Register"},
+        {"URHR", 0x8000201B, internal[URHR], "UART Receive Holding Register"},
+
+        {"TSR", 0x80002020, internal[TSR], ""},
+        {"TCR", 0x80002021, internal[TCR], ""},
+        {"RRH", 0x80002022, internal[RRH], ""},
+        {"RRL", 0x80002023, internal[RRL], ""},
+        {"T0H", 0x80002024, internal[T0H], ""},
+        {"T0L", 0x80002025, internal[T0L], ""},
+        {"T1H", 0x80002026, internal[T1L], ""},
+        {"T1L", 0x80002027, internal[T1L], ""},
+        {"T2H", 0x80002028, internal[T2H], ""},
+        {"T2L", 0x80002029, internal[T2L], ""},
+
+        {"PICR1", 0x80002045, internal[PICR1], ""},
+        {"PICR2", 0x80002047, internal[PICR2], ""},
+
+        {"CSR1",   0x80004000, internal[CSR1],   ""},
+        {"CER1",   0x80004001, internal[CER1],   ""},
+        {"DCR1",   0x80004004, internal[DCR1],   ""},
+        {"OCR1",   0x80004005, internal[OCR1],   ""},
+        {"SCR1",   0x80004006, internal[SCR1],   ""},
+        {"CCR1",   0x80004007, internal[CCR1],   ""},
+        {"MTCH1",  0x8000400A, internal[MTCH1],  ""},
+        {"MTCL1",  0x8000400B, internal[MTCL1],  ""},
+        {"MACH1",  0x8000400C, internal[MACH1],  ""},
+        {"MACMH1", 0x8000400D, internal[MACMH1], ""},
+        {"MACML1", 0x8000400E, internal[MACML1], ""},
+        {"MACL1",  0x8000400F, internal[MACL1],  ""},
+        {"CPR1",   0x8000402B, internal[CPR1],   ""},
+
+        {"CSR2",   0x80004040, internal[CSR2],   ""},
+        {"CER2",   0x80004041, internal[CER2],   ""},
+        {"DCR2",   0x80004044, internal[DCR2],   ""},
+        {"OCR2",   0x80004045, internal[OCR2],   ""},
+        {"SCR2",   0x80004046, internal[SCR2],   ""},
+        {"CCR2",   0x80004047, internal[CCR2],   ""},
+        {"MTCH2",  0x8000404A, internal[MTCH2],  ""},
+        {"MTCL2",  0x8000404B, internal[MTCL2],  ""},
+        {"MACH2",  0x8000404C, internal[MACH2],  ""},
+        {"MACMH2", 0x8000404D, internal[MACMH2], ""},
+        {"MACML2", 0x8000404E, internal[MACML2], ""},
+        {"MACL2",  0x8000404F, internal[MACL2],  ""},
+        {"DACH2",  0x80004054, internal[DACH2],  ""},
+        {"DACMH2", 0x80004055, internal[DACMH2], ""},
+        {"DACML2", 0x80004056, internal[DACML2], ""},
+        {"DACL2",  0x80004057, internal[DACL2],  ""},
+        {"CPR2",   0x8000406B, internal[CPR2],   ""},
+
+        {"MSR", 0x80008000, internal[MSR], ""},
+        {"MCR", 0x80008001, internal[MCR], ""},
+    });
+
+    for(uint8_t i = 0; i < 8; i++)
+    {
+        v.push_back({"ATTR "         + std::to_string(i), 0x80008040 | (i << 3), (uint16_t)(internal[ATTR + (i << 3)] << 8 | internal[ATTR + (i << 3) + 1]), ""});
+        v.push_back({"SEG LENGTH "   + std::to_string(i), 0x80008042 | (i << 3), (uint16_t)(internal[SEG_LENGTH + (i << 3)] << 8 | internal[SEG_LENGTH + (i << 3) + 1]), ""});
+        v.push_back({"SEG NUMBER "   + std::to_string(i), 0x80008045 | (i << 3), (uint16_t)(internal[SEG_NUMBER + (i << 3)] << 8), ""});
+        v.push_back({"BASE ADDRESS " + std::to_string(i), 0x80008046 | (i << 3), (uint16_t)(internal[BASE_ADDRESS + (i << 3)] << 8 | internal[BASE_ADDRESS + (i << 3) + 1]), ""});
+    }
+
+    return v;
+}
+
 uint16_t SCC68070::GetNextWord(const uint8_t flags)
 {
     uint16_t opcode = GetWord(PC, flags);

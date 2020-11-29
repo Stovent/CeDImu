@@ -195,10 +195,46 @@ enum SCC68070Peripherals : uint32_t
     PICR1 = 0x80002045 - Base, // Peripheral Interrupt Control Register 1
     PICR2 = 0x80002047 - Base, // Peripheral Interrupt Control Register 2
 
-    DMA = 0x80004000 - Base,
+    // DMA channel 1
+    CSR1   = 0x80004000 - Base, // Channel Status Register 1
+    CER1   = 0x80004001 - Base, // Channel Error Register 1
+    DCR1   = 0x80004004 - Base, // Device Control Register 1
+    OCR1   = 0x80004005 - Base, // Operation Control Register 1
+    SCR1   = 0x80004006 - Base, // Sequence Control Register 1
+    CCR1   = 0x80004007 - Base, // Channel Control Register 1
+    MTCH1  = 0x8000400A - Base, // Memory Transfer Counter High 1
+    MTCL1  = 0x8000400B - Base, // Memory Transfer Counter Low 1
+    MACH1  = 0x8000400C - Base, // Memory Address Counter High 1
+    MACMH1 = 0x8000400D - Base, // Memory Address Counter Middle High 1
+    MACML1 = 0x8000400E - Base, // Memory Address Counter Middle Low 1
+    MACL1  = 0x8000400F - Base, // Memory Address Counter Low 1
+    CPR1   = 0x8000402B - Base, // Channel Priority Register 1
 
-    MSR = 0x80008000 - Base, // MMU Status Register
-    MCR = 0x80008001 - Base, // MMU Control Register
+    // DMA channel 2
+    CSR2   = 0x80004040 - Base, // Channel Status Register 2
+    CER2   = 0x80004041 - Base, // Channel Error Register 2
+    DCR2   = 0x80004044 - Base, // Device Control Register 2
+    OCR2   = 0x80004045 - Base, // Operation Control Register 2
+    SCR2   = 0x80004046 - Base, // Sequence Control Register 2
+    CCR2   = 0x80004047 - Base, // Channel Control Register 2
+    MTCH2  = 0x8000404A - Base, // Memory Transfer Counter High 2
+    MTCL2  = 0x8000404B - Base, // Memory Transfer Counter Low 2
+    MACH2  = 0x8000404C - Base, // Memory Address Counter High 2
+    MACMH2 = 0x8000404D - Base, // Memory Address Counter Middle High 2
+    MACML2 = 0x8000404E - Base, // Memory Address Counter Middle Low 2
+    MACL2  = 0x8000404F - Base, // Memory Address Counter Low 2
+    DACH2  = 0x80004054 - Base, // Device Address Counter High 2
+    DACMH2 = 0x80004055 - Base, // Device Address Counter Middle High 2
+    DACML2 = 0x80004056 - Base, // Device Address Counter Middle Low 2
+    DACL2  = 0x80004057 - Base, // Device Address Counter Low 2
+    CPR2   = 0x8000406B - Base, // Channel Priority Register 2
+
+    MSR  = 0x80008000 - Base, // MMU Status Register
+    MCR  = 0x80008001 - Base, // MMU Control Register
+    ATTR = 0x80008040 - Base,
+    SEG_LENGTH = 0x80008042 - Base,
+    SEG_NUMBER = 0x80008045 - Base,
+    BASE_ADDRESS = 0x80008046 - Base,
 };
 
 enum class CPURegisters : uint16_t
@@ -236,6 +272,14 @@ public:
     SCC68070Exception(const SCC68070Exception&) = default;
 };
 
+struct CPUInternalRegister
+{
+    std::string name;
+    uint32_t address;
+    uint16_t value;
+    std::string disassembledValue;
+};
+
 bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs);
 
 class SCC68070
@@ -263,6 +307,7 @@ public:
 
     void SetRegister(CPURegisters reg, const uint32_t value);
     std::map<std::string, uint32_t> GetRegisters() const;
+    std::vector<CPUInternalRegister> GetInternalRegisters() const;
 
 private:
     Board* board;
