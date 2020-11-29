@@ -20,14 +20,14 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
     EVT_MENU(IDMainFrameOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
-    EVT_MENU(IDMainFrameOnRebootCore, MainFrame::OnRebootCore)
-    EVT_MENU(IDMainFrameOnSlaveViewer, MainFrame::OnSlaveViewer)
-    EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
-    EVT_MENU(IDMainFrameOnCPUViewer, MainFrame::OnCPUViewer)
+    EVT_MENU(IDMainFrameOnRebootCore,  MainFrame::OnRebootCore)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
-    EVT_MENU(IDMainFrameOnRAMSearch, MainFrame::OnRAMSearch)
+    EVT_MENU(IDMainFrameOnCPUViewer,   MainFrame::OnCPUViewer)
+    EVT_MENU(IDMainFrameOnVDSCViewer,  MainFrame::OnVDSCViewer)
+    EVT_MENU(IDMainFrameOnRAMSearch,   MainFrame::OnRAMSearch)
+    EVT_MENU(IDMainFrameOnSlaveViewer, MainFrame::OnSlaveViewer)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
     EVT_MENU(IDMainFrameOnAbout, MainFrame::OnAbout)
     EVT_TIMER(wxID_ANY, MainFrame::RefreshTitle)
@@ -228,38 +228,6 @@ void MainFrame::OnRebootCore(wxCommandEvent& event)
         app->InitializeCores();
 }
 
-void MainFrame::OnSlaveViewer(wxCommandEvent& event)
-{
-    if(slaveViewer != nullptr || !app->cdi->board)
-        return;
-    slaveViewer = new SlaveViewer(this, &app->cdi->board->slave);
-    slaveViewer->Show();
-}
-
-void MainFrame::OnVDSCViewer(wxCommandEvent& event)
-{
-    if(vdscViewer != nullptr || !app->cdi->board)
-        return;
-    vdscViewer = new VDSCViewer(this, app->cdi->board);
-    vdscViewer->Show();
-}
-
-void MainFrame::OnCPUViewer(wxCommandEvent& event)
-{
-    if(cpuViewer != nullptr || !app->cdi->board)
-        return;
-    cpuViewer = new CPUViewer(&app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(600, 600));
-    cpuViewer->Show();
-}
-
-void MainFrame::OnRAMSearch(wxCommandEvent& event)
-{
-    if(ramSearchFrame != nullptr || !app->cdi->board)
-        return;
-    ramSearchFrame = new RAMSearchFrame(app->cdi->board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
-    ramSearchFrame->Show();
-}
-
 void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
     SetStatusText("Exporting files...");
@@ -284,6 +252,38 @@ void MainFrame::OnExportVideo(wxCommandEvent& event)
     if(app->cdi)
         app->cdi->disc.ExportVideo();
     SetStatusText("Video exported!");
+}
+
+void MainFrame::OnCPUViewer(wxCommandEvent& event)
+{
+    if(cpuViewer != nullptr || !app->cdi->board)
+        return;
+    cpuViewer = new CPUViewer(&app->cdi->board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(700, 600));
+    cpuViewer->Show();
+}
+
+void MainFrame::OnVDSCViewer(wxCommandEvent& event)
+{
+    if(vdscViewer != nullptr || !app->cdi->board)
+        return;
+    vdscViewer = new VDSCViewer(this, app->cdi->board);
+    vdscViewer->Show();
+}
+
+void MainFrame::OnRAMSearch(wxCommandEvent& event)
+{
+    if(ramSearchFrame != nullptr || !app->cdi->board)
+        return;
+    ramSearchFrame = new RAMSearchFrame(app->cdi->board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
+    ramSearchFrame->Show();
+}
+
+void MainFrame::OnSlaveViewer(wxCommandEvent& event)
+{
+    if(slaveViewer != nullptr || !app->cdi->board)
+        return;
+    slaveViewer = new SlaveViewer(this, &app->cdi->board->slave);
+    slaveViewer->Show();
 }
 
 void MainFrame::OnSettings(wxCommandEvent& event)

@@ -5,9 +5,10 @@ class CPUViewer;
 
 #include <sstream>
 
-#include <wx/textctrl.h>
 #include <wx/frame.h>
+#include <wx/listctrl.h>
 #include <wx/sizer.h>
+#include <wx/textctrl.h>
 #include <wx/timer.h>
 #include <wx/aui/framemanager.h>
 
@@ -28,6 +29,8 @@ public:
     MainFrame* mainFrame;
     wxTimer* renderTimer;
 
+    wxListCtrl* internalRegisters;
+    wxTextCtrl* uartOut;
     wxTextCtrl* disassembler;
     wxTextCtrl* d[8]; wxTextCtrl* a[8];
 
