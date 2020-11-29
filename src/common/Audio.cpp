@@ -1,8 +1,7 @@
 #include "Audio.hpp"
+#include "../utils.hpp"
 
 #include <cmath>
-
-#include "../utils.hpp"
 
 namespace Audio
 {

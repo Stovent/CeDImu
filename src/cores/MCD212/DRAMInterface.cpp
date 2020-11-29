@@ -1,9 +1,8 @@
 #include "MCD212.hpp"
+#include "../../utils.hpp"
 #include "../../Boards/Board.hpp"
 
 #include <iomanip>
-
-#include "../../utils.hpp"
 
 uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
 {

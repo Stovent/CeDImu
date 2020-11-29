@@ -1,9 +1,9 @@
 #include "MCD212.hpp"
 #include "../../utils.hpp"
 
-#include <iomanip>
-
 #include <wx/msgdlg.h>
+
+#include <iomanip>
 
 MCD212::MCD212(Board* board) : VDSC(board) // TD = 0
 {

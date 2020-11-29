@@ -3,9 +3,9 @@
 
 class RAMSearchList;
 
-#include <wx/listctrl.h>
-
 #include "RAMSearchFrame.hpp"
+
+#include <wx/listctrl.h>
 
 class RAMSearchList : public wxListCtrl
 {

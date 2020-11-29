@@ -1,7 +1,6 @@
 #include "SCC68070.hpp"
-
-#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
+#include "../../Boards/Board.hpp"
 
 uint8_t SCC68070::GetPeripheral(const uint32_t addr)
 {

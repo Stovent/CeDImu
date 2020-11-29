@@ -3,7 +3,8 @@
 
 class CPUViewer;
 
-#include <sstream>
+#include "../cores/SCC68070/SCC68070.hpp"
+#include "MainFrame.hpp"
 
 #include <wx/frame.h>
 #include <wx/listctrl.h>
@@ -12,8 +13,7 @@ class CPUViewer;
 #include <wx/timer.h>
 #include <wx/aui/framemanager.h>
 
-#include "../cores/SCC68070/SCC68070.hpp"
-#include "MainFrame.hpp"
+#include <sstream>
 
 class CPUViewer : public wxFrame
 {

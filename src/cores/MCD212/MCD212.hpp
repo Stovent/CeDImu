@@ -3,9 +3,9 @@
 
 class MCD212;
 
-#include <fstream>
-
 #include "../VDSC.hpp"
+
+#include <fstream>
 
 enum MCD212Registers
 {

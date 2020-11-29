@@ -1,4 +1,5 @@
 #include "Video.hpp"
+
 #include <wx/msgdlg.h>
 
 namespace Video

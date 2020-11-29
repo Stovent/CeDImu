@@ -1,8 +1,7 @@
 #include "MCD212.hpp"
+#include "../../utils.hpp"
 
 #include <cmath>
-
-#include "../../utils.hpp"
 
 // internal registers
 uint16_t MCD212::GetCSR1RRegister()

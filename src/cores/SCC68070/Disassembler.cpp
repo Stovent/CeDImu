@@ -1,7 +1,6 @@
 #include "SCC68070.hpp"
-
-#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
+#include "../../Boards/Board.hpp"
 
 std::string SCC68070::DisassembleException(const uint8_t vectorNumber)const
 {

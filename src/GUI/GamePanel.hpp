@@ -3,11 +3,11 @@
 
 class GamePanel;
 
-#include <wx/panel.h>
-#include <wx/dcclient.h>
-
 #include "../CeDImu.hpp"
 #include "MainFrame.hpp"
+
+#include <wx/panel.h>
+#include <wx/dcclient.h>
 
 class GamePanel : public wxPanel
 {

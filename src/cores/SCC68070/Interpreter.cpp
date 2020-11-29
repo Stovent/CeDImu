@@ -1,6 +1,6 @@
 #include "SCC68070.hpp"
-#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
+#include "../../Boards/Board.hpp"
 
 #include <algorithm>
 #include <chrono>

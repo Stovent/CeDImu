@@ -1,6 +1,6 @@
 #include "SCC68070.hpp"
-#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
+#include "../../Boards/Board.hpp"
 
 bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs)
 {

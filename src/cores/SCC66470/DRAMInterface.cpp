@@ -1,6 +1,6 @@
 #include "SCC66470.hpp"
-#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
+#include "../../Boards/Board.hpp"
 
 #include <iomanip>
 

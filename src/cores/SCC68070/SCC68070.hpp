@@ -1,10 +1,10 @@
 #ifndef SCC68070_HPP
 #define SCC68070_HPP
 
-#include "../../common/flags.hpp"
 class Board;
 class SCC68070;
 class SCC68070Exception;
+#include "../../common/flags.hpp"
 
 #include <cstdint>
 #include <fstream>
@@ -272,6 +272,8 @@ public:
     SCC68070Exception(const SCC68070Exception&) = default;
 };
 
+bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs);
+
 struct CPUInternalRegister
 {
     std::string name;
@@ -279,8 +281,6 @@ struct CPUInternalRegister
     uint16_t value;
     std::string disassembledValue;
 };
-
-bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs);
 
 class SCC68070
 {

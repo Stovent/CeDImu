@@ -1,7 +1,6 @@
 #include "SCC68070.hpp"
-
-#include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
+#include "../../Boards/Board.hpp"
 
 int32_t SCC68070::GetIndexRegister(const uint16_t bew)
 {

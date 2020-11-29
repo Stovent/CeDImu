@@ -3,10 +3,10 @@
 
 class Mono3;
 
-#include <fstream>
-
 #include "../Board.hpp"
 #include "../../cores/MCD212/MCD212.hpp"
+
+#include <fstream>
 
 class Mono3 : public Board
 {

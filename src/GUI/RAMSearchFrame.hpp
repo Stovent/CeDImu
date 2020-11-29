@@ -3,14 +3,14 @@
 
 class RAMSearchFrame;
 
+#include "MainFrame.hpp"
+#include "RAMSearchList.hpp"
+#include "../Boards/Board.hpp"
+
 #include <wx/frame.h>
 #include <wx/timer.h>
 #include <wx/radiobut.h>
 #include <wx/checkbox.h>
-
-#include "MainFrame.hpp"
-#include "RAMSearchList.hpp"
-#include "../Boards/Board.hpp"
 
 class RAMSearchFrame : public wxFrame
 {

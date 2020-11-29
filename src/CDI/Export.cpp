@@ -4,8 +4,8 @@
 
 #include <wx/msgdlg.h>
 
-#include <sstream>
 #include <iomanip>
+#include <sstream>
 
 /** \brief Create subdirectories inside the game directory.
  *

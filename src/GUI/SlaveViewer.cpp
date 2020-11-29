@@ -3,11 +3,11 @@
 #include "MainFrame.hpp"
 #include "../cores/MC68HC705C8/MC68HC705C8.hpp"
 
+#include <wx/dcclient.h>
+
 #include <algorithm>
 #include <iterator>
 #include <sstream>
-
-#include <wx/dcclient.h>
 
 wxBEGIN_EVENT_TABLE(SlaveViewer, wxFrame)
     EVT_TIMER(IDSlaveViewerTimer, SlaveViewer::RefreshLoop)

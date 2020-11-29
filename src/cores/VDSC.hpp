@@ -3,14 +3,14 @@
 
 class VDSC;
 
-#include <string>
-#include <vector>
-#include <functional>
+class Board;
+#include "../common/flags.hpp"
 
 #include <wx/image.h>
 
-#include "../common/flags.hpp"
-class Board;
+#include <string>
+#include <vector>
+#include <functional>
 
 struct VDSCRegister
 {
