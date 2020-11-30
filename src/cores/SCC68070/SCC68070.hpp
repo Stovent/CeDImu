@@ -393,8 +393,8 @@ private:
     void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger);
 
     // Peripherals
-    uint8_t GetPeripheral(const uint32_t addr);
-    void SetPeripheral(const uint32_t addr, const uint8_t data);
+    uint8_t GetPeripheral(uint32_t addr);
+    void SetPeripheral(uint32_t addr, const uint8_t data);
 
     // Conditional Codes
     bool T() const;

@@ -2,22 +2,26 @@
 #include "../../utils.hpp"
 #include "../../Boards/Board.hpp"
 
-uint8_t SCC68070::GetPeripheral(const uint32_t addr)
+uint8_t SCC68070::GetPeripheral(uint32_t addr)
 {
-    if(addr == 0x8000201B)
+    addr -= SCC68070Peripherals::Base;
+
+    if(addr == URHR)
     {
         internal[URHR] = board->CPUGetUART();
         LOG(disassembledInstructions.push_back("\tURHR: 0x" + toHex(internal[URHR]))) // this or data ?
     }
 
-    return internal[addr - SCC68070Peripherals::Base];
+    return internal[addr];
 }
 
-void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
+void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
 {
-    internal[addr - SCC68070Peripherals::Base] = data;
+    addr -= SCC68070Peripherals::Base;
+    if(addr != MSR)
+        internal[addr] = data;
 
-    if(addr == 0x80002017) // UART Command Register
+    if(addr == UCR) // UART Command Register
     {
         switch(data & 0x70)
         {
@@ -41,7 +45,7 @@ void SCC68070::SetPeripheral(const uint32_t addr, const uint8_t data)
         if(data & 0x08)
             UNSET_TX_READY();
     }
-    else if(addr == 0x80002019) // UART Transmit Holding Register
+    else if(addr == UTHR) // UART Transmit Holding Register
     {
         board->CPUSetUART(data);
         internal[USR] |= 0x08; // set TXEMT bit
