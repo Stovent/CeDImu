@@ -26,7 +26,7 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledIn
 
 SCC68070::~SCC68070()
 {
-    Stop();
+    Stop(false);
     FlushDisassembler();
     delete[] ILUT;
     delete[] DLUT;
