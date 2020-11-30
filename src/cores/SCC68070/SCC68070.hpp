@@ -290,6 +290,7 @@ public:
     uint64_t totalCycleCount;
 
     std::vector<std::string> disassembledInstructions;
+    std::vector<uint32_t> breakpoints;
 
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;

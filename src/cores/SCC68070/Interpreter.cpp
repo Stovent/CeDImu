@@ -35,6 +35,9 @@ void SCC68070::Interpreter()
             exceptions.push(e);
         }
 
+        if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
+            loop = false;
+
         cycleCount += executionCycles;
         totalCycleCount += executionCycles;
         board->slave.Execute(executionCycles);
