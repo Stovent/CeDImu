@@ -148,7 +148,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
             address += app->cdi->board->GetLong(address + 0x30, NoFlags);
-            uint8_t arr[4] = {address >> 24, address >> 16, address >> 8, address};
+            uint8_t arr[4] = {(uint8_t)(address >> 24), (uint8_t)(address >> 16), (uint8_t)(address >> 8), (uint8_t)(address)};
             app->cdi->board->WriteToBIOSArea(arr, 4, 4);
         }
     }
