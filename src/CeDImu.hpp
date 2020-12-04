@@ -15,7 +15,7 @@ class CeDImu;
 class CeDImu : public wxApp
 {
 public:
-    CDI* cdi;
+    CDI cdi;
     std::string biosName;
 
     MainFrame* mainFrame;

@@ -7,8 +7,6 @@ bool CeDImu::OnInit()
 {
     Config::loadConfig();
 
-    cdi = new CDI();
-
     cpuFrequencyIndex = 5;
 
     mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
@@ -21,7 +19,6 @@ bool CeDImu::OnInit()
 int CeDImu::OnExit()
 {
     StopGameThread();
-    delete cdi;
     Config::saveConfig();
     return 0;
 }
@@ -56,7 +53,7 @@ bool CeDImu::InitializeCores()
     fread(slave, 1, slaveSize, ff);;
     fclose(ff);
 
-    cdi->LoadBoard(bios, biosSize, slave, slaveSize);
+    cdi.LoadBoard(bios, biosSize, slave, slaveSize);
     delete[] bios;
     delete[] slave;
 
@@ -66,17 +63,17 @@ bool CeDImu::InitializeCores()
     biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('/')+1);
 #endif // _WIN32
 
-    cdi->board->SetOnFrameCompletedCallback([=] () -> void {
+    cdi.board->SetOnFrameCompletedCallback([=] () -> void {
         mainFrame->gamePanel->RefreshScreen();
     });
 
-    cdi->board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+    cdi.board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     return true;
 }
 
 bool CeDImu::InitializeCDI(const char* pathToROM)
 {
-    return cdi->disc.Open(pathToROM);
+    return cdi.disc.Open(pathToROM);
 }
 
 void CeDImu::IncreaseEmulationSpeed()
@@ -84,8 +81,8 @@ void CeDImu::IncreaseEmulationSpeed()
     if(cpuFrequencyIndex < 11)
     {
         cpuFrequencyIndex++;
-        if(cdi->board)
-            cdi->board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+        if(cdi.board)
+            cdi.board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     }
 }
 
@@ -94,19 +91,19 @@ void CeDImu::DecreaseEmulationSpeed()
     if(cpuFrequencyIndex > 0)
     {
         cpuFrequencyIndex--;
-        if(cdi->board)
-            cdi->board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+        if(cdi.board)
+            cdi.board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
     }
 }
 
 void CeDImu::StartGameThread()
 {
-    if(cdi->board)
-        cdi->board->cpu.Run(true);
+    if(cdi.board)
+        cdi.board->cpu.Run(true);
 }
 
 void CeDImu::StopGameThread()
 {
-    if(cdi->board)
-        cdi->board->cpu.Stop();
+    if(cdi.board)
+        cdi.board->cpu.Stop();
 }

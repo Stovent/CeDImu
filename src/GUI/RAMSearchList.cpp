@@ -22,7 +22,7 @@ RAMSearchList::RAMSearchList(RAMSearchFrame* parent) : wxListCtrl(parent, wxID_A
     InsertColumn(1, valueCol);
 
     EnableAlternateRowColours();
-    SetItemCount(ramSearchFrame->mainFrame->app->cdi->board->GetAllocatedMemory());
+    SetItemCount(ramSearchFrame->mainFrame->app->cdi.board->GetAllocatedMemory());
 }
 
 wxString RAMSearchList::OnGetItemText(long item, long column) const
