@@ -138,14 +138,14 @@ void CDIDisc::ExportSectorsInfo()
     while(Good())
     {
         out << std::right << std::setw(6) << std::to_string(LBN++) \
-            << std::setw(4) << std::to_string(header.Minutes) \
-            << std::setw(5) << std::to_string(header.Seconds) \
-            << std::setw(5) << std::to_string(header.Sectors) \
-            << std::setw(5) << std::to_string(header.Mode) \
-            << std::setw(5) << std::to_string(subheader.FileNumber) \
-            << std::setw(8) << std::to_string(subheader.ChannelNumber) \
-            << std::setw(9) << toBinString(subheader.Submode, 8) \
-            << std::setw(11) << toBinString(subheader.CodingInformation, 8) << std::endl;
+            << std::setw(4) << std::to_string(header.minutes) \
+            << std::setw(5) << std::to_string(header.seconds) \
+            << std::setw(5) << std::to_string(header.sectors) \
+            << std::setw(5) << std::to_string(header.mode) \
+            << std::setw(5) << std::to_string(subheader.fileNumber) \
+            << std::setw(8) << std::to_string(subheader.channelNumber) \
+            << std::setw(9) << toBinString(subheader.submode, 8) \
+            << std::setw(11) << toBinString(subheader.codingInformation, 8) << std::endl;
         GotoNextSector();
     }
     Clear();

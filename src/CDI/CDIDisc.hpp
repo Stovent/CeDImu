@@ -8,18 +8,18 @@
 
 struct CDIHeader
 {
-    uint8_t Minutes;
-    uint8_t Seconds;
-    uint8_t Sectors;
-    uint8_t Mode; // should be 2 for CD-I tracks
+    uint8_t minutes;
+    uint8_t seconds;
+    uint8_t sectors;
+    uint8_t mode; // should be 2 for CD-I tracks
 };
 
 struct CDISubheader
 {
-    uint8_t FileNumber;
-    uint8_t ChannelNumber;
-    uint8_t Submode;
-    uint8_t CodingInformation;
+    uint8_t fileNumber;
+    uint8_t channelNumber;
+    uint8_t submode;
+    uint8_t codingInformation;
 };
 
 enum SubmodeBits
@@ -82,8 +82,8 @@ public:
     bool ExportVideo();
     void ExportSectorsInfo();
 
-    inline bool IsEmptySector() const { return !(subheader.Submode & 0x0E) && !subheader.ChannelNumber && !subheader.CodingInformation; };
-    inline uint16_t GetSectorDataSize() const { return (subheader.Submode & cdiform) ? 2324 : 2048; }
+    inline bool IsEmptySector() const { return !(subheader.submode & cdiany) && !subheader.channelNumber && !subheader.codingInformation; };
+    inline uint16_t GetSectorDataSize() const { return (subheader.submode & cdiform) ? 2324 : 2048; }
 };
 
 #endif // CDIDISC_HPP

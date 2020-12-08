@@ -76,14 +76,14 @@ void CDIDisc::UpdateSectorInfo()
     char s[8];
     disc.read(s, 8);
 
-    header.Minutes = PBCDToByte(s[0]);
-    header.Seconds = PBCDToByte(s[1]);
-    header.Sectors = PBCDToByte(s[2]);
-    header.Mode = s[3];
-    subheader.FileNumber = s[4];
-    subheader.ChannelNumber = s[5];
-    subheader.Submode = s[6];
-    subheader.CodingInformation = s[7];
+    header.minutes = PBCDToByte(s[0]);
+    header.seconds = PBCDToByte(s[1]);
+    header.sectors = PBCDToByte(s[2]);
+    header.mode = s[3];
+    subheader.fileNumber = s[4];
+    subheader.channelNumber = s[5];
+    subheader.submode = s[6];
+    subheader.codingInformation = s[7];
 
     disc.seekg(tmp);
 }
@@ -209,7 +209,7 @@ bool CDIDisc::GotoNextSector(uint8_t submodeMask)
         {
             disc.seekg(2376 - disc.tellg() % 2352, std::ios::cur);
             UpdateSectorInfo();
-        } while(!(subheader.Submode & submodeMask) && Good());
+        } while(!(subheader.submode & submodeMask) && Good());
     }
     else
     {
