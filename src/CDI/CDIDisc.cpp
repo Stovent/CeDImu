@@ -62,13 +62,6 @@ bool CDIDisc::Good()
         return disc.good();
 }
 
-/** \brief Clear the status bits of the file.
- */
-void CDIDisc::Clear()
-{
-    disc.clear();
-}
-
 void CDIDisc::UpdateSectorInfo()
 {
     const uint32_t tmp = disc.tellg();
@@ -167,7 +160,7 @@ uint32_t CDIDisc::Tell()
  */
 bool CDIDisc::Seek(const uint32_t offset, std::ios::seekdir direction)
 {
-    Clear();
+    disc.clear();
     disc.seekg(offset, direction);
     UpdateSectorInfo();
     return Good();
@@ -184,7 +177,7 @@ bool CDIDisc::Seek(const uint32_t offset, std::ios::seekdir direction)
  */
 bool CDIDisc::GotoLBN(const uint32_t lbn, const uint32_t offset)
 {
-    Clear();
+    disc.clear();
     disc.seekg(lbn * 2352 + 24 + offset);
     UpdateSectorInfo();
     return Good();

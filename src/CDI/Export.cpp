@@ -148,7 +148,7 @@ void CDIDisc::ExportSectorsInfo()
             << std::setw(11) << toBinString(subheader.codingInformation, 8) << std::endl;
         GotoNextSector();
     }
-    Clear();
+    disc.clear();
 
     out.close();
     Seek(pos);

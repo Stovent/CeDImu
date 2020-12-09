@@ -249,7 +249,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
 /** \brief Get the file content.
  *
  * \param  size A reference to a uint32_t that will contain the size of the returned array.
- * \return An array containing the file content. It is the caller's responsability to delete the returned array (allocated with new[]).
+ * \return An array containing the file content, or nullptr if memory allocation failed. It is the caller's responsability to delete the returned array (allocated with new[]).
  */
 char* CDIFile::GetFileContent(uint32_t& size)
 {

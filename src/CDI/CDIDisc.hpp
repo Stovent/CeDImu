@@ -37,32 +37,18 @@ enum SubmodeBits
 
 class CDIDisc
 {
+    friend CDIFile;
+    friend CDIDirectory;
+
     std::ifstream disc;
-
-    void UpdateSectorInfo();
-    bool CreateSubfoldersFromROMDirectory(std::string path = "");
-
-public:
     CDIHeader header;
     CDISubheader subheader;
     CDIDirectory rootDirectory;
-    std::string mainModule;
-    std::string gameName;
-    std::string romPath;
-    std::string gameFolder; // romPath + gameName + "/"
-
-    CDIDisc() : disc(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
-    CDIDisc(const CDIDisc&) = delete;
-    CDIDisc(const CDIDisc&&) = delete;
-
-    bool Open(const std::string& filename);
-    bool IsOpen() const;
-    void Close();
-    bool Good();
-    void Clear();
 
     void LoadFileSystem();
-    CDIFile* GetFile(std::string path);
+
+    void UpdateSectorInfo();
+    bool CreateSubfoldersFromROMDirectory(std::string path = "");
 
     uint32_t Tell();
     bool Seek(const uint32_t offset, std::ios::seekdir direction = std::ios::beg);
@@ -76,14 +62,31 @@ public:
     uint32_t GetLong();
     std::string GetString(uint16_t length = 128, const char delim = ' ');
 
+    inline bool IsEmptySector() const { return !(subheader.submode & cdiany) && !subheader.channelNumber && !subheader.codingInformation; };
+    inline uint16_t GetSectorDataSize() const { return (subheader.submode & cdiform) ? 2324 : 2048; }
+
+public:
+    std::string mainModule;
+    std::string gameName;
+    std::string romPath;
+    std::string gameFolder; // romPath + gameName + "/"
+
+    CDIDisc() : disc(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
+    CDIDisc(const CDIDisc&) = delete;
+    CDIDisc(const CDIDisc&&) = delete;
+
+    bool Open(const std::string& filename);
+    bool IsOpen() const;
+    void Close();
+    bool Good();
+
+    CDIFile* GetFile(std::string path);
+
     bool ExportAudio();
     bool ExportFiles();
     void ExportFileSystem();
     bool ExportVideo();
     void ExportSectorsInfo();
-
-    inline bool IsEmptySector() const { return !(subheader.submode & cdiany) && !subheader.channelNumber && !subheader.codingInformation; };
-    inline uint16_t GetSectorDataSize() const { return (subheader.submode & cdiform) ? 2324 : 2048; }
 };
 
 #endif // CDIDISC_HPP
