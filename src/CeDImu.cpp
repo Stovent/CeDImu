@@ -71,11 +71,6 @@ bool CeDImu::InitializeCores()
     return true;
 }
 
-bool CeDImu::InitializeCDI(const char* pathToROM)
-{
-    return cdi.disc.Open(pathToROM);
-}
-
 void CeDImu::IncreaseEmulationSpeed()
 {
     if(cpuFrequencyIndex < 11)

@@ -130,7 +130,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 #else
     Config::ROMDirectory = openFileDialog.GetPath().BeforeLast('/');
 #endif
-    if(!app->InitializeCDI(openFileDialog.GetPath().ToStdString().c_str()))
+    if(!app->cdi.disc.Open(openFileDialog.GetPath().ToStdString()))
     {
         wxMessageBox("Could not open ROM!");
         return;

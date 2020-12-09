@@ -38,7 +38,6 @@ public:
     virtual bool OnInit() override;
     virtual int OnExit() override;
     bool InitializeCores();
-    bool InitializeCDI(const char* pathToROM);
     void IncreaseEmulationSpeed();
     void DecreaseEmulationSpeed();
     void StartGameThread();
