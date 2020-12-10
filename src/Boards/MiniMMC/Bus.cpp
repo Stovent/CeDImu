@@ -17,6 +17,13 @@ uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
+    if(addr >= 0x3F8000 && addr < 0x3FC000)
+    {
+        uint8_t data = timekeeper.GetByte((addr - 0x3F8000) >> 1);
+        LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tGet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
+        return data;
+    }
+
     LOG(out << std::hex << cpu.currentPC << "\tGet byte OUT OF RANGE at 0x" << addr << std::endl)
     return 0;
 }
@@ -73,6 +80,13 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
     if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
     {
         slaveVDSC.SetByte(addr, data, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
+        return;
+    }
+
+    if(addr >= 0x3F8000 && addr < 0x3FC000)
+    {
+        timekeeper.SetByte((addr - 0x3F8000) >> 1, data);
         LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
         return;
     }
