@@ -32,6 +32,7 @@ set(SRCS
 	src/cores/MC68HC705C8/MemoryAccess.cpp
 	src/cores/MC68HC705C8/Interpreter.cpp
 	src/cores/MC68HC705C8/MC68HC705C8.cpp
+	src/cores/M48T08/M48T08.cpp
 	src/GUI/CPUViewer.cpp
 	src/GUI/MainFrame.cpp
 	src/GUI/GamePanel.cpp

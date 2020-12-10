@@ -17,6 +17,8 @@ bin/obj/MainFrame.o bin/obj/CPUViewer.o bin/obj/GamePanel.o bin/obj/RAMSearchFra
 bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/Disassembler.o bin/obj/InstructionSet.o bin/obj/AddressingModes.o bin/obj/MemoryAccess.o bin/obj/Peripherals.o \
 bin/obj/SCC66470.o bin/obj/SCC66470DRAMInterface.o bin/obj/SCC66470Registers.o \
 bin/obj/MCD212.o bin/obj/MCD212Display.o bin/obj/MCD212Registers.o bin/obj/MCD212DRAMInterface.o \
+bin/obj/MC68HC705C8.o bin/obj/MC68HC705C8_Interpreter.o bin/obj/MC68HC705C8_MemoryAccess.o \
+bin/obj/M48T08.o \
 bin/obj/CDI.o bin/obj/CDIDisc.o bin/obj/CDIDirectory.o bin/obj/CDIFile.o bin/obj/Export.o \
 bin/obj/Mono3.o bin/obj/MiniMMC.o bin/obj/MiniMMCBus.o
 
@@ -52,6 +54,7 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/MCD212.cpp -o bin/obj/MCD212.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/Display.cpp -o bin/obj/MCD212Display.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/Registers.cpp -o bin/obj/MCD212Registers.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/M48T08/M48T08.cpp -o bin/obj/M48T08.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/RAMSearchList.cpp -o bin/obj/RAMSearchList.o
