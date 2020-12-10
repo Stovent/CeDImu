@@ -31,6 +31,13 @@ uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
+    if(addr >= 0x320000 && addr < 0x324000)
+    {
+        uint8_t data = timekeeper.GetByte((addr - 0x320000) >> 1);
+        LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tGet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
+        return data;
+    }
+
     LOG(out << std::hex << cpu.currentPC << "\tGet byte OUT OF RANGE at 0x" << addr << std::endl)
     return 0;
 }
@@ -66,6 +73,13 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
     if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
     {
         mcd212.SetByte(addr, data, flags);
+        LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
+        return;
+    }
+
+    if(addr >= 0x320000 && addr < 0x324000)
+    {
+        timekeeper.SetByte((addr - 0x320000) >> 1, data);
         LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
         return;
     }
