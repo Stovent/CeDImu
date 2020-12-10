@@ -5,6 +5,7 @@ class Board;
 
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "../cores/MC68HC705C8/MC68HC705C8.hpp"
+#include "../cores/M48T08/M48T08.hpp"
 #include "../cores/VDSC.hpp"
 #include "../common/flags.hpp"
 
@@ -15,8 +16,9 @@ class Board
 public:
     SCC68070 cpu;
     MC68HC705C8 slave;
+    M48T08 timekeeper;
 
-    Board(const void* slaveBios, const uint16_t slaveSize) : cpu(this), slave(slaveBios, slaveSize) {  }
+    Board(const void* slaveBios, const uint16_t slaveSize) : cpu(this), slave(slaveBios, slaveSize), timekeeper() {  }
     virtual ~Board() {  }
     virtual void Reset() = 0;
 
