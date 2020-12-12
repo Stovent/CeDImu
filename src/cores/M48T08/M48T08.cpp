@@ -72,7 +72,7 @@ void M48T08::SRAMToClock()
     internalClock.nsec = 0;
 }
 
-uint8_t M48T08::GetByte(const uint16_t addr)
+uint8_t M48T08::GetByte(const uint16_t addr) const
 {
     return sram[addr];
 }

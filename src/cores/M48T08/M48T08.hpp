@@ -36,7 +36,7 @@ public:
 
     void IncrementClock(const uint32_t ns);
 
-    uint8_t GetByte(const uint16_t addr);
+    uint8_t GetByte(const uint16_t addr) const;
     void SetByte(const uint16_t addr, const uint8_t data);
 };
 
