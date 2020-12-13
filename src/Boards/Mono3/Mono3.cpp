@@ -24,7 +24,7 @@ void Mono3::Reset()
 
 uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
     {
         uint8_t data = mcd212.GetByte(addr, flags);
         LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tGet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
@@ -44,7 +44,7 @@ uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
 
 uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
     {
         uint16_t data = mcd212.GetWord(addr, flags);
         LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tGet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
@@ -57,7 +57,7 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t Mono3::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
     {
         uint32_t data = mcd212.GetLong(addr, flags);
         LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tGet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
@@ -70,7 +70,7 @@ uint32_t Mono3::GetLong(const uint32_t addr, const uint8_t flags)
 
 void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
     {
         mcd212.SetByte(addr, data, flags);
         LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tSet byte at 0x" << addr << " : (0x" << (uint16_t)data << ") " << std::dec << (uint16_t)data << std::endl;} )
@@ -89,7 +89,7 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
 
 void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
     {
         mcd212.SetWord(addr, data, flags);
         LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tSet word at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
@@ -101,7 +101,7 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
 
 void Mono3::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || addr >= 0x400000)
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
     {
         mcd212.SetLong(addr, data, flags);
         LOG(if(flags & Log) { out << std::hex << cpu.currentPC << "\tSet long at 0x" << addr << " : (0x" << data << ") " << std::dec << data << std::endl;} )
