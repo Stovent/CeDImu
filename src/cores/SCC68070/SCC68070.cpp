@@ -150,7 +150,7 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
     }
 }
 
-std::map<std::string, uint32_t> SCC68070::GetRegisters() const
+std::map<std::string, uint32_t> SCC68070::GetCPURegisters() const
 {
     return {
         {"D0", D[0]},

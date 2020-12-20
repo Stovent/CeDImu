@@ -98,7 +98,7 @@ void CPUViewer::RefreshLoop(wxTimerEvent& event)
 
 void CPUViewer::PaintEvent()
 {
-    std::map<std::string, uint32_t> regs = cpu->GetRegisters();
+    std::map<std::string, uint32_t> regs = cpu->GetCPURegisters();
     for(uint8_t i = 0; i < 8; i++)
     {
         d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(regs["D" + std::to_string(i)]));

@@ -307,7 +307,7 @@ public:
     void Reset();
 
     void SetRegister(CPURegisters reg, const uint32_t value);
-    std::map<std::string, uint32_t> GetRegisters() const;
+    std::map<std::string, uint32_t> GetCPURegisters() const;
     std::vector<CPUInternalRegister> GetInternalRegisters() const;
 
 private:
