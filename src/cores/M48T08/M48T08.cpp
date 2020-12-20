@@ -4,6 +4,11 @@
 #include <cstring>
 #include <fstream>
 
+/** \brief Construct a new timekeeper.
+ *
+ * If existing, loads its state from a file named "sram.bin".
+ * After initialization, clock is set to the current UTC date.
+*/
 M48T08::M48T08()
 {
     std::ifstream in("sram.bin", std::ios::in | std::ios::binary);
@@ -24,6 +29,10 @@ M48T08::M48T08()
     ClockToSRAM();
 }
 
+/** \brief Destroy the timekeeper.
+ *
+ * It writes its content in a file named "sram.bin".
+*/
 M48T08::~M48T08()
 {
     ClockToSRAM();
@@ -32,7 +41,13 @@ M48T08::~M48T08()
     out.close();
 }
 
-void M48T08::IncrementClock(const uint32_t ns)
+/** \brief Increment the internal clock.
+ *
+ * \param ns The number of nanoseconds to increment the clock by.
+ *
+ * Increment only occurs if the READ or WRITE bit are not set.
+*/
+void M48T08::IncrementClock(const size_t ns)
 {
     if(sram[Control] & 0xC0)
         return;
@@ -45,6 +60,8 @@ void M48T08::IncrementClock(const uint32_t ns)
     }
 }
 
+/** \brief Move the internal clock to SRAM.
+*/
 void M48T08::ClockToSRAM()
 {
     const std::tm* gmt = std::gmtime(&internalClock.sec);
@@ -57,6 +74,8 @@ void M48T08::ClockToSRAM()
     sram[Year]    = byteToPBCD(gmt->tm_year);
 }
 
+/** \brief Move the SRAM clock into the internal clock.
+*/
 void M48T08::SRAMToClock()
 {
     std::tm gmt;
@@ -72,11 +91,26 @@ void M48T08::SRAMToClock()
     internalClock.nsec = 0;
 }
 
+/** \brief Get a byte in SRAM.
+ *
+ * \param addr The address of the byte.
+ * \return The byte at the given address.
+ *
+ * In order to read the clock, the READ bit must be set in the control register using SetByte(0x1FF8).
+*/
 uint8_t M48T08::GetByte(const uint16_t addr) const
 {
     return sram[addr];
 }
 
+/** \brief Set a byte in SRAM.
+ *
+ * \param addr The address of the byte.
+ * \param data The value of the byte to set.
+ *
+ * If the address is the control register and the WRITE bit is going from set to unset, the clock in SRAM is moved in the internal clock.
+ * If the address is the control register and the READ  bit is going from unset to set, the internal clock is moved in SRAM to be read.
+*/
 void M48T08::SetByte(const uint16_t addr, const uint8_t data)
 {
     if(addr == Control)
