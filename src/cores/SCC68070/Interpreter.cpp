@@ -35,18 +35,21 @@ void SCC68070::Interpreter()
             exceptions.push(e);
         }
 
-        if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
-            loop = false;
+        board->slave.Execute(executionCycles);
+        board->timekeeper.IncrementClock(executionCycles * cycleDelay);
 
         cycleCount += executionCycles;
         totalCycleCount += executionCycles;
-        board->slave.Execute(executionCycles);
 
-        if(cycleCount * cycleDelay >= board->GetLineDisplayTime())
+        const uint32_t lineDisplayTime = board->GetLineDisplayTime();
+        if(cycleCount * cycleDelay >= lineDisplayTime)
         {
             board->DrawLine();
-            cycleCount = 0;
+            cycleCount -= lineDisplayTime / cycleDelay;
         }
+
+        if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
+            loop = false;
 
         start += std::chrono::duration<long double, std::nano>(executionCycles * cycleDelay);
         std::this_thread::sleep_until(start);
