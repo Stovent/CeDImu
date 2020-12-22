@@ -8,7 +8,7 @@
 void SCC68070::Interpreter()
 {
     isRunning = true;
-    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long double, std::nano>> start = std::chrono::steady_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
 
     do
     {
@@ -51,7 +51,7 @@ void SCC68070::Interpreter()
         if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
             loop = false;
 
-        start += std::chrono::duration<long double, std::nano>(executionCycles * cycleDelay);
+        start += std::chrono::duration<double, std::nano>(executionCycles * speedDelay);
         std::this_thread::sleep_until(start);
     } while(loop);
 

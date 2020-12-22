@@ -299,7 +299,7 @@ public:
     ~SCC68070();
 
     bool IsRunning() const;
-    void SetFrequency(const uint32_t frequency);
+    void SetEmulationSpeed(const double speed);
     void FlushDisassembler();
 
     void Run(const bool loop = true);
@@ -324,7 +324,8 @@ private:
     uint16_t currentOpcode;
     uint32_t lastAddress;
     uint32_t cycleCount;
-    long double cycleDelay; // Time between two clock cycles in nanoseconds
+    double cycleDelay; // Time between two clock cycles in nanoseconds
+    double speedDelay; // used for emulation speed.
     std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
     void (SCC68070::*Execute)() = nullptr;

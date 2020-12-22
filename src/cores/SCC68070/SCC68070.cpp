@@ -19,7 +19,7 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledIn
 
     Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];
-    SetFrequency(clockFrequency);
+    speedDelay = cycleDelay = (1.0L / clockFrequency) * 1'000'000'000;
 
     GenerateInstructionSet();
 }
@@ -38,9 +38,9 @@ bool SCC68070::IsRunning() const
     return isRunning;
 }
 
-void SCC68070::SetFrequency(const uint32_t frequency)
+void SCC68070::SetEmulationSpeed(const double speed)
 {
-    cycleDelay = (1.0L / frequency) * 1'000'000'000;
+    speedDelay = cycleDelay / speed;
 }
 
 void SCC68070::Run(const bool loop)

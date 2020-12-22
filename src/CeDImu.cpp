@@ -3,11 +3,26 @@
 
 #include <wx/msgdlg.h>
 
+constexpr float cpuSpeeds[12] = {
+    0.12,
+    0.25,
+    0.33,
+    0.5,
+    0.75,
+    1.0,
+    1.5,
+    2,
+    3,
+    4,
+    8,
+    16,
+};
+
 bool CeDImu::OnInit()
 {
     Config::loadConfig();
 
-    cpuFrequencyIndex = 5;
+    cpuSpeed = 5;
 
     mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
     mainFrame->Show(true);
@@ -67,27 +82,27 @@ bool CeDImu::InitializeCores()
         mainFrame->gamePanel->RefreshScreen();
     });
 
-    cdi.board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+    cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
     return true;
 }
 
 void CeDImu::IncreaseEmulationSpeed()
 {
-    if(cpuFrequencyIndex < 11)
+    if(cpuSpeed < 11)
     {
-        cpuFrequencyIndex++;
+        cpuSpeed++;
         if(cdi.board)
-            cdi.board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+            cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
     }
 }
 
 void CeDImu::DecreaseEmulationSpeed()
 {
-    if(cpuFrequencyIndex > 0)
+    if(cpuSpeed > 0)
     {
-        cpuFrequencyIndex--;
+        cpuSpeed--;
         if(cdi.board)
-            cdi.board->cpu.SetFrequency(cpuFrequencies[cpuFrequencyIndex]);
+            cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
     }
 }
 

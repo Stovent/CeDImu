@@ -105,10 +105,10 @@ void MainFrame::RefreshTitle(wxTimerEvent& event)
         fps = app->cdi.board->GetTotalFrameCount() - oldFrameCount;
         oldFrameCount = app->cdi.board->GetTotalFrameCount();
     }
-    long double freq = 0.0;
+    double freq = 0.0;
     if(app->cdi.board)
     {
-        freq = (app->cdi.board->cpu.totalCycleCount - (long double)oldCycleCount) / 1000000.0;
+        freq = (app->cdi.board->cpu.totalCycleCount - (double)oldCycleCount) / 1000000.0;
         oldCycleCount = app->cdi.board->cpu.totalCycleCount;
     }
     SetTitle((!app->cdi.disc.gameName.empty() ? app->cdi.disc.gameName + " | " : "") + (app->cdi.board ? app->biosName + " | " : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
