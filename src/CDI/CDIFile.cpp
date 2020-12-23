@@ -175,11 +175,11 @@ void CDIFile::ExportVideo(std::string directoryPath)
                 }
                 else // simply copy the first 128 colors
                 {
-                    for(int i = 0; i < 128*3;)
+                    for(int i = 0, j = 0; i < 128*3; j++)
                     {
-                        Video::CLUT[i] = data[i]; i++;
-                        Video::CLUT[i] = data[i]; i++;
-                        Video::CLUT[i] = data[i]; i++;
+                        Video::CLUT[j] = data[i] << 16; i++;
+                        Video::CLUT[j] |= data[i] << 8; i++;
+                        Video::CLUT[j] |= data[i]; i++;
                     }
                 }
 

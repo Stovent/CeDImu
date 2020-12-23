@@ -50,7 +50,7 @@ enum MCD212ControlRegistersMap
     WeightFactorForPlaneB,
 };
 
-enum CodingMethods
+enum ImageCodingMethods
 {
     OFF    = 0b0000,
     CLUT8  = 0b0001,
@@ -127,16 +127,11 @@ private:
     // Display File Decoders
     void DecodeBitmapLineA();
     void DecodeBitmapLineB();
-    void DecodeRunLengthLine(wxImage& plane, void (MCD212::*CLUTDecoder)(const uint8_t, uint8_t[3], const uint8_t), uint8_t* data, bool cm);
+    void DecodeRunLengthLine(wxImage& plane, void (*CLUTDecoder)(const uint8_t, uint8_t[3], const uint32_t*), uint8_t* data, bool cm);
     void DecodeMosaicLineA();
     void DecodeMosaicLineB();
 
-    // Real-Time Decoders (set pixels in RGB format)
-    uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]); // returns the alpha byte
-    void DecodeDYUV(const uint16_t pixel, uint8_t pixels[6], const uint32_t previous);
-    void DecodeCLUTA(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType);
-    void DecodeCLUTB(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType);
-
+    // Control Area
     void ExecuteICA1();
     void ExecuteDCA1();
     void ExecuteICA2();

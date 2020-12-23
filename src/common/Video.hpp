@@ -15,15 +15,15 @@ enum CodingInformation
 };
 
 extern const uint8_t dequantizer[16];
-extern uint8_t CLUT[256 * 3];
+extern uint32_t CLUT[256];
 
 uint16_t DecodeBitmapLine(uint8_t* input, uint8_t* output, const uint16_t width, const uint8_t codingMethod);
 uint16_t DecodeRunLengthLine(uint8_t* input, uint8_t* output, const uint16_t width, bool cm);
 
 // Real-Time Decoders (set pixels in RGB format)
-uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]); // returns the alpha byte
+uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]);
 void DecodeDYUV(const uint16_t pixel, uint8_t pixels[6], const uint32_t previous);
-void DecodeCLUT(uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType);
+void DecodeCLUT(const uint8_t pixel, uint8_t pixels[3], const uint32_t* CLUTTable);
 
 } // namespace Video
 

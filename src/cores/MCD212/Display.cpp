@@ -1,6 +1,7 @@
 #include "MCD212.hpp"
 #include "../../Boards/Board.hpp"
 #include "../../utils.hpp"
+#include "../../common/Video.hpp"
 
 #include <wx/msgdlg.h>
 
@@ -102,7 +103,7 @@ void MCD212::DrawLinePlaneA()
         }
         else if(GetFT12_1() == 2)
         {
-            DecodeRunLengthLine(planeA, &MCD212::DecodeCLUTA, &memory[GetVSR1()], GetCM1());
+            DecodeRunLengthLine(planeA, &Video::DecodeCLUT, &memory[GetVSR1()], GetCM1());
         }
         else
         {
@@ -134,7 +135,7 @@ void MCD212::DrawLinePlaneB()
         }
         else if(GetFT12_2() == 2)
         {
-            DecodeRunLengthLine(planeB, &MCD212::DecodeCLUTB, &memory[GetVSR2()], GetCM2());
+            DecodeRunLengthLine(planeB, &Video::DecodeCLUT, &memory[GetVSR2()], GetCM2()); // TODO: remove the necessity to send the CLUT decoder function
         }
         else
         {
@@ -212,7 +213,7 @@ void MCD212::DecodeBitmapLineA()
     {
         if(codingMethod == DYUV)
         {
-            DecodeDYUV(data[index++], &pixels[x * 3], previous);
+            Video::DecodeDYUV(data[index++], &pixels[x * 3], previous);
             previous = 0;
             previous |= pixels[x * 3] << 16;
             previous |= pixels[x * 3 + 1] << 8;
@@ -220,12 +221,12 @@ void MCD212::DecodeBitmapLineA()
         }
         else if(codingMethod == CLUT4)
         {
-            DecodeCLUTA(data[index] & 0xF0, &pixels[x++ * 3], codingMethod);
-            DecodeCLUTA(data[index++] << 4, &pixels[x++ * 3], codingMethod);
+            Video::DecodeCLUT(data[index] >> 4 & 0x0F), &pixels[x++ * 3], CLUT);
+            Video::DecodeCLUT(data[index++] & 0x0F, &pixels[x++ * 3], CLUT);
         }
         else // CLUT
         {
-            DecodeCLUTA(data[index++], &pixels[x++ * 3], codingMethod);
+            Video::DecodeCLUT(data[index++], &pixels[x++ * 3], CLUT);
         }
     }
 }
@@ -243,7 +244,7 @@ void MCD212::DecodeBitmapLineB()
     {
         if(codingMethod == DYUV)
         {
-            DecodeDYUV(dataB[index++], &pixels[x * 3], previous);
+            Video::DecodeDYUV(dataB[index++], &pixels[x * 3], previous);
             previous = 0;
             previous |= pixels[x * 3] << 16;
             previous |= pixels[x * 3 + 1] << 8;
@@ -253,21 +254,21 @@ void MCD212::DecodeBitmapLineB()
         {
             uint16_t color  = dataA[index] << 8;
             color |= dataB[index++];
-            DecodeRGB555(color, &pixels[x++ * 3]);
+            Video::DecodeRGB555(color, &pixels[x++ * 3]);
         }
         else if(codingMethod == CLUT4)
         {
-            DecodeCLUTB(dataB[index] & 0xF0, &pixels[x++ * 3], codingMethod);
-            DecodeCLUTB(dataB[index++] << 4, &pixels[x++ * 3], codingMethod);
+            Video::DecodeCLUT((dataB[index] >> 4 & 0x0F) + 128, &pixels[x++ * 3], CLUT);
+            Video::DecodeCLUT((dataB[index++] & 0x0F) + 128, &pixels[x++ * 3], CLUT);
         }
         else // CLUT
         {
-            DecodeCLUTB(dataB[index++], &pixels[x++ * 3], codingMethod);
+            Video::DecodeCLUT(dataB[index++] + 128, &pixels[x++ * 3], CLUT);
         }
     }
 }
 
-void MCD212::DecodeRunLengthLine(wxImage& plane, void (MCD212::*CLUTDecoder)(const uint8_t, uint8_t[3], const uint8_t), uint8_t* data, bool cm)
+void MCD212::DecodeRunLengthLine(wxImage& plane, void (*CLUTDecoder)(const uint8_t, uint8_t[3], const uint32_t*), uint8_t* data, bool cm)
 {
     uint16_t index = 0;
     uint8_t* pixels = plane.GetData() + lineNumber * plane.GetWidth() * 3;
@@ -288,8 +289,8 @@ void MCD212::DecodeRunLengthLine(wxImage& plane, void (MCD212::*CLUTDecoder)(con
 
             for(int i = 0; i < count; i++)
             {
-                (this->*CLUTDecoder)(color1, &pixels[x++ * 3], CLUT4);
-                (this->*CLUTDecoder)(color2, &pixels[x++ * 3], CLUT4);
+                CLUTDecoder(color1, &pixels[x++ * 3], CLUT);
+                CLUTDecoder(color2, &pixels[x++ * 3], CLUT);
             }
         }
         else // RL7
@@ -303,7 +304,7 @@ void MCD212::DecodeRunLengthLine(wxImage& plane, void (MCD212::*CLUTDecoder)(con
                 count = plane.GetWidth() - x;
 
             for(int i = 0; i < count; i++)
-                (this->*CLUTDecoder)(color, &pixels[x++ * 3], CLUT7);
+                CLUTDecoder(color, &pixels[x++ * 3], CLUT);
         }
     }
 }
@@ -320,7 +321,7 @@ void MCD212::DecodeMosaicLineA()
     {
         if(codingMethod == DYUV)
         {
-            DecodeDYUV(data[index++], &pixels[x * 3], previous);
+            Video::DecodeDYUV(data[index++], &pixels[x * 3], previous);
             for(uint16_t i = 1; i < GetMF12_1(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
             previous = 0;
@@ -331,15 +332,15 @@ void MCD212::DecodeMosaicLineA()
         }
         else if(codingMethod == CLUT4)
         {
-            DecodeCLUTA(data[index] & 0xF0, &pixels[x * 3], codingMethod);
-            DecodeCLUTA(data[index++] << 4, &pixels[(x+1) * 3], codingMethod);
+            Video::DecodeCLUT((data[index] >> 4 & 0x0F), &pixels[x * 3], CLUT);
+            Video::DecodeCLUT(data[index++] & 0x0F, &pixels[(x+1) * 3], CLUT);
             for(uint16_t i = 1; i < GetMF12_1(); i++)
                 memcpy(&pixels[(i * 2 + x) * 3], &pixels[x * 3], 6);
             x += GetMF12_1() * 2;
         }
         else // CLUT
         {
-            DecodeCLUTA(data[index++], &pixels[x * 3], codingMethod);
+            Video::DecodeCLUT(data[index++], &pixels[x * 3], CLUT);
             for(uint16_t i = 1; i < GetMF12_1(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
             x += GetMF12_1();
@@ -360,7 +361,7 @@ void MCD212::DecodeMosaicLineB()
     {
         if(codingMethod == DYUV)
         {
-            DecodeDYUV(dataB[index++], &pixels[x * 3], previous);
+            Video::DecodeDYUV(dataB[index++], &pixels[x * 3], previous);
             for(uint16_t i = 1; i < GetMF12_2(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
             previous = 0;
@@ -373,111 +374,27 @@ void MCD212::DecodeMosaicLineB()
         {
             uint16_t color  = dataA[index] << 8;
             color |= dataB[index];
-            DecodeRGB555(color, &pixels[x++ * 3]);
+            Video::DecodeRGB555(color, &pixels[x++ * 3]);
             for(uint16_t i = 1; i < GetMF12_2(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
             x += GetMF12_2();
         }
         else if(codingMethod == CLUT4)
         {
-            DecodeCLUTB(dataB[index] & 0xF0, &pixels[x * 3], codingMethod);
-            DecodeCLUTB(dataB[index++] << 4, &pixels[(x+1) * 3], codingMethod);
+            Video::DecodeCLUT((dataB[index] >> 4) & 0x0F, &pixels[x * 3], CLUT);
+            Video::DecodeCLUT(dataB[index++] & 0x0F, &pixels[(x+1) * 3], CLUT);
             for(uint16_t i = 1; i < GetMF12_2(); i++)
                 memcpy(&pixels[(i * 2 + x) * 3], &pixels[x * 3], 6);
             x += GetMF12_2() * 2;
         }
         else // CLUT
         {
-            DecodeCLUTB(dataB[index++], &pixels[x * 3], codingMethod);
+            Video::DecodeCLUT(dataB[index++] + 128, &pixels[x * 3], CLUT);
             for(uint16_t i = 1; i < GetMF12_2(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
             x += GetMF12_2();
         }
     }
-}
-
-uint8_t MCD212::DecodeRGB555(const uint16_t pixel, uint8_t pixels[3])
-{
-    pixels[0] = (pixel & 0x7C00) >> 7;
-    pixels[1] = (pixel & 0x03E0) >> 2;
-    pixels[2] = (pixel & 0x001F) << 3;
-    return (pixel & 0x8000) ? 0xFF : 0;
-}
-
-void MCD212::DecodeDYUV(const uint16_t pixel, uint8_t pixels[6], const uint32_t previous)
-{
-    uint8_t y1, u1, v1, y2, u2, v2, py, pu, pv;
-    u1 = (pixel & 0xF000) >> 12;
-    y1 = (pixel & 0x0F00) >> 8;
-    v1 = (pixel & 0x00F0) >> 4;
-    y2 =  pixel & 0x000F;
-    py = previous >> 16;
-    pu = previous >> 8;
-    pv = previous;
-
-    y1 = (py + dequantizer[y1]) % 256;
-    u2 = u1 = (pu + dequantizer[u1]) % 256; // u2 should be interpolated with the next u1
-    v2 = v1 = (pv + dequantizer[v1]) % 256; // v2 should be interpolated with the next v1
-    y2 = (y1 + dequantizer[y1]) % 256;
-
-    pixels[0] = y1 + (v1 - 128) * 1.371; // R1
-    pixels[2] = y1 + (u1 - 128) * 1.733; // B1
-    pixels[1] = (y1 - 0.299 * pixels[0] - 0.114 * pixels[2]) / 0.587; // G1
-    pixels[3] = y2 + (v2 - 128) * 1.371; // R2
-    pixels[5] = y2 + (u2 - 128) * 1.733; // B2
-    pixels[4] = (y2 - 0.299 * pixels[3] - 0.114 * pixels[5]) / 0.587; // G2
-}
-
-void MCD212::DecodeCLUTA(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType)
-{
-    uint8_t addr;
-    if(CLUTType == CLUT8)
-    {
-        addr = pixel;
-    }
-    else if(CLUTType == CLUT7)
-    {
-        addr = (pixel & 0x7F);
-    }
-    else if(CLUTType == CLUT77)
-    {
-        addr = (pixel & 0x7F) + (controlRegisters[ImageCodingMethod] & 0x400000 ? 128 : 0);
-    }
-    else if(CLUTType == CLUT4)
-    {
-        addr = (pixel >> 4);
-    }
-    else
-    {
-        LOG(out_display << "WARNING: wrong CLUT type in channel A: " << (int)CLUTType << std::endl)
-        addr = 0;
-    }
-
-    pixels[0] = CLUT[addr] >> 16;
-    pixels[1] = CLUT[addr] >> 8;
-    pixels[2] = CLUT[addr];
-}
-
-void MCD212::DecodeCLUTB(const uint8_t pixel, uint8_t pixels[3], const uint8_t CLUTType)
-{
-    uint8_t addr;
-    if(CLUTType == CLUT7)
-    {
-        addr = (pixel & 0x7F) + 128;
-    }
-    else if(CLUTType == CLUT4)
-    {
-        addr = (pixel >> 4) + 128;
-    }
-    else
-    {
-        LOG(out_display << "WARNING: wrong CLUT type in channel B: " << (int)CLUTType << std::endl)
-        addr = 0;
-    }
-
-    pixels[0] = CLUT[addr] >> 16;
-    pixels[1] = CLUT[addr] >> 8;
-    pixels[2] = CLUT[addr];
 }
 
 #undef   SET_DA_BIT
