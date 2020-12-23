@@ -200,7 +200,7 @@ void MCD212::DecodeBitmapLineA()
         }
         else // CLUT
         {
-            Video::DecodeCLUT(data[index++], &pixels[x++ * 3], CLUT);
+            Video::DecodeCLUT(data[index++] + (codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000) ? 128 : 0, &pixels[x++ * 3], CLUT);
         }
     }
 }
@@ -317,7 +317,7 @@ void MCD212::DecodeMosaicLineA()
         }
         else // CLUT
         {
-            Video::DecodeCLUT(data[index++], &pixels[x * 3], CLUT);
+            Video::DecodeCLUT(data[index++] + (codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000) ? 128 : 0, &pixels[x * 3], CLUT);
             for(uint16_t i = 1; i < GetMF12_1(); i++)
                 memcpy(&pixels[(i + x) * 3], &pixels[x * 3], 3);
             x += GetMF12_1();
