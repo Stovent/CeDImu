@@ -101,14 +101,15 @@ public:
     virtual wxImage GetCursor() override;
 
 private:
+    uint8_t memorySwapCount;
+
     uint8_t* memory;
 
-    wxImage screen;
-    wxImage planeA;
-    wxImage planeB;
-    wxImage cursorPlane;
-    wxImage backgroundPlane;
-    uint8_t memorySwapCount;
+    uint8_t* screen; //    wxImage screen;
+    uint8_t* planeA; //    wxImage planeA;
+    uint8_t* planeB; //    wxImage planeB;
+    uint8_t* cursorPlane; //    wxImage cursorPlane;
+    uint8_t* backgroundPlane; //    wxImage backgroundPlane;
 
     bool stopOnNextFrame;
     uint32_t* controlRegisters;
@@ -127,7 +128,7 @@ private:
     // Display File Decoders
     void DecodeBitmapLineA();
     void DecodeBitmapLineB();
-    void DecodeRunLengthLine(wxImage& plane, void (*CLUTDecoder)(const uint8_t, uint8_t[3], const uint32_t*), uint8_t* data, bool cm);
+    void DecodeRunLengthLine(uint8_t* plane, void (*CLUTDecoder)(const uint8_t, uint8_t[3], const uint32_t*), uint8_t* data, bool cm);
     void DecodeMosaicLineA();
     void DecodeMosaicLineB();
 

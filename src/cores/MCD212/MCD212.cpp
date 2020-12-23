@@ -17,14 +17,22 @@ MCD212::MCD212(Board* board) : VDSC(board) // TD = 0
     OPEN_LOG(out_dram, "MCD212_DRAM.txt")
     OPEN_LOG(out_display, "MCD212.txt")
 
-    cursorPlane.Create(16, 16);
-    if(!cursorPlane.HasAlpha())
-        cursorPlane.InitAlpha();
+    screen = new uint8_t[768 * 560 * 3]; // RGB
+    planeA = new uint8_t[768 * 560 * 4]; // ARGB
+    planeB = new uint8_t[768 * 560 * 4]; // ARGB
+    cursorPlane = new uint8_t[16 * 16 * 4]; // ARGB
+    backgroundPlane = new uint8_t[768 * 560 * 4]; // ARGB
 
-    memset(controlRegisters, 0, 0x80*sizeof(uint32_t));
-    memset(internalRegisters, 0, 32*sizeof(uint16_t));
+    memset(controlRegisters, 0, 0x80*sizeof(*controlRegisters));
+    memset(internalRegisters, 0, 32*sizeof(*internalRegisters));
     memset(memory, 0, allocatedMemory);
-    memset(CLUT, 0, 256 * sizeof(uint32_t));
+    memset(CLUT, 0, 256 * sizeof(*CLUT));
+
+    memset(screen, 0, 768 * 560 * 3);
+    memset(planeA, 0, 768 * 560 * 4);
+    memset(planeB, 0, 768 * 560 * 4);
+    memset(cursorPlane, 0, 16 * 16 * 4);
+    memset(backgroundPlane, 0, 768 * 560 * 4);
 }
 
 MCD212::~MCD212()
@@ -32,6 +40,12 @@ MCD212::~MCD212()
     delete[] memory;
     delete[] controlRegisters;
     delete[] internalRegisters;
+
+    delete[] screen;
+    delete[] planeA;
+    delete[] planeB;
+    delete[] cursorPlane;
+    delete[] backgroundPlane;
 }
 
 void MCD212::StopOnNextFrame(const bool stop)
@@ -328,25 +342,25 @@ void MCD212::ExecuteDCA2()
 
 wxImage MCD212::GetScreen()
 {
-    return screen;
+    return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), screen, true);
 }
 
 wxImage MCD212::GetPlaneA()
 {
-    return planeA;
+    return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), planeA, true);
 }
 
 wxImage MCD212::GetPlaneB()
 {
-    return planeB;
+    return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), planeB, true);
 }
 
 wxImage MCD212::GetBackground()
 {
-    return backgroundPlane;
+    return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), backgroundPlane, true);
 }
 
 wxImage MCD212::GetCursor()
 {
-    return cursorPlane;
+    return wxImage(16, 16, cursorPlane, true);
 }

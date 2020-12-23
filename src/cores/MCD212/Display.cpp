@@ -14,33 +14,6 @@ void MCD212::DrawLine()
 
     if(GetDE())
     {
-        if(lineNumber == 0)
-        {
-            if(!planeA.Create(GetHorizontalResolution1(), GetVerticalResolution()))
-            {
-                wxMessageBox("Could not create plane A image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return;
-            }
-            if(!planeA.HasAlpha())
-                planeA.InitAlpha();
-
-            if(!planeB.Create(GetHorizontalResolution2(), GetVerticalResolution()))
-            {
-                wxMessageBox("Could not create plane B image (" + std::to_string(GetHorizontalResolution2()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return;
-            }
-            if(!planeB.HasAlpha())
-                planeB.InitAlpha();
-
-            if(!backgroundPlane.Create(GetHorizontalResolution1(), GetVerticalResolution()))
-            {
-                wxMessageBox("Could not create background image (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return;
-            }
-            if(!backgroundPlane.HasAlpha())
-                backgroundPlane.InitAlpha();
-        }
-
         DrawLinePlaneA();
         DrawLinePlaneB();
         DrawLineBackground();
@@ -53,12 +26,6 @@ void MCD212::DrawLine()
         UNSET_DA_BIT()
         if(GetDE())
         {
-            if(!screen.Create(backgroundPlane.GetWidth(), backgroundPlane.GetHeight()))
-            {
-                wxMessageBox("Could not create screen (" + std::to_string(GetHorizontalResolution1()) + "x" + std::to_string(GetVerticalResolution()) + ")");
-                return;
-            }
-
             screen.Paste(backgroundPlane, 0, 0);
 
             if(controlRegisters[PlaneOrder])
@@ -158,45 +125,51 @@ void MCD212::DrawLinePlaneB()
 
 void MCD212::DrawLineBackground()
 {
-    uint8_t* data  = backgroundPlane.GetData() + 3*lineNumber;
-    uint8_t* alpha = backgroundPlane.GetAlpha() + lineNumber;
-    uint8_t A = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-    uint8_t R = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-    uint8_t G = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-    uint8_t B = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
+    uint8_t* pixels  = backgroundPlane + GetHorizontalResolution1() * lineNumber * 4;
+    const uint8_t A = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
+    const uint8_t R = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
+    const uint8_t G = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
+    const uint8_t B = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
 
-    for(uint16_t i = 0; i < backgroundPlane.GetWidth(); i++)
+    for(uint16_t i = 0, j = 0; i < GetHorizontalResolution1(); i++)
     {
-        alpha[i]    = A;
-        data[3*i]   = R;
-        data[3*i+1] = G;
-        data[3*i+2] = B;
+        pixels[j++] = A;
+        pixels[j++] = R;
+        pixels[j++] = G;
+        pixels[j++] = B;
     }
 }
 
 void MCD212::DrawLineCursor()
 {
     // check if Y position starts at 0 or 1 (assuming 0 in this code)
-    uint16_t yPosition = (controlRegisters[CursorPosition] & 0x003FF000) >> 12;
+    uint16_t yPosition = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
     if(lineNumber < yPosition || lineNumber + 16 > yPosition)
         return;
 
     uint8_t yAddress = controlRegisters[CursorPattern] >> 16 & 0x0F;
-    uint8_t* data = cursorPlane.GetData() + 3*yAddress*16;
-    uint8_t* alpha = cursorPlane.GetAlpha() + yAddress*16;
+    uint8_t* pixels = cursorPlane + yAddress * 16 * 4;
+
+    const uint8_t A = (controlRegisters[CursorControl] & 0x000008) ? 255 : 128;
+    const uint8_t R = (controlRegisters[CursorControl] & 0x000004) ? 255 : 0;
+    const uint8_t G = (controlRegisters[CursorControl] & 0x000002) ? 255 : 0;
+    const uint8_t B = (controlRegisters[CursorControl] & 0x000001) ? 255 : 0;
 
     uint16_t mask = 1 << 15;
-    for(uint8_t i = 0; i < 16; i++)
+    for(uint8_t i = 0, j = 0; i < 16; i++)
     {
         if(controlRegisters[CursorPattern] & mask)
         {
-            alpha[i]      = (controlRegisters[CursorPattern] & 0x000008) ? 255 : 128;
-            data[3*i]     = (controlRegisters[CursorPattern] & 0x000004) ? 255 : 0;
-            data[3*i + 1] = (controlRegisters[CursorPattern] & 0x000002) ? 255 : 0;
-            data[3*i + 2] = (controlRegisters[CursorPattern] & 0x000001) ? 255 : 0;
+            pixels[j++] = A;
+            pixels[j++] = R;
+            pixels[j++] = G;
+            pixels[j++] = B;
         }
         else
-            alpha[i] = 0;
+        {
+            pixels[j] = 0;
+            j += 4;
+        }
         mask >>= 1;
     }
 }
@@ -204,12 +177,13 @@ void MCD212::DrawLineCursor()
 void MCD212::DecodeBitmapLineA()
 {
     const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
+    const uint16_t width = GetHorizontalResolution1();
     uint8_t* data = &memory[GetVSR1()];
-    uint8_t* pixels = planeA.GetData() + lineNumber * planeA.GetWidth() * 3;
+    uint8_t* pixels = planeA + lineNumber * width * 4;
     uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
 
-    for(uint16_t x = 0; x < planeA.GetWidth();)
+    for(uint16_t x = 0; x < width;)
     {
         if(codingMethod == DYUV)
         {
@@ -221,7 +195,7 @@ void MCD212::DecodeBitmapLineA()
         }
         else if(codingMethod == CLUT4)
         {
-            Video::DecodeCLUT(data[index] >> 4 & 0x0F), &pixels[x++ * 3], CLUT);
+            Video::DecodeCLUT((data[index] >> 4 & 0x0F), &pixels[x++ * 3], CLUT);
             Video::DecodeCLUT(data[index++] & 0x0F, &pixels[x++ * 3], CLUT);
         }
         else // CLUT
@@ -234,13 +208,14 @@ void MCD212::DecodeBitmapLineA()
 void MCD212::DecodeBitmapLineB()
 {
     const uint8_t codingMethod = (controlRegisters[ImageCodingMethod] & 0x000F00) >> 8;
+    const uint16_t width = GetHorizontalResolution2();
     uint8_t* dataA = &memory[GetVSR1()];
     uint8_t* dataB = &memory[GetVSR2()];
-    uint8_t* pixels = planeB.GetData() + lineNumber * planeB.GetWidth() * 3;
+    uint8_t* pixels = planeB + lineNumber * width * 4;
     uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
 
-    for(uint16_t x = 0; x < planeA.GetWidth();)
+    for(uint16_t x = 0; x < width;)
     {
         if(codingMethod == DYUV)
         {
@@ -268,12 +243,13 @@ void MCD212::DecodeBitmapLineB()
     }
 }
 
-void MCD212::DecodeRunLengthLine(wxImage& plane, void (*CLUTDecoder)(const uint8_t, uint8_t[3], const uint32_t*), uint8_t* data, bool cm)
+void MCD212::DecodeRunLengthLine(uint8_t* plane, void (*CLUTDecoder)(const uint8_t, uint8_t[3], const uint32_t*), uint8_t* data, bool cm)
 {
+    const uint16_t width = GetHorizontalResolution1();
     uint16_t index = 0;
-    uint8_t* pixels = plane.GetData() + lineNumber * plane.GetWidth() * 3;
+    uint8_t* pixels = plane + lineNumber * width * 4;
 
-    for(int x = 0; x < plane.GetWidth();)
+    for(int x = 0; x < width;)
     {
         uint8_t format = data[index++];
         if(cm) // RL3
@@ -285,7 +261,7 @@ void MCD212::DecodeRunLengthLine(wxImage& plane, void (*CLUTDecoder)(const uint8
                 count = data[index++];
 
             if(count == 0)
-                count = plane.GetWidth() - x;
+                count = width - x;
 
             for(int i = 0; i < count; i++)
             {
@@ -301,7 +277,7 @@ void MCD212::DecodeRunLengthLine(wxImage& plane, void (*CLUTDecoder)(const uint8
                 count = data[index++];
 
             if(count == 0)
-                count = plane.GetWidth() - x;
+                count = width - x;
 
             for(int i = 0; i < count; i++)
                 CLUTDecoder(color, &pixels[x++ * 3], CLUT);
@@ -312,12 +288,13 @@ void MCD212::DecodeRunLengthLine(wxImage& plane, void (*CLUTDecoder)(const uint8
 void MCD212::DecodeMosaicLineA()
 {
     const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
+    const uint16_t width = GetHorizontalResolution1();
     uint8_t* data = &memory[GetVSR1()];
-    uint8_t* pixels = planeA.GetData() + lineNumber * planeA.GetWidth() * 3;
+    uint8_t* pixels = planeA + lineNumber * width * 4;
     uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
 
-    for(uint16_t x = 0; x < planeA.GetWidth();)
+    for(uint16_t x = 0; x < width;)
     {
         if(codingMethod == DYUV)
         {
@@ -351,13 +328,14 @@ void MCD212::DecodeMosaicLineA()
 void MCD212::DecodeMosaicLineB()
 {
     const uint8_t codingMethod = (controlRegisters[ImageCodingMethod] & 0x000F00) >> 8;
+    const uint16_t width = GetHorizontalResolution2();
     uint8_t* dataA = &memory[GetVSR1()];
     uint8_t* dataB = &memory[GetVSR2()];
-    uint8_t* pixels = planeB.GetData() + lineNumber * planeB.GetWidth() * 3;
+    uint8_t* pixels = planeB + lineNumber * width * 4;
     uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
 
-    for(uint16_t x = 0; x < planeA.GetWidth();)
+    for(uint16_t x = 0; x < width;)
     {
         if(codingMethod == DYUV)
         {
