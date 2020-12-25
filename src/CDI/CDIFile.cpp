@@ -213,7 +213,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
             {
                 if(coding == 4)
                 {
-                    index += Video::DecodeRunLengthLine(&data[index], &pixels[y * 3 * width], width, 0);
+                    index += Video::DecodeRunLengthLine(&pixels[y * 3 * width], width, Video::CLUT, &data[index], 0); // TODO: this should be ARGB.
                     y++;
                     if(y >= height)
                     {

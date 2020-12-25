@@ -36,44 +36,61 @@ uint16_t DecodeBitmapLine(uint8_t* input, uint8_t* output, const uint16_t width,
     return index;
 }
 
-uint16_t DecodeRunLengthLine(uint8_t* input, uint8_t* output, const uint16_t width, bool cm)
+/** \brief Decode a Run-length file line.
+ *
+ * \param line Where the decoded line will be written.
+ * \param width The width of the line.
+ * \param CLUTTable The CLUT table to use.
+ * \param data The raw input data to be decoded.
+ * \param cm true for 4 bits/pixel, false for 8bits/pixel.
+ * \return The nuùber of raw data read.
+*/
+uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint32_t* CLUTTable, const uint8_t* data, const bool cm)
 {
     uint16_t index = 0;
 
     for(int x = 0; x < width;)
     {
-        uint8_t format = input[index++];
+        const uint8_t format = data[index++];;
         if(cm) // RL3
         {
-            uint8_t color1 =  format & 0x70;
-            uint8_t color2 = (format & 0x07) << 4;
+            const uint8_t color1 = format >> 4 & 0x07;
+            const uint8_t color2 = format & 0x07;
             uint16_t count = 1;
             if(format & 0x80) // run of pixels pairs
-                count = input[index++];
-
-            if(count == 0)
-                count = width - x;
+            {
+                count = data[index++];;
+                if(count == 0)
+                    count = width - x;
+            }
 
             for(int i = 0; i < count; i++)
             {
-                DecodeCLUT(color1, &output[x++ * 3], 0);
-                DecodeCLUT(color2, &output[x++ * 3], 0);
+                line[x * 4] = 0xFF;
+                Video::DecodeCLUT(color1, &line[x++ * 4 + 1], CLUTTable);
+                line[x * 4] = 0xFF;
+                Video::DecodeCLUT(color2, &line[x++ * 4 + 1], CLUTTable);
             }
         }
         else // RL7
         {
-            uint8_t color =  format & 0x7F;
+            const uint8_t color = format & 0x7F;
             uint16_t count = 1;
-            if(format & 0x80) // run of pixels pairs
-                count = input[index++];
-
-            if(count == 0)
-                count = width - x;
+            if(format & 0x80) // run of single pixels
+            {
+                count = data[index++];;
+                if(count == 0)
+                    count = width - x;
+            }
 
             for(int i = 0; i < count; i++)
-                DecodeCLUT(color, &output[x++ * 3], Video::CLUT);
+            {
+                line[x * 4] = 0xFF;
+                Video::DecodeCLUT(color, &line[x++ * 4 + 1], CLUTTable);
+            }
         }
     }
+
     return index;
 }
 

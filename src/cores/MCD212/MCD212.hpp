@@ -128,7 +128,6 @@ private:
     // Display File Decoders
     void DecodeBitmapLineA();
     void DecodeBitmapLineB();
-    void DecodeRunLengthLine(uint8_t* line, const uint32_t* CLUTTable, const uint8_t* data, const bool cm);
     void DecodeMosaicLineA();
     void DecodeMosaicLineB();
 

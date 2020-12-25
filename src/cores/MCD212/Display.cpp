@@ -71,7 +71,7 @@ void MCD212::DrawLinePlaneA()
         }
         else if(GetFT12_1() == 2)
         {
-            DecodeRunLengthLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], CLUT, &memory[GetVSR1()], GetCM1());
+            Video::DecodeRunLengthLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), CLUT, &memory[GetVSR1()], GetCM1());
         }
         else
         {
@@ -103,7 +103,7 @@ void MCD212::DrawLinePlaneB()
         }
         else if(GetFT12_2() == 2)
         {
-            DecodeRunLengthLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], &CLUT[128], &memory[GetVSR2()], GetCM2());
+            Video::DecodeRunLengthLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &CLUT[128], &memory[GetVSR2()], GetCM2());
         }
         else
         {
@@ -240,53 +240,6 @@ void MCD212::DecodeBitmapLineB()
         else // CLUT
         {
             Video::DecodeCLUT(dataB[index++] + 128, &pixels[x++ * 4 + 1], CLUT);
-        }
-    }
-}
-
-void MCD212::DecodeRunLengthLine(uint8_t* line, const uint32_t* CLUTTable, const uint8_t* data, const bool cm)
-{
-    const uint16_t width = GetHorizontalResolution1();
-
-    for(int x = 0; x < width;)
-    {
-        const uint8_t format = *data++;
-        if(cm) // RL3
-        {
-            const uint8_t color1 = format >> 4 & 0x07;
-            const uint8_t color2 = format & 0x07;
-            uint16_t count = 1;
-            if(format & 0x80) // run of pixels pairs
-            {
-                count = *data++;
-                if(count == 0)
-                    count = width - x;
-            }
-
-            for(int i = 0; i < count; i++)
-            {
-                line[x * 4] = 0xFF;
-                Video::DecodeCLUT(color1, &line[x++ * 4 + 1], CLUTTable);
-                line[x * 4] = 0xFF;
-                Video::DecodeCLUT(color2, &line[x++ * 4 + 1], CLUTTable);
-            }
-        }
-        else // RL7
-        {
-            const uint8_t color = format & 0x7F;
-            uint16_t count = 1;
-            if(format & 0x80) // run of single pixels
-            {
-                count = *data++;
-                if(count == 0)
-                    count = width - x;
-            }
-
-            for(int i = 0; i < count; i++)
-            {
-                line[x * 4] = 0xFF;
-                Video::DecodeCLUT(color, &line[x++ * 4 + 1], CLUTTable);
-            }
         }
     }
 }
