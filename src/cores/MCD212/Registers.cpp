@@ -4,212 +4,212 @@
 #include <cmath>
 
 // internal registers
-uint16_t MCD212::GetCSR1RRegister()
+uint16_t MCD212::GetCSR1RRegister() const
 {
     return internalRegisters[MCSR1R];
 }
 
-uint16_t MCD212::GetCSR1WRegister()
+uint16_t MCD212::GetCSR1WRegister() const
 {
     return internalRegisters[MCSR1W];
 }
 
-uint16_t MCD212::GetDCR1Register()
+uint16_t MCD212::GetDCR1Register() const
 {
     return internalRegisters[MDCR1];
 }
 
-uint16_t MCD212::GetVSR1Register()
+uint16_t MCD212::GetVSR1Register() const
 {
     return internalRegisters[MVSR1];
 }
 
-uint16_t MCD212::GetDDR1Register()
+uint16_t MCD212::GetDDR1Register() const
 {
     return internalRegisters[MDDR1];
 }
 
-uint16_t MCD212::GetDCP1Register()
+uint16_t MCD212::GetDCP1Register() const
 {
     return internalRegisters[MDCP1];
 }
 
-uint16_t MCD212::GetCSR2RRegister()
+uint16_t MCD212::GetCSR2RRegister() const
 {
     return internalRegisters[MCSR2R];
 }
 
-uint16_t MCD212::GetCSR2WRegister()
+uint16_t MCD212::GetCSR2WRegister() const
 {
     return internalRegisters[MCSR2W];
 }
 
-uint16_t MCD212::GetDCR2Register()
+uint16_t MCD212::GetDCR2Register() const
 {
     return internalRegisters[MDCR2];
 }
 
-uint16_t MCD212::GetVSR2Register()
+uint16_t MCD212::GetVSR2Register() const
 {
     return internalRegisters[MVSR2];
 }
 
-uint16_t MCD212::GetDDR2Register()
+uint16_t MCD212::GetDDR2Register() const
 {
     return internalRegisters[MDDR2];
 }
 
-uint16_t MCD212::GetDCP2Register()
+uint16_t MCD212::GetDCP2Register() const
 {
     return internalRegisters[MDCP2];
 }
 
-bool MCD212::GetDA()
+bool MCD212::GetDA() const
 {
     return (internalRegisters[MCSR1R] & 0x0080) >> 7;
 }
 
-bool MCD212::GetPA()
+bool MCD212::GetPA() const
 {
     return (internalRegisters[MCSR1R] & 0x0020) >> 5;
 }
 
-bool MCD212::GetIT1()
+bool MCD212::GetIT1() const
 {
     return (internalRegisters[MCSR2R] & 0x0004) >> 2;
 }
 
-bool MCD212::GetIT2()
+bool MCD212::GetIT2() const
 {
     return (internalRegisters[MCSR2R] & 0x0002) >> 1;
 }
 
-bool MCD212::GetBE_R()
+bool MCD212::GetBE_R() const
 {
     return internalRegisters[MCSR2R] & 0x0001;
 }
 
-bool MCD212::GetBE_W()
+bool MCD212::GetBE_W() const
 {
     return internalRegisters[MCSR1W] & 0x0001;
 }
 
-bool MCD212::GetDI1()
+bool MCD212::GetDI1() const
 {
     return internalRegisters[MCSR1W] >> 15;
 }
 
-uint8_t MCD212::GetDD12()
+uint8_t MCD212::GetDD12() const
 {
     return (internalRegisters[MCSR1W] & 0x0300) >> 8;
 }
 
-bool MCD212::GetTD()
+bool MCD212::GetTD() const
 {
     return (internalRegisters[MCSR1W] & 0x0020) >> 5;
 }
 
-bool MCD212::GetDD()
+bool MCD212::GetDD() const
 {
     return (internalRegisters[MCSR1W] & 0x0008) >> 3;
 }
 
-bool MCD212::GetST()
+bool MCD212::GetST() const
 {
     return (internalRegisters[MCSR1W] & 0x0002) >> 1;
 }
 
-bool MCD212::GetDI2()
+bool MCD212::GetDI2() const
 {
     return internalRegisters[MCSR2W] >> 15;
 }
 
-bool MCD212::GetDE()
+bool MCD212::GetDE() const
 {
     return internalRegisters[MDCR1] >> 15;
 }
 
-bool MCD212::GetCF()
+bool MCD212::GetCF() const
 {
     return (internalRegisters[MDCR1] & 0x4000) >> 14;
 }
 
-bool MCD212::GetFD()
+bool MCD212::GetFD() const
 {
     return (internalRegisters[MDCR1] & 0x2000) >> 13;
 }
 
-bool MCD212::GetSM()
+bool MCD212::GetSM() const
 {
     return (internalRegisters[MDCR1] & 0x1000) >> 12;
 }
 
-bool MCD212::GetCM1()
+bool MCD212::GetCM1() const
 {
     return (internalRegisters[MDCR1] & 0x0800) >> 11;
 }
 
-bool MCD212::GetIC1()
+bool MCD212::GetIC1() const
 {
     return (internalRegisters[MDCR1] & 0x0200) >> 9;
 }
 
-bool MCD212::GetDC1()
+bool MCD212::GetDC1() const
 {
     return (internalRegisters[MDCR1] & 0x0100) >> 8;
 }
 
-bool MCD212::GetCM2()
+bool MCD212::GetCM2() const
 {
     return (internalRegisters[MDCR2] & 0x0800) >> 11;
 }
 
-bool MCD212::GetIC2()
+bool MCD212::GetIC2() const
 {
     return (internalRegisters[MDCR2] & 0x0200) >> 9;
 }
 
-bool MCD212::GetDC2()
+bool MCD212::GetDC2() const
 {
     return (internalRegisters[MDCR2] & 0x0100) >> 8;
 }
 
-uint8_t MCD212::GetMF12_1() // 2*2^MF
+uint8_t MCD212::GetMF12_1() const // 2*2^MF
 {
     return (internalRegisters[MDDR1] & 0x0C00) >> 10;
 }
 
-uint8_t MCD212::GetFT12_1()
+uint8_t MCD212::GetFT12_1() const
 {
     return (internalRegisters[MDDR1] & 0x0300) >> 8;
 }
 
-uint8_t MCD212::GetMF12_2()
+uint8_t MCD212::GetMF12_2() const
 {
     return (internalRegisters[MDDR2] & 0x0C00) >> 10;
 }
 
-uint8_t MCD212::GetFT12_2()
+uint8_t MCD212::GetFT12_2() const
 {
     return (internalRegisters[MDDR2] & 0x0300) >> 8;
 }
 
-uint32_t MCD212::GetVSR1()
+uint32_t MCD212::GetVSR1() const
 {
     return (internalRegisters[MDCR1] & 0x003F) << 16 | internalRegisters[MVSR1];
 }
 
-uint32_t MCD212::GetVSR2()
+uint32_t MCD212::GetVSR2() const
 {
     return (internalRegisters[MDCR2] & 0x003F) << 16 | internalRegisters[MVSR2];
 }
 
-uint32_t MCD212::GetDCP1()
+uint32_t MCD212::GetDCP1() const
 {
     return (internalRegisters[MDDR1] & 0x003F) << 16 | internalRegisters[MDCP1];
 }
 
-uint32_t MCD212::GetDCP2()
+uint32_t MCD212::GetDCP2() const
 {
     return (internalRegisters[MDDR2] & 0x003F) << 16 | internalRegisters[MDCP2];
 }
@@ -317,13 +317,13 @@ std::vector<VDSCRegister> MCD212::GetControlRegisters()
     return registers;
 }
 
-std::string MCD212::DisassembleCSR1RRegister()
+std::string MCD212::DisassembleCSR1RRegister() const
 {
     return ("Display Active: " + std::string(GetDA() ? "1; " : "0; ")) + \
            ("Parity: " + std::string(GetSM() ? (GetPA() ? "odd" : "even") : "none"));
 }
 
-std::string MCD212::DisassembleCSR1WRegister()
+std::string MCD212::DisassembleCSR1WRegister() const
 {
     return std::string(GetDI2() ? "Disable Interrupts 1: yes; " : "Disable Interrupts 1: no; ") + \
            ("DTACK Delay: " + std::string(GetDD() ? (std::to_string(3 + 2 * GetDD12()) + " >= " + std::to_string(4 + 2 * GetDD12()) + "; ") : "11 >= 12; ")) + \
@@ -332,7 +332,7 @@ std::string MCD212::DisassembleCSR1WRegister()
            ("Bus Error: " + std::string(GetBE_W() ? "enabled;" : "disabled;"));
 }
 
-std::string MCD212::DisassembleDCR1Register()
+std::string MCD212::DisassembleDCR1Register() const
 {
     return ("Display Enable: " + std::string(GetDE() ? "yes; " : "no; ")) + \
            ("Crystal Frequency: " + std::string(GetCF() ? "30, 30.2097 MHz; " : "28 MHz; ")) + \
@@ -343,53 +343,53 @@ std::string MCD212::DisassembleDCR1Register()
            ("DCA1: " + std::string(GetIC1() ? (GetDC1() ? "yes;" : "no;") : "no;"));
 }
 
-std::string MCD212::DisassembleVSR1Register()
+std::string MCD212::DisassembleVSR1Register() const
 {
     return "0x" + toHex(GetVSR1());
 }
 
-std::string MCD212::DisassembleDDR1Register()
+std::string MCD212::DisassembleDDR1Register() const
 {
     return ("Mosaic Factor plane A: " + std::string(GetFT12_1() == 3 ? (std::to_string(2 * pow(1, GetMF12_1())) + "; ") : "none; ")) + \
            ("File Type plane A: " + std::string(GetFT12_1() < 2 ? "Bitmap;" : (GetFT12_1() == 2 ? "Run-Length;" : "Mosaic;")));
 }
 
-std::string MCD212::DisassembleDCP1Register()
+std::string MCD212::DisassembleDCP1Register() const
 {
     return "0x" + toHex(GetDCP1());
 }
 
-std::string MCD212::DisassembleCSR2RRegister()
+std::string MCD212::DisassembleCSR2RRegister() const
 {
     return ("Interrupt 1: " + std::string(GetIT1() ? "yes; " : "no; ")) + \
            ("Interrupt 2: " + std::string(GetIT2() ? "yes; " : "no; ")) + \
            ("Bus Error: " + std::string(GetBE_R() ? "yes;" : "no;"));
 }
 
-std::string MCD212::DisassembleCSR2WRegister()
+std::string MCD212::DisassembleCSR2WRegister() const
 {
     return GetDI2() ? "Disable Interrupts 2: yes;" : "Disable Interrupts 2: no;";
 }
 
-std::string MCD212::DisassembleDCR2Register()
+std::string MCD212::DisassembleDCR2Register() const
 {
     return ("Bits per pixel plane B: " + std::string(GetCM2() ? "4; " : "8; ")) + \
            ("ICA2: " + std::string(GetIC2() ? "yes; " : "no; ")) + \
            ("DCA2: " + std::string(GetIC2() ? (GetDC2() ? "yes;" : "no;") : "no;"));
 }
 
-std::string MCD212::DisassembleVSR2Register()
+std::string MCD212::DisassembleVSR2Register() const
 {
     return "0x" + toHex(GetVSR2());
 }
 
-std::string MCD212::DisassembleDDR2Register()
+std::string MCD212::DisassembleDDR2Register() const
 {
     return ("Mosaic Factor plane B: " + std::string(GetFT12_2() == 3 ? (std::to_string(2 * pow(1, GetMF12_2())) + "; ") : "none; ")) + \
            ("File Type plane B: " + std::string(GetFT12_2() < 2 ? "Bitmap;" : (GetFT12_2() == 2 ? "Run-Length;" : "Mosaic;")));
 }
 
-std::string MCD212::DisassembleDCP2Register()
+std::string MCD212::DisassembleDCP2Register() const
 {
     return "0x" + toHex(GetDCP2());
 }
