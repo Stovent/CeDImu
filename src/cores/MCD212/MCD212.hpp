@@ -105,17 +105,16 @@ private:
 
     uint8_t* memory;
 
-    uint8_t* screen; //    wxImage screen;
-    uint8_t* planeA; //    wxImage planeA;
-    uint8_t* planeB; //    wxImage planeB;
-    uint8_t* cursorPlane; //    wxImage cursorPlane;
-    uint8_t* backgroundPlane; //    wxImage backgroundPlane;
+    uint8_t* screen;
+    uint8_t* planeA;
+    uint8_t* planeB;
+    uint8_t* cursorPlane;
+    uint8_t* backgroundPlane;
 
     bool stopOnNextFrame;
     uint32_t* controlRegisters;
     uint16_t* internalRegisters;
     uint32_t CLUT[256];
-    const uint8_t dequantizer[16] = {0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
     std::ofstream out_dram;
     std::ofstream out_display;
     std::function<void()> OnFrameCompleted;

@@ -38,22 +38,22 @@ uint16_t DecodeBitmapLine(uint8_t* input, uint8_t* output, const uint16_t width,
 
 /** \brief Decode a Run-length file line.
  *
- * \param line Where the decoded line will be written.
+ * \param line Where the decoded line will be written in ARGB.
  * \param width The width of the line.
  * \param CLUTTable The CLUT table to use.
  * \param data The raw input data to be decoded.
- * \param cm true for 4 bits/pixel, false for 8bits/pixel.
- * \return The nuùber of raw data read.
+ * \param cm true for RL3, false for RL7.
+ * \return The number of raw bytes read from data.
 */
 uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint32_t* CLUTTable, const uint8_t* data, const bool cm)
 {
     uint16_t index = 0;
 
-    for(int x = 0; x < width;)
+    if(cm) // RL3
     {
-        const uint8_t format = data[index++];;
-        if(cm) // RL3
+        for(int x = 0; x < width;)
         {
+            const uint8_t format = data[index++];
             const uint8_t color1 = format >> 4 & 0x07;
             const uint8_t color2 = format & 0x07;
             uint16_t count = 1;
@@ -72,8 +72,12 @@ uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint32_t
                 Video::DecodeCLUT(color2, &line[x++ * 4 + 1], CLUTTable);
             }
         }
-        else // RL7
+    }
+    else // RL7
+    {
+        for(int x = 0; x < width;)
         {
+            const uint8_t format = data[index++];
             const uint8_t color = format & 0x7F;
             uint16_t count = 1;
             if(format & 0x80) // run of single pixels
@@ -180,7 +184,7 @@ void SplitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uin
     }
     else if(alpha != nullptr)
     {
-        for(size_t i = 0, a = 0; i < argbLength;)
+        for(size_t i = 0; i < argbLength;)
         {
             *alpha++ = argb[i++];
             i += 3;
