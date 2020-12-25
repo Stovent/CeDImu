@@ -202,4 +202,32 @@ void SplitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uin
     }
 }
 
+/** \brief Copy the ARGB pixels to an RGB plane.
+ *
+ * \param dst The destination RGB plane.
+ * \param dstWidth The width of the destination plane.
+ * \param dstHeight The height of the destination plane.
+ * \param src The source ARGB plane.
+ * \param srcWidth The width of the source plane.
+ * \param srcHeight The width of the source plane.
+ * \param xOffset The x offset in pixels where the paste will occur on dst.
+ * \param yOffset The y offset in pixels where the paste will occur on dst.
+ *
+ * If the source does not fit in the destination, only the pixels that fit in the destination are copied.
+*/
+void Paste(uint8_t* dst, const uint16_t dstWidth, const uint16_t dstHeight, const uint8_t* src, const uint16_t srcWidth, const uint16_t srcHeight, const uint16_t xOffset, const uint16_t yOffset)
+{
+    for(uint16_t dy = yOffset, sy = 0; dy < dstHeight && sy < srcHeight; dy++, sy++)
+    {
+              uint8_t* dstRow = dst + dstWidth * 3 * dy;
+        const uint8_t* srcRow = src + srcWidth * 4 * sy;
+        for(uint16_t dx = xOffset, sx = 0; dx < dstWidth && sx < srcWidth; dx++, sx++)
+        {
+            dstRow[dx * 3]     = srcRow[sx * 4 + 1] + dstRow[dx * 3]     * (1 - srcRow[sx * 4]);
+            dstRow[dx * 3 + 1] = srcRow[sx * 4 + 2] + dstRow[dx * 3 + 1] * (1 - srcRow[sx * 4]);
+            dstRow[dx * 3 + 2] = srcRow[sx * 4 + 3] + dstRow[dx * 3 + 2] * (1 - srcRow[sx * 4]);
+        }
+    }
+}
+
 } // namespace Video

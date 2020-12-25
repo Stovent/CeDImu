@@ -26,26 +26,25 @@ void MCD212::DrawLine()
         UNSET_DA_BIT()
         if(GetDE())
         {
-//            screen.Paste(backgroundPlane, 0, 0);
+            Video::SplitARGB(backgroundPlane, GetHorizontalResolution1() * GetVerticalResolution() * 4, nullptr, screen);
 
             if(controlRegisters[PlaneOrder])
             {
-//                screen.Paste(planeA, 0, 0);
-//                screen.Paste(planeB, 0, 0);
+                Video::Paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), planeA, GetHorizontalResolution1(), GetVerticalResolution());
+                Video::Paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), planeB, GetHorizontalResolution2(), GetVerticalResolution());
             }
             else
             {
-//                screen.Paste(planeB, 0, 0);
-//                screen.Paste(planeA, 0, 0);
+                Video::Paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), planeB, GetHorizontalResolution2(), GetVerticalResolution());
+                Video::Paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), planeA, GetHorizontalResolution1(), GetVerticalResolution());
             }
 
             if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
             {
-                uint16_t x = controlRegisters[CursorPosition] & 0x0003FF;
-                uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
-//                screen.Paste(cursorPlane, y, x);
+                const uint16_t x = controlRegisters[CursorPosition] & 0x0003FF;
+                const uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
+                Video::Paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), cursorPlane, 16, 16, x, y);
             }
-            Video::SplitARGB(planeA, GetHorizontalResolution1() * GetVerticalResolution() * 4, nullptr, screen);
         }
 
         if(OnFrameCompleted)
