@@ -25,6 +25,8 @@ uint8_t DecodeRGB555(const uint16_t pixel, uint8_t pixels[3]);
 void DecodeDYUV(const uint16_t pixel, uint8_t pixels[6], const uint32_t previous);
 void DecodeCLUT(const uint8_t pixel, uint8_t pixels[3], const uint32_t* CLUTTable);
 
+void SplitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uint8_t* rgb);
+
 } // namespace Video
 
 #endif // VIDEO_HPP

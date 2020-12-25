@@ -140,4 +140,45 @@ void DecodeCLUT(const uint8_t pixel, uint8_t pixels[3], const uint32_t* CLUTTabl
     pixels[2] = CLUTTable[pixel];
 }
 
+/** \brief Split ARGB data into different alpha and RGB channels.
+ *
+ * \param argb The input ARGB data.
+ * \param argbLength the number of ARGB bytes (so 4 times the number of pixels).
+ * \param alpha The destination alpha channel.
+ * \param rgb The destination RGB channel.
+ *
+ * A nullptr in a channel will not write to it.
+*/
+void SplitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uint8_t* rgb)
+{
+    if(alpha != nullptr && rgb != nullptr)
+    {
+        for(size_t i = 0; i < argbLength; i += 4)
+        {
+            *alpha++ = *argb++;
+            *rgb++ = *argb++;
+            *rgb++ = *argb++;
+            *rgb++ = *argb++;
+        }
+    }
+    else if(alpha != nullptr)
+    {
+        for(size_t i = 0, a = 0; i < argbLength;)
+        {
+            *alpha++ = argb[i++];
+            i += 3;
+        }
+    }
+    else if(rgb != nullptr)
+    {
+        for(size_t i = 0; i < argbLength; i += 4)
+        {
+            argb++;
+            *rgb++ = *argb++;
+            *rgb++ = *argb++;
+            *rgb++ = *argb++;
+        }
+    }
+}
+
 } // namespace Video

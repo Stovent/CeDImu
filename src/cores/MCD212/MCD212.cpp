@@ -1,5 +1,6 @@
 #include "MCD212.hpp"
 #include "../../utils.hpp"
+#include "../../common/Video.hpp"
 
 #include <wx/msgdlg.h>
 
@@ -347,20 +348,36 @@ wxImage MCD212::GetScreen()
 
 wxImage MCD212::GetPlaneA()
 {
-    return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), planeA, true);
+    wxImage img(GetHorizontalResolution1(), GetVerticalResolution());
+    if(!img.HasAlpha())
+        img.InitAlpha();
+    Video::SplitARGB(planeA, img.GetWidth() * img.GetHeight() * 4, img.GetAlpha(), img.GetData());
+    return img;
 }
 
 wxImage MCD212::GetPlaneB()
 {
-    return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), planeB, true);
+    wxImage img(GetHorizontalResolution2(), GetVerticalResolution());
+    if(!img.HasAlpha())
+        img.InitAlpha();
+    Video::SplitARGB(planeB, img.GetWidth() * img.GetHeight() * 4, img.GetAlpha(), img.GetData());
+    return img;
 }
 
 wxImage MCD212::GetBackground()
 {
-    return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), backgroundPlane, true);
+    wxImage img(GetHorizontalResolution1(), GetVerticalResolution());
+    if(!img.HasAlpha())
+        img.InitAlpha();
+    Video::SplitARGB(backgroundPlane, img.GetWidth() * img.GetHeight() * 4, img.GetAlpha(), img.GetData());
+    return img;
 }
 
 wxImage MCD212::GetCursor()
 {
-    return wxImage(16, 16, cursorPlane, true);
+    wxImage img(16, 16);
+    if(!img.HasAlpha())
+        img.InitAlpha();
+    Video::SplitARGB(cursorPlane, img.GetWidth() * img.GetHeight() * 4, img.GetAlpha(), img.GetData());
+    return img;
 }
