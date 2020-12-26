@@ -66,7 +66,8 @@ void MCD212::DrawLinePlaneA()
     {
         if(GetFT12_1() <= 1)
         {
-            DecodeBitmapLineA();
+            const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
+            Video::DecodeBitmapLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), nullptr, &memory[GetVSR1()], codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
         }
         else if(GetFT12_1() == 2)
         {
@@ -98,7 +99,8 @@ void MCD212::DrawLinePlaneB()
     {
         if(GetFT12_2() <= 1)
         {
-            DecodeBitmapLineB();
+            const uint8_t codingMethod = controlRegisters[ImageCodingMethod] >> 8 & 0x00000F;
+            Video::DecodeBitmapLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
         }
         else if(GetFT12_2() == 2)
         {
@@ -171,75 +173,6 @@ void MCD212::DrawLineCursor()
             j += 4;
         }
         mask >>= 1;
-    }
-}
-
-void MCD212::DecodeBitmapLineA()
-{
-    const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
-    const uint16_t width = GetHorizontalResolution1();
-    uint8_t* data = &memory[GetVSR1()];
-    uint8_t* pixels = planeA + lineNumber * width * 4;
-    uint16_t index = 0;
-    uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
-
-    for(uint16_t x = 0; x < width;)
-    {
-        if(codingMethod == DYUV)
-        {
-            Video::DecodeDYUV(data[index++], &pixels[x * 4], previous); // TODO
-            previous = 0;
-            previous |= pixels[x * 4] << 16;
-            previous |= pixels[x * 4 + 1] << 8;
-            previous |= pixels[x++ * 4 + 2];
-        }
-        else if(codingMethod == CLUT4)
-        {
-            Video::DecodeCLUT((data[index] >> 4 & 0x0F), &pixels[x++ * 4 + 1], CLUT);
-            Video::DecodeCLUT(data[index++] & 0x0F, &pixels[x++ * 4 + 1], CLUT);
-        }
-        else // CLUT
-        {
-            Video::DecodeCLUT(data[index++] + (codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000) ? 128 : 0, &pixels[x++ * 4 + 1], CLUT);
-        }
-    }
-}
-
-void MCD212::DecodeBitmapLineB()
-{
-    const uint8_t codingMethod = (controlRegisters[ImageCodingMethod] & 0x000F00) >> 8;
-    const uint16_t width = GetHorizontalResolution2();
-    uint8_t* dataA = &memory[GetVSR1()];
-    uint8_t* dataB = &memory[GetVSR2()];
-    uint8_t* pixels = planeB + lineNumber * width * 4;
-    uint16_t index = 0;
-    uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
-
-    for(uint16_t x = 0; x < width;)
-    {
-        if(codingMethod == DYUV)
-        {
-            Video::DecodeDYUV(dataB[index++], &pixels[x * 4], previous); // TODO
-            previous = 0;
-            previous |= pixels[x * 4] << 16;
-            previous |= pixels[x * 4 + 1] << 8;
-            previous |= pixels[x++ * 4 + 2];
-        }
-        else if(codingMethod == RGB555)
-        {
-            uint16_t color  = dataA[index] << 8;
-            color |= dataB[index++];
-            Video::DecodeRGB555(color, &pixels[x++ * 4 + 1]);
-        }
-        else if(codingMethod == CLUT4)
-        {
-            Video::DecodeCLUT((dataB[index] >> 4 & 0x0F) + 128, &pixels[x++ * 4 + 1], CLUT);
-            Video::DecodeCLUT((dataB[index++] & 0x0F) + 128, &pixels[x++ * 4 + 1], CLUT);
-        }
-        else // CLUT
-        {
-            Video::DecodeCLUT(dataB[index++] + 128, &pixels[x++ * 4 + 1], CLUT);
-        }
     }
 }
 

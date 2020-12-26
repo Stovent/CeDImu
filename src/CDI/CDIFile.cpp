@@ -226,7 +226,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
                 }
                 else
                 {
-                    index += Video::DecodeBitmapLine(&data[index], &pixels[y * 3 * width], width, coding);
+//                    index += Video::DecodeBitmapLine(&data[index], &pixels[y * 3 * width], width, coding);
                     y++;
                     if(y >= height)
                     {

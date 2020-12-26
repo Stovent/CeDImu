@@ -125,8 +125,6 @@ private:
     void DrawLineBackground();
 
     // Display File Decoders
-    void DecodeBitmapLineA();
-    void DecodeBitmapLineB();
     void DecodeMosaicLineA();
     void DecodeMosaicLineB();
 
