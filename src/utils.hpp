@@ -144,7 +144,7 @@ inline int16_t lim16(const int32_t data)
  * \param contained The array containing the sequence of bytes to match.
  * \param containedSize The size of the array containing the sequence of bytes to match.
  *
- * \return A pointer to the first occurrence in container of the entire sequence of bytes specified in contained, or a null pointer if the sequence is not present in container.
+ * \return A pointer to the first occurrence in container of the entire sequence of bytes specified in contained, or nullptr if the sequence is not present in container.
  */
 inline const void* subarrayOfArray(const void* container, size_t containerSize, const void* contained, size_t containedSize)
 {
@@ -166,7 +166,7 @@ inline const void* subarrayOfArray(const void* container, size_t containerSize, 
                 return &ner[j];
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 #ifdef DEBUG

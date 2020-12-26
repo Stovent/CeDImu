@@ -3,12 +3,20 @@
 #include "../utils.hpp"
 #include "../common/Audio.hpp"
 #include "../common/Video.hpp"
+#include "../cores/MCD212/MCD212.hpp"
 
 #include <wx/msgdlg.h>
 #include <wx/bitmap.h>
 
 #include <fstream>
 #include <vector>
+
+static constexpr uint8_t codingLookUp[16] = {
+    CLUT4, CLUT7, CLUT8, OFF,
+    OFF, DYUV, RGB555, RGB555,
+    OFF, OFF, OFF, OFF,
+    OFF, OFF, OFF, OFF,
+};
 
 CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
     disc(cdidisc),
@@ -128,7 +136,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
     for(int channel = 0; channel <= maxChannel; channel++)
     {
         uint16_t width, height, y = 0;
-        uint8_t pixels[768 * 560 * 3] = {0};
+        uint8_t pixels[768 * 560 * 4] = {0};
 
         disc.GotoLBN(fileLBN);
 
@@ -146,7 +154,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
                 disc.GetRaw((char*)data, 2048);
 
                 char* clut = (char*)subarrayOfArray(data, 2048, "cluts", 5);
-                if(clut != NULL)
+                if(clut != nullptr)
                 {
                     disc.Seek(-2026, std::ios::cur);
                     const uint16_t offset = disc.GetWord();
@@ -158,7 +166,7 @@ void CDIFile::ExportVideo(std::string directoryPath)
                         continue;
 
                     disc.Seek(offset - 0x2A - 0x16 - 5 - 2, std::ios::cur);
-                    for(int bank = 0; bank < 256 * 3; bank += 64 * 3)
+                    for(int bank = 0; bank < 256; bank += 64)
                         for(int i = 0; i < 64; i++)
                         {
                             uint8_t addr = disc.GetByte();
@@ -168,18 +176,18 @@ void CDIFile::ExportVideo(std::string directoryPath)
                                 break;
                             }
                             addr -= 0x80;
-                            Video::CLUT[bank + 3 * addr] = disc.GetByte();
-                            Video::CLUT[bank + 3 * addr + 1] = disc.GetByte();
-                            Video::CLUT[bank + 3 * addr + 2] = disc.GetByte();
+                            Video::CLUT[bank + addr]  = disc.GetByte() << 16;
+                            Video::CLUT[bank + addr] |= disc.GetByte() << 8;
+                            Video::CLUT[bank + addr] |= disc.GetByte();
                         }
                 }
                 else // simply copy the first 128 colors
                 {
                     for(int i = 0, j = 0; i < 128*3; j++)
                     {
-                        Video::CLUT[j] = data[i] << 16; i++;
-                        Video::CLUT[j] |= data[i] << 8; i++;
-                        Video::CLUT[j] |= data[i]; i++;
+                        Video::CLUT[j]  = data[i++] << 16;
+                        Video::CLUT[j] |= data[i++] << 8;
+                        Video::CLUT[j] |= data[i++];
                     }
                 }
 
@@ -211,28 +219,28 @@ void CDIFile::ExportVideo(std::string directoryPath)
 
             while(index < 2324)
             {
-                if(coding == 4)
+                if(coding == 3 || coding == 4)
                 {
-                    index += Video::DecodeRunLengthLine(&pixels[y * 3 * width], width, Video::CLUT, &data[index], 0); // TODO: this should be ARGB.
+                    index += Video::DecodeRunLengthLine(&pixels[width * 4 * y], width, &data[index], Video::CLUT, coding & 0x3);
                     y++;
                     if(y >= height)
                     {
                         uint8_t* pix = new uint8_t[width * height * 3];
-                        memcpy(pix, pixels, width * height * 3);
-                        wxBitmap(wxImage(width, height, pix, true), 24).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
+                        Video::SplitARGB(pixels, width * height * 4, nullptr, pix);
+                        wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
                         delete[] pix;
                         y = 0;
                     }
                 }
                 else
                 {
-//                    index += Video::DecodeBitmapLine(&data[index], &pixels[y * 3 * width], width, coding);
+                    index += Video::DecodeBitmapLine(&pixels[width * 4 * y], width, nullptr, &data[index], Video::CLUT, 0, codingLookUp[coding]);
                     y++;
                     if(y >= height)
                     {
-                        uint8_t* pix = new uint8_t[width * height * 3];
-                        memcpy(pix, pixels, width * height * 3);
-                        wxBitmap(wxImage(width, height, pix, true), 24).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
+                        uint8_t* pix = new uint8_t[width * height * 4];
+                        Video::SplitARGB(pixels, width * height * 4, nullptr, pix);
+                        wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
                         delete[] pix;
                         y = 0;
                     }
@@ -240,6 +248,14 @@ void CDIFile::ExportVideo(std::string directoryPath)
             }
 
             disc.GotoNextSector();
+        }
+        if(y > 0)
+        {
+            uint8_t* pix = new uint8_t[width * height * 4];
+            Video::SplitARGB(pixels, width * height * 4, nullptr, pix);
+            wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
+            delete[] pix;
+            y = 0;
         }
     }
 
