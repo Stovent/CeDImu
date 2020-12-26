@@ -71,7 +71,7 @@ void MCD212::DrawLinePlaneA()
         }
         else if(GetFT12_1() == 2)
         {
-            Video::DecodeRunLengthLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), CLUT, &memory[GetVSR1()], GetCM1());
+            Video::DecodeRunLengthLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), &memory[GetVSR1()], CLUT, GetCM1());
         }
         else
         {
@@ -104,7 +104,7 @@ void MCD212::DrawLinePlaneB()
         }
         else if(GetFT12_2() == 2)
         {
-            Video::DecodeRunLengthLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &CLUT[128], &memory[GetVSR2()], GetCM2());
+            Video::DecodeRunLengthLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &memory[GetVSR2()], &CLUT[128], GetCM2());
         }
         else
         {

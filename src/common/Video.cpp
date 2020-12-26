@@ -77,12 +77,12 @@ uint16_t DecodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
  *
  * \param line Where the decoded line will be written in ARGB.
  * \param width The width of the line.
- * \param CLUTTable The CLUT table to use.
  * \param data The raw input data to be decoded.
+ * \param CLUTTable The CLUT table to use.
  * \param cm true for RL3, false for RL7.
  * \return The number of raw bytes read from data.
 */
-uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint32_t* CLUTTable, const uint8_t* data, const bool cm)
+uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t* data, const uint32_t* CLUTTable, const bool cm)
 {
     uint16_t index = 0;
 

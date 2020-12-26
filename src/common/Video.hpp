@@ -18,7 +18,7 @@ extern const uint8_t dequantizer[16];
 extern uint32_t CLUT[256];
 
 uint16_t DecodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const uint8_t codingMethod);
-uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint32_t* CLUTTable, const uint8_t* data, const bool cm);
+uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t* data, const uint32_t* CLUTTable, const bool cm);
 
 // Real-Time Decoders (set pixels in ARGB format)
 void DecodeRGB555(const uint16_t pixel, uint8_t pixels[4]);
