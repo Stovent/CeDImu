@@ -4,6 +4,7 @@
 #include "../utils.hpp"
 #include "../Boards/Board.hpp"
 #include "../cores/VDSC.hpp"
+#include "../common/Video.hpp"
 
 #include <wx/dcclient.h>
 
@@ -234,18 +235,50 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
         wxClientDC dcBackground(backgroundPanel);
         wxClientDC dcCursor(cursorPanel);
 
-        wxImage planeA = board->GetPlaneA();
-        wxImage planeB = board->GetPlaneB();
-        wxImage background = board->GetBackground();
-        wxImage cursor = board->GetCursor();
+        Plane a = board->GetPlaneA();
+        Plane b = board->GetPlaneB();
+        Plane bg = board->GetBackground();
+        Plane c = board->GetCursor();
 
-        if(planeA.IsOk())
-            dcA.DrawBitmap(wxBitmap(planeA.Scale(planeAPanel->GetClientSize().x, planeAPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-        if(planeB.IsOk())
-            dcB.DrawBitmap(wxBitmap(planeB.Scale(planeBPanel->GetClientSize().x, planeBPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-        if(background.IsOk())
-            dcBackground.DrawBitmap(wxBitmap(background.Scale(backgroundPanel->GetClientSize().x, backgroundPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-        if(cursor.IsOk())
-            dcCursor.DrawBitmap(wxBitmap(cursor), 0, 0);
+        if(a.pixels != nullptr)
+        {
+            wxImage planeA(a.width, a.height);
+            if(!planeA.HasAlpha())
+                planeA.InitAlpha();
+            Video::SplitARGB(a.pixels, a.width * a.height * 4, planeA.GetAlpha(), planeA.GetData());
+            if(planeA.IsOk())
+                dcA.DrawBitmap(wxBitmap(planeA.Scale(planeAPanel->GetClientSize().x, planeAPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+        }
+
+        if(b.pixels != nullptr)
+        {
+
+            wxImage planeB(b.width, b.height);
+            if(!planeB.HasAlpha())
+                planeB.InitAlpha();
+            Video::SplitARGB(b.pixels, b.width * b.height * 4, planeB.GetAlpha(), planeB.GetData());
+            if(planeB.IsOk())
+                dcB.DrawBitmap(wxBitmap(planeB.Scale(planeBPanel->GetClientSize().x, planeBPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+        }
+
+        if(bg.pixels != nullptr)
+        {
+            wxImage background(bg.width, bg.height);
+            if(!background.HasAlpha())
+                background.InitAlpha();
+            Video::SplitARGB(bg.pixels, bg.width * bg.height * 4, background.GetAlpha(), background.GetData());
+            if(background.IsOk())
+                dcBackground.DrawBitmap(wxBitmap(background.Scale(backgroundPanel->GetClientSize().x, backgroundPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+        }
+
+        if(c.pixels != nullptr)
+        {
+            wxImage cursor(c.width, c.height);
+            if(!cursor.HasAlpha())
+                cursor.InitAlpha();
+            Video::SplitARGB(c.pixels, c.width *c.height * 4, cursor.GetAlpha(), cursor.GetData());
+            if(cursor.IsOk())
+                dcCursor.DrawBitmap(wxBitmap(cursor), 0, 0);
+        }
     }
 }

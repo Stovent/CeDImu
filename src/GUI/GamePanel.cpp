@@ -16,10 +16,11 @@ GamePanel::~GamePanel()
 
 void GamePanel::RefreshLoop(wxPaintEvent& event)
 {
-    wxImage screen = app->cdi.board->GetScreen();
-    if(!screen.IsOk())
+    Plane p = app->cdi.board->GetScreen();
+    if(p.pixels == nullptr)
         return;
 
+    wxImage screen(p.width, p.height, p.pixels, true);
     wxPaintDC dc(this);
     dc.Clear();
     dc.SetBrush(*wxBLACK_BRUSH);
@@ -29,10 +30,11 @@ void GamePanel::RefreshLoop(wxPaintEvent& event)
 
 void GamePanel::RefreshScreen()
 {
-    wxImage screen = app->cdi.board->GetScreen();
-    if(!screen.IsOk())
+    Plane p = app->cdi.board->GetScreen();
+    if(p.pixels == nullptr)
         return;
 
+    wxImage screen(p.width, p.height, p.pixels, true);
     wxClientDC dc(this);
     dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
 }
