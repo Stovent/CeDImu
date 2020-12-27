@@ -1,6 +1,7 @@
 #ifndef VIDEO_HPP
 #define VIDEO_HPP
 
+#include <cstddef>
 #include <cstdint>
 
 namespace Video
