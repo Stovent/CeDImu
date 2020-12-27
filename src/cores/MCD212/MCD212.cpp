@@ -341,43 +341,27 @@ void MCD212::ExecuteDCA2()
     }
 }
 
-wxImage MCD212::GetScreen() const
+Plane MCD212::GetScreen() const
 {
-    return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), screen, true);
+    return {screen, GetHorizontalResolution1(), GetVerticalResolution()};
 }
 
-wxImage MCD212::GetPlaneA() const
+Plane MCD212::GetPlaneA() const
 {
-    wxImage img(GetHorizontalResolution1(), GetVerticalResolution());
-    if(!img.HasAlpha())
-        img.InitAlpha();
-    Video::SplitARGB(planeA, img.GetWidth() * img.GetHeight() * 4, img.GetAlpha(), img.GetData());
-    return img;
+    return {planeA, GetHorizontalResolution1(), GetVerticalResolution()};
 }
 
-wxImage MCD212::GetPlaneB() const
+Plane MCD212::GetPlaneB() const
 {
-    wxImage img(GetHorizontalResolution2(), GetVerticalResolution());
-    if(!img.HasAlpha())
-        img.InitAlpha();
-    Video::SplitARGB(planeB, img.GetWidth() * img.GetHeight() * 4, img.GetAlpha(), img.GetData());
-    return img;
+    return {planeB, GetHorizontalResolution2(), GetVerticalResolution()};
 }
 
-wxImage MCD212::GetBackground() const
+Plane MCD212::GetBackground() const
 {
-    wxImage img(GetHorizontalResolution1(), GetVerticalResolution());
-    if(!img.HasAlpha())
-        img.InitAlpha();
-    Video::SplitARGB(backgroundPlane, img.GetWidth() * img.GetHeight() * 4, img.GetAlpha(), img.GetData());
-    return img;
+    return {backgroundPlane, GetHorizontalResolution1(), GetVerticalResolution()};
 }
 
-wxImage MCD212::GetCursor() const
+Plane MCD212::GetCursor() const
 {
-    wxImage img(16, 16);
-    if(!img.HasAlpha())
-        img.InitAlpha();
-    Video::SplitARGB(cursorPlane, img.GetWidth() * img.GetHeight() * 4, img.GetAlpha(), img.GetData());
-    return img;
+    return {cursorPlane, 16, 16};
 }

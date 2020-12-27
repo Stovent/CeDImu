@@ -48,11 +48,11 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() override;
     virtual std::vector<VDSCRegister> GetControlRegisters() override;
-    virtual wxImage GetScreen() override;
-    virtual wxImage GetPlaneA() override;
-    virtual wxImage GetPlaneB() override;
-    virtual wxImage GetBackground() override;
-    virtual wxImage GetCursor() override;
+    virtual Plane GetScreen() override;
+    virtual Plane GetPlaneA() override;
+    virtual Plane GetPlaneB() override;
+    virtual Plane GetBackground() override;
+    virtual Plane GetCursor() override;
 };
 
 #endif // MINIMMC_HPP

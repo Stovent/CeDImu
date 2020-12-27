@@ -91,29 +91,29 @@ void SCC66470::StopOnNextFrame(const bool stop)
     stopOnNextFrame = stop;
 }
 
-wxImage SCC66470::GetScreen() const
+Plane SCC66470::GetScreen() const
 {
-    return wxImage();
+    return {nullptr, 0, 0};
 }
 
-wxImage SCC66470::GetPlaneA() const
+Plane SCC66470::GetPlaneA() const
 {
-    return wxImage();
+    return {nullptr, 0, 0};
 }
 
-wxImage SCC66470::GetPlaneB() const
+Plane SCC66470::GetPlaneB() const
 {
-    return wxImage();
+    return {nullptr, 0, 0};
 }
 
-wxImage SCC66470::GetBackground() const
+Plane SCC66470::GetBackground() const
 {
-    return wxImage();
+    return {nullptr, 0, 0};
 }
 
-wxImage SCC66470::GetCursor() const
+Plane SCC66470::GetCursor() const
 {
-    return wxImage();
+    return {nullptr, 0, 0};
 }
 
 #undef   SET_DA_BIT

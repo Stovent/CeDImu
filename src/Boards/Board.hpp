@@ -51,11 +51,11 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() = 0;
-    virtual wxImage GetScreen() = 0;
-    virtual wxImage GetPlaneA() = 0;
-    virtual wxImage GetPlaneB() = 0;
-    virtual wxImage GetBackground() = 0;
-    virtual wxImage GetCursor() = 0;
+    virtual Plane GetScreen() = 0;
+    virtual Plane GetPlaneA() = 0;
+    virtual Plane GetPlaneB() = 0;
+    virtual Plane GetBackground() = 0;
+    virtual Plane GetCursor() = 0;
 };
 
 #endif // BOARD_HPP

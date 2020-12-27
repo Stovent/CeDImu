@@ -194,27 +194,27 @@ std::vector<VDSCRegister> Mono3::GetControlRegisters()
     return mcd212.GetControlRegisters();
 }
 
-wxImage Mono3::GetScreen()
+Plane Mono3::GetScreen()
 {
     return mcd212.GetScreen();
 }
 
-wxImage Mono3::GetPlaneA()
+Plane Mono3::GetPlaneA()
 {
     return mcd212.GetPlaneA();
 }
 
-wxImage Mono3::GetPlaneB()
+Plane Mono3::GetPlaneB()
 {
     return mcd212.GetPlaneB();
 }
 
-wxImage Mono3::GetBackground()
+Plane Mono3::GetBackground()
 {
     return mcd212.GetBackground();
 }
 
-wxImage Mono3::GetCursor()
+Plane Mono3::GetCursor()
 {
     return mcd212.GetCursor();
 }

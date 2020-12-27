@@ -94,11 +94,11 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
     virtual std::vector<VDSCRegister> GetControlRegisters() const override;
-    virtual wxImage GetScreen() const override;
-    virtual wxImage GetPlaneA() const override;
-    virtual wxImage GetPlaneB() const override;
-    virtual wxImage GetBackground() const override;
-    virtual wxImage GetCursor() const override;
+    virtual Plane GetScreen() const override;
+    virtual Plane GetPlaneA() const override;
+    virtual Plane GetPlaneB() const override;
+    virtual Plane GetBackground() const override;
+    virtual Plane GetCursor() const override;
 
 private:
     uint8_t memorySwapCount;

@@ -123,27 +123,27 @@ std::vector<std::string> MiniMMC::GetDCA2()
     return ca;
 }
 
-wxImage MiniMMC::GetScreen()
+Plane MiniMMC::GetScreen()
 {
     return masterVDSC.GetScreen();
 }
 
-wxImage MiniMMC::GetPlaneA()
+Plane MiniMMC::GetPlaneA()
 {
     return masterVDSC.GetPlaneA();
 }
 
-wxImage MiniMMC::GetPlaneB()
+Plane MiniMMC::GetPlaneB()
 {
     return masterVDSC.GetPlaneB();
 }
 
-wxImage MiniMMC::GetBackground()
+Plane MiniMMC::GetBackground()
 {
     return masterVDSC.GetBackground();
 }
 
-wxImage MiniMMC::GetCursor()
+Plane MiniMMC::GetCursor()
 {
     return masterVDSC.GetCursor();
 }

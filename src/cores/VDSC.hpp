@@ -6,8 +6,6 @@ class VDSC;
 class Board;
 #include "../common/flags.hpp"
 
-#include <wx/image.h>
-
 #include <string>
 #include <vector>
 #include <functional>
@@ -18,6 +16,13 @@ struct VDSCRegister
     uint32_t address;
     uint32_t value;
     std::string disassembledValue;
+};
+
+struct Plane
+{
+    uint8_t* pixels;
+    uint16_t width;
+    uint16_t height;
 };
 
 class VDSC
@@ -61,11 +66,11 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() const = 0;
-    virtual wxImage GetScreen() const = 0;
-    virtual wxImage GetPlaneA() const = 0;
-    virtual wxImage GetPlaneB() const = 0;
-    virtual wxImage GetBackground() const = 0;
-    virtual wxImage GetCursor() const = 0;
+    virtual Plane GetScreen() const = 0;
+    virtual Plane GetPlaneA() const = 0;
+    virtual Plane GetPlaneB() const = 0;
+    virtual Plane GetBackground() const = 0;
+    virtual Plane GetCursor() const = 0;
 };
 
 #endif // VDSC_HPP
