@@ -8,6 +8,7 @@
 #include <wx/msgdlg.h>
 #include <wx/bitmap.h>
 
+#include <array>
 #include <fstream>
 #include <vector>
 
@@ -135,8 +136,10 @@ void CDIFile::ExportVideo(std::string directoryPath)
 
     for(int channel = 0; channel <= maxChannel; channel++)
     {
-        uint16_t width, height, y = 0;
+        uint16_t width = 0, height = 0, y = 0;
+        uint8_t coding = 0;
         uint8_t pixels[768 * 560 * 4] = {0};
+        std::vector<uint8_t> data;
 
         disc.GotoLBN(fileLBN);
 
@@ -204,51 +207,56 @@ void CDIFile::ExportVideo(std::string directoryPath)
             bool ascf = disc.subheader.codingInformation & Video::CodingInformation::ascf;
             // bool eolf = disc.subheader.codingInformation & Video::CodingInformation::eolf;
             uint8_t resolution  = (disc.subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
-            uint8_t coding = disc.subheader.codingInformation & Video::CodingInformation::coding;
+            coding = disc.subheader.codingInformation & Video::CodingInformation::coding;
 
             if(ascf)
                 continue;
 
-            uint8_t data[2324];
-            uint16_t index = 0;
+            std::array<uint8_t, 2324> d;
 
-            width = resolution == 0 ? 360 : 720;
-            height = resolution == 3 ? 490 : 245;
+            width = resolution == 0 ? 384 : 720;
+            height = resolution == 3 ? 480 : 245;
 
-            disc.GetRaw((char*)data, 2324);
-
-            while(index < 2324)
-            {
-                if(coding == 3 || coding == 4)
-                {
-                    index += Video::DecodeRunLengthLine(&pixels[width * 4 * y], width, &data[index], Video::CLUT, coding & 0x3);
-                    y++;
-                    if(y >= height)
-                    {
-                        uint8_t* pix = new uint8_t[width * height * 3];
-                        Video::SplitARGB(pixels, width * height * 4, nullptr, pix);
-                        wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
-                        delete[] pix;
-                        y = 0;
-                    }
-                }
-                else
-                {
-                    index += Video::DecodeBitmapLine(&pixels[width * 4 * y], width, nullptr, &data[index], Video::CLUT, 0, codingLookUp[coding]);
-                    y++;
-                    if(y >= height)
-                    {
-                        uint8_t* pix = new uint8_t[width * height * 4];
-                        Video::SplitARGB(pixels, width * height * 4, nullptr, pix);
-                        wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
-                        delete[] pix;
-                        y = 0;
-                    }
-                }
-            }
+            disc.GetRaw((char*)d.data(), d.size());
+            data.insert(data.end(), d.begin(), d.end());
 
             disc.GotoNextSector();
         }
+
+        size_t index = 0;
+        if(coding == 3 || coding == 4)
+        {
+            while(index < data.size())
+            {
+                index += Video::DecodeRunLengthLine(&pixels[width * 4 * y], width, &data[index], Video::CLUT, coding & 0x3);
+                y++;
+                if(y >= height)
+                {
+                    uint8_t* pix = new uint8_t[width * height * 3];
+                    Video::SplitARGB(pixels, width * height * 4, nullptr, pix);
+                    wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
+                    delete[] pix;
+                    y = 0;
+                }
+            }
+        }
+        else
+        {
+            while(index < data.size())
+            {
+                index += Video::DecodeBitmapLine(&pixels[width * 4 * y], width, nullptr, &data[index], Video::CLUT, 0, codingLookUp[coding]);
+                y++;
+                if(y >= height)
+                {
+                    uint8_t* pix = new uint8_t[width * height * 3];
+                    Video::SplitARGB(pixels, width * height * 4, nullptr, pix);
+                    wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
+                    delete[] pix;
+                    y = 0;
+                }
+            }
+        }
+
         if(y > 0)
         {
             uint8_t* pix = new uint8_t[width * height * 4];
