@@ -1,8 +1,6 @@
 #include "Video.hpp"
 #include "../cores/MCD212/MCD212.hpp"
 
-#include <wx/msgdlg.h>
-
 namespace Video
 {
 

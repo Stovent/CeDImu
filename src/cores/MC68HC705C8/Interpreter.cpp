@@ -1,8 +1,6 @@
 #include "MC68HC705C8.hpp"
 #include "../../utils.hpp"
 
-#include <wx/msgdlg.h>
-
 void MC68HC705C8::Execute(const int cycles)
 {
     if(waitStop)

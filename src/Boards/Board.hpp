@@ -9,8 +9,6 @@ class Board;
 #include "../cores/VDSC.hpp"
 #include "../common/flags.hpp"
 
-#include <wx/image.h>
-
 class Board
 {
 public:

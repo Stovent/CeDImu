@@ -3,6 +3,8 @@
 
 #include <wx/msgdlg.h>
 
+#include <cstring>
+
 /** \brief Open a disc.
  *
  * \param  filename The path to the file to open.
