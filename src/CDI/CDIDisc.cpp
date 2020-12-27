@@ -107,11 +107,11 @@ void CDIDisc::LoadFileSystem()
         if(nameSize == 0)
             break;
 
-		GetByte(); // ignore the next byte
+        GetByte(); // ignore the next byte
 
         lbn = GetLong();
 
-        /*uint16_t parent = */GetWord();
+        GetWord(); // uint16_t parent =
 
         std::string dirname = GetString(nameSize);
         if(!isEven(nameSize))
