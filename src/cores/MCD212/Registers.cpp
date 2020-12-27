@@ -272,7 +272,7 @@ void MCD212::ReloadDisplayParameters2(const bool CM, const uint8_t MF, const uin
     internalRegisters[MDDR2] |= FT << 8;
 }
 
-std::vector<VDSCRegister> MCD212::GetInternalRegisters()
+std::vector<VDSCRegister> MCD212::GetInternalRegisters() const
 {
     std::vector<VDSCRegister> registers;
     registers.push_back(VDSCRegister({"CSR1R", MCSR1R + 0x4FFFE0, GetCSR1RRegister(), DisassembleCSR1RRegister()}));
@@ -290,7 +290,7 @@ std::vector<VDSCRegister> MCD212::GetInternalRegisters()
     return registers;
 }
 
-std::vector<VDSCRegister> MCD212::GetControlRegisters()
+std::vector<VDSCRegister> MCD212::GetControlRegisters() const
 {
     std::vector<VDSCRegister> registers;
     for(uint32_t i = 0; i < 256; i++)

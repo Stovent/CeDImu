@@ -91,27 +91,27 @@ void SCC66470::StopOnNextFrame(const bool stop)
     stopOnNextFrame = stop;
 }
 
-wxImage SCC66470::GetScreen()
+wxImage SCC66470::GetScreen() const
 {
     return wxImage();
 }
 
-wxImage SCC66470::GetPlaneA()
+wxImage SCC66470::GetPlaneA() const
 {
     return wxImage();
 }
 
-wxImage SCC66470::GetPlaneB()
+wxImage SCC66470::GetPlaneB() const
 {
     return wxImage();
 }
 
-wxImage SCC66470::GetBackground()
+wxImage SCC66470::GetBackground() const
 {
     return wxImage();
 }
 
-wxImage SCC66470::GetCursor()
+wxImage SCC66470::GetCursor() const
 {
     return wxImage();
 }

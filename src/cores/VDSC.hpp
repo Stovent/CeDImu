@@ -54,18 +54,18 @@ public:
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) = 0;
 
     virtual void DrawLine() = 0;
-    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() { return 0; }
+    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const { return 0; }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
     virtual void StopOnNextFrame(const bool stop = true) = 0;
 
-    virtual std::vector<VDSCRegister> GetInternalRegisters() = 0;
-    virtual std::vector<VDSCRegister> GetControlRegisters() = 0;
-    virtual wxImage GetScreen() = 0;
-    virtual wxImage GetPlaneA() = 0;
-    virtual wxImage GetPlaneB() = 0;
-    virtual wxImage GetBackground() = 0;
-    virtual wxImage GetCursor() = 0;
+    virtual std::vector<VDSCRegister> GetInternalRegisters() const = 0;
+    virtual std::vector<VDSCRegister> GetControlRegisters() const = 0;
+    virtual wxImage GetScreen() const = 0;
+    virtual wxImage GetPlaneA() const = 0;
+    virtual wxImage GetPlaneB() const = 0;
+    virtual wxImage GetBackground() const = 0;
+    virtual wxImage GetCursor() const = 0;
 };
 
 #endif // VDSC_HPP

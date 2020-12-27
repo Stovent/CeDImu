@@ -82,7 +82,7 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) override;
 
-    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override // as nano seconds
+    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const override // as nano seconds
     {
         return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
     }
@@ -92,13 +92,13 @@ public:
 
     virtual void DrawLine() override;
 
-    virtual std::vector<VDSCRegister> GetInternalRegisters() override;
-    virtual std::vector<VDSCRegister> GetControlRegisters() override;
-    virtual wxImage GetScreen() override;
-    virtual wxImage GetPlaneA() override;
-    virtual wxImage GetPlaneB() override;
-    virtual wxImage GetBackground() override;
-    virtual wxImage GetCursor() override;
+    virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
+    virtual std::vector<VDSCRegister> GetControlRegisters() const override;
+    virtual wxImage GetScreen() const override;
+    virtual wxImage GetPlaneA() const override;
+    virtual wxImage GetPlaneB() const override;
+    virtual wxImage GetBackground() const override;
+    virtual wxImage GetCursor() const override;
 
 private:
     uint8_t memorySwapCount;
@@ -203,9 +203,9 @@ private:
     void ReloadDisplayParameters1(const bool dm, const uint8_t MF, const uint8_t FT);
     void ReloadDisplayParameters2(const bool dm, const uint8_t MF, const uint8_t FT);
 
-    inline uint16_t GetHorizontalResolution1() { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM1() ? a*2 : a; }
-    inline uint16_t GetHorizontalResolution2() { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }
-    inline uint16_t GetVerticalResolution() { return GetFD() ? 240 : (GetST() ? 240 : 280); }
+    inline uint16_t GetHorizontalResolution1() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM1() ? a*2 : a; }
+    inline uint16_t GetHorizontalResolution2() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }
+    inline uint16_t GetVerticalResolution() const { return GetFD() ? 240 : (GetST() ? 240 : 280); }
 };
 
 #endif // MCD212_HPP

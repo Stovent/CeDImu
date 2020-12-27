@@ -61,7 +61,7 @@ public:
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) override;
 
     virtual void DrawLine() override;
-    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() override
+    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const override
     {
         return 41000;
     }
@@ -69,33 +69,33 @@ public:
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
     virtual void StopOnNextFrame(const bool stop = true) override;
 
-    virtual std::vector<VDSCRegister> GetInternalRegisters() override;
-    virtual std::vector<VDSCRegister> GetControlRegisters() override;
-    virtual wxImage GetScreen() override;
-    virtual wxImage GetPlaneA() override;
-    virtual wxImage GetPlaneB() override;
-    virtual wxImage GetBackground() override;
-    virtual wxImage GetCursor() override;
+    virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
+    virtual std::vector<VDSCRegister> GetControlRegisters() const override;
+    virtual wxImage GetScreen() const override;
+    virtual wxImage GetPlaneA() const override;
+    virtual wxImage GetPlaneB() const override;
+    virtual wxImage GetBackground() const override;
+    virtual wxImage GetCursor() const override;
 
     // Internal Register
-    uint16_t GetCSRWRegister();
-    uint16_t GetCSRRRegister();
-    uint16_t GetDCRRegister();
-    uint16_t GetVSRRegister();
-    uint16_t GetBCRRegister();
-    uint16_t GetDCR2Register();
-    uint16_t GetDCPRegister();
-    uint16_t GetSWMRegister();
-    uint16_t GetSTMRegister();
-    uint16_t GetARegister();
-    uint16_t GetBRegister();
-    uint16_t GetPCRRegister();
-    uint16_t GetMASKRegister();
-    uint16_t GetSHIFTRegister();
-    uint16_t GetINDEXRegister();
-    uint16_t GetFCRegister();
-    uint16_t GetBCRegister();
-    uint16_t GetTCRegister();
+    uint16_t GetCSRWRegister() const;
+    uint16_t GetCSRRRegister() const;
+    uint16_t GetDCRRegister() const;
+    uint16_t GetVSRRegister() const;
+    uint16_t GetBCRRegister() const;
+    uint16_t GetDCR2Register() const;
+    uint16_t GetDCPRegister() const;
+    uint16_t GetSWMRegister() const;
+    uint16_t GetSTMRegister() const;
+    uint16_t GetARegister() const;
+    uint16_t GetBRegister() const;
+    uint16_t GetPCRRegister() const;
+    uint16_t GetMASKRegister() const;
+    uint16_t GetSHIFTRegister() const;
+    uint16_t GetINDEXRegister() const;
+    uint16_t GetFCRegister() const;
+    uint16_t GetBCRegister() const;
+    uint16_t GetTCRegister() const;
 };
 
 #endif // SCC66470_HPP

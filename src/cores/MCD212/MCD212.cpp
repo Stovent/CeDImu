@@ -341,12 +341,12 @@ void MCD212::ExecuteDCA2()
     }
 }
 
-wxImage MCD212::GetScreen()
+wxImage MCD212::GetScreen() const
 {
     return wxImage(GetHorizontalResolution1(), GetVerticalResolution(), screen, true);
 }
 
-wxImage MCD212::GetPlaneA()
+wxImage MCD212::GetPlaneA() const
 {
     wxImage img(GetHorizontalResolution1(), GetVerticalResolution());
     if(!img.HasAlpha())
@@ -355,7 +355,7 @@ wxImage MCD212::GetPlaneA()
     return img;
 }
 
-wxImage MCD212::GetPlaneB()
+wxImage MCD212::GetPlaneB() const
 {
     wxImage img(GetHorizontalResolution2(), GetVerticalResolution());
     if(!img.HasAlpha())
@@ -364,7 +364,7 @@ wxImage MCD212::GetPlaneB()
     return img;
 }
 
-wxImage MCD212::GetBackground()
+wxImage MCD212::GetBackground() const
 {
     wxImage img(GetHorizontalResolution1(), GetVerticalResolution());
     if(!img.HasAlpha())
@@ -373,7 +373,7 @@ wxImage MCD212::GetBackground()
     return img;
 }
 
-wxImage MCD212::GetCursor()
+wxImage MCD212::GetCursor() const
 {
     wxImage img(16, 16);
     if(!img.HasAlpha())
