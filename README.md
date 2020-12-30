@@ -39,7 +39,7 @@ cmake ..
 make -j$(nproc --all)
 ```
 
-### Makefile
+### Makefile (deprecated)
 
 #### Windows
 

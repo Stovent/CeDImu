@@ -24,5 +24,6 @@ add_executable(CeDImu
     GUI/VDSCViewer.cpp
 )
 
+include(${wxWidgets_USE_FILE})
 target_include_directories(CeDImu PUBLIC ${wxWidgets_INCLUDE_DIRS})
 target_link_libraries(CeDImu cdi ${wxWidgets_LIBRARIES})
