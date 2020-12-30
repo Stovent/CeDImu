@@ -55,4 +55,5 @@ if(NOT wxWidgets_FOUND)
 	message(FATAL_ERROR "wxWidgets not found")
 endif()
 
+include(${wxWidgets_USE_FILE})
 target_include_directories(cdi PUBLIC ${wxWidgets_INCLUDE_DIRS})
