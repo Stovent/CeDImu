@@ -1,7 +1,7 @@
 #include "SlaveViewer.hpp"
 #include "enums.hpp"
 #include "MainFrame.hpp"
-#include "../cores/MC68HC705C8/MC68HC705C8.hpp"
+#include "../CDI/cores/MC68HC705C8/MC68HC705C8.hpp"
 
 #include <wx/dcclient.h>
 

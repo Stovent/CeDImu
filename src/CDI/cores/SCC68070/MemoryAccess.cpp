@@ -1,6 +1,6 @@
 #include "SCC68070.hpp"
-#include "../../utils.hpp"
-#include "../../Boards/Board.hpp"
+#include "../../boards/Board.hpp"
+#include "../../common/utils.hpp"
 
 uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
 {

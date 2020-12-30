@@ -1,5 +1,5 @@
 #include "MiniMMC.hpp"
-#include "../../utils.hpp"
+#include "../../common/utils.hpp"
 
 uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
 {

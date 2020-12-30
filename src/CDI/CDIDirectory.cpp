@@ -1,7 +1,7 @@
 #include "CDIDirectory.hpp"
 #include "CDIDisc.hpp"
-#include "../utils.hpp"
-#include "../common/filesystem.hpp"
+#include "common/filesystem.hpp"
+#include "common/utils.hpp"
 
 #include <wx/msgdlg.h>
 

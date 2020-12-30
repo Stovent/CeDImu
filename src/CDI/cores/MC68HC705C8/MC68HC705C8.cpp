@@ -1,5 +1,5 @@
 #include "MC68HC705C8.hpp"
-#include "../../utils.hpp"
+#include "../../common/utils.hpp"
 
 #include <cstring>
 

@@ -1,5 +1,5 @@
 #include "GenericList.hpp"
-#include "../utils.hpp"
+#include "../CDI/common/utils.hpp"
 
 GenericList::GenericList(wxWindow* parent, uint8_t* memory, long size) : wxListCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxLC_HRULES | wxLC_VRULES)
 {

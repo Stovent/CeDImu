@@ -1,5 +1,5 @@
 #include "Audio.hpp"
-#include "../utils.hpp"
+#include "utils.hpp"
 
 #include <cmath>
 

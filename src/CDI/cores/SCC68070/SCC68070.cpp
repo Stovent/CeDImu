@@ -1,6 +1,6 @@
 #include "SCC68070.hpp"
-#include "../../utils.hpp"
-#include "../../Boards/Board.hpp"
+#include "../../boards/Board.hpp"
+#include "../../common/utils.hpp"
 
 #include <cstring>
 #include <iterator>

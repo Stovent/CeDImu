@@ -1,5 +1,5 @@
 #include "M48T08.hpp"
-#include "../../utils.hpp"
+#include "../../common/utils.hpp"
 
 #include <cstring>
 #include <fstream>

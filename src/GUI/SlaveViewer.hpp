@@ -3,9 +3,9 @@
 
 class SlaveViewer;
 
-#include "../Boards/Board.hpp"
 class MainFrame;
 #include "GenericList.hpp"
+#include "../CDI/boards/Board.hpp"
 
 #include <wx/frame.h>
 #include <wx/notebook.h>

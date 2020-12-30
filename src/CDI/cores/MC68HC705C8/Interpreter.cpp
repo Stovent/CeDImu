@@ -1,5 +1,5 @@
 #include "MC68HC705C8.hpp"
-#include "../../utils.hpp"
+#include "../../common/utils.hpp"
 
 void MC68HC705C8::Execute(const int cycles)
 {

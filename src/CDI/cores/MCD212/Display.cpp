@@ -1,6 +1,6 @@
 #include "MCD212.hpp"
-#include "../../Boards/Board.hpp"
-#include "../../utils.hpp"
+#include "../../boards/Board.hpp"
+#include "../../common/utils.hpp"
 #include "../../common/Video.hpp"
 
 #include <wx/msgdlg.h>

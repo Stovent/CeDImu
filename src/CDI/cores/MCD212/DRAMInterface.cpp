@@ -1,6 +1,6 @@
 #include "MCD212.hpp"
-#include "../../utils.hpp"
-#include "../../Boards/Board.hpp"
+#include "../../common/utils.hpp"
+#include "../../boards/Board.hpp"
 
 #include <iomanip>
 
