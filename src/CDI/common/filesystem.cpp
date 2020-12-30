@@ -1,9 +1,13 @@
 #include "filesystem.hpp"
 
 #ifdef USE_STD_FILESYSTEM
-#include <filesystem>
+    #ifdef FILESYSTEM_EXPERIMENTAL
+        #include <experimental/filesystem>
+    #else
+        #include <filesystem>
+    #endif // FILESYSTEM_EXPERIMENTAL
 #else
-#include <wx/filefn.h>
+    #include <wx/filefn.h>
 #endif // USE_STD_FILESYSTEM
 
 /** \brief Create a directory (intermediate directories are created if they don't exists).

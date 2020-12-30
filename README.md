@@ -12,7 +12,9 @@ CeDImu depends on wxWidgets 3.0.
 
 #### Build macros
 
-USE_STD_FILESYSTEM: if this macro is defined, will use the C++17 filesystem functions. Otherwise, will be using wxWidgets' functions (default).
+USE_STD_FILESYSTEM: if defined, will use the C++17 filesystem functions. Otherwise, will be using wxWidgets' functions (default).
+
+FILESYSTEM_EXPERIMENTAL: if defined with USE_STD_FILESYSTEM, will include <experimental/filesystem>. Otherwise, will include <filesystem> (default).
 
 ### CMake
 
