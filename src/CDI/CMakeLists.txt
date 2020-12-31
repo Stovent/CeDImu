@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 
+find_package(wxWidgets REQUIRED)
+
+if(NOT wxWidgets_FOUND)
+	message(FATAL_ERROR "wxWidgets not found")
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -11,6 +17,13 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-s -O3")
+
+if(USE_STD_FILESYSTEM)
+    add_definitions(-DUSE_STD_FILESYSTEM)
+    if(FILESYSTEM_EXPERIMENTAL)
+        add_definitions(-DFILESYSTEM_EXPERIMENTAL)
+    endif()
+endif()
 
 add_library(cdi ${LIBRARY_TYPE}
     CDI.cpp
@@ -44,16 +57,6 @@ add_library(cdi ${LIBRARY_TYPE}
 	cores/SCC68070/Peripherals.cpp
 	cores/SCC68070/SCC68070.cpp
 )
-
-# comment to use wxWidgets file system functions.
-# uncomment to use C++17 file system header
-# add_definitions(-DUSE_STD_FILESYSTEM)
-
-find_package(wxWidgets REQUIRED)
-
-if(NOT wxWidgets_FOUND)
-	message(FATAL_ERROR "wxWidgets not found")
-endif()
 
 include(${wxWidgets_USE_FILE})
 target_include_directories(cdi PUBLIC ${wxWidgets_INCLUDE_DIRS})
