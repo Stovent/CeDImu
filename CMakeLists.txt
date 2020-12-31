@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(CeDImu)
-
 if(UNIX)
-	set(CMAKE_GENERATOR "Unix Makefiles")
+    set(CMAKE_GENERATOR "Unix Makefiles")
 endif()
 
 add_subdirectory(src)
