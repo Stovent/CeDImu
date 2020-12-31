@@ -1,9 +1,9 @@
 #include "CDIFile.hpp"
 #include "CDIDisc.hpp"
-#include "../utils.hpp"
-#include "../common/Audio.hpp"
-#include "../common/Video.hpp"
-#include "../cores/MCD212/MCD212.hpp"
+#include "common/Audio.hpp"
+#include "common/utils.hpp"
+#include "common/Video.hpp"
+#include "cores/MCD212/MCD212.hpp"
 
 #include <wx/msgdlg.h>
 #include <wx/bitmap.h>

@@ -2,7 +2,7 @@
 #define CDI_HPP
 
 #include "CDIDisc.hpp"
-#include "../Boards/Board.hpp"
+#include "boards/Board.hpp"
 
 class CDI
 {

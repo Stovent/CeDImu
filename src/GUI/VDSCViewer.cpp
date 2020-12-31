@@ -1,10 +1,10 @@
 #include "VDSCViewer.hpp"
 #include "enums.hpp"
 #include "MainFrame.hpp"
-#include "../utils.hpp"
-#include "../Boards/Board.hpp"
-#include "../cores/VDSC.hpp"
-#include "../common/Video.hpp"
+#include "../CDI/boards/Board.hpp"
+#include "../CDI/common/utils.hpp"
+#include "../CDI/common/Video.hpp"
+#include "../CDI/cores/VDSC.hpp"
 
 #include <wx/dcclient.h>
 

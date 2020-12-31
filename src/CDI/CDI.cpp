@@ -1,6 +1,6 @@
 #include "CDI.hpp"
-#include "../Boards/MiniMMC/MiniMMC.hpp"
-#include "../Boards/Mono3/Mono3.hpp"
+#include "boards/MiniMMC/MiniMMC.hpp"
+#include "boards/Mono3/Mono3.hpp"
 
 CDI::CDI() : disc()
 {

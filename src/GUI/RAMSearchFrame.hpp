@@ -5,7 +5,7 @@ class RAMSearchFrame;
 
 #include "MainFrame.hpp"
 #include "RAMSearchList.hpp"
-#include "../Boards/Board.hpp"
+#include "../CDI/boards/Board.hpp"
 
 #include <wx/frame.h>
 #include <wx/timer.h>

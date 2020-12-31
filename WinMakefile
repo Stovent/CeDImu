@@ -30,31 +30,31 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIDirectory.cpp -o bin/obj/CDIDirectory.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIFile.cpp -o bin/obj/CDIFile.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/Export.cpp -o bin/obj/Export.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Boards/Mono3/Mono3.cpp -o bin/obj/Mono3.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Boards/MiniMMC/MiniMMC.cpp -o bin/obj/MiniMMC.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/Boards/MiniMMC/Bus.cpp -o bin/obj/MiniMMCBus.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/common/Audio.cpp -o bin/obj/Audio.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/common/Video.cpp -o bin/obj/Video.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/common/filesystem.cpp -o bin/obj/filesystem.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MC68HC705C8/MC68HC705C8.cpp -o bin/obj/MC68HC705C8.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MC68HC705C8/Interpreter.cpp -o bin/obj/MC68HC705C8_Interpreter.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MC68HC705C8/MemoryAccess.cpp -o bin/obj/MC68HC705C8_MemoryAccess.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/SCC68070.cpp -o bin/obj/SCC68070.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/Interpreter.cpp -o bin/obj/Interpreter.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/Peripherals.cpp -o bin/obj/Peripherals.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/MemoryAccess.cpp -o bin/obj/MemoryAccess.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/Disassembler.cpp -o bin/obj/Disassembler.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/InstructionSet.cpp -o bin/obj/InstructionSet.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/AddressingModes.cpp -o bin/obj/AddressingModes.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC68070/ConditionalTests.cpp -o bin/obj/ConditionalTests.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC66470/DRAMInterface.cpp -o bin/obj/SCC66470DRAMInterface.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC66470/Registers.cpp -o bin/obj/SCC66470Registers.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/SCC66470/SCC66470.cpp -o bin/obj/SCC66470.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/DRAMInterface.cpp -o bin/obj/MCD212DRAMInterface.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/MCD212.cpp -o bin/obj/MCD212.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/Display.cpp -o bin/obj/MCD212Display.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/MCD212/Registers.cpp -o bin/obj/MCD212Registers.o
-	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/cores/M48T08/M48T08.cpp -o bin/obj/M48T08.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/boards/Mono3/Mono3.cpp -o bin/obj/Mono3.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/boards/MiniMMC/MiniMMC.cpp -o bin/obj/MiniMMC.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/boards/MiniMMC/Bus.cpp -o bin/obj/MiniMMCBus.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/common/Audio.cpp -o bin/obj/Audio.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/common/Video.cpp -o bin/obj/Video.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/common/filesystem.cpp -o bin/obj/filesystem.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MC68HC705C8/MC68HC705C8.cpp -o bin/obj/MC68HC705C8.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MC68HC705C8/Interpreter.cpp -o bin/obj/MC68HC705C8_Interpreter.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MC68HC705C8/MemoryAccess.cpp -o bin/obj/MC68HC705C8_MemoryAccess.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC68070/SCC68070.cpp -o bin/obj/SCC68070.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC68070/Interpreter.cpp -o bin/obj/Interpreter.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC68070/Peripherals.cpp -o bin/obj/Peripherals.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC68070/MemoryAccess.cpp -o bin/obj/MemoryAccess.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC68070/Disassembler.cpp -o bin/obj/Disassembler.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC68070/InstructionSet.cpp -o bin/obj/InstructionSet.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC68070/AddressingModes.cpp -o bin/obj/AddressingModes.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC68070/ConditionalTests.cpp -o bin/obj/ConditionalTests.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC66470/DRAMInterface.cpp -o bin/obj/SCC66470DRAMInterface.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC66470/Registers.cpp -o bin/obj/SCC66470Registers.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/SCC66470/SCC66470.cpp -o bin/obj/SCC66470.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MCD212/DRAMInterface.cpp -o bin/obj/MCD212DRAMInterface.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MCD212/MCD212.cpp -o bin/obj/MCD212.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MCD212/Display.cpp -o bin/obj/MCD212Display.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MCD212/Registers.cpp -o bin/obj/MCD212Registers.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/M48T08/M48T08.cpp -o bin/obj/M48T08.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/GamePanel.cpp -o bin/obj/GamePanel.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/RAMSearchList.cpp -o bin/obj/RAMSearchList.o

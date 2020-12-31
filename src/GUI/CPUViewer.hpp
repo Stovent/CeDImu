@@ -3,8 +3,8 @@
 
 class CPUViewer;
 
-#include "../cores/SCC68070/SCC68070.hpp"
 #include "MainFrame.hpp"
+#include "../CDI/cores/SCC68070/SCC68070.hpp"
 
 #include <wx/frame.h>
 #include <wx/listctrl.h>

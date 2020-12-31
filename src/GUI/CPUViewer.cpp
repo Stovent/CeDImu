@@ -1,6 +1,6 @@
 #include "CPUViewer.hpp"
 #include "enums.hpp"
-#include "../utils.hpp"
+#include "../CDI/common/utils.hpp"
 
 #include <wx/dcclient.h>
 

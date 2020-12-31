@@ -1,6 +1,6 @@
 #include "RAMSearchList.hpp"
 #include "../CeDImu.hpp"
-#include "../utils.hpp"
+#include "../CDI/common/utils.hpp"
 
 #define GET_ARRAY16(array, index) (array[(index)] << 8 | array[(index)+1])
 #define GET_ARRAY32(array, index) (array[(index)] << 24 | array[(index)+1] << 16 | array[(index)+2] << 8 | array[(index)+3])
