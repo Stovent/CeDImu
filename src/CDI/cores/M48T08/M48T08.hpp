@@ -31,7 +31,8 @@ class M48T08
     void SRAMToClock();
 
 public:
-    M48T08();
+    M48T08() = delete;
+    explicit M48T08(const bool useCurrentTime);
     ~M48T08();
 
     void IncrementClock(const size_t ns);

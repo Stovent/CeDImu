@@ -1,7 +1,7 @@
 #include "MiniMMC.hpp"
 #include "../../common/utils.hpp"
 
-MiniMMC::MiniMMC(const void* bios, const uint32_t size) : Board(nullptr, 0), masterVDSC(this, true), slaveVDSC(this, false)
+MiniMMC::MiniMMC(const void* bios, const uint32_t size, const bool initNVRAMClock) : Board(nullptr, 0, initNVRAMClock), masterVDSC(this, true), slaveVDSC(this, false)
 {
     masterVDSC.LoadBIOS(bios, size);
 

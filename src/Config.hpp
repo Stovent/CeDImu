@@ -11,6 +11,7 @@ extern std::string slaveBIOS;
 extern std::string ROMDirectory;
 
 // Emulation
+extern bool NVRAMUseCurrentTime;
 extern bool skipBIOS;
 
 bool saveConfig();
