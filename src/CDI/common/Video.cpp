@@ -21,7 +21,7 @@ uint32_t CLUT[256] = {0};
  * If the coding method is RGB555, dataA must contain the channel A data and dataB must contain the channel B data.
  * If it is not RGB555, dataB is the source data and dataA remain unused.
 */
-uint16_t DecodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const uint8_t codingMethod)
+uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const uint8_t codingMethod)
 {
     uint16_t index = 0;
 
@@ -32,7 +32,7 @@ uint16_t DecodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
         {
             uint16_t pixel = dataB[index++] << 8;
             pixel |= dataB[index++];
-            Video::DecodeDYUV(pixel, &line[x++ * 4], previous);
+            Video::decodeDYUV(pixel, &line[x++ * 4], previous);
 
             previous  = line[x * 4 + 1] << 16;
             previous |= line[x * 4 + 2] << 8;
@@ -45,7 +45,7 @@ uint16_t DecodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
         {
             uint16_t pixel = dataA[index] << 8;
             pixel |= dataB[index++];
-            Video::DecodeRGB555(pixel, &line[x++ * 4]);
+            Video::decodeRGB555(pixel, &line[x++ * 4]);
         }
     }
     else if(codingMethod == CLUT4)
@@ -54,8 +54,8 @@ uint16_t DecodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
         {
             const uint8_t color1 = dataB[index] >> 4 & 0x0F;
             const uint8_t color2 = dataB[index++] & 0x0F;
-            Video::DecodeCLUT(color1, &line[x++ * 4], CLUTTable);
-            Video::DecodeCLUT(color2, &line[x++ * 4 + 1], CLUTTable);
+            Video::decodeCLUT(color1, &line[x++ * 4], CLUTTable);
+            Video::decodeCLUT(color2, &line[x++ * 4 + 1], CLUTTable);
         }
     }
     else
@@ -64,7 +64,7 @@ uint16_t DecodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
         for(uint16_t x = 0; x < width;)
         {
             const uint8_t color = dataB[index++] & colorMask;
-            Video::DecodeCLUT(color, &line[x++ * 4], CLUTTable);
+            Video::decodeCLUT(color, &line[x++ * 4], CLUTTable);
         }
     }
 
@@ -80,7 +80,7 @@ uint16_t DecodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
  * \param cm true for RL3, false for RL7.
  * \return The number of raw bytes read from data.
 */
-uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t* data, const uint32_t* CLUTTable, const bool cm)
+uint16_t decodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t* data, const uint32_t* CLUTTable, const bool cm)
 {
     uint16_t index = 0;
 
@@ -101,8 +101,8 @@ uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t*
 
             for(int i = 0; i < count; i++)
             {
-                Video::DecodeCLUT(color1, &line[x++ * 4], CLUTTable);
-                Video::DecodeCLUT(color2, &line[x++ * 4], CLUTTable);
+                Video::decodeCLUT(color1, &line[x++ * 4], CLUTTable);
+                Video::decodeCLUT(color2, &line[x++ * 4], CLUTTable);
             }
         }
     }
@@ -122,7 +122,7 @@ uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t*
 
             for(int i = 0; i < count; i++)
             {
-                Video::DecodeCLUT(color, &line[x++ * 4], CLUTTable);
+                Video::decodeCLUT(color, &line[x++ * 4], CLUTTable);
             }
         }
     }
@@ -135,7 +135,7 @@ uint16_t DecodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t*
  * \param pixel The pixel to decode.
  * \param pixels Where the pixel will be written to. pixels[0] = transparency, pixels[1] = red, pixels[2] = green, pixels[3] = blue.
 */
-void DecodeRGB555(const uint16_t pixel, uint8_t pixels[4])
+void decodeRGB555(const uint16_t pixel, uint8_t pixels[4])
 {
     pixels[0] = (pixel & 0x8000) ? 0xFF : 0;
     pixels[1] = pixel >> 7 & 0xF8;
@@ -151,7 +151,7 @@ void DecodeRGB555(const uint16_t pixel, uint8_t pixels[4])
  *
  * TODO: interpolate u2 and v2 with the next u1 and v1.
 */
-void DecodeDYUV(const uint16_t pixel, uint8_t pixels[8], const uint32_t previous) // static uint32_r previous ?
+void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], const uint32_t previous) // static uint32_r previous ?
 {
     uint8_t y1, u1, v1, y2, u2, v2, py, pu, pv;
     u1 = (pixel & 0xF000) >> 12;
@@ -187,7 +187,7 @@ void DecodeDYUV(const uint16_t pixel, uint8_t pixels[8], const uint32_t previous
  * - plane B is the plane being drawn.
  * - bit 22 (CLUT select) of register ImageCodingMethod is set for CLUT7+7.
 */
-void DecodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable)
+void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable)
 {
     pixels[0] = 0xFF;
     pixels[1] = CLUTTable[pixel] >> 16;
@@ -204,7 +204,7 @@ void DecodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTabl
  *
  * A nullptr in a channel will not write to it.
 */
-void SplitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uint8_t* rgb)
+void splitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uint8_t* rgb)
 {
     if(alpha != nullptr && rgb != nullptr)
     {
@@ -249,7 +249,7 @@ void SplitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uin
  *
  * If the source does not fit in the destination, only the pixels that fit in the destination are copied.
 */
-void Paste(uint8_t* dst, const uint16_t dstWidth, const uint16_t dstHeight, const uint8_t* src, const uint16_t srcWidth, const uint16_t srcHeight, const uint16_t xOffset, const uint16_t yOffset)
+void paste(uint8_t* dst, const uint16_t dstWidth, const uint16_t dstHeight, const uint8_t* src, const uint16_t srcWidth, const uint16_t srcHeight, const uint16_t xOffset, const uint16_t yOffset)
 {
     for(uint16_t dy = yOffset, sy = 0; dy < dstHeight && sy < srcHeight; dy++, sy++)
     {
