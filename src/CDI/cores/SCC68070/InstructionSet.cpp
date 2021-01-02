@@ -598,14 +598,14 @@ uint16_t SCC68070::ANDI()
 
 uint16_t SCC68070::ANDICCR()
 {
-    uint8_t data = GetNextWord() & 0x1F;
-    SR |= data;
+    const uint16_t data = 0xA700 | (GetNextWord() & 0x1F);
+    SR &= data;
     return 14;
 }
 
 uint16_t SCC68070::ANDISR()
 {
-    uint16_t data = GetNextWord();
+    const uint16_t data = GetNextWord();
 
     if(!GetS())
     {
@@ -613,7 +613,7 @@ uint16_t SCC68070::ANDISR()
         return 0;
     }
 
-    SR |= data;
+    SR &= data;
     return 14;
 }
 
@@ -1497,14 +1497,16 @@ uint16_t SCC68070::EORI()
 
 uint16_t SCC68070::EORICCR()
 {
-    uint8_t data = GetNextWord() & 0x1F;
-    SR ^= data;
+    uint8_t ccr = SR;
+    ccr ^= GetNextWord() & 0x1F;
+    SR &= 0xFF00;
+    SR |= ccr & 0x001F;
     return 14;
 }
 
 uint16_t SCC68070::EORISR()
 {
-    uint16_t data = GetNextWord();
+    const uint16_t data = GetNextWord();
 
     if(!GetS())
     {
@@ -1513,6 +1515,7 @@ uint16_t SCC68070::EORISR()
     }
 
     SR ^= data;
+    SR &= 0xA71F; // Set all unimplemented bytes to 0.
     return 14;
 }
 
