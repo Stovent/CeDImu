@@ -12,15 +12,15 @@ CeDImu depends on wxWidgets 3.0.
 
 #### Build macros
 
-USE_STD_FILESYSTEM: if defined, will use the C++17 filesystem functions. Otherwise, will be using wxWidgets' functions (default).
+``USE_STD_FILESYSTEM``: if defined, will use the C++17 filesystem functions. Otherwise, will be using wxWidgets' functions (default).
 
-FILESYSTEM_EXPERIMENTAL: if defined with USE_STD_FILESYSTEM, will include <experimental/filesystem>. Otherwise, will include <filesystem> (default).
+``FILESYSTEM_EXPERIMENTAL``: if defined with ``USE_STD_FILESYSTEM``, will include ``<experimental/filesystem>``. Otherwise, will include ``<filesystem>`` (default).
 
 ### CMake
 
 #### Variables
 
-LIBRARY_TYPE: used to build the core as a static or shared library (default: STATIC).
+``LIBRARY_TYPE``: used to build the core as a static or shared library (default: ``STATIC``).
 
 #### Windows
 
@@ -28,7 +28,7 @@ Use CMake-GUI
 
 #### Linux
 
-Package dependency: `libwxgtk3.0-dev`
+Package dependency: ``libwxgtk3.0-dev``
 
 Install the dependency, then open a terminal in the root directory of the git and type:
 
@@ -45,10 +45,10 @@ make -j$(nproc --all)
 
 Use MinGW
 1. Open the Makefile and set the following variables:
-* `wxLibPath`: contains the static libraries (e.g. libwxbase30u.a)
-* `wxIPATH`: include directory (path must not contain the `wx/` subdirectory)
-* `wxIMSWU`: mswu directory inside the static libraries directory
-2. Open a terminal and type `make -f WinMakefile` (Assuming `make` is in your PATH variable).
+* ``wxLibPath``: contains the static libraries (e.g. libwxbase30u.a)
+* ``wxIPATH``: include directory (path must not contain the ``wx/`` subdirectory)
+* ``wxIMSWU``: mswu directory inside the static libraries directory
+2. Open a terminal and type ``make -f WinMakefile`` (Assuming ``make`` is in your PATH variable).
 
 ## TODO
 - [x] SCC68070
