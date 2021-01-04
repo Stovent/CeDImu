@@ -1,7 +1,7 @@
 #include "Mono3.hpp"
 #include "../../common/utils.hpp"
 
-Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const void* slaveBios, const uint16_t slaveSize) : Board(slaveBios, slaveSize), mcd212(this)
+Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const void* slaveBios, const uint16_t slaveSize, const bool initNVRAMClock) : Board(slaveBios, slaveSize, initNVRAMClock), mcd212(this)
 {
     mcd212.LoadBIOS(vdscBios, vdscSize);
 

@@ -16,7 +16,7 @@ public:
     MC68HC705C8 slave;
     M48T08 timekeeper;
 
-    Board(const void* slaveBios, const uint16_t slaveSize) : cpu(this), slave(slaveBios, slaveSize), timekeeper() {  }
+    Board(const void* slaveBios, const uint16_t slaveSize, const bool initNVRAMClock) : cpu(this), slave(slaveBios, slaveSize), timekeeper(initNVRAMClock) {}
     virtual ~Board() {  }
     virtual void Reset() = 0;
 

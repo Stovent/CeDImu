@@ -245,7 +245,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
             wxImage planeA(a.width, a.height);
             if(!planeA.HasAlpha())
                 planeA.InitAlpha();
-            Video::SplitARGB(a.pixels, a.width * a.height * 4, planeA.GetAlpha(), planeA.GetData());
+            Video::splitARGB(a.pixels, a.width * a.height * 4, planeA.GetAlpha(), planeA.GetData());
             if(planeA.IsOk())
                 dcA.DrawBitmap(wxBitmap(planeA.Scale(planeAPanel->GetClientSize().x, planeAPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
         }
@@ -256,7 +256,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
             wxImage planeB(b.width, b.height);
             if(!planeB.HasAlpha())
                 planeB.InitAlpha();
-            Video::SplitARGB(b.pixels, b.width * b.height * 4, planeB.GetAlpha(), planeB.GetData());
+            Video::splitARGB(b.pixels, b.width * b.height * 4, planeB.GetAlpha(), planeB.GetData());
             if(planeB.IsOk())
                 dcB.DrawBitmap(wxBitmap(planeB.Scale(planeBPanel->GetClientSize().x, planeBPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
         }
@@ -266,7 +266,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
             wxImage background(bg.width, bg.height);
             if(!background.HasAlpha())
                 background.InitAlpha();
-            Video::SplitARGB(bg.pixels, bg.width * bg.height * 4, background.GetAlpha(), background.GetData());
+            Video::splitARGB(bg.pixels, bg.width * bg.height * 4, background.GetAlpha(), background.GetData());
             if(background.IsOk())
                 dcBackground.DrawBitmap(wxBitmap(background.Scale(backgroundPanel->GetClientSize().x, backgroundPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
         }
@@ -276,7 +276,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
             wxImage cursor(c.width, c.height);
             if(!cursor.HasAlpha())
                 cursor.InitAlpha();
-            Video::SplitARGB(c.pixels, c.width *c.height * 4, cursor.GetAlpha(), cursor.GetData());
+            Video::splitARGB(c.pixels, c.width *c.height * 4, cursor.GetAlpha(), cursor.GetData());
             if(cursor.IsOk())
                 dcCursor.DrawBitmap(wxBitmap(cursor), 0, 0);
         }

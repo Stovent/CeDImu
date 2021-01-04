@@ -3,6 +3,6 @@
 
 #include <string>
 
-bool createDirectories(std::string path);
+bool createDirectories(const std::string& path);
 
 #endif // FILESYSTEM_HPP

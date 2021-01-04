@@ -6,27 +6,30 @@
 
 /** \brief Construct a new timekeeper.
  *
- * If existing, loads its state from a file named "sram.bin".
- * After initialization, clock is set to the current UTC date.
+ * \param useCurrentTime If true, clock is set to the current UTC date. If false, the last date is used.
+ *
+ * If existing, loads its initial state from a file named "sram.bin".
 */
-M48T08::M48T08()
+M48T08::M48T08(const bool useCurrentTime)
 {
     std::ifstream in("sram.bin", std::ios::in | std::ios::binary);
     if(in)
     {
         in.read((char*)sram, 8192);
         in.close();
+        sram[Control] = 0;
     }
     else
         memset(sram, 0, 8192);
-    sram[Control] = 0;
 
-    // TODO: which base time?
-    // Init the clock to current time as UTC
     internalClock.nsec = 0;
-    std::time(&internalClock.sec);
-
-    ClockToSRAM();
+    if(useCurrentTime)
+    {
+        std::time(&internalClock.sec);
+        ClockToSRAM();
+    }
+    else
+        SRAMToClock();
 }
 
 /** \brief Destroy the timekeeper.

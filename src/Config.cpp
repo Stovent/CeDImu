@@ -10,6 +10,7 @@ std::string slaveBIOS;
 std::string ROMDirectory;
 
 // Emulation
+bool NVRAMUseCurrentTime;
 bool skipBIOS;
 
 /** \brief Loads the emulator configuration from a file named "CeDImu.ini".
@@ -40,6 +41,8 @@ bool loadConfig()
                 slaveBIOS = value;
             else if(key == "ROMDirectory")
                 ROMDirectory = value;
+            else if(key == "NVRAMUseCurrentTime")
+                NVRAMUseCurrentTime = stoi(value);
             else if(key == "skipBIOS")
                 skipBIOS = stoi(value);
         }
@@ -65,6 +68,7 @@ bool saveConfig()
     out << "ROMDirectory=" << ROMDirectory << std::endl;
 
     out << "[Emulation]" << std::endl;
+    out << "NVRAMUseCurrentTime=" << NVRAMUseCurrentTime << std::endl;
     out << "skipBIOS=" << skipBIOS << std::endl;
 
     out.close();
@@ -78,6 +82,7 @@ void loadDefaultConfig()
     systemBIOS = "";
     slaveBIOS = "";
     ROMDirectory = "";
+    NVRAMUseCurrentTime = false;
     skipBIOS = false;
 }
 

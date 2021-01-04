@@ -337,17 +337,25 @@ void MainFrame::OnSettings(wxCommandEvent& event)
 
     // Emulation
     wxPanel* emulationPage = new wxPanel(notebook);
+    wxBoxSizer* emulationSizer = new wxBoxSizer(wxVERTICAL);
 
     wxCheckBox* skipBIOS = new wxCheckBox(emulationPage, wxID_ANY, "skip BIOS");
-    if(Config::skipBIOS) skipBIOS->SetValue(true); else skipBIOS->SetValue(false);
+    skipBIOS->SetValue(Config::skipBIOS);
 
+    wxCheckBox* NVRAMUseCurrentTime = new wxCheckBox(emulationPage, wxID_ANY, "NVRAM use current time");
+    NVRAMUseCurrentTime->SetValue(Config::NVRAMUseCurrentTime);
+
+    emulationSizer->Add(skipBIOS);
+    emulationSizer->Add(NVRAMUseCurrentTime);
+    emulationPage->SetSizer(emulationSizer);
     notebook->AddPage(emulationPage, "Emulation");
 
 
     wxBoxSizer* saveCancelPanel = new wxBoxSizer(wxHORIZONTAL);
     wxButton* save = new wxButton(settingsPanel, wxID_ANY, "Save");
-    save->Bind(wxEVT_BUTTON, [settingsFrame, systemText, slaveText, skipBIOS] (wxEvent& event) {
-        if(skipBIOS->GetValue()) Config::skipBIOS = true; else Config::skipBIOS = false;
+    save->Bind(wxEVT_BUTTON, [settingsFrame, systemText, slaveText, skipBIOS, NVRAMUseCurrentTime] (wxEvent& event) {
+        Config::skipBIOS = skipBIOS->GetValue();
+        Config::NVRAMUseCurrentTime = NVRAMUseCurrentTime->GetValue();
         Config::systemBIOS = systemText->GetValue();
         Config::slaveBIOS  = slaveText->GetValue();
         Config::saveConfig();

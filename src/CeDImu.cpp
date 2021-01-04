@@ -68,7 +68,7 @@ bool CeDImu::InitializeCores()
     fread(slave, 1, slaveSize, ff);;
     fclose(ff);
 
-    cdi.LoadBoard(bios, biosSize, slave, slaveSize);
+    cdi.LoadBoard(bios, biosSize, slave, slaveSize, Config::NVRAMUseCurrentTime);
     delete[] bios;
     delete[] slave;
 

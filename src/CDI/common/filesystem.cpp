@@ -15,25 +15,26 @@
  * \param path The path to the new directory to create.
  * \return true if the directory has been created or already exists, false otherwise.
  */
-bool createDirectories(std::string path)
+bool createDirectories(const std::string& path)
 {
 #ifdef USE_STD_FILESYSTEM
     if(!std::filesystem::create_directories(path))
         return false;
 #else
+    std::string p = path;
     std::string newPath;
     do
     {
-        const size_t pos = path.find('/');
-        newPath += pos == std::string::npos ? path : path.substr(0, pos+1);
+        const size_t pos = p.find('/');
+        newPath += pos == std::string::npos ? p : p.substr(0, pos+1);
 
         if(!wxDirExists(newPath))
             if(!wxMkdir(newPath))
                 return false;
 
-        path = path.size() > 1 ? path.substr(pos+1) : "";
+        p = p.size() > 1 ? p.substr(pos+1) : "";
 
-    } while(path.length() > 0);
+    } while(p.length() > 0);
 #endif // USE_STD_FILESYSTEM
 
     return true;
