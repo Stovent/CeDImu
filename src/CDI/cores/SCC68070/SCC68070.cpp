@@ -269,6 +269,84 @@ void SCC68070::ResetOperation()
     exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top
 }
 
+bool SCC68070::GetS() const
+{
+    return SR & 0b0010'0000'0000'0000;
+}
+
+void SCC68070::SetS(const bool S) // From Bizhawk
+{
+    if(S == GetS())
+        return;
+    if(S) // entering supervisor mode
+    {
+        USP = A[7];
+        A[7] = SSP;
+        SR |= 0b0010'0000'0000'0000;
+    }
+    else // exiting supervisor mode
+    {
+        SSP = A[7];
+        A[7] = USP;
+        SR &= 0b1101'1111'1111'1111;
+    }
+}
+
+bool SCC68070::GetX() const
+{
+    return SR & 0b0000'0000'0001'0000;
+}
+
+void SCC68070::SetX(const bool X)
+{
+    SR &= 0b1111'1111'1110'1111;
+    SR |= X << 4;
+}
+
+bool SCC68070::GetN() const
+{
+    return SR & 0b0000'0000'0000'1000;
+}
+
+void SCC68070::SetN(const bool N)
+{
+    SR &= 0b1111'1111'1111'0111;
+    SR |= N << 3;
+}
+
+bool SCC68070::GetZ() const
+{
+    return SR & 0b0000'0000'0000'0100;
+}
+
+void SCC68070::SetZ(const bool Z)
+{
+    SR &= 0b1111'1111'1111'1011;
+    SR |= Z << 2;
+}
+
+bool SCC68070::GetV() const
+{
+    return SR & 0b0000'0000'0000'0010;
+}
+
+void SCC68070::SetV(const bool V)
+{
+    SR &= 0b1111'1111'1111'1101;
+    SR |= V << 1;
+}
+
+bool SCC68070::GetC() const
+{
+    return SR & 0b0000'0000'0000'0001;
+}
+
+void SCC68070::SetC(const bool C)
+{
+    SR &= 0b1111'1111'1111'1110;
+    SR |= C;
+}
+
 void SCC68070::SetXC(const bool XC)
 {
     SetX(XC);
@@ -279,83 +357,6 @@ void SCC68070::SetVC(const bool VC)
 {
     SetV(VC);
     SetC(VC);
-}
-
-void SCC68070::SetX(const bool X)
-{
-    SR &= 0b1111111111101111;
-    SR |= (X << 4);
-}
-
-bool SCC68070::GetX() const
-{
-    return SR & 0b0000000000010000;
-}
-
-void SCC68070::SetN(const bool N)
-{
-    SR &= 0b1111111111110111;
-    SR |= (N << 3);
-}
-
-bool SCC68070::GetN() const
-{
-    return SR & 0b0000000000001000;
-}
-
-void SCC68070::SetZ(const bool Z)
-{
-    SR &= 0b1111111111111011;
-    SR |= (Z << 2);
-}
-
-bool SCC68070::GetZ() const
-{
-    return SR & 0b0000000000000100;
-}
-
-void SCC68070::SetV(const bool V)
-{
-    SR &= 0b1111111111111101;
-    SR |= (V << 1);
-}
-
-bool SCC68070::GetV() const
-{
-    return SR & 0b0000000000000010;
-}
-
-void SCC68070::SetC(const bool C)
-{
-    SR &= 0b1111111111111110;
-    SR |= C;
-}
-
-bool SCC68070::GetC() const
-{
-    return SR & 0b0000000000000001;
-}
-
-void SCC68070::SetS(const bool S) // From Bizhawk
-{
-    if(S == GetS()) return;
-    if(S) // entering supervisor mode
-    {
-        USP = A[7];
-        A[7] = SSP;
-        SR |= 0b0010000000000000;
-    }
-    else // exiting supervisor mode
-    {
-        SSP = A[7];
-        A[7] = USP;
-        SR &= 0b1101111111111111;
-    }
-}
-
-bool SCC68070::GetS() const
-{
-    return SR & 0b0010000000000000;
 }
 
 void SCC68070::GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc)
