@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 project(CeDImu)
 
@@ -8,6 +8,13 @@ if(NOT wxWidgets_FOUND)
     message(FATAL_ERROR "wxWidgets not found")
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-s -O3")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_subdirectory(CDI)
