@@ -17,7 +17,6 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledIn
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instruction, "instructions.txt")
 
-    Execute = &SCC68070::Interpreter;
     internal = new uint8_t[SCC68070Peripherals::Size];
     speedDelay = cycleDelay = (1.0L / clockFrequency) * 1'000'000'000;
 
@@ -51,7 +50,7 @@ void SCC68070::Run(const bool loop)
             executionThread.join();
 
         this->loop = loop;
-        executionThread = std::thread(Execute, this);
+        executionThread = std::thread(Interpreter, this);
     }
 }
 
