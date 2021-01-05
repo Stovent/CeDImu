@@ -5,5 +5,6 @@
 !WinMakefile
 !CMakeLists.txt
 
-!/src
+!/cditool
 !/ressources
+!/src

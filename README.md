@@ -22,6 +22,8 @@ CeDImu depends on wxWidgets 3.0.
 
 ``LIBRARY_TYPE``: used to build the core as a static or shared library (default: ``STATIC``).
 
+``BUILD_CDITOOL``: build cditool or not (default: ``OFF``).
+
 #### Windows
 
 Use CMake-GUI
