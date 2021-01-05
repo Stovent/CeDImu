@@ -18,8 +18,11 @@
 bool createDirectories(const std::string& path)
 {
 #ifdef USE_STD_FILESYSTEM
-    if(!std::filesystem::create_directories(path))
-        return false;
+#ifdef FILESYSTEM_EXPERIMENTAL
+    return std::experimental::filesystem::create_directories(path);
+#else
+    return std::filesystem::create_directories(path);
+#endif // FILESYSTEM_EXPERIMENTAL
 #else
     std::string p = path;
     std::string newPath;
@@ -35,7 +38,7 @@ bool createDirectories(const std::string& path)
         p = p.size() > 1 ? p.substr(pos+1) : "";
 
     } while(p.length() > 0);
-#endif // USE_STD_FILESYSTEM
 
     return true;
+#endif // USE_STD_FILESYSTEM
 }
