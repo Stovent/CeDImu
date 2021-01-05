@@ -35,4 +35,8 @@ add_executable(CeDImu
 
 include(${wxWidgets_USE_FILE})
 target_include_directories(CeDImu PUBLIC ${wxWidgets_INCLUDE_DIRS})
-target_link_libraries(CeDImu cdi stdc++fs ${wxWidgets_LIBRARIES})
+target_link_libraries(CeDImu cdi ${wxWidgets_LIBRARIES})
+
+if(USE_STD_FILESYSTEM)
+    target_link_libraries(CeDImu stdc++fs)
+endif()
