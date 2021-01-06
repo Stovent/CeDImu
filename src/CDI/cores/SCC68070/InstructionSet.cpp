@@ -76,39 +76,38 @@ uint16_t SCC68070::UnknownInstruction()
 
 uint16_t SCC68070::ABCD()
 {
-    uint8_t Rx = (currentOpcode & 0x0E00) >> 9;
-    uint8_t Ry = (currentOpcode & 0x0007);
-    uint8_t rm = currentOpcode & 0x0008;
+    const uint8_t rx = currentOpcode >> 9 & 0x0007;
+    const bool rm = currentOpcode >> 3 & 0x0001;
+    const uint8_t ry = currentOpcode & 0x0007;
     uint16_t calcTime;
-    uint8_t result = 0;
-    uint8_t x = GetX();
 
+    uint8_t dst, src, result;
     if(rm) // Memory to Memory
     {
-        uint8_t src = PBCDToByte(GetByte(ARIWPr(Ry, 1))) + x;
-        uint8_t dst = PBCDToByte(GetByte(ARIWPr(Rx, 1)));
-
-        if(src + dst >= 100) SetXC(); else SetXC(0);
-        result = byteToPBCD(src + dst);
-
-        SetByte(lastAddress, result);
+        dst = PBCDToByte(GetByte(ARIWPr(rx, 1)));
+        src = PBCDToByte(GetByte(ARIWPr(ry, 1)));
         calcTime = 31;
     }
     else // Data register to Data register
     {
-        uint8_t src = PBCDToByte(D[Ry] & 0x000000FF) + x;
-        uint8_t dst = PBCDToByte(D[Rx] & 0x000000FF);
-
-        if(src + dst >= 100) SetXC(); else SetXC(0);
-        result = byteToPBCD(src + dst);
-
-        D[Rx] &= 0xFFFFFF00;
-        D[Rx] |= result;
+        dst = PBCDToByte(D[rx] & 0xFF);
+        src = PBCDToByte(D[ry] & 0xFF);
         calcTime = 10;
     }
 
+    result = src + dst + GetX();
+
     if(result != 0)
         SetZ(0);
+    SetXC(result > 99);
+
+    if(rm)
+        SetByte(lastAddress, byteToPBCD(result));
+    else
+    {
+        D[rx] &= 0xFFFFFF00;
+        D[rx] |= byteToPBCD(result);
+    }
 
     return calcTime;
 }
