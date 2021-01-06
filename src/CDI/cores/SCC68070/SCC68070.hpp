@@ -328,7 +328,6 @@ private:
     double speedDelay; // used for emulation speed.
     std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
-    void (SCC68070::*Execute)() = nullptr;
     void Interpreter();
     uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
     void ResetOperation();
@@ -361,7 +360,7 @@ private:
     std::string DisassembleException(const uint8_t vectorNumber) const;
 
     // Addressing Modes
-    int32_t GetIndexRegister(const uint16_t bew);
+    int32_t GetIndexRegister(const uint16_t bew) const;
 
     uint32_t AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte);
     uint32_t AddressRegisterIndirectWithPredecrement(const uint8_t reg, const uint8_t sizeInByte);

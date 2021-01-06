@@ -2,7 +2,7 @@
 #include "../../boards/Board.hpp"
 #include "../../common/utils.hpp"
 
-int32_t SCC68070::GetIndexRegister(const uint16_t bew)
+int32_t SCC68070::GetIndexRegister(const uint16_t bew) const
 {
     if(bew & 0x8000)
         if(bew & 0x0800)

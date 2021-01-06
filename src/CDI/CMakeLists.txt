@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 project(cdi)
 
@@ -21,6 +21,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-s -O3")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+option(USE_STD_FILESYSTEM "Use the C++17 filesystem functions" OFF)
+option(FILESYSTEM_EXPERIMENTAL "Include <experimental/filesystem> instead of <filesystem>" OFF)
 
 if(USE_STD_FILESYSTEM)
     add_definitions(-DUSE_STD_FILESYSTEM)
