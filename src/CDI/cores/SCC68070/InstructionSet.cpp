@@ -81,7 +81,7 @@ uint16_t SCC68070::ABCD()
     const uint8_t ry = currentOpcode & 0x0007;
     uint16_t calcTime;
 
-    uint8_t dst, src, result;
+    uint8_t dst, src;
     if(rm) // Memory to Memory
     {
         dst = PBCDToByte(GetByte(ARIWPr(rx, 1)));
@@ -95,7 +95,7 @@ uint16_t SCC68070::ABCD()
         calcTime = 10;
     }
 
-    result = src + dst + GetX();
+    const uint8_t result = src + dst + GetX();
 
     if(result != 0)
         SetZ(0);
@@ -2215,29 +2215,26 @@ uint16_t SCC68070::MULU()
 
 uint16_t SCC68070::NBCD()
 {
-    uint8_t mode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  reg = (currentOpcode & 0x0007);
-    uint16_t calcTime = 14;
+    const uint8_t eamode = currentOpcode >> 3 & 0x000F;
+    const uint8_t  eareg = currentOpcode & 0x000F;
+    uint16_t calcTime = eamode ? 14 : 10;
 
-    uint8_t x = GetX();
-    uint8_t data = GetByte(mode, reg, calcTime);
-    uint8_t result = 100 - PBCDToByte(data) - x;
-    result = byteToPBCD(result);
-
-    if(data != 0 || x != 0)
-        SetXC();
+    const uint8_t dst = PBCDToByte(GetByte(eamode, eareg, calcTime));
+    int8_t result = 0 - dst - GetX();
 
     if(result != 0)
         SetZ(0);
+    SetXC(result < 0);
+    result = 100 + result;
 
-    if(mode == 0)
+    if(eamode)
+        SetByte(lastAddress, byteToPBCD(result));
+    else
     {
-        D[reg] &= 0xFFFFFF00;
-        D[reg] |= result;
-        return 10;
+        D[eareg] &= 0xFFFFFF00;
+        D[eareg] |= byteToPBCD(result);
     }
 
-    SetByte(lastAddress, result);
     return calcTime;
 }
 
