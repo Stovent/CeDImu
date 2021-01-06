@@ -84,14 +84,14 @@ uint16_t SCC68070::ABCD()
     uint8_t dst, src;
     if(rm) // Memory to Memory
     {
-        dst = PBCDToByte(GetByte(ARIWPr(rx, 1)));
         src = PBCDToByte(GetByte(ARIWPr(ry, 1)));
+        dst = PBCDToByte(GetByte(ARIWPr(rx, 1)));
         calcTime = 31;
     }
     else // Data register to Data register
     {
-        dst = PBCDToByte(D[rx] & 0xFF);
         src = PBCDToByte(D[ry] & 0xFF);
+        dst = PBCDToByte(D[rx] & 0xFF);
         calcTime = 10;
     }
 
@@ -2215,8 +2215,8 @@ uint16_t SCC68070::MULU()
 
 uint16_t SCC68070::NBCD()
 {
-    const uint8_t eamode = currentOpcode >> 3 & 0x000F;
-    const uint8_t  eareg = currentOpcode & 0x000F;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = eamode ? 14 : 10;
 
     const uint8_t dst = PBCDToByte(GetByte(eamode, eareg, calcTime));
@@ -3016,53 +3016,40 @@ uint16_t SCC68070::RTS()
 
 uint16_t SCC68070::SBCD()
 {
-    uint8_t Ry = (currentOpcode & 0x0E00) >> 9;
-    uint8_t Rx = (currentOpcode & 0x0007);
-    uint8_t rm = currentOpcode & 0x0008;
+    const uint8_t ry = currentOpcode >> 9 & 0x0007;
+    const bool rm = currentOpcode >> 3 & 0x0001;
+    const uint8_t rx = currentOpcode & 0x0007;
     uint16_t calcTime;
-    uint8_t result = 0;
-    uint8_t x = GetX();
 
-    if(rm) // memory to memory
+    uint8_t dst, src;
+    if(rm) // Memory to Memory
     {
-        uint8_t src = PBCDToByte(GetByte(ARIWPr(Rx, 1))) + x;
-        uint8_t dst = PBCDToByte(GetByte(ARIWPr(Ry, 1)));
-
-        if(dst < src)
-        {
-            dst += 100;
-            SetXC();
-        }
-        else
-            SetXC(0);
-
-        result = byteToPBCD(dst - src);
-
-        SetByte(lastAddress, result);
+        src = PBCDToByte(GetByte(ARIWPr(rx, 1)));
+        dst = PBCDToByte(GetByte(ARIWPr(ry, 1)));
         calcTime = 31;
     }
-    else
+    else // Data register to Data register
     {
-        uint8_t src = PBCDToByte(D[Rx] & 0x000000FF) + x;
-        uint8_t dst = PBCDToByte(D[Ry] & 0x000000FF);
-
-        if(dst < src)
-        {
-            dst += 100;
-            SetXC();
-        }
-        else
-            SetXC(0);
-
-        result = byteToPBCD(dst - src);
-
-        D[Ry] &= 0xFFFFFF00;
-        D[Ry] |= result;
+        src = PBCDToByte(D[rx] & 0x000000FF);
+        dst = PBCDToByte(D[ry] & 0x000000FF);
         calcTime = 10;
     }
 
+    int8_t result = dst - src - GetX();
+
     if(result != 0)
         SetZ(0);
+    SetXC(result < 0);
+    if(result < 0)
+        result = 100 + result;
+
+    if(rm)
+        SetByte(lastAddress, byteToPBCD(result));
+    else
+    {
+        D[ry] &= 0xFFFFFF00;
+        D[ry] |= byteToPBCD(result);
+    }
 
     return calcTime;
 }
