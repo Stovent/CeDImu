@@ -1520,29 +1520,27 @@ uint16_t SCC68070::EORISR()
 
 uint16_t SCC68070::EXG()
 {
-    uint8_t   Rx = (currentOpcode & 0x0E00) >> 9;
-    uint8_t mode = (currentOpcode & 0x00F8) >> 3;
-    uint8_t   Ry = (currentOpcode & 0x0007);
+    const uint8_t     rx = currentOpcode >> 9 & 0x0007;
+    const uint8_t opmode = currentOpcode >> 3 & 0x001F;
+    const uint8_t     ry = currentOpcode & 0x0007;
 
-    uint32_t tmp;
-
-    if(mode == 0x08)
+    if(opmode == 0b01000) // Data registers
     {
-        tmp = D[Rx];
-        D[Rx] = D[Ry];
-        D[Ry] = tmp;
+        const uint32_t tmp = D[rx];
+        D[rx] = D[ry];
+        D[ry] = tmp;
     }
-    else if(mode == 0x09)
+    else if(opmode == 0b01001) // Address registers
     {
-        tmp = A[Rx];
-        A[Rx] = A[Ry];
-        A[Ry] = tmp;
+        const uint32_t tmp = A[rx];
+        A[rx] = A[ry];
+        A[ry] = tmp;
     }
-    else
+    else // Data register and address register
     {
-        tmp = D[Rx];
-        D[Rx] = A[Ry];
-        A[Ry] = tmp;
+        const uint32_t tmp = D[rx];
+        D[rx] = A[ry];
+        A[ry] = tmp;
     }
 
     return 13;
@@ -1550,24 +1548,20 @@ uint16_t SCC68070::EXG()
 
 uint16_t SCC68070::EXT()
 {
-    uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
-    uint8_t    reg = (currentOpcode & 0x0007);
+    const uint8_t opmode = currentOpcode >> 6 & 0x0007;
+    const uint8_t    reg = currentOpcode & 0x0007;
 
     if(opmode == 2) // byte to word
     {
-        uint16_t tmp = signExtend816(D[reg] & 0x000000FF);
-        D[reg] &= 0xFFFF0000;
-        D[reg] |= tmp;
-
-        if(tmp & 0x8000) SetN(); else SetN(0);
-        if(tmp == 0) SetZ(); else SetZ(0);
+        D[reg] = (D[reg] & 0xFFFF0000) | (signExtend816(D[reg] & 0x000000FF) & 0x0000FFFF); // TODO: signExtend<int8_t, uint16_t>(D[reg] & 0x000000FF);
+        SetN(D[reg] & 0x00008000);
+        SetZ((D[reg] & 0x0000FFFF) == 0);
     }
     else // word to long
     {
         D[reg] = signExtend16(D[reg] & 0x0000FFFF);
-
-        if(D[reg] & 0x80000000) SetN(); else SetN(0);
-        if(D[reg] == 0) SetZ(); else SetZ(0);
+        SetN(D[reg] & 0x80000000);
+        SetZ(D[reg] == 0);
     }
 
     SetVC(0);
@@ -3446,15 +3440,14 @@ uint16_t SCC68070::SUBX()
 
 uint16_t SCC68070::SWAP()
 {
-    uint8_t reg = currentOpcode & 0x0007;
+    const uint8_t reg = currentOpcode & 0x0007;
 
-    uint16_t tmp = (D[reg] & 0xFFFF0000) >> 16;
+    const uint16_t tmp = D[reg] >> 16 & 0x0000FFFF;
     D[reg] <<= 16;
     D[reg] |= tmp;
 
-    if(D[reg] == 0) SetZ(); else SetZ(0);
-    if(D[reg] & 0x80000000) SetN(); else SetN(0);
-
+    SetN(D[reg] & 0x80000000);
+    SetZ(D[reg] == 0);
     SetVC(0);
 
     return 7;
