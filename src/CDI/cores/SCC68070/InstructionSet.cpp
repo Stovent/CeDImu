@@ -1669,13 +1669,11 @@ uint16_t SCC68070::LEA()
 
 uint16_t SCC68070::LINK()
 {
-    uint8_t reg = (currentOpcode & 0x0007);
+    const uint8_t reg = currentOpcode & 0x0007;
 
     SetLong(ARIWPr(7, 4), A[reg]);
     A[reg] = A[7];
-
-    int16_t disp = GetNextWord();
-    A[7] += signExtend16(disp);
+    A[7] += signExtend16(GetNextWord());
 
     return 25;
 }
@@ -3541,7 +3539,7 @@ uint16_t SCC68070::TST()
 
 uint16_t SCC68070::UNLK()
 {
-    uint8_t reg = currentOpcode & 0x0007;
+    const uint8_t reg = currentOpcode & 0x0007;
 
     A[7] = A[reg];
     A[reg] = GetLong(ARIWPo(7, 4));
