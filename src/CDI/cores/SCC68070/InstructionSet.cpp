@@ -2982,11 +2982,9 @@ uint16_t SCC68070::RTE()
         calcTime = 39;
         SR = GetWord(ARIWPo(7, 2));
         PC = GetLong(ARIWPo(7, 4));
-        uint16_t format = GetWord(ARIWPo(7, 4));
+        const uint16_t format = GetWord(ARIWPo(7, 2));
 
-        if(format & 0x0C03)
-            calcTime += Exception(FormatError);
-        else if(format & 0xF000) // long format
+        if(format & 0xF000) // long format
         {
             A[7] += 26;
             calcTime = 146;
