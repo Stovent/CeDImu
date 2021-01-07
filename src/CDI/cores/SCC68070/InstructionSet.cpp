@@ -1095,17 +1095,17 @@ uint16_t SCC68070::CHK()
 
 uint16_t SCC68070::CLR()
 {
-    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
     if(size == 0) // Byte
-        SetByte(eamode, eareg, calcTime, 0);
+        SetByte(eamode, eareg, calcTime, 0); // Subtract one read cycle from effective address calculation
     else if(size == 1) // Word
-        SetWord(eamode, eareg, calcTime, 0);
+        SetWord(eamode, eareg, calcTime, 0); // Subtract one read cycle from effective address calculation
     else // Long
-        SetLong(eamode, eareg, calcTime, 0);
+        SetLong(eamode, eareg, calcTime, 0); // Subtract two read cycles from effective address calculation
 
     SetN(0);
     SetZ();
@@ -3046,18 +3046,15 @@ uint16_t SCC68070::SBCD()
 
 uint16_t SCC68070::Scc()
 {
-    uint8_t condition = (currentOpcode & 0x0F00) >> 8;
-    uint8_t    eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t     eareg = (currentOpcode & 0x0007);
+    const uint8_t condition = currentOpcode >> 8 & 0x000F;
+    const uint8_t    eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t     eareg = currentOpcode & 0x0007;
     uint16_t calcTime = eamode ? 17 : 13;
-    uint8_t data;
 
     if((this->*ConditionalTests[condition])())
-        data = 0xFF;
+        SetByte(eamode, eareg, calcTime, 0xFF);
     else
-        data = 0x00;
-
-    SetByte(eamode, eareg, calcTime, data);
+        SetByte(eamode, eareg, calcTime, 0);
 
     return calcTime;
 }
@@ -3455,22 +3452,26 @@ uint16_t SCC68070::SWAP()
 
 uint16_t SCC68070::TAS()
 {
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 10;
 
     uint8_t data = GetByte(eamode, eareg, calcTime);
-
-    if(data == 0) SetZ(); else SetZ(0);
-    if(data & 0x80) SetN(); else SetN(0);
-    data |= 0x80;
-
+    SetN(data & 0x80);
+    SetZ(data == 0);
     SetVC(0);
 
+    data |= 0x80;
     if(eamode)
-    {   calcTime++; SetByte(lastAddress, data); }
+    {
+        SetByte(lastAddress, data);
+        calcTime++; // subtract one read cycle from effective address calculation (+5 - 4)
+    }
     else
-    {   D[eareg] &= 0xFFFFFF00; D[eareg] |= data; }
+    {
+        D[eareg] &= 0xFFFFFF00;
+        D[eareg] |= data;
+    }
 
     return calcTime;
 }
@@ -3496,31 +3497,28 @@ uint16_t SCC68070::TRAPV()
 
 uint16_t SCC68070::TST()
 {
-    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t calcTime = 7;
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
+    uint16_t calcTime = 7; // is calcTime = 7 for long a missclick in the datasheet?
 
-    if(size == 0)
+    if(size == 0) // Byte
     {
-        uint8_t data = GetByte(eamode, eareg, calcTime);
-
-        if(!data) SetZ(); else SetZ(0);
-        if(data & 0x80) SetN(); else SetN(0);
+        const uint8_t data = GetByte(eamode, eareg, calcTime);
+        SetN(data & 0x80);
+        SetZ(data == 0);
     }
-    else if(size == 1)
+    else if(size == 1) // Word
     {
-        uint16_t data = GetWord(eamode, eareg, calcTime);
-
-        if(!data) SetZ(); else SetZ(0);
-        if(data & 0x8000) SetN(); else SetN(0);
+        const uint16_t data = GetWord(eamode, eareg, calcTime);
+        SetN(data & 0x8000);
+        SetZ(data == 0);
     }
-    else
+    else // Long
     {
-        uint32_t data = GetLong(eamode, eareg, calcTime);
-
-        if(!data) SetZ(); else SetZ(0);
-        if(data & 0x80000000) SetN(); else SetN(0);
+        const uint32_t data = GetLong(eamode, eareg, calcTime);
+        SetN(data & 0x80000000);
+        SetZ(data == 0);
     }
 
     SetVC(0);
