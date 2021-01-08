@@ -278,7 +278,7 @@ void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
     if(mode == 1)
     {
         lastAddress = 0;
-        A[reg] = signExtend16(data);
+        A[reg] = signExtend<int16_t, uint32_t>(data);
         return;
     }
     if(mode == 2)

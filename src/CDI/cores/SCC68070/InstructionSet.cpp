@@ -1179,8 +1179,8 @@ uint16_t SCC68070::CMPA()
     }
     else // Word
     {
-        src = signExtend16(GetWord(eamode, eareg, calcTime));
-        dst = signExtend16(A[reg] &= 0x0000FFFF);
+        src = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
+        dst = signExtend<int16_t, int32_t>(A[reg] &= 0x0000FFFF);
         res = dst - src;
     }
 
@@ -1295,7 +1295,7 @@ uint16_t SCC68070::DBcc()
     if(data == -1)
         return 17;
 
-    PC += signExtend16(disp) - 2;
+    PC += signExtend<int16_t, int32_t>(disp) - 2;
 
     return 17;
 }
@@ -1553,13 +1553,13 @@ uint16_t SCC68070::EXT()
 
     if(opmode == 2) // byte to word
     {
-        D[reg] = (D[reg] & 0xFFFF0000) | (signExtend816(D[reg] & 0x000000FF) & 0x0000FFFF); // TODO: signExtend<int8_t, uint16_t>(D[reg] & 0x000000FF);
+        D[reg] = (D[reg] & 0xFFFF0000) | signExtend<int8_t, uint16_t>(D[reg] & 0x000000FF);
         SetN(D[reg] & 0x00008000);
         SetZ((D[reg] & 0x0000FFFF) == 0);
     }
     else // word to long
     {
-        D[reg] = signExtend16(D[reg] & 0x0000FFFF);
+        D[reg] = signExtend<int16_t, int32_t>(D[reg] & 0x0000FFFF);
         SetN(D[reg] & 0x80000000);
         SetZ(D[reg] == 0);
     }
@@ -1667,7 +1667,7 @@ uint16_t SCC68070::LINK()
 
     SetLong(ARIWPr(7, 4), A[reg]);
     A[reg] = A[7];
-    A[7] += signExtend16(GetNextWord());
+    A[7] += signExtend<int16_t, int32_t>(GetNextWord());
 
     return 25;
 }
@@ -1873,7 +1873,7 @@ uint16_t SCC68070::MOVEA()
     if(size == 3) // word
     {
         int16_t data = GetWord(eamode, eareg, calcTime);
-        A[reg] = signExtend16(data);
+        A[reg] = signExtend<int16_t, int32_t>(data);
     }
     else // long
     {
@@ -2003,9 +2003,9 @@ uint16_t SCC68070::MOVEM()
                 else // word
                 {
                     if(type) // address
-                        A[mod] = signExtend16(GetWord(lastAddress));
+                        A[mod] = signExtend<int16_t, int32_t>(GetWord(lastAddress));
                     else // data
-                        D[mod] = signExtend16(GetWord(lastAddress));
+                        D[mod] = signExtend<int16_t, int32_t>(GetWord(lastAddress));
                 }
                 n++;
                 lastAddress += size;
@@ -2161,7 +2161,7 @@ uint16_t SCC68070::MOVEQ()
     if(data == 0) SetZ(); else SetZ(0);
     SetVC(0);
 
-    D[reg] = signExtend8(data);
+    D[reg] = signExtend<int8_t, int32_t>(data);
     return 7;
 }
 
@@ -3189,7 +3189,7 @@ uint16_t SCC68070::SUBA()
     }
     else // Word
     {
-        src = signExtend16(GetWord(eamode, eareg, calcTime));
+        src = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
         int16_t dst = A[reg] & 0x0000FFFF;
         A[reg] = dst - src;
         if(eamode > 1)
@@ -3299,7 +3299,7 @@ uint16_t SCC68070::SUBQ()
         if(eamode == 0)
         {   D[eareg] &= 0xFFFF0000; D[eareg] |= (uint16_t)(res & 0xFFFF); }
         else if(eamode == 1)
-            A[eareg] = signExtend16(res);
+            A[eareg] = signExtend<int16_t, int32_t>(res);
         else
         {   SetWord(lastAddress, res & 0xFFFF); calcTime += 4; }
     }

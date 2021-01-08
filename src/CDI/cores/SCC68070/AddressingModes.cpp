@@ -8,12 +8,12 @@ int32_t SCC68070::GetIndexRegister(const uint16_t bew) const
         if(bew & 0x0800)
             return A[(bew & 0x7000) >> 12];
         else
-            return signExtend16(A[(bew & 0x7000) >> 12]);
+            return signExtend<int16_t, int32_t>(A[(bew & 0x7000) >> 12]);
     else
         if(bew & 0x0800)
             return D[(bew & 0x7000) >> 12];
         else
-            return signExtend16(D[(bew & 0x7000) >> 12]);
+            return signExtend<int16_t, int32_t>(D[(bew & 0x7000) >> 12]);
 }
 
 uint32_t SCC68070::AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte)
@@ -31,31 +31,31 @@ uint32_t SCC68070::AddressRegisterIndirectWithPredecrement(const uint8_t reg, co
 
 uint32_t SCC68070::AddressRegisterIndirectWithDisplacement(const uint8_t reg)
 {
-    return A[reg] + signExtend16(GetNextWord());
+    return A[reg] + signExtend<int16_t, int32_t>(GetNextWord());
 }
 
 uint32_t SCC68070::AddressRegisterIndirectWithIndex8(const uint8_t reg)
 {
     const uint16_t bew = GetNextWord();
-    return A[reg] + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
+    return A[reg] + GetIndexRegister(bew) + signExtend<int8_t, int32_t>(bew & 0x00FF);
 }
 
 uint32_t SCC68070::ProgramCounterIndirectWithDisplacement()
 {
     const uint32_t pc = PC;
-    return pc + signExtend16(GetNextWord());
+    return pc + signExtend<int16_t, int32_t>(GetNextWord());
 }
 
 uint32_t SCC68070::ProgramCounterIndirectWithIndex8()
 {
     const uint32_t pc = PC;
     const uint16_t bew = GetNextWord();
-    return pc + GetIndexRegister(bew) + signExtend8(bew & 0x00FF);
+    return pc + GetIndexRegister(bew) + signExtend<int8_t, int32_t>(bew & 0x00FF);
 }
 
 uint32_t SCC68070::AbsoluteShortAddressing()
 {
-    return signExtend16(GetNextWord());
+    return signExtend<int16_t, int32_t>(GetNextWord());
 }
 
 uint32_t SCC68070::AbsoluteLongAddressing()
