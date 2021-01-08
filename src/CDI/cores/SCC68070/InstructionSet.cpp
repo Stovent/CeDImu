@@ -2232,72 +2232,64 @@ uint16_t SCC68070::NBCD()
 
 uint16_t SCC68070::NEG()
 {
-    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
-    if(size == 0) // byte
+    if(size == 0) // Byte
     {
-        int8_t data = GetByte(eamode, eareg, calcTime);
-
-        int16_t res = 0 - data;
-
-        if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
-        if(res == 0) { SetZ(); SetXC(0); } else { SetZ(0); SetXC(); }
-        if(res & 0x80) SetN(); else SetN(0);
+        const uint8_t data = -GetByte(eamode, eareg, calcTime);
+        SetN(data & 0x80);
+        SetZ(data == 0);
+        SetV(data == 0x80); // negate of -128 is 128, which overflows back to -128.
+        SetXC(data != 0);
 
         if(eamode)
         {
-            SetByte(lastAddress, res);
+            SetByte(lastAddress, data);
             calcTime += 4;
         }
         else
         {
             D[eareg] &= 0xFFFFFF00;
-            D[eareg] |= res & 0xFF;
+            D[eareg] |= data;
         }
     }
-    else if(size == 1) // word
+    else if(size == 1) // Word
     {
-        int16_t data = GetWord(eamode, eareg, calcTime);
-
-        int32_t res = 0 - data;
-
-        if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
-        if(res == 0) { SetZ(); SetXC(0); } else { SetZ(0); SetXC(); }
-        if(res & 0x8000) SetN(); else SetN(0);
+        const uint16_t data = -GetWord(eamode, eareg, calcTime);
+        SetN(data & 0x8000);
+        SetZ(data == 0);
+        SetV(data == 0x8000);
+        SetXC(data != 0);
 
         if(eamode)
         {
-            SetWord(lastAddress, res);
+            SetWord(lastAddress, data);
             calcTime += 4;
         }
         else
         {
             D[eareg] &= 0xFFFF0000;
-            D[eareg] |= res & 0xFFFF;
+            D[eareg] |= data;
         }
     }
-    else // long
+    else // Long
     {
-        int32_t data = GetLong(eamode, eareg, calcTime);
-
-        int64_t res = 0 - data;
-
-        if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
-        if(res == 0) { SetZ(); SetXC(0); } else { SetZ(0); SetXC(); }
-        if(res & 0x80000000) SetN(); else SetN(0);
+        const uint32_t data = -GetLong(eamode, eareg, calcTime);
+        SetN(data & 0x80000000);
+        SetZ(data == 0);
+        SetV(data == 0x80000000);
+        SetXC(data != 0);
 
         if(eamode)
         {
-            SetLong(lastAddress, res);
+            SetLong(lastAddress, data);
             calcTime += 8;
         }
         else
-        {
-            D[eareg] = res;
-        }
+            D[eareg] = data;
     }
 
     return calcTime;
@@ -2305,72 +2297,67 @@ uint16_t SCC68070::NEG()
 
 uint16_t SCC68070::NEGX()
 {
-    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
-    if(size == 0) // byte
+    if(size == 0) // Byte
     {
-        int8_t data = GetByte(eamode, eareg, calcTime);
-
-        int16_t res = 0 - data - GetX();
-
-        if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
-        if(res == 0) { SetZ(); SetXC(0); } else { SetZ(0); SetXC(); }
-        if(res & 0x80) SetN(); else SetN(0);
+        const uint8_t data = -GetByte(eamode, eareg, calcTime) - GetX();
+        SetN(data & 0x80);
+        if(data != 0)
+            SetZ(0);
+        SetV(data == 0x80);
+        SetXC(data != 0);
 
         if(eamode)
         {
-            SetByte(lastAddress, res);
+            SetByte(lastAddress, data);
             calcTime += 4;
         }
         else
         {
             D[eareg] &= 0xFFFFFF00;
-            D[eareg] |= res & 0xFF;
+            D[eareg] |= data;
         }
     }
-    else if(size == 1) // word
+    else if(size == 1) // Word
     {
-        int16_t data = GetWord(eamode, eareg, calcTime);
-
-        int32_t res = 0 - data - GetX();
-
-        if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
-        if(res == 0) { SetZ(); SetXC(0); } else { SetZ(0); SetXC(); }
-        if(res & 0x8000) SetN(); else SetN(0);
+        const uint16_t data = -GetWord(eamode, eareg, calcTime) - GetX();
+        SetN(data & 0x8000);
+        if(data != 0)
+            SetZ(0);
+        SetV(data == 0x8000);
+        SetXC(data != 0);
 
         if(eamode)
         {
-            SetWord(lastAddress, res);
+            SetWord(lastAddress, data);
             calcTime += 4;
         }
         else
         {
             D[eareg] &= 0xFFFF0000;
-            D[eareg] |= res & 0xFFFF;
+            D[eareg] |= data;
         }
     }
-    else // long
+    else // Long
     {
-        int32_t data = GetLong(eamode, eareg, calcTime);
-
-        int64_t res = 0 - data - GetX();
-
-        if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
-        if(res == 0) { SetZ(); SetXC(0); } else { SetZ(0); SetXC(); }
-        if(res & 0x80000000) SetN(); else SetN(0);
+        const uint32_t data = -GetLong(eamode, eareg, calcTime) - GetX();
+        SetN(data & 0x80000000);
+        if(data != 0)
+            SetZ(0);
+        SetV(data == 0x80000000);
+        SetXC(data != 0);
 
         if(eamode)
         {
-            SetLong(lastAddress, res);
+            SetLong(lastAddress, data);
             calcTime += 8;
         }
         else
-        {
-            D[eareg] = res;
-        }
+            D[eareg] = data;
     }
 
     return calcTime;
@@ -2383,49 +2370,58 @@ uint16_t SCC68070::NOP()
 
 uint16_t SCC68070::NOT()
 {
-    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
     if(size == 0) // Byte
     {
-        uint8_t data = GetByte(eamode, eareg, calcTime);
-        uint8_t res = ~data;
+        const uint8_t data = ~GetByte(eamode, eareg, calcTime);
+        SetN(data & 0x80);
+        SetZ(data == 0);
 
         if(eamode)
-        {   SetByte(lastAddress, res); calcTime += 4; }
+        {
+            SetByte(lastAddress, data);
+            calcTime += 4;
+        }
         else
-        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= res; }
-
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
+        {
+            D[eareg] &= 0xFFFFFF00;
+            D[eareg] |= data;
+        }
     }
     else if(size == 1) // Word
     {
-        uint16_t data = GetWord(eamode,  eareg, calcTime);
-        uint16_t res = ~data;
+        const uint16_t data = ~GetWord(eamode, eareg, calcTime);
+        SetN(data & 0x8000);
+        SetZ(data == 0);
 
         if(eamode)
-        {   SetWord(lastAddress, res); calcTime += 4; }
+        {
+            SetWord(lastAddress, data);
+            calcTime += 4;
+        }
         else
-        {   D[eareg] &= 0xFFFF0000; D[eareg] |= res; }
-
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
+        {
+            D[eareg] &= 0xFFFF0000;
+            D[eareg] |= data;
+        }
     }
-    else // long
+    else // Long
     {
-        uint32_t data = GetLong(eamode,  eareg, calcTime);
-        uint32_t res = ~data;
+        const uint32_t data = ~GetLong(eamode, eareg, calcTime);
+        SetN(data & 0x80000000);
+        SetZ(data == 0);
 
         if(eamode)
-        {   SetLong(lastAddress, res); calcTime += 8; }
+        {
+            SetLong(lastAddress, data);
+            calcTime += 8;
+        }
         else
-            D[eareg] = res;
-
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
+            D[eareg] = data;
     }
 
     SetVC(0);
