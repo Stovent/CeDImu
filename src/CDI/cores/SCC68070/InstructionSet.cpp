@@ -822,62 +822,38 @@ uint16_t SCC68070::Bcc()
 
 uint16_t SCC68070::BCHG()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 10;
-    uint8_t shift;
 
-    if(currentOpcode & 0x0100)
+    uint8_t bit;
+    if(currentOpcode & 0x0100) // Dynamic
     {
-        shift = D[reg] % (eamode ? 8 : 32);
-        if(eamode)
-            calcTime += 4;
+        bit = D[reg];
     }
-    else
+    else // Static
     {
-        shift = (GetNextWord() & 0x00FF) % (eamode ? 8 : 32);
-        if(eamode)
-            calcTime += 11;
-        else
-            calcTime += 7;
+        bit = GetNextWord() & 0x00FF;
+        calcTime += 7;
     }
 
-    if(eamode == 0)
+    if(eamode) // Byte
     {
-        uint32_t data = D[eareg];
-        uint32_t mask = 1 << shift;
-
-        if(data & mask)
-        {
-            SetZ(0);
-            data &= ~(mask);
-        }
-        else
-        {
-            SetZ();
-            data |= mask;
-        }
-
-        D[eareg] = data;
-    }
-    else
-    {
+        bit %= 8;
+        const uint8_t mask = 1 << bit;
         uint8_t data = GetByte(eamode, eareg, calcTime);
-        uint8_t mask = 1 << shift;
-
-        if(data & mask)
-        {
-            SetZ(0);
-            data &= ~(mask);
-        }
-        else
-        {
-            SetZ();
-            data |= mask;
-        }
-
+        SetZ(!(data & mask));
+        data ^= mask;
         SetByte(lastAddress, data);
+        calcTime += 4;
+    }
+    else // Long
+    {
+        bit %= 32;
+        const uint32_t mask = 1 << bit;
+        SetZ(!(D[eareg] & mask));
+        D[eareg] ^= mask;
     }
 
     return calcTime;
@@ -885,52 +861,38 @@ uint16_t SCC68070::BCHG()
 
 uint16_t SCC68070::BCLR()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 10;
-    uint8_t shift;
 
-    if(currentOpcode & 0x0100)
+    uint8_t bit;
+    if(currentOpcode & 0x0100) // Dynamic
     {
-        shift = D[reg] % (eamode ? 8 : 32);
-        if(eamode)
-            calcTime += 4;
+        bit = D[reg];
     }
-    else
+    else // Static
     {
-        shift = (GetNextWord() & 0x00FF) % (eamode ? 8 : 32);
-        if(eamode)
-            calcTime += 11;
-        else
-            calcTime += 7;
+        bit = GetNextWord() & 0x00FF;
+        calcTime += 7;
     }
 
-    if(eamode == 0)
+    if(eamode) // Byte
     {
-        uint32_t data = D[eareg];
-        uint32_t mask = 1 << shift;
-
-        if(data & mask)
-            SetZ(0);
-        else
-            SetZ();
-
-        data &= ~(mask);
-        D[eareg] = data;
-    }
-    else
-    {
+        bit %= 8;
+        const uint8_t mask = 1 << bit;
         uint8_t data = GetByte(eamode, eareg, calcTime);
-        uint8_t mask = 1 << shift;
-
-        if(data & mask)
-            SetZ(0);
-        else
-            SetZ();
-
-        data &= ~(mask);
+        SetZ(!(data & mask));
+        data &= ~mask;
         SetByte(lastAddress, data);
+        calcTime += 4;
+    }
+    else // Long
+    {
+        bit %= 32;
+        const uint32_t mask = 1 << bit;
+        SetZ(!(D[eareg] & mask));
+        D[eareg] &= ~mask;
     }
 
     return calcTime;
@@ -958,52 +920,38 @@ uint16_t SCC68070::BRA()
 
 uint16_t SCC68070::BSET()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 10;
-    uint8_t shift;
 
-    if(currentOpcode & 0x0100)
+    uint8_t bit;
+    if(currentOpcode & 0x0100) // Dynamic
     {
-        shift = D[reg] % (eamode ? 8 : 32);
-        if(eamode)
-            calcTime += 4;
+        bit = D[reg];
     }
-    else
+    else // Static
     {
-        shift = (GetNextWord() & 0x00FF) % (eamode ? 8 : 32);
-        if(eamode)
-            calcTime += 11;
-        else
-            calcTime += 7;
+        bit = GetNextWord() & 0x01FF; // Error in the datasheet ?
+        calcTime += 7;
     }
 
-    if(eamode == 0)
+    if(eamode) // Byte
     {
-        uint32_t data = D[eareg];
-        uint32_t mask = 1 << shift;
-
-        if(data & mask)
-            SetZ(0);
-        else
-            SetZ();
-
-        data |= mask;
-        D[eareg] = data;
-    }
-    else
-    {
+        bit %= 8;
+        const uint8_t mask = 1 << bit;
         uint8_t data = GetByte(eamode, eareg, calcTime);
-        uint8_t mask = 1 << shift;
-
-        if(data & mask)
-            SetZ(0);
-        else
-            SetZ();
-
+        SetZ(!(data & mask));
         data |= mask;
         SetByte(lastAddress, data);
+        calcTime += 4;
+    }
+    else // Long
+    {
+        bit %= 32;
+        const uint32_t mask = 1 << bit;
+        SetZ(!(D[eareg] & mask));
+        D[eareg] |= mask;
     }
 
     return calcTime;
@@ -1033,41 +981,34 @@ uint16_t SCC68070::BSR()
 
 uint16_t SCC68070::BTST()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
-    uint8_t shift;
 
-    if(currentOpcode & 0x0100)
+    uint8_t bit;
+    if(currentOpcode & 0x0100) // Dynamic
     {
-        shift = D[reg] % (eamode ? 8 : 32);
+        bit = D[reg];
     }
-    else
+    else // Static
     {
-        shift = (GetNextWord() & 0x00FF) % (eamode ? 8 : 32);
+        bit = GetNextWord() & 0x00FF;
         calcTime += 7;
     }
 
-    if(eamode == 0)
+    if(eamode) // Byte
     {
-        uint32_t data = D[eareg];
-        uint32_t mask = 1 << shift;
-
-        if(data & mask)
-            SetZ(0);
-        else
-            SetZ();
+        bit %= 8;
+        const uint8_t mask = 1 << bit;
+        const uint8_t data = GetByte(eamode, eareg, calcTime);
+        SetZ(!(data & mask));
     }
-    else
+    else // Long
     {
-        uint8_t data = GetByte(eamode, eareg, calcTime);
-        uint8_t mask = 1 << shift;
-
-        if(data & mask)
-            SetZ(0);
-        else
-            SetZ();
+        bit %= 32;
+        const uint32_t mask = 1 << bit;
+        SetZ(!(D[eareg] & mask));
     }
 
     return calcTime;
