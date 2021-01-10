@@ -54,6 +54,8 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
         calcTime += 158; break;
     case IllegalInstruction: case PrivilegeViolation: case Trace: case TRAPVInstruction:
         calcTime += 55; break;
+    case CHKInstruction:
+        calcTime += 64; break;
     case 32: case 33: case 34: case 35: case 36: case 37: case 38: case 39:
     case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
         calcTime += 52; break;
@@ -799,23 +801,19 @@ uint16_t SCC68070::ASr()
 
 uint16_t SCC68070::Bcc()
 {
-    uint8_t condition = (currentOpcode & 0x0F00) >> 8;
-    int16_t      disp = (int8_t)(currentOpcode & 0x00FF);
-    uint16_t calcTime;
+    const uint8_t condition = currentOpcode >> 8 & 0x000F;
+    int16_t disp = signExtend<int8_t, int16_t>(currentOpcode & 0x00FF);
+    const uint32_t pc = PC;
+    uint16_t calcTime = 13;
 
-    if(disp) // 8-bit
+    if(disp == 0)
     {
-        calcTime = 13;
-        if((this->*ConditionalTests[condition])())
-            PC += disp;
-    }
-    else // 16 bit
-    {
-        calcTime = 14;
         disp = GetNextWord();
-        if((this->*ConditionalTests[condition])())
-            PC += disp - 2;
+        calcTime++;
     }
+
+    if((this->*ConditionalTests[condition])())
+        PC = pc + disp;
 
     return calcTime;
 }
@@ -900,20 +898,17 @@ uint16_t SCC68070::BCLR()
 
 uint16_t SCC68070::BRA()
 {
-    int16_t disp = (int8_t)(currentOpcode & 0x00FF);
-    uint16_t calcTime;
+    int16_t disp = signExtend<int8_t, int16_t>(currentOpcode & 0x00FF);
+    const uint32_t pc = PC;
+    uint16_t calcTime = 13;
 
-    if(disp)
-    {
-        PC += disp;
-        calcTime = 13;
-    }
-    else
+    if(disp == 0)
     {
         disp = GetNextWord();
-        PC += disp - 2;
-        calcTime = 14;
+        calcTime++;
     }
+
+    PC = pc + disp;
 
     return calcTime;
 }
@@ -959,22 +954,18 @@ uint16_t SCC68070::BSET()
 
 uint16_t SCC68070::BSR()
 {
-    int16_t disp = (int8_t)(currentOpcode & 0x00FF);
-    uint16_t calcTime;
+    int16_t disp = signExtend<int8_t, int16_t>(currentOpcode & 0x00FF);
+    uint32_t pc = PC;
+    uint16_t calcTime = 17;
 
-    if(disp)
-    {
-        SetLong(ARIWPr(7, 4), PC);
-        PC += disp;
-        calcTime = 17;
-    }
-    else
+    if(disp == 0)
     {
         disp = GetNextWord();
-        SetLong(ARIWPr(7, 4), PC);
-        PC += disp - 2;
         calcTime = 22;
     }
+
+    SetLong(ARIWPr(7, 4), PC);
+    PC = pc + disp;
 
     return calcTime;
 }
@@ -1016,20 +1007,23 @@ uint16_t SCC68070::BTST()
 
 uint16_t SCC68070::CHK()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t calcTime = 19;
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
+    uint16_t calcTime = 0;
 
-    int16_t source = GetWord(eamode, eareg, calcTime);
-    int16_t data = D[reg] & 0xFFFF;
-
-    if(data < 0 || data > source)
+    const int16_t bound = GetWord(eamode, eareg, calcTime);
+    const int16_t  data = D[reg] & 0x0000FFFF;
+    if(data < 0 || data > bound)
     {
-        calcTime += 45;
         exceptions.push({CHKInstruction, 2});
-        if(data < 0) SetN(); else SetN(0);
+        if(data < 0)
+            SetN();
+        else if(data > bound)
+            SetN(0);
     }
+    else
+        calcTime += 19;
 
     return calcTime;
 }
@@ -1222,21 +1216,20 @@ uint16_t SCC68070::CMPM()
 
 uint16_t SCC68070::DBcc()
 {
-    uint8_t condition = (currentOpcode & 0x0F00) >> 8;
-    uint8_t reg = (currentOpcode & 0x0007);
-    int16_t disp = GetNextWord();
+    const uint8_t condition = currentOpcode >> 8 & 0x000F;
+    const uint8_t       reg = currentOpcode & 0x0007;
+    const int16_t disp = GetNextWord();
 
     if((this->*ConditionalTests[condition])())
-       return 14;
+        return 14;
 
-    int16_t data = D[reg] & 0x0000FFFF;
-    --data;
-    D[reg] &= 0xFFFF0000;
-    D[reg] |= (uint16_t)data;
-    if(data == -1)
+    int16_t counter = D[reg] & 0x0000FFFF;
+    if(--counter == -1)
         return 17;
+    D[reg] &= 0xFFFF0000;
+    D[reg] |= (uint16_t)counter;
 
-    PC += signExtend<int16_t, int32_t>(disp) - 2;
+    PC += disp - 2;
 
     return 17;
 }
@@ -3422,14 +3415,11 @@ uint16_t SCC68070::TRAP()
 
 uint16_t SCC68070::TRAPV()
 {
-    uint16_t calcTime = 0;
+    if(!GetV())
+        return 10;
 
-    if(GetV())
-        exceptions.push({TRAPVInstruction, 2});
-    else
-        calcTime = 10;
-
-    return calcTime;
+    exceptions.push({TRAPVInstruction, 2});
+    return 0;
 }
 
 uint16_t SCC68070::TST()
