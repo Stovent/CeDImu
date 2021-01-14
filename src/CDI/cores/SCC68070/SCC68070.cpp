@@ -50,7 +50,7 @@ void SCC68070::Run(const bool loop)
             executionThread.join();
 
         this->loop = loop;
-        executionThread = std::thread(Interpreter, this);
+        executionThread = std::thread(&SCC68070::Interpreter, this);
     }
 }
 
