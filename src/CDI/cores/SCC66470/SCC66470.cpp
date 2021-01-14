@@ -38,12 +38,10 @@ void SCC66470::MemorySwap()
     memorySwapCount = 0;
 }
 
-bool SCC66470::LoadBIOS(const void* bios, const uint32_t size) // only CD-I 205, it should be 523 264 bytes long
+bool SCC66470::LoadBIOS(const void* bios, uint32_t size) // only CD-I 205, it should be 523 264 bytes long
 {
     if(size > 0x7FC00)
-    {
-        return biosLoaded = false;
-    }
+        size = 0x7FC00;
 
     memcpy(&memory[0x180000], bios, size);
 
