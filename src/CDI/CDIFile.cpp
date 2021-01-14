@@ -30,6 +30,15 @@ CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t size, uint8_t namesize
     parent(parentRelpos)
 {}
 
+static std::string getAudioLevel(const bool bps, const uint32_t fs)
+{
+    if(bps)
+        return "A";
+    if(fs == 18900)
+        return "C";
+    return "B";
+}
+
 /** \brief Export the audio data of the file.
  *
  * \param  directoryPath Path to the directory where the files will be written.
@@ -50,6 +59,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
         Audio::WAVHeader wavHeader;
         std::vector<int16_t> left;
         std::vector<int16_t> right;
+        bool bps = false;
 
         disc.GotoLBN(fileLBN);
 
@@ -68,7 +78,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
             }
 
             // bool emph = disc.subheader.codingInformation & Audio::CodingInformation::emphasis;
-            bool bps = disc.subheader.codingInformation & Audio::CodingInformation::bps;
+                bps = disc.subheader.codingInformation & Audio::CodingInformation::bps;
             bool sf = disc.subheader.codingInformation & Audio::CodingInformation::sf;
             bool ms = disc.subheader.codingInformation & Audio::CodingInformation::ms;
 
@@ -81,7 +91,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
 
             if(disc.subheader.submode & cdieor)
             {
-                std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + ".wav", std::ios::binary | std::ios::out);
+                std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
                 Audio::writeWAV(out, wavHeader, left, right);
                 out.close();
                 left.clear();
@@ -93,7 +103,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
 
         if(left.size())
         {
-            std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record) + ".wav", std::ios::binary | std::ios::out);
+            std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
             Audio::writeWAV(out, wavHeader, left, right);
             out.close();
         }
