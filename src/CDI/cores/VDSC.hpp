@@ -45,7 +45,7 @@ public:
 
     virtual void Reset() = 0;
 
-    virtual bool LoadBIOS(const void* bios, const uint32_t size) = 0;
+    virtual bool LoadBIOS(const void* bios, uint32_t size) = 0;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void MemorySwap() = 0;

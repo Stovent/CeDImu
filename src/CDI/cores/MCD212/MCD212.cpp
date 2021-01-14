@@ -74,13 +74,12 @@ void MCD212::Reset()
     MemorySwap();
 }
 
-bool MCD212::LoadBIOS(const void* bios, const uint32_t size)
+bool MCD212::LoadBIOS(const void* bios, uint32_t size)
 {
     if(size > 0xFFC00)
     {
-        LOG(out_dram << "ERROR: BIOS is bigger than ROM size (0xFFC00)" << std::endl)
-        wxMessageBox("Error: BIOS is bigger than ROM size (0xFFC00)");
-        return biosLoaded = false;
+        LOG(out_dram << "WARNING: BIOS is bigger than ROM size (0xFFC00): got 0x" << std::hex << size << std::endl)
+        size = 0xFFC00;
     }
 
     memcpy(&memory[0x400000], bios, size);
