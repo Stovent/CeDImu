@@ -63,6 +63,7 @@ void MainFrame::CreateMenuBar()
 
     wxMenu* emulation = new wxMenu;
     pauseItem = emulation->AppendCheckItem(IDMainFrameOnPause, "Pause");
+    pauseItem->Check();
     emulation->Append(IDMainFrameOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
     emulation->AppendSeparator();
     emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+Maj+R");
