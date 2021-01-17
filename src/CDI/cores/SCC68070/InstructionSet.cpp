@@ -659,22 +659,23 @@ uint16_t SCC68070::ASr()
 
     SetVC(0);
 
-    uint32_t data, signMask;
+    uint32_t data, dataMask, signMask;
     if(size == 0) // Byte
     {
-        data = D[reg] & 0x000000FF;
+        dataMask = 0x000000FF;
         signMask = 0x00000080;
     }
     else if(size == 1) // Word
     {
-        data = D[reg] & 0x0000FFFF;
+        dataMask = 0x0000FFFF;
         signMask = 0x00008000;
     }
     else // Long
     {
-        data = D[reg];
+        dataMask = 0xFFFFFFFF;
         signMask = 0x80000000;
     }
+    data = D[reg] & dataMask;
 
     if(currentOpcode & 0x0100) // Left
     {
@@ -697,25 +698,12 @@ uint16_t SCC68070::ASr()
             data |= sign;
         }
     }
-    SetN(data & signMask);
 
-    if(size == 0) // Byte
-    {
-        SetZ((data & 0x000000FF) == 0);
-        D[reg] &= 0xFFFFFF00;
-        D[reg] |= data & 0x000000FF;
-    }
-    else if(size == 1) // Word
-    {
-        SetZ((data & 0x0000FFFF) == 0);
-        D[reg] &= 0xFFFF0000;
-        D[reg] |= data & 0x0000FFFF;
-    }
-    else // Long
-    {
-        SetZ(data == 0);
-        D[reg] = data;
-    }
+    SetN(data & signMask);
+    SetZ((data & dataMask) == 0);
+
+    D[reg] &= ~dataMask;
+    D[reg] |= data & dataMask;
 
     return 13 + 3 * shift;
 }
@@ -1564,22 +1552,23 @@ uint16_t SCC68070::LSr()
 
     SetVC(0);
 
-    uint32_t data, msbMask;
+    uint32_t data, dataMask, msbMask;
     if(size == 0) // Byte
     {
-        data = D[reg] & 0x000000FF;
-        msbMask = 0x00000080;
+        dataMask = 0x000000FF;
+        msbMask  = 0x00000080;
     }
     else if(size == 1) // Word
     {
-        data = D[reg] & 0x0000FFFF;
-        msbMask = 0x00008000;
+        dataMask = 0x0000FFFF;
+        msbMask  = 0x00008000;
     }
     else // Long
     {
-        data = D[reg];
-        msbMask = 0x80000000;
+        dataMask = 0xFFFFFFFF;
+        msbMask  = 0x80000000;
     }
+    data = D[reg] & dataMask;
 
     if(currentOpcode & 0x0100) // Left
     {
@@ -1597,25 +1586,12 @@ uint16_t SCC68070::LSr()
             data >>= 1;
         }
     }
-    SetN(data & msbMask);
 
-    if(size == 0) // Byte
-    {
-        SetZ((data & 0x000000FF) == 0);
-        D[reg] &= 0xFFFFFF00;
-        D[reg] |= data & 0x000000FF;
-    }
-    else if(size == 1) // Word
-    {
-        SetZ((data & 0x0000FFFF) == 0);
-        D[reg] &= 0xFFFF0000;
-        D[reg] |= data & 0x0000FFFF;
-    }
-    else // Long
-    {
-        SetZ(data == 0);
-        D[reg] = data;
-    }
+    SetN(data & msbMask);
+    SetZ((data & dataMask) == 0);
+
+    D[reg] &= ~dataMask;
+    D[reg] |= data & dataMask;
 
     return 13 + 3 * shift;
 }
@@ -2427,31 +2403,28 @@ uint16_t SCC68070::RESET() // Not fully emulated
 
 uint16_t SCC68070::ROm()
 {
-    uint8_t     dr = (currentOpcode & 0x0100) >> 8;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 14;
+
     uint16_t data = GetWord(eamode, eareg, calcTime);
-
-    if(dr) // left
+    if(currentOpcode & 0x0100) // Left
     {
-        uint16_t a = data & 0x8000;
+        const uint16_t msb = data >> 15;
+        SetC(msb);
         data <<= 1;
-        a >>= 15;
-        data |= a;
-        SetC(a);
+        data |= msb;
     }
-    else // right
+    else // Right
     {
-        uint16_t a = data & 0x0001;
-        SetC(a);
+        const uint16_t lsb = data << 15;
+        SetC(lsb);
         data >>= 1;
-        a <<= 15;
-        data |= a;
+        data |= lsb;
     }
 
-    if(data & 0x8000) SetN(); else SetN(0);
-    if(data == 0) SetZ(); else SetZ(0);
+    SetN(data & 0x8000);
+    SetZ(data == 0);
     SetV(0);
 
     SetWord(lastAddress, data);
@@ -2461,165 +2434,86 @@ uint16_t SCC68070::ROm()
 
 uint16_t SCC68070::ROr()
 {
-    uint8_t count = (currentOpcode & 0x0E00) >> 9;
-    uint8_t    dr = (currentOpcode & 0x0100) >> 8;
-    uint8_t  size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t    ir = (currentOpcode & 0x0020) >> 5;
-    uint8_t   reg = (currentOpcode & 0x0007);
-    uint8_t shift;
+    const uint8_t count = currentOpcode >> 9 & 0x0007;
+    const uint8_t  size = currentOpcode >> 6 & 0x0003;
+    const uint8_t   reg = currentOpcode & 0x0007;
+    const uint8_t shift = currentOpcode & 0x0020 ? D[count] % 64 : (count ? count : 8);
 
-    if(ir)
-        shift = D[count] % 64;
-    else
-        shift = (count) ? count : 8;
+    SetVC(0);
 
-    if(!shift)
+    uint32_t data, dataMask, msbMask, msbShift;
+    if(size == 0) // Byte
     {
-        SetV(0);
-        SetC(0);
-        if(size == 0)
+        dataMask = 0x000000FF;
+        msbShift = 7;
+    }
+    else if(size == 1) // Word
+    {
+        dataMask = 0x0000FFFF;
+        msbShift = 15;
+    }
+    else // Long
+    {
+        dataMask = 0xFFFFFFFF;
+        msbShift = 31;
+    }
+    data = D[reg] & dataMask;
+    msbMask = 1 << msbShift;
+
+    if(currentOpcode & 0x0100) // Left
+    {
+        for(uint8_t i = shift; i > 0; i--)
         {
-            uint8_t data = D[reg] & 0x000000FF;
-            if(data & 0x80) SetN(); else SetN(0);
-            if(data == 0) SetZ(); else SetZ(0);
+            const uint32_t msb = data >> msbShift & 1;
+            SetC(msb);
+            data <<= 1;
+            data |= msb;
         }
-        else if(size == 1)
+    }
+    else // Right
+    {
+        for(uint8_t i = shift; i > 0; i--)
         {
-            uint16_t data = D[reg] & 0x0000FFFF;
-            if(data & 0x8000) SetN(); else SetN(0);
-            if(data == 0) SetZ(); else SetZ(0);
+            const uint32_t lsb = data << msbShift & msbMask;
+            SetC(lsb);
+            data >>= 1;
+            data |= lsb;
         }
-        else
-        {
-            uint32_t data = D[reg];
-            if(data & 0x80000000) SetN(); else SetN(0);
-            if(data == 0) SetZ(); else SetZ(0);
-        }
-        return 13;
     }
 
-    if(size == 0) // byte
-    {
-        uint8_t data = D[reg] & 0x000000FF;
-        if(dr)
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint8_t a = data & 0x80;
-                data <<= 1;
-                a >>= 7;
-                data |= a;
-                SetC(a);
-            }
-        }
-        else
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint8_t a = data & 0x01;
-                SetC(a);
-                data >>= 1;
-                a <<= 7;
-                data |= a;
-            }
-        }
+    SetN(data & msbMask);
+    SetZ((data & dataMask) == 0);
 
-        if(data & 0x80) SetN(); else SetN(0);
-        if(data == 0) SetZ(); else SetZ(0);
-        D[reg] &= 0xFFFFFF00;
-        D[reg] |= data;
-    }
-    else if(size == 1) // word
-    {
-        uint16_t data = D[reg] & 0x0000FFFF;
-        if(dr)
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint16_t a = data & 0x8000;
-                data <<= 1;
-                a >>= 15;
-                data |= a;
-                SetC(a);
-            }
-        }
-        else
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint16_t a = data & 0x0001;
-                SetC(a);
-                data >>= 1;
-                a <<= 15;
-                data |= a;
-            }
-        }
-
-        if(data & 0x8000) SetN(); else SetN(0);
-        if(data == 0) SetZ(); else SetZ(0);
-        D[reg] &= 0xFFFF0000;
-        D[reg] |= data;
-    }
-    else // long
-    {
-        uint32_t data = D[reg];
-        if(dr)
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint32_t a = data & 0x80000000;
-                data <<= 1;
-                a >>= 31;
-                data |= a;
-                SetC(a);
-            }
-        }
-        else
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint32_t a = data & 0x00000001;
-                SetC(a);
-                data >>= 1;
-                a <<= 31;
-                data |= a;
-            }
-        }
-
-        if(data & 0x80000000) SetN(); else SetN(0);
-        if(data == 0) SetZ(); else SetZ(0);
-        D[reg] = data;
-    }
-    SetV(0);
+    D[reg] &= ~dataMask;
+    D[reg] |= data & dataMask;
 
     return 13 + 3 * shift;
 }
 
 uint16_t SCC68070::ROXm()
 {
-    uint8_t     dr = (currentOpcode & 0x0100) >> 8;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 14;
-    uint16_t data = GetWord(eamode, eareg, calcTime);
 
-    if(dr) // left
+    uint16_t data = GetWord(eamode, eareg, calcTime);
+    if(currentOpcode & 0x0100) // Left
     {
-        uint16_t a = data & 0x8000;
+        const uint16_t msb = data & 0x8000;
         data <<= 1;
         data |= GetX();
-        SetXC(a ? 1 : 0);
+        SetXC(msb);
     }
-    else // right
+    else // Right
     {
-        uint16_t a = data & 0x0001;
+        const uint16_t lsb = data & 1;
         data >>= 1;
         data |= GetX() << 15;
-        SetXC(a);
+        SetXC(lsb);
     }
 
-    if(data & 0x8000) SetN(); else SetN(0);
-    if(data == 0) SetZ(); else SetZ(0);
+    SetN(data & 0x8000);
+    SetZ(data == 0);
     SetV(0);
 
     SetWord(lastAddress, data);
@@ -2629,130 +2523,58 @@ uint16_t SCC68070::ROXm()
 
 uint16_t SCC68070::ROXr()
 {
-    uint8_t count = (currentOpcode & 0x0E00) >> 9;
-    uint8_t    dr = (currentOpcode & 0x0100) >> 8;
-    uint8_t  size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t    ir = (currentOpcode & 0x0020) >> 5;
-    uint8_t   reg = (currentOpcode & 0x0007);
-    uint8_t shift;
+    const uint8_t count = currentOpcode >> 9 & 0x0007;
+    const uint8_t  size = currentOpcode >> 6 & 0x0003;
+    const uint8_t   reg = currentOpcode & 0x0007;
+    const uint8_t shift = currentOpcode & 0x0020 ? D[count] % 64 : (count ? count : 8);
 
-    if(ir)
-        shift = D[count] % 64;
-    else
-        shift = (count) ? count : 8;
+    SetVC(0);
 
-    if(!shift)
+    uint32_t data, dataMask, msbMask, msbShift;
+    if(size == 0) // Byte
     {
-        SetV(0);
-        SetC(GetX());
-        if(size == 0)
+        dataMask = 0x000000FF;
+        msbShift = 7;
+    }
+    else if(size == 1) // Word
+    {
+        dataMask = 0x0000FFFF;
+        msbShift = 15;
+    }
+    else // Long
+    {
+        dataMask = 0xFFFFFFFF;
+        msbShift = 31;
+    }
+    data = D[reg] & dataMask;
+    msbMask = 1 << msbShift;
+
+    if(currentOpcode & 0x0100) // Left
+    {
+        for(uint8_t i = shift; i > 0; i--)
         {
-            uint8_t data = D[reg] & 0x000000FF;
-            if(data & 0x80) SetN(); else SetN(0);
-            if(data == 0) SetZ(); else SetZ(0);
+            const uint32_t msb = data & msbMask;
+            data <<= 1;
+            data |= GetX();
+            SetXC(msb);
         }
-        else if(size == 1)
+    }
+    else // Right
+    {
+        for(uint8_t i = shift; i > 0; i--)
         {
-            uint16_t data = D[reg] & 0x0000FFFF;
-            if(data & 0x8000) SetN(); else SetN(0);
-            if(data == 0) SetZ(); else SetZ(0);
+            const uint32_t lsb = data & 1;
+            data >>= 1;
+            data |= GetX() << msbShift;
+            SetXC(lsb);
         }
-        else
-        {
-            uint32_t data = D[reg];
-            if(data & 0x80000000) SetN(); else SetN(0);
-            if(data == 0) SetZ(); else SetZ(0);
-        }
-        return 13;
     }
 
-    if(size == 0) // byte
-    {
-        uint8_t data = D[reg] & 0x000000FF;
-        if(dr)
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint8_t a = data & 0x80;
-                data <<= 1;
-                data |= GetX();
-                SetXC(a ? 1 : 0);
-            }
-        }
-        else
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint8_t a = data & 0x01;
-                data >>= 1;
-                data |= GetX() << 7;
-                SetXC(a);
-            }
-        }
+    SetN(data & msbMask);
+    SetZ((data & dataMask) == 0);
 
-        if(data & 0x80) SetN(); else SetN(0);
-        if(data == 0) SetZ(); else SetZ(0);
-        D[reg] &= 0xFFFFFF00;
-        D[reg] |= data;
-    }
-    else if(size == 1) // word
-    {
-        uint16_t data = D[reg] & 0x0000FFFF;
-        if(dr)
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint16_t a = data & 0x8000;
-                data <<= 1;
-                data |= GetX();
-                SetXC(a ? 1 : 0);
-            }
-        }
-        else
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint16_t a = data & 0x0001;
-                data >>= 1;
-                data |= GetX() << 15;
-                SetXC(a);
-            }
-        }
-
-        if(data & 0x8000) SetN(); else SetN(0);
-        if(data == 0) SetZ(); else SetZ(0);
-        D[reg] &= 0xFFFF0000;
-        D[reg] |= data;
-    }
-    else // long
-    {
-        uint32_t data = D[reg];
-        if(dr)
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint32_t a = data & 0x80000000;
-                data <<= 1;
-                data |= GetX();
-                SetXC(a ? 1 : 0);
-            }
-        }
-        else
-        {
-            for(uint8_t i = 0; i < shift; i++)
-            {
-                uint32_t a = data & 0x00000001;
-                data >>= 1;
-                data |= GetX() << 31;
-                SetXC(a);
-            }
-        }
-
-        if(data & 0x80000000) SetN(); else SetN(0);
-        if(data == 0) SetZ(); else SetZ(0);
-        D[reg] = data;
-    }
-    SetV(0);
+    D[reg] &= ~dataMask;
+    D[reg] |= data & dataMask;
 
     return 13 + 3 * shift;
 }
