@@ -360,6 +360,7 @@ private:
     std::string DisassembleException(const uint8_t vectorNumber) const;
 
     // Addressing Modes
+    uint32_t GetEffectiveAddress(const uint8_t mode, const uint8_t reg, const uint8_t sizeInBytes, uint16_t& calcTime);
     int32_t GetIndexRegister(const uint16_t bew) const;
 
     uint32_t AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte);

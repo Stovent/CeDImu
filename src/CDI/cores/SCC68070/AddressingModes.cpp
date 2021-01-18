@@ -2,6 +2,48 @@
 #include "../../boards/Board.hpp"
 #include "../../common/utils.hpp"
 
+uint32_t SCC68070::GetEffectiveAddress(const uint8_t mode, const uint8_t reg, const uint8_t sizeInBytes, uint16_t& calcTime)
+{
+    switch(mode)
+    {
+    case 2:
+        calcTime += sizeInBytes < 4 ? ITARIBW : ITARIL;
+        return A[reg];
+    case 3:
+        calcTime += sizeInBytes < 4 ? ITARIWPoBW : ITARIWPoL;
+        return AddressRegisterIndirectWithPostincrement(reg, sizeInBytes);
+    case 4:
+        calcTime += sizeInBytes < 4 ? ITARIWPrBW : ITARIWPrL;
+        return AddressRegisterIndirectWithPredecrement(reg, sizeInBytes);
+    case 5:
+        calcTime += sizeInBytes < 4 ? ITARIWDBW : ITARIWDL;
+        return AddressRegisterIndirectWithDisplacement(reg);
+    case 6:
+        calcTime += sizeInBytes < 4 ? ITARIWI8BW : ITARIWI8L;
+        return AddressRegisterIndirectWithIndex8(reg);
+    case 7:
+        switch(reg)
+        {
+        case 0:
+            calcTime += sizeInBytes < 4 ? ITASBW : ITASL;
+            return AbsoluteShortAddressing();
+        case 1:
+            calcTime += sizeInBytes < 4 ? ITALBW : ITALL;
+            return AbsoluteLongAddressing();
+        case 2:
+            calcTime += sizeInBytes < 4 ? ITPCIWDBW : ITPCIWDL;
+            return ProgramCounterIndirectWithDisplacement();
+        case 3:
+            calcTime += sizeInBytes < 4 ? ITPCIWI8BW : ITPCIWI8L;
+            return ProgramCounterIndirectWithIndex8();
+        default:
+            return UINT32_MAX;
+        }
+    default:
+        return UINT32_MAX;
+    }
+}
+
 int32_t SCC68070::GetIndexRegister(const uint16_t bew) const
 {
     if(bew & 0x8000)
