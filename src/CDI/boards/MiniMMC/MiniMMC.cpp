@@ -8,18 +8,19 @@ MiniMMC::MiniMMC(const void* bios, const uint32_t size, const bool initNVRAMCloc
     OPEN_LOG(out, "MiniMMC.txt")
     uart_out.open("uart_out", std::ios::binary | std::ios::out);
     uart_in.open("uart_in", std::ios::binary | std::ios::in);
-    Reset();
+    Reset(true);
 }
 
 MiniMMC::~MiniMMC()
 {
 }
 
-void MiniMMC::Reset()
+void MiniMMC::Reset(const bool resetCPU)
 {
     masterVDSC.Reset();
     slaveVDSC.Reset();
-    cpu.Reset();
+    if(resetCPU)
+        cpu.Reset();
 }
 
 void MiniMMC::DrawLine()

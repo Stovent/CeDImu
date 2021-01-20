@@ -8,18 +8,19 @@ Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const void* slaveBio
     OPEN_LOG(out, "Mono3.txt")
     uart_out.open("uart_out", std::ios::binary | std::ios::out);
     uart_in.open("uart_in", std::ios::binary | std::ios::in);
-    Reset();
+    Reset(true);
 }
 
 Mono3::~Mono3()
 {
 }
 
-void Mono3::Reset()
+void Mono3::Reset(const bool resetCPU)
 {
     mcd212.Reset();
     slave.Reset();
-    cpu.Reset();
+    if(resetCPU)
+        cpu.Reset();
 }
 
 uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)

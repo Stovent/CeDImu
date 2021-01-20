@@ -79,7 +79,7 @@ void SCC68070::Reset()
         D[i] = 0;
         A[i] = 0;
     }
-//    board->Reset(); // TODO: check when reseting other processors is mandatory
+    board->Reset(false);
     ResetOperation();
 }
 

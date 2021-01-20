@@ -17,7 +17,7 @@ class MiniMMC : public Board
 public:
     MiniMMC(const void* bios, const uint32_t size, const bool initNVRAMClock);
     virtual ~MiniMMC();
-    virtual void Reset() override;
+    virtual void Reset(const bool resetCPU) override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
