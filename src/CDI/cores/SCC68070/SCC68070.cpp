@@ -5,6 +5,11 @@
 #include <cstring>
 #include <iterator>
 
+/** \brief Build a new SCC68070 CPU.
+ *
+ * \param baord The board used to access memory.
+ * \param clockFrequency The frequency of the CPU.
+ */
 SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
 {
     board = baord;
@@ -23,6 +28,8 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
     GenerateInstructionSet();
 }
 
+/** \brief Destroy the CPU, releasing its ressources.
+ */
 SCC68070::~SCC68070()
 {
     Stop(false);
@@ -32,16 +39,35 @@ SCC68070::~SCC68070()
     delete[] internal;
 }
 
+/** \brief Check if the CPU is running.
+ *
+ * \return true if it is running, false otherwise.
+ */
 bool SCC68070::IsRunning() const
 {
     return isRunning;
 }
 
+/** \brief Set the CPU emulated speed.
+ *
+ * \param speed The speed multiplier based on the clock frequency used in the constructor.
+ *
+ * This method only changes the emulation speed, not the clock frequency.
+ * A multiplier of 2 will make the CPU runs twice as fast, the GPU to run at twice the framerate,
+ * the timekeeper to increment twice as fast, etc.
+ */
 void SCC68070::SetEmulationSpeed(const double speed)
 {
     speedDelay = cycleDelay / speed;
 }
 
+/** \brief Start emulation.
+ *
+ * \param loop If true, will run indefinitely as a thread. If false, will execute a single instruction.
+ *
+ * If loop = true, executes indefinitely in a thread (non-blocking).
+ * If loop = false, executes a single instruction and returns when it is executed (blocking).
+ */
 void SCC68070::Run(const bool loop)
 {
     if(!isRunning)
@@ -57,6 +83,10 @@ void SCC68070::Run(const bool loop)
     }
 }
 
+/** \brief Stop emulation.
+ *
+ * \param wait If true, will wait for the thread to join. If false, simply stop emulation.
+ */
 void SCC68070::Stop(const bool wait)
 {
     loop = false;
@@ -65,6 +95,8 @@ void SCC68070::Stop(const bool wait)
             executionThread.join();
 }
 
+/** \brief Reset the CPU to its initial state.
+ */
 void SCC68070::Reset()
 {
     loop = false;
@@ -86,6 +118,8 @@ void SCC68070::Reset()
     ResetOperation();
 }
 
+/** \brief Write the disassembled instructions to a file (in DEBUG mode).
+ */
 void SCC68070::FlushDisassembler()
 {
     LOG(std::ostream_iterator<std::string> osit(instruction, "\n"); \
@@ -93,6 +127,11 @@ void SCC68070::FlushDisassembler()
     disassembledInstructions.clear();
 }
 
+/** \brief Set the value of a CPU register.
+ *
+ * \param reg The register to set.
+ * \param value The value to set the register to.
+ */
 void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
 {
     switch(reg)
@@ -152,6 +191,10 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
     }
 }
 
+/** \brief Get the CPU registers.
+ *
+ * \return A map containing the CPU registers with their name and value.
+ */
 std::map<std::string, uint32_t> SCC68070::GetCPURegisters() const
 {
     return {
@@ -178,6 +221,10 @@ std::map<std::string, uint32_t> SCC68070::GetCPURegisters() const
     };
 }
 
+/** \brief Get the internal registers.
+ *
+ * \return A vector containing every internal register with their name, address, value and meaning.
+ */
 std::vector<CPUInternalRegister> SCC68070::GetInternalRegisters() const
 {
     std::vector<CPUInternalRegister> v({
