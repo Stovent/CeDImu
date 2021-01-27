@@ -20,21 +20,23 @@ class CPUViewer : public wxFrame
 public:
     std::stringstream instructions;
 
-    CPUViewer(SCC68070* core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
+    CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~CPUViewer();
 
     wxAuiManager auiManager;
 
-    SCC68070* cpu;
+    SCC68070& cpu;
     MainFrame* mainFrame;
-    wxTimer* renderTimer;
+    wxTimer renderTimer;
 
     wxListCtrl* internalRegisters;
     wxTextCtrl* uartOut;
     wxTextCtrl* disassembler;
-    wxTextCtrl* d[8]; wxTextCtrl* a[8];
 
-    wxTextCtrl* pc; wxTextCtrl* sr;
+    wxTextCtrl* d[8];
+    wxTextCtrl* a[8];
+    wxTextCtrl* pc;
+    wxTextCtrl* sr;
 
     void OnClose(wxCloseEvent& event);
     void PaintEvent(wxPaintEvent& event);

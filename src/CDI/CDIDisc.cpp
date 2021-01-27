@@ -64,6 +64,22 @@ bool CDIDisc::Good()
         return disc.good();
 }
 
+/** \brief Get the location on the disc of the current sector.
+ * \return A DiscTime object.
+*/
+DiscTime CDIDisc::GetTime()
+{
+    return {
+        header.minute,
+        header.second,
+        header.sector,
+        (header.minute * 60u * 75u) + (header.second * 75u) + header.sector, // 75 = sectors per second, 60 = seconds per minutes
+        Tell(),
+    };
+}
+
+/** \brief Update header and subheader with the current sector info.
+ */
 void CDIDisc::UpdateSectorInfo()
 {
     const uint32_t tmp = disc.tellg();
@@ -71,9 +87,9 @@ void CDIDisc::UpdateSectorInfo()
     char s[8];
     disc.read(s, 8);
 
-    header.minutes = PBCDToByte(s[0]);
-    header.seconds = PBCDToByte(s[1]);
-    header.sectors = PBCDToByte(s[2]);
+    header.minute = PBCDToByte(s[0]);
+    header.second = PBCDToByte(s[1]);
+    header.sector = PBCDToByte(s[2]);
     header.mode = s[3];
     subheader.fileNumber = s[4];
     subheader.channelNumber = s[5];

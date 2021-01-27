@@ -44,12 +44,12 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     switch(event.GetKeyCode())
     {
     case 'A':
-        if(app->cdi.board)
-            mainFrame->Pause();
+        mainFrame->Pause();
         break;
 
     case 'Z':
-        if(!app->cdi.board) break;
+        if(!app->cdi.board)
+            break;
         app->cdi.board->StopOnNextFrame();
         if(!app->cdi.board->cpu.IsRunning())
             app->StartGameThread();
@@ -62,7 +62,7 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     case 'M':
         app->DecreaseEmulationSpeed();
         break;
-    case 61:
+    case '=':
         app->IncreaseEmulationSpeed();
         break;
     }

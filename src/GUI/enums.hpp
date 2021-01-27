@@ -21,6 +21,7 @@ enum
     IDMainFrameOnAbout,
 
     IDCPUViewerOnClose,
+    IDCPUViewerTimer,
     IDCPUViewerpc, IDCPUViewersr,
 
     IDRAMSearchListCheckMisaligned,

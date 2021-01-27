@@ -138,9 +138,9 @@ void CDIDisc::ExportSectorsInfo()
     while(Good())
     {
         out << std::right << std::setw(6) << std::to_string(LBN++) \
-            << std::setw(4) << std::to_string(header.minutes) \
-            << std::setw(5) << std::to_string(header.seconds) \
-            << std::setw(5) << std::to_string(header.sectors) \
+            << std::setw(4) << std::to_string(header.minute) \
+            << std::setw(5) << std::to_string(header.second) \
+            << std::setw(5) << std::to_string(header.sector) \
             << std::setw(5) << std::to_string(header.mode) \
             << std::setw(5) << std::to_string(subheader.fileNumber) \
             << std::setw(8) << std::to_string(subheader.channelNumber) \

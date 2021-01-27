@@ -8,9 +8,9 @@
 
 struct CDIHeader
 {
-    uint8_t minutes;
-    uint8_t seconds;
-    uint8_t sectors;
+    uint8_t minute;
+    uint8_t second;
+    uint8_t sector;
     uint8_t mode; // should be 2 for CD-I tracks
 };
 
@@ -20,6 +20,18 @@ struct CDISubheader
     uint8_t channelNumber;
     uint8_t submode;
     uint8_t codingInformation;
+};
+
+/** \struct DiscTime
+ * \brief Represent a location on a disc.
+ */
+struct DiscTime
+{
+    uint8_t minute; /**< \brief The minute */
+    uint8_t second; /**< \brief The second */
+    uint8_t sector; /**< \brief The sector */
+    uint32_t lsn; /**< \brief The logical sector number. */
+    uint32_t pos; /**< \brief The position in the disc file. */
 };
 
 enum SubmodeBits
@@ -79,6 +91,7 @@ public:
     bool IsOpen() const;
     void Close();
     bool Good();
+    DiscTime GetTime();
 
     CDIFile* GetFile(std::string path);
 

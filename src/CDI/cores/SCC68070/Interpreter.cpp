@@ -19,8 +19,10 @@ void SCC68070::Interpreter()
 
         if(exceptions.size())
         {
-            uint8_t vector = exceptions.top().vector;
+            const uint8_t vector = exceptions.top().vector;
             exceptions.pop();
+            if(disassemble)
+                disassembledInstructions.push_back("Exception vector " + std::to_string(vector) + ": " + DisassembleException(vector));
             executionCycles += Exception(vector);
         }
 

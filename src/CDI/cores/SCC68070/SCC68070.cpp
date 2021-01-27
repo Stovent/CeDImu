@@ -5,7 +5,7 @@
 #include <cstring>
 #include <iterator>
 
-SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledInstructions()
+SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
 {
     board = baord;
     disassemble = false;
@@ -50,7 +50,10 @@ void SCC68070::Run(const bool loop)
             executionThread.join();
 
         this->loop = loop;
-        executionThread = std::thread(&SCC68070::Interpreter, this);
+        if(loop)
+            executionThread = std::thread(&SCC68070::Interpreter, this);
+        else
+            Interpreter();
     }
 }
 
