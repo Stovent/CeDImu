@@ -5,7 +5,7 @@
 #include <cstring>
 #include <iterator>
 
-SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) : disassembledInstructions()
+SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
 {
     board = baord;
     disassemble = false;
