@@ -6,7 +6,7 @@
 // internal registers
 uint16_t MCD212::GetCSR1RRegister() const
 {
-    return internalRegisters[MCSR1R];
+    return registerCSR1R;
 }
 
 uint16_t MCD212::GetCSR1WRegister() const
@@ -36,7 +36,7 @@ uint16_t MCD212::GetDCP1Register() const
 
 uint16_t MCD212::GetCSR2RRegister() const
 {
-    return internalRegisters[MCSR2R];
+    return registerCSR2R;
 }
 
 uint16_t MCD212::GetCSR2WRegister() const
@@ -66,27 +66,27 @@ uint16_t MCD212::GetDCP2Register() const
 
 bool MCD212::GetDA() const
 {
-    return (internalRegisters[MCSR1R] & 0x0080) >> 7;
+    return (registerCSR1R & 0x80) >> 7;
 }
 
 bool MCD212::GetPA() const
 {
-    return (internalRegisters[MCSR1R] & 0x0020) >> 5;
+    return (registerCSR1R & 0x20) >> 5;
 }
 
 bool MCD212::GetIT1() const
 {
-    return (internalRegisters[MCSR2R] & 0x0004) >> 2;
+    return (registerCSR2R & 0x04) >> 2;
 }
 
 bool MCD212::GetIT2() const
 {
-    return (internalRegisters[MCSR2R] & 0x0002) >> 1;
+    return (registerCSR2R & 0x02) >> 1;
 }
 
 bool MCD212::GetBE_R() const
 {
-    return internalRegisters[MCSR2R] & 0x0001;
+    return registerCSR2R & 0x01;
 }
 
 bool MCD212::GetBE_W() const
@@ -216,14 +216,14 @@ uint32_t MCD212::GetDCP2() const
 
 void MCD212::SetIT1(const bool it)
 {
-    internalRegisters[MCSR1R] &= 0x0003;
-    internalRegisters[MCSR1R] |= it << 2;
+    registerCSR2R &= 0x0003;
+    registerCSR2R |= it << 2;
 }
 
 void MCD212::SetIT2(const bool it)
 {
-    internalRegisters[MCSR1R] &= 0x0005;
-    internalRegisters[MCSR1R] |= it << 1;
+    registerCSR2R &= 0x0005;
+    registerCSR2R |= it << 1;
 }
 
 void MCD212::SetDCP1(const uint32_t value)

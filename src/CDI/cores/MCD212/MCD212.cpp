@@ -71,6 +71,8 @@ void MCD212::Reset()
     internalRegisters[MDCR2] &= 0x003F; // CM2, IC2, DC2
     internalRegisters[MDDR1] &= 0x003F; // MF1, MF2, FT1, FT2
     internalRegisters[MDDR2] &= 0x003F; // MF1, MF2, FT1, FT2
+    registerCSR1R = 0;
+    registerCSR2R = 0;
     MemorySwap();
 }
 

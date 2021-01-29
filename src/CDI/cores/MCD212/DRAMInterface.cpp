@@ -12,15 +12,19 @@ uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
         return memory[addr];
     }
 
-    if(addr <= 0x4FFFFF)
+    if(addr == 0x4FFFE1)
     {
-        const uint8_t data = internalRegisters[addr-0x4FFFE0] & 0x00FF;
-        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu.currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << (int)data << std::endl; })
-        if(addr == 0x4FFFE1 && flags & Trigger)
-        {
-            internalRegisters[MCSR2R] &= 0x00FE; // clear BE bit on status read
-        }
+        const uint8_t data = registerCSR2R;
+        if(flags & Trigger)
+            registerCSR2R &= 0x06; // clear BE bit on status read
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu.currentPC << " Get CSR2R register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << (int)data << std::endl; })
         return data;
+    }
+
+    if(addr == 0x4FFFF1)
+    {
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu.currentPC << " Get CSR1R register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << (int)registerCSR1R << std::endl; })
+        return registerCSR1R;
     }
 
     LOG(out_dram << std::setw(6) << std::hex << board->cpu.currentPC << " Get byte at 0x" << addr << " WARNING: out of range" << std::endl)
@@ -42,10 +46,19 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
-    if(addr < 0x4FFFFF)
+    if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
     {
-        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu.currentPC << " Get register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << internalRegisters[addr-0x4FFFE0] << " WARNING: unexpected word size" << std::endl; })
-        return internalRegisters[addr-0x4FFFE0];
+        const uint16_t data = registerCSR2R;
+        if(flags & Trigger)
+            registerCSR2R &= 0x06; // clear BE bit on status read
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu.currentPC << " Get CSR2R register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << data << std::endl; })
+        return data;
+    }
+
+    if(addr == 0x4FFFF0) // word size: MSB is 0, LSB is the register
+    {
+        LOG(if(flags & Log) { out_dram << std::setw(6) << std::hex << board->cpu.currentPC << " Get CSR1R register at 0x" << std::setw(6) << std::setfill('0') << addr << " : 0x" << (int)registerCSR1R << std::endl; })
+        return registerCSR1R;
     }
 
     LOG(out_dram << std::setw(6) << std::hex << board->cpu.currentPC << " Get word at 0x" << addr << " WARNING: out of range" << std::endl)

@@ -5,8 +5,8 @@
 
 #include <wx/msgdlg.h>
 
-#define   SET_DA_BIT() internalRegisters[MCSR1R] |= 0x80;
-#define UNSET_DA_BIT() internalRegisters[MCSR1R] &= 0x20;
+#define   SET_DA_BIT() registerCSR1R |= 0x80;
+#define UNSET_DA_BIT() registerCSR1R &= 0x20;
 
 void MCD212::DrawLine()
 {
