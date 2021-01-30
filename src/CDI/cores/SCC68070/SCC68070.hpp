@@ -321,6 +321,7 @@ private:
 
     uint8_t* internal;
 
+    bool flushDisassembler;
     uint16_t currentOpcode;
     uint32_t lastAddress;
     uint32_t cycleCount;

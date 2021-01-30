@@ -108,6 +108,7 @@ void SCC68070::Reset()
     currentOpcode = 0;
     currentPC = 0;
     memset(internal, 0, SCC68070Peripherals::Size);
+    flushDisassembler = false;
 
     for(uint8_t i = 0; i < 8; i++)
     {
