@@ -1976,7 +1976,7 @@ uint16_t SCC68070::NEG()
 
     if(size == 0) // Byte
     {
-        const uint8_t data = -GetByte(eamode, eareg, calcTime);
+        const uint8_t data = -(int8_t)GetByte(eamode, eareg, calcTime);
         SetN(data & 0x80);
         SetZ(data == 0);
         SetV(data == 0x80); // negate of -128 is 128, which overflows back to -128.
@@ -1995,7 +1995,7 @@ uint16_t SCC68070::NEG()
     }
     else if(size == 1) // Word
     {
-        const uint16_t data = -GetWord(eamode, eareg, calcTime);
+        const uint16_t data = -(int16_t)GetWord(eamode, eareg, calcTime);
         SetN(data & 0x8000);
         SetZ(data == 0);
         SetV(data == 0x8000);
@@ -2014,7 +2014,7 @@ uint16_t SCC68070::NEG()
     }
     else // Long
     {
-        const uint32_t data = -GetLong(eamode, eareg, calcTime);
+        const uint32_t data = -(int32_t)GetLong(eamode, eareg, calcTime);
         SetN(data & 0x80000000);
         SetZ(data == 0);
         SetV(data == 0x80000000);
@@ -2041,7 +2041,7 @@ uint16_t SCC68070::NEGX()
 
     if(size == 0) // Byte
     {
-        const uint8_t data = -GetByte(eamode, eareg, calcTime) - GetX();
+        const uint8_t data = -(int8_t)GetByte(eamode, eareg, calcTime) - GetX();
         SetN(data & 0x80);
         if(data != 0)
             SetZ(0);
@@ -2061,7 +2061,7 @@ uint16_t SCC68070::NEGX()
     }
     else if(size == 1) // Word
     {
-        const uint16_t data = -GetWord(eamode, eareg, calcTime) - GetX();
+        const uint16_t data = -(int16_t)GetWord(eamode, eareg, calcTime) - GetX();
         SetN(data & 0x8000);
         if(data != 0)
             SetZ(0);
@@ -2081,7 +2081,7 @@ uint16_t SCC68070::NEGX()
     }
     else // Long
     {
-        const uint32_t data = -GetLong(eamode, eareg, calcTime) - GetX();
+        const uint32_t data = -(int32_t)GetLong(eamode, eareg, calcTime) - GetX();
         SetN(data & 0x80000000);
         if(data != 0)
             SetZ(0);
