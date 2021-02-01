@@ -32,10 +32,10 @@ CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t size, uint8_t namesize
 
 static std::string getAudioLevel(const bool bps, const uint32_t fs)
 {
-    if(bps)
-        return "A";
     if(fs == 18900)
         return "C";
+    if(bps)
+        return "A";
     return "B";
 }
 
@@ -59,7 +59,7 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
         Audio::WAVHeader wavHeader;
         std::vector<int16_t> left;
         std::vector<int16_t> right;
-        bool bps = false;
+        uint8_t bps = 3;
 
         disc.GotoLBN(fileLBN);
 
@@ -77,10 +77,16 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
                 continue;
             }
 
-            // bool emph = disc.subheader.codingInformation & Audio::CodingInformation::emphasis;
-                bps = disc.subheader.codingInformation & Audio::CodingInformation::bps;
-            bool sf = disc.subheader.codingInformation & Audio::CodingInformation::sf;
-            bool ms = disc.subheader.codingInformation & Audio::CodingInformation::ms;
+            // bool  emph = disc.subheader.codingInformation & Audio::CodingInformation::emphasis;
+                         bps = (disc.subheader.codingInformation & Audio::CodingInformation::bps) >> 4;
+            const uint8_t sf = (disc.subheader.codingInformation & Audio::CodingInformation::sf) >> 2;
+            const uint8_t ms =  disc.subheader.codingInformation & Audio::CodingInformation::ms;
+
+            if(bps > 1 || sf > 1 || ms > 1) // ignore reserved values
+            {
+                disc.GotoNextSector();
+                continue;
+            }
 
             uint8_t data[2304];
             disc.GetRaw((char*)data, 2304);
