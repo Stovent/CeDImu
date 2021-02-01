@@ -9,10 +9,10 @@ namespace Audio
 static constexpr float k0[4] = {0.0, 0.9375, 1.796875, 1.53125};
 static constexpr float k1[4] = {0.0, 0.0, -0.8125, -0.859375};
 
-static int32_t lk0 = 0;
-static int32_t rk0 = 0;
-static int32_t lk1 = 0;
-static int32_t rk1 = 0;
+static int16_t lk0 = 0;
+static int16_t rk0 = 0;
+static int16_t lk1 = 0;
+static int16_t rk1 = 0;
 
 /** \brief Reset to 0 the delay used by the filters k0 and k1.
  */
@@ -74,45 +74,49 @@ uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::
         filter[i] = data[i] >> 4;
     }
 
-    for(uint8_t ss = 0; ss < 28; ss += 2) // sound sample
+    for(uint8_t ss = 0; ss < 28; ss++) // sound sample
         for(uint8_t su = 0; su < 4; su++) // sound unit
             SD[su][ss] = data[index++];
 
     // ADPCM decoder
     index = 0;
-    for(uint16_t su = 0; su < 4; su++)
+    if(stereo)
     {
-        uint16_t gain = pow(2, 8 - range[su]);
-        if(stereo)
+        for(int su = 0; su < 4; su++)
         {
+            const uint16_t gain = pow(2, 8 - range[su]);
             for(uint8_t ss = 0; ss < 28; ss++)
             {
                 if(su & 1)
                 {
-                    int32_t data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
+                    const int16_t sample = lim16((SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]));
                     rk1 = rk0;
-                    rk0 = data;
-                    right.push_back(lim16(data));
+                    rk0 = sample;
+                    right.push_back(sample);
                     index++;
                 }
                 else
                 {
-                    int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                    const int16_t sample = lim16((SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]));
                     lk1 = lk0;
-                    lk0 = data;
-                    left.push_back(lim16(data));
+                    lk0 = sample;
+                    left.push_back(sample);
                     index++;
                 }
             }
         }
-        else
+    }
+    else
+    {
+        for(int su = 0; su < 4; su++)
         {
+            const uint16_t gain = pow(2, 8 - range[su]);
             for(uint8_t ss = 0; ss < 28; ss++)
             {
-                int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                const int16_t sample = lim16((SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]));
                 lk1 = lk0;
-                lk0 = data;
-                left.push_back(lim16(data));
+                lk0 = sample;
+                left.push_back(sample);
                 // in case of a mono sector between 2 stereo, fill to avoid channel data size mismatch
                 if(right.size())
                     right.push_back(0);
@@ -150,46 +154,52 @@ uint8_t decodeLevelBCSoundGroup(const bool stereo, const uint8_t data[128], std:
         {
             const uint8_t SB = data[index++];
             SD[su][ss] = SB & 0x0F;
-            if(SD[su][ss] >= 8) SD[su][ss] -= 16;
+            if(SD[su][ss] >= 8)
+                SD[su][ss] -= 16;
             SD[su+1][ss] = SB >> 4;
-            if(SD[su+1][ss] >= 8) SD[su+1][ss] -= 16;
+            if(SD[su+1][ss] >= 8)
+                SD[su+1][ss] -= 16;
         }
 
     // ADPCM decoder
     index = 0;
-    for(int su = 0; su < 8; su++)
+    if(stereo)
     {
-        uint16_t gain = pow(2, 12 - range[su]);
-        if(stereo)
+        for(int su = 0; su < 8; su++)
         {
+            const uint16_t gain = pow(2, 12 - range[su]);
             for(uint8_t ss = 0; ss < 28; ss++)
             {
                 if(su & 1)
                 {
-                    int32_t data = (SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]);
+                    const int16_t sample = lim16((SD[su][ss] * gain) + (rk0*k0[filter[su]] + rk1*k1[filter[su]]));
                     rk1 = rk0;
-                    rk0 = data;
-                    right.push_back(lim16(data));
+                    rk0 = sample;
+                    right.push_back(sample);
                     index++;
                 }
                 else
                 {
-                    int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                    const int16_t sample = lim16((SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]));
                     lk1 = lk0;
-                    lk0 = data;
-                    left.push_back(lim16(data));
+                    lk0 = sample;
+                    left.push_back(sample);
                     index++;
                 }
             }
         }
-        else
+    }
+    else
+    {
+        for(int su = 0; su < 8; su++)
         {
+            const uint16_t gain = pow(2, 12 - range[su]);
             for(uint8_t ss = 0; ss < 28; ss++)
             {
-                int32_t data = (SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]);
+                const int16_t sample = lim16((SD[su][ss] * gain) + (lk0*k0[filter[su]] + lk1*k1[filter[su]]));
                 lk1 = lk0;
-                lk0 = data;
-                left.push_back(lim16(data));
+                lk0 = sample;
+                left.push_back(sample);
                 // in case of a mono sector between 2 stereo, fill to avoid channel data size mismatch
                 if(right.size())
                     right.push_back(0);

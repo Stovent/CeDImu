@@ -48,7 +48,7 @@ static std::string getAudioLevel(const bool bps, const uint32_t fs)
  * Special thanks to this thread (http://www.cdinteractive.co.uk/forums/cdinteractive/viewtopic.php?t=3191)
  * for making me understand how the k0 and k1 filters worked in ADCPM decoder
  */
-void CDIFile::ExportAudio(std::string directoryPath)
+void CDIFile::ExportAudio(const std::string& directoryPath)
 {
     uint32_t pos = disc.Tell();
     int maxChannel = 0;
@@ -87,7 +87,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
             Audio::decodeAudioSector(bps, ms, data, left, right);
 
             wavHeader.channelNumber = ms + 1;
-            wavHeader.frequency = bps ? 37800 : (sf ? 18900 : 37800);
+            wavHeader.frequency = sf ? 18900 : 37800;
 
             if(disc.subheader.submode & cdieor)
             {
@@ -116,7 +116,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
  *
  * \param  directoryPath Path to the directory where the file will be written (must end with a '/').
  */
-void CDIFile::ExportFile(std::string directoryPath)
+void CDIFile::ExportFile(const std::string& directoryPath)
 {
     const uint32_t pos = disc.Tell();
 
@@ -139,7 +139,7 @@ void CDIFile::ExportFile(std::string directoryPath)
  * Converts and writes the video data from the ROM.
  * Each channel and logical records are exported individualy.
  */
-void CDIFile::ExportVideo(std::string directoryPath)
+void CDIFile::ExportVideo(const std::string& directoryPath)
 {
     uint32_t pos = disc.Tell();
     int maxChannel = 0;

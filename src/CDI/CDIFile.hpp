@@ -21,9 +21,9 @@ public:
     CDIFile() = delete;
     CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string name, uint16_t attr, uint8_t fileNumber, uint16_t parentRelpos);
 
-    void ExportAudio(std::string directoryPath);
-    void ExportFile(std::string directoryPath);
-    void ExportVideo(std::string directoryPath);
+    void ExportAudio(const std::string& directoryPath);
+    void ExportFile(const std::string& directoryPath);
+    void ExportVideo(const std::string& directoryPath);
     char* GetFileContent(uint32_t& size);
 };
 
