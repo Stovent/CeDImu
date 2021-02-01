@@ -112,7 +112,12 @@ void MainFrame::RefreshTitle(wxTimerEvent& event)
         freq = (app->cdi.board->cpu.totalCycleCount - (double)oldCycleCount) / 1000000.0;
         oldCycleCount = app->cdi.board->cpu.totalCycleCount;
     }
-    SetTitle((!app->cdi.disc.gameName.empty() ? app->cdi.disc.gameName + " | " : "") + (app->cdi.board ? app->biosName + " | " : "") + "CeDImu | FPS: " + std::to_string(fps) + " | " + std::to_string(freq) + " MHz");
+    const DiscTime discTime = app->cdi.disc.GetTime();
+    SetTitle((!app->cdi.disc.gameName.empty() ? app->cdi.disc.gameName + " | " : "") + \
+             (app->cdi.board ? app->biosName + " | " : "") + \
+             "CeDImu | FPS: " + std::to_string(fps) + " | " + \
+             std::to_string(freq) + " MHz" + " | " + \
+             "Disc position: " + std::to_string(discTime.minute) + ':' + std::to_string(discTime.second) + ':' + std::to_string(discTime.sector));
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
