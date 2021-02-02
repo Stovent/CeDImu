@@ -137,7 +137,7 @@ std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, c
     else if(eamode == 6)
     {
         uint16_t bew = board->GetWord(extWordAddress, NoFlags);
-        mode = "(" + std::to_string((int8_t)bew) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + ")";
+        mode = "(" + std::to_string((int8_t)bew) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
     }
     else if(eamode == 7)
     {
@@ -156,7 +156,7 @@ std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, c
         else if(eareg == 3)
         {
             uint16_t bew = board->GetWord(extWordAddress, NoFlags);
-            mode = "(" + std::to_string((int8_t)bew) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + ")";
+            mode = "(" + std::to_string((int8_t)bew) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
         }
         else if(eareg == 4)
         {
