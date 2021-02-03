@@ -225,13 +225,16 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
             uint8_t resolution  = (disc.subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
             coding = disc.subheader.codingInformation & Video::CodingInformation::coding;
 
-            if(ascf)
+            if(ascf || coding > 7 || resolution == 2)
+            {
+                disc.GotoNextSector();
                 continue;
+            }
 
             std::array<uint8_t, 2324> d;
 
-            width = resolution == 0 ? 384 : 720;
-            height = resolution == 3 ? 480 : 245;
+            width = resolution == 0 ? 384 : 768;
+            height = resolution == 3 ? 480 : 242;
 
             disc.GetRaw((char*)d.data(), d.size());
             data.insert(data.end(), d.begin(), d.end());

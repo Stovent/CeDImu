@@ -165,16 +165,16 @@ void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], const uint32_t previous
     y1 = (py + dequantizer[y1]) % 256;
     u2 = u1 = (pu + dequantizer[u1]) % 256; // Interpolation should be done after the line is drawn.
     v2 = v1 = (pv + dequantizer[v1]) % 256; // Interpolation should be done after the line is drawn.
-    y2 = (y1 + dequantizer[y1]) % 256;
+    y2 = (y1 + dequantizer[y2]) % 256;
 
     pixels[0] = 0xFF;
     pixels[1] = y1 + (v1 - 128) * 1.371; // R1
     pixels[3] = y1 + (u1 - 128) * 1.733; // B1
-    pixels[2] = (y1 - 0.299 * pixels[0] - 0.114 * pixels[2]) / 0.587; // G1
+    pixels[2] = (y1 - 0.299 * pixels[1] - 0.114 * pixels[3]) / 0.587; // G1
     pixels[4] = 0xFF;
     pixels[5] = y2 + (v2 - 128) * 1.371; // R2
     pixels[7] = y2 + (u2 - 128) * 1.733; // B2
-    pixels[6] = (y2 - 0.299 * pixels[3] - 0.114 * pixels[5]) / 0.587; // G2
+    pixels[6] = (y2 - 0.299 * pixels[5] - 0.114 * pixels[7]) / 0.587; // G2
 }
 
 /** \brief Convert CLUT color to ARGB.
