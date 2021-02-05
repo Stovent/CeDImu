@@ -2508,30 +2508,33 @@ uint16_t SCC68070::ROXr()
 
 uint16_t SCC68070::RTE()
 {
-    uint16_t calcTime = 0;
-
-    if(GetS())
+    if(!GetS())
     {
-        calcTime = 39;
-        SR = GetWord(ARIWPo(7, 2));
-        PC = GetLong(ARIWPo(7, 4));
-        const uint16_t format = GetWord(ARIWPo(7, 2));
-
-        if(format & 0xF000) // long format
-        {
-            A[7] += 26;
-            calcTime = 146;
-        }
-    }
-    else
         exceptions.push({PrivilegeViolation, 1});
+        return 0;
+    }
+
+    uint16_t calcTime = 39;
+    SR = GetWord(ARIWPo(7, 2));
+    PC = GetLong(ARIWPo(7, 4));
+    const uint16_t format = GetWord(ARIWPo(7, 2));
+
+    if((format & 0xF000) == 0xF000) // long format
+    {
+        A[7] += 26;
+        calcTime = 146;
+    }
+    else if((format & 0xF000) != 0) // Format error
+    {
+        exceptions.push({FormatError, 2});
+    }
 
     return calcTime;
 }
 
 uint16_t SCC68070::RTR()
 {
-    SR &= 0xFFE0;
+    SR &= 0xA700;
     SR |= GetWord(ARIWPo(7, 2)) & 0x001F;
     PC = GetLong(ARIWPo(7, 4));
     return 22;
