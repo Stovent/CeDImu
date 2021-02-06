@@ -420,8 +420,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
 
     BRN_REL:
     {
-        const int8_t offset = GetNextByte();
-        LOG(instructions << std::hex << currentPC << "\tBRN " << std::dec << (int16_t)offset << std::endl)
+        LOG(instructions << std::hex << currentPC << "\tBRN " << std::dec << (signExtend<int8_t, int16_t>(GetNextByte())) << std::endl)
         return 3;
     }
 
