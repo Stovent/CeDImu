@@ -1565,32 +1565,38 @@ uint16_t SCC68070::LSr()
 
 uint16_t SCC68070::MOVE()
 {
-    uint8_t    size = (currentOpcode & 0x3000) >> 12;
-    uint8_t  dstreg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t dstmode = (currentOpcode & 0x01C0) >> 6;
-    uint8_t srcmode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  srcreg = (currentOpcode & 0x0007);
+    const uint8_t    size = currentOpcode >> 12 & 0x0003;
+    const uint8_t  dstreg = currentOpcode >> 9 & 0x0007;
+    const uint8_t dstmode = currentOpcode >> 6 & 0x0007;
+    const uint8_t srcmode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  srcreg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
-    if(size == 1) // byte
+    if(size == 1) // Byte
     {
-        uint8_t src = GetByte(srcmode, srcreg, calcTime);
-        if(src == 0) SetZ(); else SetZ(0);
-        if(src & 0x80) SetN(); else SetN(0);
+        const uint8_t src = GetByte(srcmode, srcreg, calcTime);
+
+        SetN(src & 0x80);
+        SetZ(src == 0);
+
         SetByte(dstmode, dstreg, calcTime, src);
     }
-    else if(size == 3) // word
+    else if(size == 3) // Word
     {
-        uint16_t src = GetWord(srcmode, srcreg, calcTime);
-        if(src == 0) SetZ(); else SetZ(0);
-        if(src & 0x8000) SetN(); else SetN(0);
+        const uint16_t src = GetWord(srcmode, srcreg, calcTime);
+
+        SetN(src & 0x8000);
+        SetZ(src == 0);
+
         SetWord(dstmode, dstreg, calcTime, src);
     }
-    else // long
+    else // Long
     {
-        uint32_t src = GetLong(srcmode, srcreg, calcTime);
-        if(src == 0) SetZ(); else SetZ(0);
-        if(src & 0x80000000) SetN(); else SetN(0);
+        const uint32_t src = GetLong(srcmode, srcreg, calcTime);
+
+        SetN(src & 0x80000000);
+        SetZ(src == 0);
+
         SetLong(dstmode, dstreg, calcTime, src);
     }
 
@@ -1601,18 +1607,17 @@ uint16_t SCC68070::MOVE()
 
 uint16_t SCC68070::MOVEA()
 {
-    uint8_t   size = (currentOpcode & 0x3000) >> 12;
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t   size = currentOpcode >> 12 & 0x0003;
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
-    if(size == 3) // word
+    if(size == 3) // Word
     {
-        int16_t data = GetWord(eamode, eareg, calcTime);
-        A[reg] = signExtend<int16_t, int32_t>(data);
+        A[reg] = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
     }
-    else // long
+    else // Long
     {
         A[reg] = GetLong(eamode, eareg, calcTime);
     }
@@ -1622,12 +1627,12 @@ uint16_t SCC68070::MOVEA()
 
 uint16_t SCC68070::MOVECCR()
 {
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 10;
 
-    uint16_t data = GetWord(eamode, eareg, calcTime) & 0x001F;
-    SR &= 0xFF00;
+    const uint16_t data = GetWord(eamode, eareg, calcTime) & 0x001F;
+    SR &= 0xA700;
     SR |= data;
 
     return calcTime;
@@ -1635,30 +1640,33 @@ uint16_t SCC68070::MOVECCR()
 
 uint16_t SCC68070::MOVEfSR() // Should not be used according to the Green Book Chapter VI.2.2.2
 {
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t calcTime = 7;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
+    uint16_t calcTime = eamode ? 11 : 7;
 
-    SetWord(eamode, eareg, calcTime, SR);
+    SetWord(eamode, eareg, calcTime, SR & 0xA71F);
 
     return calcTime;
 }
 
 uint16_t SCC68070::MOVESR()
 {
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 10;
 
-    if(GetS())
-    {
-        uint16_t data = GetWord(eamode, eareg, calcTime);
-        SR = data;
-    }
-    else
+    if(!GetS())
     {
         exceptions.push({PrivilegeViolation, 1});
         return 0;
+    }
+
+    SR = GetWord(eamode, eareg, calcTime) & 0xA71F;
+
+    if(!GetS()) // S bit changes from supervisor to user
+    {
+        SSP = A[7];
+        A[7] = USP;
     }
 
     return calcTime;
@@ -1666,18 +1674,21 @@ uint16_t SCC68070::MOVESR()
 
 uint16_t SCC68070::MOVEUSP()
 {
-    uint8_t  dr = (currentOpcode & 0x0008) >> 3;
-    uint8_t reg = (currentOpcode & 0x0007);
+    const uint8_t reg = currentOpcode & 0x0007;
 
-    if(GetS())
-        if(dr)
-            A[reg] = USP;
-        else
-            USP = A[reg];
-    else
+    if(!GetS())
     {
         exceptions.push({PrivilegeViolation, 1});
         return 0;
+    }
+
+    if(currentOpcode & 0x0008) // USP to An
+    {
+        A[reg] = USP;
+    }
+    else // An to USP
+    {
+        USP = A[reg];
     }
 
     return 7;
@@ -1842,48 +1853,33 @@ uint16_t SCC68070::MOVEM()
 
 uint16_t SCC68070::MOVEP()
 {
-    uint8_t data = (currentOpcode & 0x0E00) >> 9;
-    uint8_t dir  = (currentOpcode & 0x0080) >> 7;
-    uint8_t size = (currentOpcode & 0x0040) >> 6;
-    int16_t disp = GetNextWord();
-    uint32_t address = A[currentOpcode & 0x0007] + disp;
+    const uint8_t   dreg = currentOpcode >> 9 & 0x0007;
+    const uint8_t opmode = currentOpcode >> 7 & 0x0001;
+    const uint8_t   size = currentOpcode >> 6 & 0x0001;
+    const uint8_t   areg = currentOpcode & 0x0007;
     uint16_t calcTime;
 
-    if(dir == 0) // memory to register
+    uint32_t addr = ARIWD(areg);
+    int shift = size ? 24 : 8;
+    if(opmode) // Register to memory
     {
-        if(size == 0) // word
+        for(; shift >= 0; shift -= 8, addr += 2)
         {
-            D[data] &= 0xFFFF0000;
-            D[data] |= GetByte(address) << 8;
-            D[data] |= GetByte(address + 2);
-            calcTime = 22;
+            SetByte(addr, D[dreg] >> shift);
         }
-        else // long
-        {
-            D[data] = 0;
-            D[data] |= GetByte(address) << 24;
-            D[data] |= GetByte(address + 2) << 16;
-            D[data] |= GetByte(address + 4) << 8;
-            D[data] |= GetByte(address + 6);
-            calcTime = 36;
-        }
+
+        calcTime = size ? 39 : 25;
     }
-    else // register to memory
+    else // Memory to register
     {
-        if(size == 0) // word
+        D[dreg] &= size ? 0 : 0xFFFF0000;
+
+        for(; shift >= 0; shift -= 8, addr += 2)
         {
-            SetByte(address,     (D[data] & 0x0000FF00) >> 8);
-            SetByte(address + 2, (D[data] & 0x000000FF));
-            calcTime = 25;
+            D[dreg] |= (uint32_t)GetByte(addr) << shift;
         }
-        else // long
-        {
-            SetByte(address,     (D[data] & 0xFF000000) >> 24);
-            SetByte(address + 2, (D[data] & 0x00FF0000) >> 16);
-            SetByte(address + 4, (D[data] & 0x0000FF00) >> 8);
-            SetByte(address + 6, (D[data] & 0x000000FF));
-            calcTime = 39;
-        }
+
+        calcTime = size ? 36 : 22;
     }
 
     return calcTime;
@@ -1891,11 +1887,11 @@ uint16_t SCC68070::MOVEP()
 
 uint16_t SCC68070::MOVEQ()
 {
-    uint8_t  reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t data = (currentOpcode & 0x00FF);
+    const uint8_t  reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t data = currentOpcode & 0x00FF;
 
-    if(data & 0x80) SetN(); else SetN(0);
-    if(data == 0) SetZ(); else SetZ(0);
+    SetN(data & 0x80);
+    SetZ(data == 0);
     SetVC(0);
 
     D[reg] = signExtend<int8_t, int32_t>(data);
