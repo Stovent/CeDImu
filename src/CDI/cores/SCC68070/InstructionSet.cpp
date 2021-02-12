@@ -1128,77 +1128,69 @@ uint16_t SCC68070::DBcc()
 
 uint16_t SCC68070::DIVS()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 169; // LMAO
 
-    int16_t src = GetWord(eamode, eareg, calcTime);
-    int32_t dst = D[reg];
-
+    const int16_t src = GetWord(eamode, eareg, calcTime);
     if(src == 0)
     {
         exceptions.push({ZeroDivide, 2});
-        return 7; // arbitrary
+        return 7; // Arbitrary
     }
 
-    int32_t quotient = dst / src;
+    const int32_t dst = D[reg];
+    const int32_t q = dst / src;
 
-    if(quotient > INT16_MAX || quotient < INT16_MIN)
+    if(q < INT16_MIN || q > INT16_MAX)
     {
         SetV();
-        return calcTime;
-        // Considering that a quotient overflow interrupts the instruction early,
-        // the calculation time may not be accurate here
+        return calcTime; // TODO: accuracy of this.
     }
-    else
-        SetV(0);
 
-    int16_t remainder = dst % src;
-    D[reg] = ((uint16_t)remainder << 16) | (uint16_t)quotient;
+    const int16_t r = dst % src;
 
-    if(quotient & 0x8000) SetN(); else SetN(0);
-    if(quotient == 0) SetZ(); else SetZ(0);
+    SetN(q < 0);
+    SetZ(q == 0);
+    SetVC(0);
 
-    SetC(0);
+    D[reg]  = (uint16_t)r << 16;
+    D[reg] |= (uint16_t)(int16_t)q;
+
     return calcTime;
 }
 
 uint16_t SCC68070::DIVU()
 {
-    const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    const uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 130;
 
-    uint16_t src = GetWord(eamode, eareg, calcTime);
-    uint32_t dst = D[reg];
-
+    const uint16_t src = GetWord(eamode, eareg, calcTime);
     if(src == 0)
     {
         exceptions.push({ZeroDivide, 2});
-        return 7; // arbitrary
+        return 7; // Arbitrary
     }
 
-    uint32_t quotient = dst / src;
-
-    if(quotient > UINT16_MAX)
+    const uint32_t q = D[reg] / src;
+    if(q > UINT16_MAX)
     {
         SetV();
-        return calcTime;
-        // Considering that a quotient overflow interrupts the instruction early,
-        // the calculation time may not be accurate here
+        return calcTime; // TODO: accuracy of this.
     }
-    else
-        SetV(0);
 
-    uint16_t remainder = dst % src;
-    D[reg] = (remainder << 16) | (uint16_t)quotient;
+    const uint16_t r = D[reg] % src;
 
-    if(quotient & 0x8000) SetN(); else SetN(0);
-    if(quotient == 0) SetZ(); else SetZ(0);
+    SetN(q & 0x8000);
+    SetZ(q == 0);
+    SetVC(0);
 
-    SetC(0);
+    D[reg]  = r << 16;
+    D[reg] |= q & 0x0000FFFF;
+
     return calcTime;
 }
 
@@ -1900,40 +1892,36 @@ uint16_t SCC68070::MOVEQ()
 
 uint16_t SCC68070::MULS()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 76;
 
     int16_t src = GetWord(eamode, eareg, calcTime);
     int16_t dst = D[reg] & 0x0000FFFF;
-    int32_t res = src * dst;
+    D[reg] = (int32_t)src * dst;
 
-    if(res == 0) SetZ(); else SetZ(0);
-    if(res & 0x80000000) SetN(); else SetN(0);
+    SetN(D[reg] & 0x80000000);
+    SetZ(D[reg] == 0);
     SetVC(0);
-
-    D[reg] = res;
 
     return calcTime;
 }
 
 uint16_t SCC68070::MULU()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 76;
 
     uint16_t src = GetWord(eamode, eareg, calcTime);
     uint16_t dst = D[reg] & 0x0000FFFF;
-    uint32_t res = src * dst;
+    D[reg] = (uint32_t)src * dst;
 
-    if(res == 0) SetZ(); else SetZ(0);
-    if(res & 0x80000000) SetN(); else SetN(0);
+    SetN(D[reg] & 0x80000000);
+    SetZ(D[reg] == 0);
     SetVC(0);
-
-    D[reg] = res;
 
     return calcTime;
 }
