@@ -20,7 +20,7 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
     DLUT = new DLUTFunctionPointer[UINT16_MAX+1];
 
     OPEN_LOG(out, "SCC68070.txt")
-    OPEN_LOG(instruction, "instructions.txt")
+    OPEN_LOG(instructions, "instructions.txt")
 
     internal = new uint8_t[SCC68070Peripherals::Size];
     speedDelay = cycleDelay = (1.0L / clockFrequency) * 1'000'000'000;
@@ -34,6 +34,8 @@ SCC68070::~SCC68070()
 {
     Stop(false);
     FlushDisassembler();
+    CLOSE_LOG(out)
+    CLOSE_LOG(instructions)
     delete[] ILUT;
     delete[] DLUT;
     delete[] internal;
@@ -100,7 +102,7 @@ void SCC68070::Stop(const bool wait)
 void SCC68070::Reset()
 {
     loop = false;
-    LOG(out << "RESET" << std::endl; instruction << "RESET" << std::endl;)
+    LOG(fprintf(out, "RESET\n"); fprintf(instructions, "RESET\n");)
     disassembledInstructions.clear();
     cycleCount = totalCycleCount = 146;
 
@@ -123,8 +125,8 @@ void SCC68070::Reset()
  */
 void SCC68070::FlushDisassembler()
 {
-    LOG(std::ostream_iterator<std::string> osit(instruction, "\n"); \
-        std::copy(disassembledInstructions.begin(), disassembledInstructions.end(), osit);)
+    LOG(for(const std::string& str : disassembledInstructions) \
+            fprintf(instructions, "%s\n", str.c_str());)
     disassembledInstructions.clear();
 }
 

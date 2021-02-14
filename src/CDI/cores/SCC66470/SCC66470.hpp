@@ -5,7 +5,7 @@ class SCC66470;
 
 #include "../VDSC.hpp"
 
-#include <fstream>
+#include <cstdio>
 
 enum SCC66470Registers
 {
@@ -39,7 +39,7 @@ class SCC66470 : public VDSC
     const bool isMaster;
     std::function<void()> OnFrameCompleted;
 
-    std::ofstream out_dram;
+    FILE* out_dram;
 
 public:
     explicit SCC66470(Board* board, const bool ismaster);

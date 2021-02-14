@@ -13,6 +13,7 @@ MiniMMC::MiniMMC(const void* bios, const uint32_t size, const bool initNVRAMCloc
 
 MiniMMC::~MiniMMC()
 {
+    CLOSE_LOG(out)
 }
 
 void MiniMMC::Reset(const bool resetCPU)

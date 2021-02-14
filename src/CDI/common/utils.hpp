@@ -148,11 +148,13 @@ inline const void* subarrayOfArray(const void* container, size_t containerSize, 
 }
 
 #ifdef DEBUG
-#define OPEN_LOG(stream, name)  stream.open(name);
+#define OPEN_LOG(stream, name)  stream = fopen(name, "w");
 #define LOG(content) content;
+#define CLOSE_LOG(stream) fclose(stream);
 #else
 #define OPEN_LOG(stream, name)
 #define LOG(content)
+#define CLOSE_LOG(stream)
 #endif // DEBUG
 
 #endif // UTILS_HPP

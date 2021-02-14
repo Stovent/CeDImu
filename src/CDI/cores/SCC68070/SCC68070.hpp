@@ -7,7 +7,7 @@ class SCC68070Exception;
 #include "../../common/flags.hpp"
 
 #include <cstdint>
-#include <fstream>
+#include <cstdio>
 #include <map>
 #include <queue>
 #include <string>
@@ -316,8 +316,8 @@ private:
     bool loop;
     bool isRunning;
 
-    std::ofstream out;
-    std::ofstream instruction;
+    FILE* out;
+    FILE* instructions;
 
     uint8_t* internal;
 

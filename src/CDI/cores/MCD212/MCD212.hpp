@@ -5,7 +5,7 @@ class MCD212;
 
 #include "../VDSC.hpp"
 
-#include <fstream>
+#include <cstdio>
 
 enum MCD212Registers
 {
@@ -117,8 +117,8 @@ private:
     uint8_t registerCSR1R;
     uint8_t registerCSR2R;
     uint32_t CLUT[256];
-    std::ofstream out_dram;
-    std::ofstream out_display;
+    FILE* out_dram;
+    FILE* out_display;
     std::function<void()> OnFrameCompleted;
 
     void DrawLinePlaneA();

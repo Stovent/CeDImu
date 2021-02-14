@@ -6,12 +6,13 @@ class Mono3;
 #include "../Board.hpp"
 #include "../../cores/MCD212/MCD212.hpp"
 
+#include <cstdio>
 #include <fstream>
 
 class Mono3 : public Board
 {
     MCD212 mcd212;
-    std::ofstream out;
+    FILE* out;
     std::ofstream uart_out;
     std::ifstream uart_in;
 

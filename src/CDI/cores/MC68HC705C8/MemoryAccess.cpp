@@ -3,24 +3,24 @@
 
 uint8_t MC68HC705C8::GetByte(const uint16_t addr)
 {
-    LOG(if(addr == 0x0011) instructions << "\tGet SCI #0x" << std::hex << (uint16_t)memory[addr] << std::endl)
+    LOG(if(addr == 0x0011) { fprintf(instructions, "\tGet SCI #0x%X\n", memory[addr]); })
     if(addr < SLAVE_MEMORY_SIZE)
         return memory[addr];
 
-    LOG(instructions << "\tGet byte OUT OF RANGE at 0x" << addr << std::endl)
+    LOG(fprintf(instructions, "%X\tGet byte OUT OF RANGE at 0x%X\n", currentPC, addr))
     return 0;
 }
 
 void MC68HC705C8::SetByte(const uint16_t addr, const uint8_t value)
 {
-    LOG(if(addr == 0x0011) instructions << "\tSet SCI #0x" << std::hex << (uint16_t)value << std::endl)
+    LOG(if(addr == 0x0011) { fprintf(instructions, "\tSet SCI #0x%X\n", value); })
     if(addr < SLAVE_MEMORY_SIZE)
     {
         memory[addr] = value;
         return;
     }
 
-    LOG(instructions << "\tSet byte OUT OF RANGE at 0x" << std::hex << addr << " : 0x" << (uint16_t)value << " (" << std::dec << (int16_t)value << ")" << std::endl)
+    LOG(fprintf(instructions, "%X\tSet byte OUT OF RANGE at 0x%X : %d %d 0x%X\n", currentPC, addr, (int8_t)value, value, value);)
 }
 
 uint8_t MC68HC705C8::GetNextByte()

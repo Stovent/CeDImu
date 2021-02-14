@@ -24,6 +24,7 @@ SCC66470::SCC66470(Board* board, const bool ismaster) : VDSC(board), isMaster(is
 
 SCC66470::~SCC66470()
 {
+    CLOSE_LOG(out_dram)
     delete[] memory;
     delete[] internalRegisters;
 }

@@ -110,7 +110,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
         const uint8_t data = board->GetByte(addr, flags);
-        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte at 0x" << addr << ": " << std::dec << (uint16_t)data << std::endl; })
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
         return data;
     }
 
@@ -120,11 +120,11 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
             return GetPeripheral(addr);
 
         const uint8_t data = board->GetByte(addr, flags);
-        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet byte at 0x" << addr << ": " << std::dec << (uint16_t)data << std::endl; })
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
         return data;
     }
 
-    LOG(out << std::hex << currentPC << "\tGet byte OUT OF RANGE at 0x" << addr << std::endl)
+    LOG(if(flags & Log) { fprintf(out, "%X\tGet byte OUT OF RANGE at 0x%X\n", currentPC, addr); })
     return 0;
 }
 
@@ -136,11 +136,11 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
         const uint16_t data = board->GetWord(addr, flags);
-        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet word at 0x" << addr << ": " << std::dec << data << std::endl; })
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
         return data;
     }
 
-    LOG(out << std::hex << currentPC << "\tGet word OUT OF RANGE at 0x" << addr << std::endl)
+    LOG(if(flags & Log) { fprintf(out, "%X\tGet word OUT OF RANGE at 0x%X\n", currentPC, addr); })
     return 0;
 }
 
@@ -152,34 +152,37 @@ uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
         const uint32_t data = board->GetLong(addr, flags);
-        LOG(if(flags & Log) { out << std::hex << currentPC << "\tGet long at 0x" << addr << ": " << std::dec << data << std::endl; })
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet long at 0x%X: %d %d 0x%X\n", currentPC, addr, (int32_t)data, data, data); })
         return data;
     }
 
-    LOG(out << std::hex << currentPC << "\tGet long OUT OF RANGE at 0x" << addr << std::endl)
+    LOG(if(flags & Log) { fprintf(out, "%X\tGet long OUT OF RANGE at 0x%X\n", currentPC, addr); })
     return 0;
 }
 
 void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
+    {
         board->SetByte(addr, data, flags);
-    else if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
+        return;
+    }
+
+    if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
     {
         if(GetS())
         {
             SetPeripheral(addr, data);
+            return;
         }
-        else
-        {
-            board->SetByte(addr, data, flags);
-        }
+
+        board->SetByte(addr, data, flags);
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
+        return;
     }
-    else
-    {
-        LOG(out << "OUT OF RANGE:")
-    }
-    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet byte at 0x" << addr << " : " << std::to_string(data) << std::endl; })
+
+    LOG(if(flags & Log) { fprintf(out, "%X\tSet byte OUT OF RANGE at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
 }
 
 void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
@@ -188,12 +191,13 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
         throw SCC68070Exception(AddressError, 0);
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        board->SetWord(addr, data, flags);
-    else
     {
-        LOG(out << "OUT OF RANGE:")
+        board->SetWord(addr, data, flags);
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
+        return;
     }
-    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet word at 0x" << addr << " : " << std::to_string(data) << std::endl; })
+
+    LOG(if(flags & Log) { fprintf(out, "%X\tSet word OUT OF RANGE at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
 }
 
 void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
@@ -202,10 +206,11 @@ void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t f
         throw SCC68070Exception(AddressError, 0);
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
-        board->SetLong(addr, data, flags);
-    else
     {
-        LOG(out << "OUT OF RANGE:")
+        board->SetLong(addr, data, flags);
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet long at 0x%X: %d %d 0x%X\n", currentPC, addr, (int32_t)data, data, data); })
+        return;
     }
-    LOG(if(flags & Log) { out << std::hex << currentPC << "\tSet long at 0x" << addr << " : " << std::to_string(data) << std::endl; })
+
+    LOG(if(flags & Log) { fprintf(out, "%X\tSet long OUT OF RANGE at 0x%X: %d %d 0x%X\n", currentPC, addr, (int32_t)data, data, data); })
 }

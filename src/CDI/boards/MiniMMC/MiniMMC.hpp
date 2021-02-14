@@ -6,11 +6,14 @@ class MiniMMC;
 #include "../Board.hpp"
 #include "../../cores/SCC66470/SCC66470.hpp"
 
+#include <cstdio>
+#include <fstream>
+
 class MiniMMC : public Board
 {
     SCC66470 masterVDSC;
     SCC66470 slaveVDSC;
-    std::ofstream out;
+    FILE* out;
     std::ofstream uart_out;
     std::ifstream uart_in;
 
