@@ -1395,58 +1395,25 @@ uint16_t SCC68070::ILLEGAL()
 
 uint16_t SCC68070::JMP()
 {
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t calcTime;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
+    uint16_t calcTime = (eamode == 7 && eareg <= 1) ? 6 : 3;
 
-    if(eamode == 2)
-    {   PC = A[eareg]; calcTime = 7; }
-    else if(eamode == 5)
-    {   PC = ARIWD(eareg); calcTime = 14; }
-    else if(eamode == 6)
-    {   PC = ARIWI8(eareg); calcTime = 17; }
-    else
-    {
-        if(eareg == 0)
-        {   PC = ASA(); calcTime = 14; }
-        else if(eareg == 1)
-        {   PC = ALA(); calcTime = 18; }
-        else if(eareg == 2)
-        {   PC = PCIWD(); calcTime = 14; }
-        else
-        {   PC = PCIWI8(); calcTime = 17; }
-    }
+    PC = GetEffectiveAddress(eamode, eareg, 1, calcTime); // 1 to get byte/word calculation time
 
     return calcTime;
 }
 
 uint16_t SCC68070::JSR()
 {
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t calcTime;
-    uint32_t pc;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
+    uint16_t calcTime = (eamode == 7 && eareg <= 1) ? 17 : 14;
 
-    if(eamode == 2)
-    {   pc = A[eareg]; calcTime = 18; }
-    else if(eamode == 5)
-    {   pc = ARIWD(eareg); calcTime = 25; }
-    else if(eamode == 6)
-    {   pc = ARIWI8(eareg); calcTime = 28; }
-    else
-    {
-        if(eareg == 0)
-        {   pc = ASA(); calcTime = 25; }
-        else if(eareg == 1)
-        {   pc = ALA(); calcTime = 29; }
-        else if(eareg == 2)
-        {   pc = PCIWD(); calcTime = 25; }
-        else
-        {   pc = PCIWI8(); calcTime = 28; }
-    }
+    // write PC first so the updated stack pointer can be used as effective address
+    SetLong(ARIWPr(7, 4), PC + (eamode == 7 ? (eareg == 1 ? 4 : 2) : (eamode >= 5 ? 2 : 0)));
 
-    SetLong(ARIWPr(7, 4), PC);
-    PC = pc;
+    PC = GetEffectiveAddress(eamode, eareg, 1, calcTime); // 1 to get byte/word calculation time
 
     return calcTime;
 }
