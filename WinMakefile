@@ -20,7 +20,7 @@ bin/obj/MCD212.o bin/obj/MCD212Display.o bin/obj/MCD212Registers.o bin/obj/MCD21
 bin/obj/MC68HC705C8.o bin/obj/MC68HC705C8_Interpreter.o bin/obj/MC68HC705C8_MemoryAccess.o \
 bin/obj/M48T08.o \
 bin/obj/CDI.o bin/obj/CDIDisc.o bin/obj/CDIDirectory.o bin/obj/CDIFile.o bin/obj/Export.o \
-bin/obj/Mono3.o bin/obj/MiniMMC.o bin/obj/MiniMMCBus.o
+bin/obj/Mono3.o bin/obj/Mono3Bus.o bin/obj/MiniMMC.o bin/obj/MiniMMCBus.o
 
 CeDImu :
 	if not exist bin\obj\ mkdir bin\obj
@@ -31,6 +31,7 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/CDIFile.cpp -o bin/obj/CDIFile.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/Export.cpp -o bin/obj/Export.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/boards/Mono3/Mono3.cpp -o bin/obj/Mono3.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/boards/Mono3/Bus.cpp -o bin/obj/Mono3Bus.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/boards/MiniMMC/MiniMMC.cpp -o bin/obj/MiniMMC.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/boards/MiniMMC/Bus.cpp -o bin/obj/MiniMMCBus.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/common/Audio.cpp -o bin/obj/Audio.o
