@@ -113,102 +113,95 @@ uint16_t SCC68070::ABCD()
     return calcTime;
 }
 
+template<typename T, typename VT, typename UVT>
+static inline uint8_t add(const T src, const T dst, T* result, const VT min, const VT max, const UVT umax)
+{
+    const VT vres = (VT)src + (VT)dst;
+    const T res = vres;
+
+    uint8_t cc = 0;
+    if(res < 0)
+        cc |= 0b01000;
+    if(res == 0)
+        cc |= 0b00100;
+    if(vres < min || vres > max)
+        cc |= 0x00010;
+    if((UVT)vres > umax)
+        cc |= 0b10001;
+
+    if(result)
+        *result = res;
+
+    return cc;
+}
+
 uint16_t SCC68070::ADD()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t opmode = currentOpcode >> 8 & 0x0001;
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
-    if(opmode == 0)
+    if(size == 0) // Byte
     {
-        int8_t src = GetByte(eamode, eareg, calcTime);
-        int8_t dst = D[reg] & 0x000000FF;
-        int16_t res = src + dst;
-        uint16_t ures = (uint8_t)src + (uint8_t)dst;
+        const int8_t src = opmode ? D[reg] : GetByte(eamode, eareg, calcTime);
+        const int8_t dst = opmode ? GetByte(eamode, eareg, calcTime) : D[reg];
+        int8_t res;
 
-        if(ures & 0x100) SetXC(); else SetXC(0);
-        if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK;
+        SR |= add<int8_t, int16_t, uint16_t>(src, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
 
-        D[reg] &= 0xFFFFFF00;
-        D[reg] |= (res & 0xFF);
+        if(opmode)
+        {
+            SetByte(lastAddress, res);
+            calcTime += 4;
+        }
+        else
+        {
+            D[reg] &= 0xFFFFFF00;
+            D[reg] |= (uint8_t)res;
+        }
     }
-    else if(opmode == 1)
+    else if(size == 1) // Word
     {
-        int16_t src = GetWord(eamode, eareg, calcTime);
-        int16_t dst = D[reg] & 0x0000FFFF;
-        int32_t res = src + dst;
-        uint32_t ures = (uint16_t)src + (uint16_t)dst;
+        const int16_t src = opmode ? D[reg] : GetWord(eamode, eareg, calcTime);
+        const int16_t dst = opmode ? GetWord(eamode, eareg, calcTime) : D[reg];
+        int16_t res;
 
-        if(ures & 0x10000) SetXC(); else SetXC(0);
-        if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK;
+        SR |= add<int16_t, int32_t, uint32_t>(src, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
 
-        D[reg] &= 0xFFFF0000;
-        D[reg] |= (res & 0xFFFF);
+        if(opmode)
+        {
+            SetWord(lastAddress, res);
+            calcTime += 4;
+        }
+        else
+        {
+            D[reg] &= 0xFFFF0000;
+            D[reg] |= (uint16_t)res;
+        }
     }
-    else if(opmode == 2)
+    else // Long
     {
-        int32_t src = GetLong(eamode, eareg, calcTime);
-        int32_t dst = D[reg];
-        int64_t res = src + dst;
-        uint64_t ures = (uint32_t)src + (uint32_t)dst;
+        const int32_t src = opmode ? D[reg] : GetLong(eamode, eareg, calcTime);
+        const int32_t dst = opmode ? GetLong(eamode, eareg, calcTime) : D[reg];
+        int32_t res;
 
-        if(ures & 0x100000000) SetXC(); else SetXC(0);
-        if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK;
+        SR |= add<int32_t, int64_t, uint64_t>(src, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
 
-        D[reg] = res;
-    }
-    else if(opmode == 4)
-    {
-        int8_t src = D[reg] & 0x000000FF;
-        int8_t dst = GetByte(eamode, eareg, calcTime);
-        int16_t res = src + dst;
-        uint16_t ures = (uint8_t)src + (uint8_t)dst;
-
-        if(ures & 0x100) SetXC(); else SetXC(0);
-        if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
-
-        SetByte(lastAddress, res);
-        calcTime += 4;
-    }
-    else if(opmode == 5)
-    {
-        int16_t src = D[reg] & 0x0000FFFF;
-        int16_t dst = GetWord(eamode, eareg, calcTime);
-        int32_t res = src + dst;
-        uint32_t ures = (uint16_t)src + (uint16_t)dst;
-
-        if(ures & 0x10000) SetXC(); else SetXC(0);
-        if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
-
-        SetWord(lastAddress, res);
-        calcTime += 4;
-    }
-    else
-    {
-        int32_t src = D[reg];
-        int32_t dst = GetLong(eamode, eareg, calcTime);
-        int64_t res = src + dst;
-        uint64_t ures = (uint32_t)src + (uint32_t)dst;
-
-        if(ures & 0x100000000) SetXC(); else SetXC(0);
-        if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
-
-        SetLong(lastAddress, res);
-        calcTime += 8;
+        if(opmode)
+        {
+            SetLong(lastAddress, res);
+            calcTime += 8;
+        }
+        else
+        {
+            D[reg] = res;
+        }
     }
 
     return calcTime;
@@ -216,88 +209,89 @@ uint16_t SCC68070::ADD()
 
 uint16_t SCC68070::ADDA()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t   size = (currentOpcode & 0x0100) >> 8;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t   size = currentOpcode >> 8 & 0x0001;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
+    int32_t src;
     if(size) // Long
-    {
-        int32_t src = GetLong(eamode, eareg, calcTime);
-        A[reg] += src;
-        if(eamode > 1)
-            calcTime += 8;
-    }
+        src = GetLong(eamode, eareg, calcTime);
     else // Word
-    {
-        int16_t src = GetWord(eamode, eareg, calcTime);
-        int16_t dst = A[reg] & 0x0000FFFF;
-        A[reg] = src + dst;
-        if(eamode > 1)
-            calcTime += 4;
-    }
+        src = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
+
+    A[reg] += src;
 
     return calcTime;
 }
 
 uint16_t SCC68070::ADDI()
 {
-    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 14;
 
     if(size == 0) // Byte
     {
-        int8_t src = GetNextWord() & 0x00FF;
-        int8_t dst = GetByte(eamode, eareg, calcTime);
-        int16_t res = src + dst;
-        uint16_t ures = (uint8_t)src + (uint8_t)dst;
+        const int8_t data = GetNextWord() & 0x00FF;
+        const int8_t  dst = GetByte(eamode, eareg, calcTime);
+        int8_t res;
 
-        if(ures & 0x100) SetXC(); else SetXC(0);
-        if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK;
+        SR |= add<int8_t, int16_t, uint16_t>(data, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
 
-        if(eamode == 0)
-        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= (res & 0xFF); }
+        if(eamode)
+        {
+            SetByte(lastAddress, res);
+            calcTime += 4;
+        }
         else
-        {   SetByte(lastAddress, res); calcTime += 4; }
+        {
+            D[eareg] &= 0xFFFFFF00;
+            D[eareg] |= (uint8_t)res;
+        }
     }
     else if(size == 1) // Word
     {
-        int16_t src = GetNextWord();
-        int16_t dst = GetWord(eamode, eareg, calcTime);
-        int32_t res = src + dst;
-        uint32_t ures = (uint16_t)src + (uint16_t)dst;
+        const int16_t data = GetNextWord();
+        const int16_t  dst = GetWord(eamode, eareg, calcTime);
+        int16_t res;
 
-        if(ures & 0x10000) SetXC(); else SetXC(0);
-        if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK;
+        SR |= add<int16_t, int32_t, uint32_t>(data, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
 
-        if(eamode == 0)
-        {   D[eareg] &= 0xFFFF0000; D[eareg] |= (res & 0xFFFF); }
+        if(eamode)
+        {
+            SetWord(lastAddress, res);
+            calcTime += 4;
+        }
         else
-        {   SetWord(lastAddress, res); calcTime += 4; }
+        {
+            D[eareg] &= 0xFFFF0000;
+            D[eareg] |= (uint16_t)res;
+        }
     }
-    else if(size == 2) // Long
+    else // Long
     {
-        int32_t src = (GetNextWord() << 16) | GetNextWord();
-        int32_t dst = GetLong(eamode, eareg, calcTime);
-        int64_t res = src + dst;
-        uint64_t ures = (uint32_t)src + (uint32_t)dst;
+        const int32_t data = (uint32_t)GetNextWord() << 16 | GetNextWord();
+        const int32_t  dst = GetLong(eamode, eareg, calcTime);
+        int32_t res;
 
-        if(ures & 0x100000000) SetXC(); else SetXC(0);
-        if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK;
+        SR |= add<int32_t, int64_t, uint64_t>(data, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
 
-        if(eamode == 0)
-        {   D[eareg] = res; calcTime += 4; }
+        if(eamode)
+        {
+            SetLong(lastAddress, res);
+            calcTime += 12;
+        }
         else
-        {   SetLong(lastAddress, res); calcTime += 12; }
+        {
+            D[eareg] = res;
+            calcTime += 4;
+        }
     }
 
     return calcTime;
@@ -305,70 +299,73 @@ uint16_t SCC68070::ADDI()
 
 uint16_t SCC68070::ADDQ()
 {
-    uint8_t   doto = (currentOpcode & 0x0E00) >> 9;
-    uint8_t   data = doto ? doto : 8;
-    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t   data = currentOpcode & 0x0E00 ? (currentOpcode >> 9 & 0x0007) : 8;
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
     if(eamode == 1)
     {
-        if(size == 1)
+        A[eareg] += data;
+        return 7;
+    }
+
+    if(size == 0) // Byte
+    {
+        const int8_t dst = GetByte(eamode, eareg, calcTime);
+        int8_t res;
+
+        SR &= SR_UPPER_MASK;
+        SR |= add<int8_t, int16_t, uint16_t>(data, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
+
+        if(eamode)
         {
-            int16_t dst = A[eareg] & 0x0000FFFF;
-            A[eareg] = data + dst;
+            SetByte(lastAddress, res);
+            calcTime += 4;
         }
         else
-            A[eareg] += data;
+        {
+            D[eareg] &= 0xFFFFFF00;
+            D[eareg] |= (uint8_t)res;
+        }
     }
-    else if(size == 0)
+    else if(size == 1) // Word
     {
-        int8_t dst = GetByte(eamode, eareg, calcTime);
-        int16_t res = data + dst;
-        uint16_t ures = data + (uint8_t)dst;
+        const int16_t dst = GetWord(eamode, eareg, calcTime);
+        int16_t res;
 
-        if(ures & 0x100) SetXC(); else SetXC(0);
-        if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK;
+        SR |= add<int16_t, int32_t, uint32_t>(data, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
 
-        if(eamode == 0)
-        {   D[eareg] &= 0xFFFFFF00; D[eareg] |= (res & 0xFF); }
+        if(eamode)
+        {
+            SetWord(lastAddress, res);
+            calcTime += 4;
+        }
         else
-        {   SetByte(lastAddress, ures); calcTime += 4; }
+        {
+            D[eareg] &= 0xFFFF0000;
+            D[eareg] |= (uint16_t)res;
+        }
     }
-    else if(size == 1)
+    else // Long
     {
-        int16_t dst = GetWord(eamode, eareg, calcTime);
-        int32_t res = data + dst;
-        uint32_t ures = data + (uint16_t)dst;
+        const int32_t dst = GetLong(eamode, eareg, calcTime);
+        int32_t res;
 
-        if(ures & 0x10000) SetXC(); else SetXC(0);
-        if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK;
+        SR |= add<int32_t, int64_t, uint64_t>(data, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
 
-        if(eamode == 0)
-        {   D[eareg] &= 0xFFFF0000; D[eareg] |= (res & 0xFFFF); }
+        if(eamode)
+        {
+            SetLong(lastAddress, res);
+            calcTime += 8;
+        }
         else
-        {   SetWord(lastAddress, ures); calcTime += 4; }
-    }
-    else
-    {
-        int32_t dst = GetLong(eamode, eareg, calcTime);
-        int64_t res = data + dst;
-        uint64_t ures = data + (uint32_t)dst;
-
-        if(ures & 0x100000000) SetXC(); else SetXC(0);
-        if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
-
-        if(eamode == 0)
-            D[eareg] = ures;
-        else
-        {   SetLong(lastAddress, ures); calcTime += 8; }
+        {
+            D[eareg] = res;
+        }
     }
 
     return calcTime;
@@ -376,83 +373,79 @@ uint16_t SCC68070::ADDQ()
 
 uint16_t SCC68070::ADDX()
 {
-    uint8_t   Rx = (currentOpcode & 0x0E00) >> 9;
-    uint8_t   Ry = (currentOpcode & 0x0007);
-    uint8_t size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t   rm = (currentOpcode & 0x0008) >> 3;
+    const uint8_t   rx = currentOpcode >> 9 & 0x0007;
+    const uint8_t size = currentOpcode >> 6 & 0x0003;
+    const uint8_t   rm = currentOpcode >> 3 & 0x0001;
+    const uint8_t   ry = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
-    if(size == 0)
+    if(size == 0) // Byte
     {
-        int8_t src;
-        int8_t dst;
-        if(rm)
-        {   src = GetByte(ARIWPr(Ry, 1));
-            dst = GetByte(ARIWPr(Rx, 1)); calcTime = 28; }
-        else
-        {   src = D[Ry] & 0x000000FF;
-            dst = D[Rx] & 0x000000FF; }
+        const int8_t src = rm ? GetByte(ARIWPr(ry, 1)) : D[ry];
+        const int8_t dst = rm ? GetByte(ARIWPr(rx, 1)) : D[rx];
+        int8_t res;
 
-        int16_t res = src + dst + GetX();
-        uint16_t ures = (uint8_t)src + (uint8_t)dst + GetX();
-
-        if(ures & 0x100) SetXC(); else SetXC(0);
-        if(res > INT8_MAX || res < INT8_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
+        const uint8_t cc = add<int8_t, int16_t, uint16_t>(src + GetX(), dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
+        SR &= SR_UPPER_MASK | 0b00100;
+        SR |= cc & 0b11011;
+        if(!(cc & 0b00100))
+            SetZ(0);
 
         if(rm)
-            SetByte(lastAddress, res);
+        {
+            SetByte(A[rx], res);
+            calcTime = 28;
+        }
         else
-        {   D[Rx] &= 0xFFFFFF00; D[Rx] |= (res & 0xFF); }
+        {
+            D[rx] &= 0xFFFFFF00;
+            D[rx] |= (uint8_t)res;
+        }
     }
-    else if(size == 1)
+    else if(size == 1) // Word
     {
-        int16_t src;
-        int16_t dst;
-        if(rm)
-        {   src = GetWord(ARIWPr(Ry, 2));
-            dst = GetWord(ARIWPr(Rx, 2)); calcTime = 28; }
-        else
-        {   src = D[Ry] & 0x0000FFFF;
-            dst = D[Rx] & 0x0000FFFF; }
+        const int16_t src = rm ? GetWord(ARIWPr(ry, 2)) : D[ry];
+        const int16_t dst = rm ? GetWord(ARIWPr(rx, 2)) : D[rx];
+        int16_t res;
 
-        int32_t res = src + dst + GetX();
-        uint32_t ures = (uint16_t)src + (uint16_t)dst + GetX();
-
-        if(ures & 0x10000) SetXC(); else SetXC(0);
-        if(res > INT16_MAX || res < INT16_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
+        const uint8_t cc = add<int16_t, int32_t, uint32_t>(src + GetX(), dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
+        SR &= SR_UPPER_MASK | 0b00100;
+        SR |= cc & 0b11011;
+        if(!(cc & 0b00100))
+            SetZ(0);
 
         if(rm)
-            SetWord(lastAddress, res);
+        {
+            SetWord(A[rx], res);
+            calcTime = 28;
+        }
         else
-        {   D[Rx] &= 0xFFFF0000; D[Rx] |= (res & 0xFFFF); }
+        {
+            D[rx] &= 0xFFFF0000;
+            D[rx] |= (uint16_t)res;
+        }
     }
-    else
+    else // Long
     {
-        int32_t src;
-        int32_t dst;
-        if(rm)
-        {   src = GetLong(ARIWPr(Ry, 4));
-            dst = GetLong(ARIWPr(Rx, 4)); calcTime = 40; }
-        else
-        {   src = D[Ry];
-            dst = D[Rx]; }
+        const int32_t src = rm ? GetLong(ARIWPr(ry, 4)) : D[ry];
+        const int32_t dst = rm ? GetLong(ARIWPr(rx, 4)) : D[rx];
+        int32_t res;
 
-        int64_t res = src + dst + GetX();
-        uint64_t ures = (uint32_t)src + (uint32_t)dst + GetX();
-
-        if(ures & 0x100000000) SetXC(); else SetXC(0);
-        if(res > INT32_MAX || res < INT32_MIN) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
+        const uint8_t cc = add<int32_t, int64_t, uint64_t>(src + GetX(), dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
+        SR &= SR_UPPER_MASK | 0b00100;
+        SR |= cc & 0b11011;
+        if(!(cc & 0b00100))
+            SetZ(0);
 
         if(rm)
-            SetLong(lastAddress, res);
+        {
+            SetLong(A[rx], res);
+            calcTime = 40;
+        }
         else
-            D[Rx] = res;
+        {
+            D[rx] = res;
+        }
     }
 
     return calcTime;
@@ -574,7 +567,7 @@ uint16_t SCC68070::ANDI()
 
 uint16_t SCC68070::ANDICCR()
 {
-    const uint16_t data = 0xA700 | (GetNextWord() & 0x001F);
+    const uint16_t data = SR_UPPER_MASK | (GetNextWord() & 0x001F);
     SR &= data;
     return 14;
 }
@@ -1591,7 +1584,7 @@ uint16_t SCC68070::MOVECCR()
     uint16_t calcTime = 10;
 
     const uint16_t data = GetWord(eamode, eareg, calcTime) & 0x001F;
-    SR &= 0xA700;
+    SR &= SR_UPPER_MASK;
     SR |= data;
 
     return calcTime;
@@ -2485,7 +2478,7 @@ uint16_t SCC68070::RTE()
 
 uint16_t SCC68070::RTR()
 {
-    SR &= 0xA700;
+    SR &= SR_UPPER_MASK;
     SR |= GetWord(ARIWPo(7, 2)) & 0x001F;
     PC = GetLong(ARIWPo(7, 4));
     return 22;

@@ -399,7 +399,7 @@ private:
     uint8_t GetPeripheral(uint32_t addr);
     void SetPeripheral(uint32_t addr, const uint8_t data);
 
-    // Conditional Codes
+    // Conditional Tests
     bool T() const;
     bool F() const;
     bool HI() const;
@@ -622,6 +622,8 @@ private:
 #define UNSET_TX_READY() internal[USR] &= ~0x04;
 #define UNSET_RX_READY() internal[USR] &= ~0x01;
 
+#define SR_UPPER_MASK (0xA700)
+
 /* shorts for addressing modes */
 
 #define ARIWPo(register, sizeInByte) AddressRegisterIndirectWithPostincrement(register, sizeInByte)
@@ -631,8 +633,6 @@ private:
 
 #define PCIWD() ProgramCounterIndirectWithDisplacement()
 #define PCIWI8() ProgramCounterIndirectWithIndex8()
-
-//#define AM7(register) AddressingMode7(register)
 
 #define ASA() AbsoluteShortAddressing()
 #define ALA() AbsoluteLongAddressing()
