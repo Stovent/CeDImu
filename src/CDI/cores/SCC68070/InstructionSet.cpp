@@ -811,7 +811,7 @@ uint16_t SCC68070::BSET()
     }
     else // Static
     {
-        bit = GetNextWord() & 0x01FF; // Error in the datasheet ?
+        bit = GetNextWord() & 0x01FF; // TODO: error in the datasheet ?
         calcTime += 7;
     }
 
@@ -839,7 +839,7 @@ uint16_t SCC68070::BSET()
 uint16_t SCC68070::BSR()
 {
     int16_t disp = signExtend<int8_t, int16_t>(currentOpcode & 0x00FF);
-    uint32_t pc = PC;
+    const uint32_t pc = PC;
     uint16_t calcTime = 17;
 
     if(disp == 0)
@@ -1383,7 +1383,7 @@ uint16_t SCC68070::EXT()
 uint16_t SCC68070::ILLEGAL()
 {
     exceptions.push({IllegalInstruction, 1});
-    return 0; // TODO
+    return 0;
 }
 
 uint16_t SCC68070::JMP()
@@ -2545,20 +2545,23 @@ uint16_t SCC68070::Scc()
     return calcTime;
 }
 
-uint16_t SCC68070::STOP() // Not fully emulated
+uint16_t SCC68070::STOP() // TODO: correctly implement it.
 {
-    uint16_t data = GetNextWord();
+    const uint16_t data = GetNextWord();
 
-    if(GetS())
-    {
-        loop = false;
-        SR = data;
-    }
-    else
+    if(!GetS())
     {
         exceptions.push({PrivilegeViolation, 1});
         return 0;
     }
+
+    SR = data;
+    if(!GetS()) // S bit changed from supervisor to user
+    {
+        SSP = A[7];
+        A[7] = USP;
+    }
+    SR &= 0xA71F; // Set all unimplemented bytes to 0.
 
     return 13;
 }
@@ -2964,8 +2967,8 @@ uint16_t SCC68070::TAS()
 
 uint16_t SCC68070::TRAP()
 {
-    uint8_t vec = currentOpcode & 0x000F;
-    exceptions.push(SCC68070Exception(32 + vec, 2));
+    const uint8_t vector = currentOpcode & 0x000F;
+    exceptions.push({uint8_t(vector + 32), 2});
     return 0;
 }
 
