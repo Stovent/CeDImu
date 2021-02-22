@@ -1,8 +1,6 @@
 #include "CDIDisc.hpp"
 #include "common/utils.hpp"
 
-#include <wx/msgdlg.h>
-
 #include <cstring>
 
 /** \brief Open a disc.
@@ -100,8 +98,9 @@ void CDIDisc::UpdateSectorInfo()
 }
 
 /** \brief Load every file and directory from the disc.
+ * \return true if the main module has been found, false otherwise.
  */
-void CDIDisc::LoadFileSystem()
+bool CDIDisc::LoadFileSystem()
 {
     const uint32_t pos = Tell();
 
@@ -142,10 +141,12 @@ void CDIDisc::LoadFileSystem()
     }
     rootDirectory.LoadContent(*this);
 
-    if((rootDirectory.GetFile(mainModule)) == nullptr)
-        wxMessageBox("Could not find main module " + mainModule);
-
     Seek(pos);
+
+    if((rootDirectory.GetFile(mainModule)) == nullptr)
+        return false;
+
+    return true;
 }
 
 /** \brief Get file from its path on the disc.

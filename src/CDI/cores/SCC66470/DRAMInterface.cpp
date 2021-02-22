@@ -2,8 +2,6 @@
 #include "../../boards/Board.hpp"
 #include "../../common/utils.hpp"
 
-#include <iomanip>
-
 uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
 {
     if(isMaster)

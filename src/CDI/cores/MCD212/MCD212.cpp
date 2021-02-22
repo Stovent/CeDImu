@@ -2,9 +2,7 @@
 #include "../../common/utils.hpp"
 #include "../../common/Video.hpp"
 
-#include <wx/msgdlg.h>
-
-#include <iomanip>
+#include <cstring>
 
 MCD212::MCD212(Board* board) : VDSC(board) // TD = 0
 {

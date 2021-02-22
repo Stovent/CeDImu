@@ -5,7 +5,6 @@
 #include "common/Video.hpp"
 #include "cores/MCD212/MCD212.hpp"
 
-#include <wx/msgdlg.h>
 #include <wx/bitmap.h>
 
 #include <array>
@@ -301,10 +300,7 @@ char* CDIFile::GetFileContent(uint32_t& size)
     uint32_t readSize = (double)filesize / 2048.0 * 2324.0;
     char* data = new (std::nothrow) char[readSize];
     if(data == nullptr)
-    {
-        wxMessageBox("Could not allocate memory to export file " + filename);
         return nullptr;
-    }
 
     readSize = filesize;
     disc.GotoLBN(fileLBN);

@@ -57,7 +57,7 @@ class CDIDisc
     CDISubheader subheader;
     CDIDirectory rootDirectory;
 
-    void LoadFileSystem();
+    bool LoadFileSystem();
 
     void UpdateSectorInfo();
     bool CreateSubfoldersFromROMDirectory(std::string path = "");
