@@ -13,10 +13,23 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
             return data;
         }
 
-        if(addr >= 0x1FFFE0 && addr < 0x200000)
+        if(addr == 0x1FFFE1)
         {
-            const uint8_t data = internalRegisters[addr - 0x1FFFE0];
-            LOG(if(flags & Log) { fprintf(out_dram, "%X\tGet byte register at 0x%X: %d %d 0x%X\n", board->cpu.currentPC, addr, (int8_t)data, data, data); })
+            const uint8_t data = registerCSR;
+            if(flags & Trigger)
+                registerCSR &= 0xE6; // clear BE bit on status read
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X", board->cpu.currentPC, addr, data); })
+            return data;
+        }
+
+        if(addr == 0x1FFFF2 || addr == 0x1FFFF3)
+        {
+            uint8_t data;
+            if(isEven(addr))
+                data = internalRegisters[SB] >> 8;
+            else
+                data = internalRegisters[SB];
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B register at 0x%06X : 0x%X", board->cpu.currentPC, addr, data); })
             return data;
         }
     }
@@ -29,10 +42,23 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
             return data;
         }
 
-        if(addr >= 0x1FFFC0 && addr < 0x1FFFE0)
+        if(addr == 0x1FFFC1)
         {
-            const uint8_t data = internalRegisters[addr - 0x1FFFC0];
-            LOG(if(flags & Log) { fprintf(out_dram, "%X\tGet byte register at 0x%X: %d %d 0x%X\n", board->cpu.currentPC, addr, (int8_t)data, data, data); })
+            const uint8_t data = registerCSR;
+            if(flags & Trigger)
+                registerCSR &= 0xE6; // clear BE bit on status read
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X", board->cpu.currentPC, addr, data); })
+            return data;
+        }
+
+        if(addr == 0x1FFFD2 || addr == 0x1FFFD3)
+        {
+            uint8_t data;
+            if(isEven(addr))
+                data = internalRegisters[SB] >> 8;
+            else
+                data = internalRegisters[SB];
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B register at 0x%06X : 0x%X", board->cpu.currentPC, addr, data); })
             return data;
         }
     }
@@ -57,6 +83,21 @@ uint16_t SCC66470::GetWord(const uint32_t addr, const uint8_t flags)
             LOG(if(flags & Log) { fprintf(out_dram, "%X\tGet word at 0x%X: %d %d 0x%X\n", board->cpu.currentPC, addr, (int16_t)data, data, data); })
             return data;
         }
+
+        if(addr == 0x1FFFE0)
+        {
+            const uint8_t data = registerCSR;
+            if(flags & Trigger)
+                registerCSR &= 0xE6; // clear BE bit on status read
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X", board->cpu.currentPC, addr, data); })
+            return data;
+        }
+
+        if(addr == 0x1FFFF2)
+        {
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B at 0x%06X : 0x%X", board->cpu.currentPC, addr, registerB); })
+            return registerB;
+        }
     }
     else
     {
@@ -65,6 +106,21 @@ uint16_t SCC66470::GetWord(const uint32_t addr, const uint8_t flags)
             const uint16_t data = memory[addr] << 8 | memory[addr+1];
             LOG(if(flags & Log) { fprintf(out_dram, "%X\tGet word at 0x%X: %d %d 0x%X\n", board->cpu.currentPC, addr, (int16_t)data, data, data); })
             return data;
+        }
+
+        if(addr == 0x1FFFC0)
+        {
+            const uint8_t data = registerCSR;
+            if(flags & Trigger)
+                registerCSR &= 0xE6; // clear BE bit on status read
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X", board->cpu.currentPC, addr, data); })
+            return data;
+        }
+
+        if(addr == 0x1FFFD2)
+        {
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B at 0x%06X : 0x%X", board->cpu.currentPC, addr, registerB); })
+            return registerB;
         }
     }
 
@@ -116,8 +172,16 @@ void SCC66470::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 
         if(addr >= 0x1FFFE0 && addr < 0x200000)
         {
-            internalRegisters[addr - 0x1FFFE0] &= 0xFF00;
-            internalRegisters[addr - 0x1FFFE0] |= data;
+            if(isEven(addr))
+            {
+                internalRegisters[addr - 0x1FFFE0] &= 0x00FF;
+                internalRegisters[addr - 0x1FFFE0] |= (uint16_t)data << 8;
+            }
+            else
+            {
+                internalRegisters[addr - 0x1FFFE0] &= 0xFF00;
+                internalRegisters[addr - 0x1FFFE0] |= data;
+            }
             LOG(if(flags & Log) { fprintf(out_dram, "%X\tSet byte register at 0x%X: 0x%X\n", board->cpu.currentPC, addr, data); })
             return;
         }
@@ -133,8 +197,16 @@ void SCC66470::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 
         if(addr >= 0x1FFFC0 && addr < 0x1FFFE0)
         {
-            internalRegisters[addr - 0x1FFFC0] &= 0xFF00;
-            internalRegisters[addr - 0x1FFFC0] |= data;
+            if(isEven(addr))
+            {
+                internalRegisters[addr - 0x1FFFC0] &= 0x00FF;
+                internalRegisters[addr - 0x1FFFC0] |= (uint16_t)data << 8;
+            }
+            else
+            {
+                internalRegisters[addr - 0x1FFFC0] &= 0xFF00;
+                internalRegisters[addr - 0x1FFFC0] |= data;
+            }
             LOG(if(flags & Log) { fprintf(out_dram, "%X\tSet byte register at 0x%X: 0x%X\n", board->cpu.currentPC, addr, data); })
             return;
         }

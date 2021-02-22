@@ -55,6 +55,7 @@ add_library(cdi ${LIBRARY_TYPE}
     cores/MCD212/Registers.cpp
     cores/SCC66470/DRAMInterface.cpp
     cores/SCC66470/Registers.cpp
+    cores/SCC66470/Display.cpp
     cores/SCC66470/SCC66470.cpp
     cores/SCC68070/AddressingModes.cpp
     cores/SCC68070/ConditionalTests.cpp

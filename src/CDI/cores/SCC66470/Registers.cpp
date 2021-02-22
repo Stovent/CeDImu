@@ -7,7 +7,7 @@ uint16_t SCC66470::GetCSRWRegister() const
 
 uint16_t SCC66470::GetCSRRRegister() const
 {
-    return internalRegisters[SCSRR];
+    return registerCSR;
 }
 
 uint16_t SCC66470::GetDCRRegister() const
@@ -77,12 +77,12 @@ uint16_t SCC66470::GetINDEXRegister() const
 
 uint16_t SCC66470::GetFCRegister() const
 {
-    return internalRegisters[SFC];
+    return internalRegisters[SFCBC] & 0xFF00;
 }
 
 uint16_t SCC66470::GetBCRegister() const
 {
-    return internalRegisters[SBC];
+    return internalRegisters[SFCBC] & 0x00FF;
 }
 
 uint16_t SCC66470::GetTCRegister() const
@@ -90,29 +90,44 @@ uint16_t SCC66470::GetTCRegister() const
     return internalRegisters[STC];
 }
 
+bool SCC66470::GetFD() const
+{
+    return internalRegisters[SDCR] & 0x1000;
+}
+
+bool SCC66470::GetSS() const
+{
+    return internalRegisters[SDCR] & 0x0400;
+}
+
+bool SCC66470::GetST() const
+{
+    return internalRegisters[SCSRW] & 0x0002;
+}
+
 std::vector<VDSCRegister> SCC66470::GetInternalRegisters() const
 {
-    std::vector<VDSCRegister> registers;
-    uint32_t base = isMaster ? 0x1FFFE0 : 0x1FFFC0;
-    registers.push_back(VDSCRegister({"SCSRW",  SCSRW + base,  GetCSRWRegister(), ""}));
-    registers.push_back(VDSCRegister({"SCSRR",  SCSRR + base,  GetCSRRRegister(), ""}));
-    registers.push_back(VDSCRegister({"SDCR",   SDCR + base,   GetDCRRegister(), ""}));
-    registers.push_back(VDSCRegister({"SVSR",   SVSR + base,   GetVSRRegister(), ""}));
-    registers.push_back(VDSCRegister({"SBCR",   SBCR + base,   GetBCRRegister(), ""}));
-    registers.push_back(VDSCRegister({"SDCR2",  SDCR2 + base,  GetDCR2Register(), ""}));
-    registers.push_back(VDSCRegister({"SDCP",   SDCP + base,   GetDCPRegister(), ""}));
-    registers.push_back(VDSCRegister({"SSWM",   SSWM + base,   GetSWMRegister(), ""}));
-    registers.push_back(VDSCRegister({"SSTM",   SSTM + base,   GetSTMRegister(), ""}));
-    registers.push_back(VDSCRegister({"SA",     SA + base,     GetARegister(), ""}));
-    registers.push_back(VDSCRegister({"SB",     SB + base,     GetBRegister(), ""}));
-    registers.push_back(VDSCRegister({"SPCR",   SPCR + base,   GetPCRRegister(), ""}));
-    registers.push_back(VDSCRegister({"SMASK",  SMASK + base,  GetMASKRegister(), ""}));
-    registers.push_back(VDSCRegister({"SSHIFT", SSHIFT + base, GetSHIFTRegister(), ""}));
-    registers.push_back(VDSCRegister({"SINDEX", SINDEX + base, GetINDEXRegister(), ""}));
-    registers.push_back(VDSCRegister({"SFC",    SFC + base,    GetFCRegister(), ""}));
-    registers.push_back(VDSCRegister({"SBC",    SBC + base,    GetBCRegister(), ""}));
-    registers.push_back(VDSCRegister({"STC",    STC + base,    GetTCRegister(), ""}));
-    return registers;
+    const uint32_t base = isMaster ? 0x1FFFE0 : 0x1FFFC0;
+    return {
+        {"SCSRW",  0x00 + base, GetCSRWRegister(), ""},
+        {"SCSRR",  0x01 + base, GetCSRRRegister(), ""},
+        {"SDCR",   0x02 + base, GetDCRRegister(), ""},
+        {"SVSR",   0x04 + base, GetVSRRegister(), ""},
+        {"SBCR",   0x07 + base, GetBCRRegister(), ""},
+        {"SDCR2",  0x08 + base, GetDCR2Register(), ""},
+        {"SDCP",   0x0A + base, GetDCPRegister(), ""},
+        {"SSWM",   0x0C + base, GetSWMRegister(), ""},
+        {"SSTM",   0x0F + base, GetSTMRegister(), ""},
+        {"SA",     0x10 + base, GetARegister(), ""},
+        {"SB",     0x12 + base, GetBRegister(), ""},
+        {"SPCR",   0x14 + base, GetPCRRegister(), ""},
+        {"SMASK",  0x17 + base, GetMASKRegister(), ""},
+        {"SSHIFT", 0x18 + base, GetSHIFTRegister(), ""},
+        {"SINDEX", 0x1B + base, GetINDEXRegister(), ""},
+        {"SFC",    0x1C + base, GetFCRegister(), ""},
+        {"SBC",    0x1D + base, GetBCRegister(), ""},
+        {"STC",    0x1E + base, GetTCRegister(), ""},
+    };
 }
 
 std::vector<VDSCRegister> SCC66470::GetControlRegisters() const
