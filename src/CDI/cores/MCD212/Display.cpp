@@ -3,6 +3,8 @@
 #include "../../common/utils.hpp"
 #include "../../common/Video.hpp"
 
+#include <cstring>
+
 #define   SET_DA_BIT() registerCSR1R |= 0x80;
 #define UNSET_DA_BIT() registerCSR1R &= 0x20;
 

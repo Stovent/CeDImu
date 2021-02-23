@@ -22,7 +22,6 @@ SCC66470::~SCC66470()
 {
     CLOSE_LOG(out_dram)
     delete[] memory;
-    delete[] internalRegisters;
 }
 
 void SCC66470::Reset()
