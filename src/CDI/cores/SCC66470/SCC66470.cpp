@@ -15,7 +15,7 @@ SCC66470::SCC66470(Board* board, const bool ismaster) : VDSC(board), isMaster(is
 
     memory = new uint8_t[allocatedMemory];
     memset(memory, 0, allocatedMemory);
-    memset(internalRegisters, 0, 0x20);
+    memset(internalRegisters, 0, 0x20 * sizeof *internalRegisters);
 }
 
 SCC66470::~SCC66470()

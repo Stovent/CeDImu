@@ -17,10 +17,10 @@ M48T08::M48T08(const bool useCurrentTime)
     {
         in.read((char*)sram, 8192);
         in.close();
-        sram[Control] = 0;
     }
     else
-        memset(sram, 0, 8192);
+        memset(sram, 0xFF, 8192);
+    sram[Control] = 0;
 
     internalClock.nsec = 0;
     if(useCurrentTime)
