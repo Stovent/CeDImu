@@ -129,8 +129,7 @@ static inline uint8_t add(const T src, const T dst, T* result, const VT min, con
     if((UVT)vres > umax)
         cc |= 0b10001;
 
-    if(result)
-        *result = res;
+    *result = res;
 
     return cc;
 }
@@ -933,46 +932,56 @@ uint16_t SCC68070::CLR()
     return calcTime;
 }
 
+template<typename T, typename UT, typename VT>
+static inline uint8_t cmp(const T src, const T dst, const VT min, const VT max)
+{
+    const VT vres = (VT)dst - (VT)src;
+    const T res = vres;
+
+    uint8_t cc = 0;
+    if(res < 0)
+        cc |= 0b01000;
+    if(res == 0)
+        cc |= 0b00100;
+    if(vres < min || vres > max)
+        cc |= 0x00010;
+    if((UT)src > (UT)dst)
+        cc |= 0b00001;
+
+    return cc;
+}
+
 uint16_t SCC68070::CMP()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
-    if(opmode == 0) // Byte
+    if(size == 0) // Byte
     {
-        int8_t src = GetByte(eamode, eareg, calcTime);
-        int8_t dst = D[reg] &= 0x000000FF;
-        int16_t res = dst - src;
+        const int8_t src = GetByte(eamode, eareg, calcTime);
+        const int8_t dst = D[reg];
 
-        if((uint8_t)src > (uint8_t)dst) SetC(); else SetC(0);
-        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK | 0x10; // Keep X bit
+        SR |= cmp<int8_t, uint8_t, int16_t>(src, dst, INT8_MIN, INT8_MAX);
     }
-    else if(opmode == 1) // Word
+    else if(size == 1) // Word
     {
-        int16_t src = GetWord(eamode, eareg, calcTime);
-        int16_t dst = D[reg] &= 0x0000FFFF;
-        int32_t res = dst - src;
+        const int16_t src = GetWord(eamode, eareg, calcTime);
+        const int16_t dst = D[reg];
 
-        if((uint16_t)src > (uint16_t)dst) SetC(); else SetC(0);
-        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK | 0x10;
+        SR |= cmp<int16_t, uint16_t, int32_t>(src, dst, INT16_MIN, INT16_MAX);
     }
     else // Long
     {
-        int32_t src = GetLong(eamode, eareg, calcTime);
-        int32_t dst = D[reg];
-        int64_t res = dst - src;
+        const int32_t src = GetLong(eamode, eareg, calcTime);
+        const int32_t dst = D[reg];
 
-        if((uint32_t)src > (uint32_t)dst) SetC(); else SetC(0);
-        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK | 0x10;
+        SR |= cmp<int32_t, uint32_t, int64_t>(src, dst, INT32_MIN, INT32_MAX);
     }
 
     return calcTime;
@@ -980,119 +989,94 @@ uint16_t SCC68070::CMP()
 
 uint16_t SCC68070::CMPA()
 {
-    uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
-    uint8_t opmode = (currentOpcode & 0x0100) >> 8;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t    reg = currentOpcode >> 9 & 0x0007;
+    const uint8_t   size = currentOpcode >> 8 & 0x0001;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 7;
 
     int32_t src;
-    int32_t dst;
-    int64_t res;
-
-    if(opmode) // Long
-    {
+    if(size) // Long
         src = GetLong(eamode, eareg, calcTime);
-        dst = A[reg];
-        res = dst - src;
-    }
     else // Word
-    {
         src = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
-        dst = signExtend<int16_t, int32_t>(A[reg] &= 0x0000FFFF);
-        res = dst - src;
-    }
 
-    if((uint32_t)src > (uint32_t)dst) SetC(); else SetC(0);
-    if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
-    if(res == 0) SetZ(); else SetZ(0);
-    if(res & 0x80000000) SetN(); else SetN(0);
+    const int64_t vres = signExtend<int32_t, int64_t>(A[reg]) - src;
+    const int32_t res = vres;
+
+    SetN(res < 0);
+    SetZ(res == 0);
+    SetV(vres < INT32_MIN || vres > INT32_MAX);
+    SetC((uint32_t)src > A[reg]);
 
     return calcTime;
 }
 
 uint16_t SCC68070::CMPI()
 {
-    uint8_t   size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
+    const uint8_t   size = currentOpcode >> 6 & 0x0003;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 14;
 
     if(size == 0) // Byte
     {
-        int8_t data = GetNextWord() & 0x00FF;
-        int8_t dst = GetByte(eamode, eareg, calcTime);
-        int16_t res = dst - data;
+        const int8_t data = GetNextWord() & 0x00FF;
+        const int8_t  dst = GetByte(eamode, eareg, calcTime);
 
-        if((uint8_t)data > (uint8_t)dst) SetC(); else SetC(0);
-        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK | 0x10; // Keep X bit
+        SR |= cmp<int8_t, uint8_t, int16_t>(data, dst, INT8_MIN, INT8_MAX);
     }
     else if(size == 1) // Word
     {
-        int16_t data = GetNextWord();
-        int16_t dst = GetWord(eamode, eareg, calcTime);
-        int32_t res = dst - data;
+        const int16_t data = GetNextWord();
+        const int16_t  dst = GetWord(eamode, eareg, calcTime);
 
-        if((uint16_t)data > (uint16_t)dst) SetC(); else SetC(0);
-        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK | 0x10;
+        SR |= cmp<int16_t, uint16_t, int32_t>(data, dst, INT16_MIN, INT16_MAX);
     }
     else // Long
     {
-        int32_t data = (GetNextWord() << 16) | GetNextWord();
-        int32_t dst = GetLong(eamode, eareg, calcTime);
-        int64_t res = dst - data;
+        const int32_t data = (uint32_t)GetNextWord() << 16 | GetNextWord();
+        const int32_t  dst = GetLong(eamode, eareg, calcTime);
 
-        if((uint32_t)data > (uint32_t)dst) SetC(); else SetC(0);
-        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
+        SR &= SR_UPPER_MASK | 0x10;
+        SR |= cmp<int32_t, uint32_t, int64_t>(data, dst, INT32_MIN, INT32_MAX);
+        calcTime += 4;
     }
 
-    return (size == 2) ? calcTime + 4 : calcTime;
+    return calcTime;
 }
 
 uint16_t SCC68070::CMPM()
 {
-    uint8_t size = (currentOpcode & 0x00C0) >> 6;
-    uint8_t   Ax = (currentOpcode & 0x0E00) >> 9;
-    uint8_t   Ay = (currentOpcode & 0x0007);
+    const uint8_t   ax = currentOpcode >> 9 & 0x0007;
+    const uint8_t size = currentOpcode >> 6 & 0x0003;
+    const uint8_t   ay = currentOpcode & 0x0007;
 
-    if(size == 0) // byte
+    if(size == 0) // Byte
     {
-        int8_t src = GetByte(ARIWPo(Ay, 1));
-        int8_t dst = GetByte(ARIWPo(Ax, 1));
-        int16_t res = dst - src;
+        const int8_t src = GetByte(ARIWPo(ay, 1));
+        const int8_t dst = GetByte(ARIWPo(ax, 1));
 
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80) SetN(); else SetN(0);
-        if(res < INT8_MIN || res > INT8_MAX) SetV(); else SetV(0);
-        if((uint8_t)src > (uint8_t)dst) SetC(); else SetC(0);
+        SR &= SR_UPPER_MASK | 0x10; // Keep X bit
+        SR |= cmp<int8_t, uint8_t, int16_t>(src, dst, INT8_MIN, INT8_MAX);
     }
-    else if(size == 1) // word
+    else if(size == 1) // Word
     {
-        int16_t src = GetWord(ARIWPo(Ay, 2));
-        int16_t dst = GetWord(ARIWPo(Ax, 2));
-        int32_t res = dst - src;
+        const int16_t src = GetWord(ARIWPo(ay, 2));
+        const int16_t dst = GetWord(ARIWPo(ax, 2));
 
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x8000) SetN(); else SetN(0);
-        if(res < INT16_MIN || res > INT16_MAX) SetV(); else SetV(0);
-        if((uint16_t)src > (uint16_t)dst) SetC(); else SetC(0);
+        SR &= SR_UPPER_MASK | 0x10;
+        SR |= cmp<int16_t, uint16_t, int32_t>(src, dst, INT16_MIN, INT16_MAX);
     }
-    else // long
+    else // Long
     {
-        int32_t src = GetLong(ARIWPo(Ay, 4));
-        int32_t dst = GetLong(ARIWPo(Ax, 4));
-        int64_t res = dst - src;
+        const int32_t src = GetLong(ARIWPo(ay, 4));
+        const int32_t dst = GetLong(ARIWPo(ax, 4));
 
-        if(res == 0) SetZ(); else SetZ(0);
-        if(res & 0x80000000) SetN(); else SetN(0);
-        if(res < INT32_MIN || res > INT32_MAX) SetV(); else SetV(0);
-        if((uint32_t)src > (uint32_t)dst) SetC(); else SetC(0);
+        SR &= SR_UPPER_MASK | 0x10;
+        SR |= cmp<int32_t, uint32_t, int64_t>(src, dst, INT32_MIN, INT32_MAX);
     }
 
     return (size == 2) ? 26 : 18;
