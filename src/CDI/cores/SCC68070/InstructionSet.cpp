@@ -1632,159 +1632,83 @@ uint16_t SCC68070::MOVEUSP()
 
 uint16_t SCC68070::MOVEM()
 {
-    uint8_t     dr = (currentOpcode & 0x0400) >> 10;
-    uint8_t   size = (currentOpcode & 0x0040) >> 6;
-    uint8_t eamode = (currentOpcode & 0x0038) >> 3;
-    uint8_t  eareg = (currentOpcode & 0x0007);
-    uint16_t  mask = GetNextWord();
-    uint16_t calcTime;
-
-    // Prepare the lastAddress member
+    const uint8_t     dr = currentOpcode >> 10 & 0x0001;
+    const uint8_t   size = currentOpcode >> 6 & 0x0001;
+    const uint8_t eamode = currentOpcode >> 3 & 0x0007;
+    const uint8_t  eareg = currentOpcode & 0x0007;
+    uint16_t list = GetNextWord();
+    uint16_t calcTime = ((eamode == 7 && eareg <= 1) || eamode <= 4) ? 19 : 16;
+    if(dr)
+        calcTime += 3;
     if(size)
+        calcTime -= 4;
+
+    uint8_t count = 0;
+    const int gap = size ? 4 : 2;
+    const uint32_t initialReg = A[eareg];
+    uint32_t addr = GetEffectiveAddress(eamode, eareg, gap, calcTime);
+    if(eamode == 4)
     {
-        GetLong(eamode, eareg, calcTime, NoFlags);
-        if(eamode == 3)
-            A[eareg] -= 4;
-        if(eamode == 4)
+        A[eareg] = initialReg;
+        for(int i = 7; i >= 0; i--)
         {
-            A[eareg] += 4;
-            lastAddress += 4;
+            if(list & 1)
+            {
+                size ? SetLong(addr, A[i]) : SetWord(addr, A[i]);
+                addr -= gap;
+                count++;
+            }
+            list >>= 1;
         }
-        size = 4;
+
+        for(int i = 7; i >= 0; i--)
+        {
+            if(list & 1)
+            {
+                size ? SetLong(addr, D[i]) : SetWord(addr, D[i]);
+                addr -= gap;
+                count++;
+            }
+            list >>= 1;
+        }
+
+        A[eareg] = addr + gap;
     }
     else
     {
-        GetWord(eamode, eareg, calcTime, NoFlags);
+        for(int i = 0; i < 8; i++)
+        {
+            if(list & 1)
+            {
+                if(dr) // Memory to register
+                    D[i] = size ? GetLong(addr) : signExtend<int16_t, int32_t>(GetWord(addr));
+                else // Register to memory
+                    size ? SetLong(addr, D[i]) : SetWord(addr, D[i]);
+                addr += gap;
+                count++;
+            }
+            list >>= 1;
+        }
+
+        for(int i = 0; i < 8; i++)
+        {
+            if(list & 1)
+            {
+                if(dr) // Memory to register
+                    A[i] = size ? GetLong(addr) : signExtend<int16_t, int32_t>(GetWord(addr));
+                else // Register to memory
+                    size ? SetLong(addr, A[i]) : SetWord(addr, A[i]);
+                addr += gap;
+                count++;
+            }
+            list >>= 1;
+        }
+
         if(eamode == 3)
-            A[eareg] -= 2;
-        if(eamode == 4)
-        {
-            A[eareg] += 2;
-            lastAddress += 2;
-        }
-        size = 2;
+            A[eareg] = addr;
     }
 
-    calcTime = 0;
-
-    uint8_t n = 0;
-    int8_t mod;
-    bool type = false;
-    if(dr) // Memory to register
-    {
-        mod = 0;
-        for(uint8_t i = 0; i < 16; i++)
-        {
-            if(mask & 1)
-            {
-                if(size == 4) // long
-                {
-                    if(type) // address
-                        A[mod] = GetLong(lastAddress);
-                    else // data
-                        D[mod] = GetLong(lastAddress);
-                }
-                else // word
-                {
-                    if(type) // address
-                        A[mod] = signExtend<int16_t, int32_t>(GetWord(lastAddress));
-                    else // data
-                        D[mod] = signExtend<int16_t, int32_t>(GetWord(lastAddress));
-                }
-                n++;
-                lastAddress += size;
-            }
-            mask >>= 1;
-            mod++;
-            mod %= 8;
-            if(mod == 0)
-                type = true; // false means data, true means address
-        }
-    }
-    else // Register to memory
-    {
-        if(eamode == 4)
-            mod = 7;
-        else
-            mod = 0;
-        for(uint8_t i = 0; i < 16; i++)
-        {
-            if(mask & 1)
-            {
-                if(eamode == 4)
-                    lastAddress -= size;
-                if(size == 4) // long
-                {
-                    if(eamode == 4) // Predecrement addressing uses a different mask
-                        if(type) // data
-                            SetLong(lastAddress, D[mod]);
-                        else // address
-                            SetLong(lastAddress, A[mod]);
-                    else
-                        if(type) // address
-                            SetLong(lastAddress, A[mod]);
-                        else // data
-                            SetLong(lastAddress, D[mod]);
-                }
-                else // word
-                {
-                    if(eamode == 4) // Predecrement addressing uses a different mask
-                        if(type) // data
-                            SetWord(lastAddress, D[mod]);
-                        else // address
-                            SetWord(lastAddress, A[mod]);
-                    else
-                        if(type) // address
-                            SetWord(lastAddress, A[mod]);
-                        else // data
-                            SetWord(lastAddress, D[mod]);
-                }
-                n++;
-                if(eamode != 4)
-                    lastAddress += size;
-            }
-            mask >>= 1;
-            if(eamode == 4)
-                mod--;
-            else
-                mod++;
-            if(mod < 0 || mod > 7)
-            {
-                type = true; // data or address register
-                if(eamode == 4)
-                    mod = 7;
-                else
-                    mod = 0;
-            }
-        }
-    }
-
-    if(eamode == 3 || eamode == 4)
-        A[eareg] = lastAddress;
-
-    if(eamode == 2)
-        calcTime = 23;
-    if(eamode == 3)
-        calcTime = 26;
-    if(eamode == 4)
-        calcTime = 23;
-    if(eamode == 5)
-        calcTime = 27;
-    if(eamode == 6)
-        calcTime = 30;
-    if(eamode == 7 && eareg == 0)
-        calcTime = 27;
-    if(eamode == 7 && eareg == 1)
-        calcTime = 31;
-    if(eamode == 7 && eareg == 2)
-        calcTime = 30;
-    if(eamode == 7 && eareg == 3)
-        calcTime = 33;
-
-    if(dr)
-        calcTime += 3;
-
-    return calcTime + n * (size == 4) ? 11 : 7;
+    return calcTime + count * (size ? 11 : 7);
 }
 
 uint16_t SCC68070::MOVEP()
