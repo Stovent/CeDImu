@@ -40,6 +40,7 @@ add_library(cdi ${LIBRARY_TYPE}
     Export.cpp
     boards/MiniMMC/Bus.cpp
     boards/MiniMMC/MiniMMC.cpp
+    boards/Mono3/Bus.cpp
     boards/Mono3/Mono3.cpp
     common/Audio.cpp
     common/filesystem.cpp
@@ -54,6 +55,7 @@ add_library(cdi ${LIBRARY_TYPE}
     cores/MCD212/Registers.cpp
     cores/SCC66470/DRAMInterface.cpp
     cores/SCC66470/Registers.cpp
+    cores/SCC66470/Display.cpp
     cores/SCC66470/SCC66470.cpp
     cores/SCC68070/AddressingModes.cpp
     cores/SCC68070/ConditionalTests.cpp

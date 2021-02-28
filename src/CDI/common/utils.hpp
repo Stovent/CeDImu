@@ -29,32 +29,13 @@ inline uint8_t byteToPBCD(uint8_t data)
     return ((data / 10) << 4) | (data % 10);
 }
 
-/** \brief Sign-extend an 8-bits number to 32-bits.
+/** \brief Sign-extend a number.
  *
- * \param data The 8-bits number to sign-extend to 32-bits.
- * \return The sign-extended 8-bits number to 32-bits.
+ * \param data The number to sign-extend (which type is the first template parameter T).
+ * \return The sign-extended number (which type is the second template parameter R).
  */
-inline int32_t signExtend8(const int8_t data)
-{
-    return data;
-}
-
-/** \brief Sign-extend a 8-bits number to 16-bits.
- *
- * \param data The 8-bits number to sign-extend to 16-bits.
- * \return The sign-extended 8-bits number to 16-bits.
- */
-inline int16_t signExtend816(const int8_t data)
-{
-    return data;
-}
-
-/** \brief Sign-extend a 16-bits number to 32-bits.
- *
- * \param data The 16-bits number to sign-extend to 32-bits.
- * \return The sign-extended 16-bits number to 32-bits.
- */
-inline int32_t signExtend16(const int16_t data)
+template<typename T, typename R>
+inline R signExtend(const T data)
 {
     return data;
 }
@@ -66,10 +47,7 @@ inline int32_t signExtend16(const int16_t data)
  */
 inline bool isEven(const int number)
 {
-    if(number & 1)
-        return false;
-    else
-        return true;
+    return !(number & 1);
 }
 
 /** \brief Converts a number to a hexadecimal string.
@@ -170,11 +148,13 @@ inline const void* subarrayOfArray(const void* container, size_t containerSize, 
 }
 
 #ifdef DEBUG
-#define OPEN_LOG(stream, name)  stream.open(name);
+#define OPEN_LOG(stream, name)  stream = fopen(name, "w");
 #define LOG(content) content;
+#define CLOSE_LOG(stream) fclose(stream);
 #else
 #define OPEN_LOG(stream, name)
 #define LOG(content)
+#define CLOSE_LOG(stream)
 #endif // DEBUG
 
 #endif // UTILS_HPP

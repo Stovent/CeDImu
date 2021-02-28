@@ -5,7 +5,7 @@ class SCC66470;
 
 #include "../VDSC.hpp"
 
-#include <fstream>
+#include <cstdio>
 
 enum SCC66470Registers
 {
@@ -13,33 +13,36 @@ enum SCC66470Registers
     SCSRR = 0x01,
     SDCR  = 0x02,
     SVSR  = 0x04,
-    SBCR  = 0x07,
+    SBCR  = 0x06, // LSB only
     SDCR2 = 0x08,
     SDCP  = 0x0A,
-    SSWM  = 0x0C,
-    SSTM  = 0x0F,
+    SSWM  = 0x0C, // MSB only
+    SSTM  = 0x0E, // LSB only
 
     SA     = 0x10,
     SB     = 0x12,
     SPCR   = 0x14,
-    SMASK  = 0x17,
-    SSHIFT = 0x18,
-    SINDEX = 0x1B,
-    SFC    = 0x1C,
-    SBC    = 0x1D,
-    STC    = 0x1E,
+    SMASK  = 0x16, // Low order nibble only
+    SSHIFT = 0x18, // bits 8-9 only
+    SINDEX = 0x1A, // bits 0-1 only
+    SFCBC  = 0x1C, // FC and BC are respectively MSB and LSB of this register.
+    STC    = 0x1E, // MSB only
 };
 
 class SCC66470 : public VDSC
 {
     uint8_t* memory;
-    uint16_t* internalRegisters;
     uint8_t memorySwapCount;
+
+    uint16_t internalRegisters[0x20];
+    uint8_t registerCSR;
+    uint16_t registerB;
+
     bool stopOnNextFrame;
     const bool isMaster;
     std::function<void()> OnFrameCompleted;
 
-    std::ofstream out_dram;
+    FILE* out_dram;
 
 public:
     explicit SCC66470(Board* board, const bool ismaster);
@@ -96,6 +99,13 @@ public:
     uint16_t GetFCRegister() const;
     uint16_t GetBCRegister() const;
     uint16_t GetTCRegister() const;
+
+    bool GetFD() const;
+    bool GetSS() const;
+    bool GetST() const;
+
+    inline uint16_t GetHorizontalResolution() const { return 0; }
+    inline uint16_t GetVerticalResolution() const { return GetFD() ? (GetSS() ? 240 : 210) : (GetSS() ? (GetST() ? 240 : 280) : (GetST() ? 210 : 250)); }
 };
 
 #endif // SCC66470_HPP

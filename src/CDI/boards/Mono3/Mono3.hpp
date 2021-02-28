@@ -6,19 +6,20 @@ class Mono3;
 #include "../Board.hpp"
 #include "../../cores/MCD212/MCD212.hpp"
 
+#include <cstdio>
 #include <fstream>
 
 class Mono3 : public Board
 {
     MCD212 mcd212;
-    std::ofstream out;
+    FILE* out;
     std::ofstream uart_out;
     std::ifstream uart_in;
 
 public:
     Mono3(const void* vdscBios, const uint32_t vdscSize, const void* slaveBios, const uint16_t slaveSize, const bool initNVRAMClock);
     virtual ~Mono3();
-    virtual void Reset() override;
+    virtual void Reset(const bool resetCPU) override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;

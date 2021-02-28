@@ -18,7 +18,7 @@ public:
 
     Board(const void* slaveBios, const uint16_t slaveSize, const bool initNVRAMClock) : cpu(this), slave(slaveBios, slaveSize), timekeeper(initNVRAMClock) {}
     virtual ~Board() {  }
-    virtual void Reset() = 0;
+    virtual void Reset(const bool resetCPU) = 0;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) = 0;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) = 0;

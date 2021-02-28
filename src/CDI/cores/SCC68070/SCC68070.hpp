@@ -7,7 +7,7 @@ class SCC68070Exception;
 #include "../../common/flags.hpp"
 
 #include <cstdint>
-#include <fstream>
+#include <cstdio>
 #include <map>
 #include <queue>
 #include <string>
@@ -105,7 +105,7 @@ enum SCC68070InstructionSet
     TRAP, // Trap
     TRAPV, // Trap on Overflow
     TST, // Test an Operand Branch
-    UNLK // Unlink
+    UNLK, // Unlink
 };
 
 enum CC : uint8_t // Conditional Tests
@@ -125,7 +125,7 @@ enum CC : uint8_t // Conditional Tests
     GE,
     LT,
     GT,
-    LE
+    LE,
 };
 
 enum ExceptionVectors : uint8_t
@@ -316,11 +316,12 @@ private:
     bool loop;
     bool isRunning;
 
-    std::ofstream out;
-    std::ofstream instruction;
+    FILE* out;
+    FILE* instructions;
 
     uint8_t* internal;
 
+    bool flushDisassembler;
     uint16_t currentOpcode;
     uint32_t lastAddress;
     uint32_t cycleCount;
@@ -341,25 +342,26 @@ private:
     uint32_t SSP;
 
     // Conditional Codes
+    bool GetS() const;
+    void SetS(const bool S = 1);
+    bool GetX() const;
+    void SetX(const bool X = 1);
+    bool GetN() const;
+    void SetN(const bool N = 1);
+    bool GetZ() const;
+    void SetZ(const bool Z = 1);
+    bool GetV() const;
+    void SetV(const bool V = 1);
+    bool GetC() const;
+    void SetC(const bool C = 1);
     void SetXC(const bool XC = 1); // Set both X and C at the same time
     void SetVC(const bool VC = 1); // Set both V and C at the same time
-    void SetX(const bool X = 1);
-    bool GetX() const;
-    void SetN(const bool N = 1);
-    bool GetN() const;
-    void SetZ(const bool Z = 1);
-    bool GetZ() const;
-    void SetV(const bool V = 1);
-    bool GetV() const;
-    void SetC(const bool C = 1);
-    bool GetC() const;
-    void SetS(const bool S = 1);
-    bool GetS() const;
 
     uint16_t Exception(const uint8_t vectorNumber);
     std::string DisassembleException(const uint8_t vectorNumber) const;
 
     // Addressing Modes
+    uint32_t GetEffectiveAddress(const uint8_t mode, const uint8_t reg, const uint8_t sizeInBytes, uint16_t& calcTime);
     int32_t GetIndexRegister(const uint16_t bew) const;
 
     uint32_t AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte);
@@ -397,7 +399,7 @@ private:
     uint8_t GetPeripheral(uint32_t addr);
     void SetPeripheral(uint32_t addr, const uint8_t data);
 
-    // Conditional Codes
+    // Conditional Tests
     bool T() const;
     bool F() const;
     bool HI() const;
@@ -620,6 +622,8 @@ private:
 #define UNSET_TX_READY() internal[USR] &= ~0x04;
 #define UNSET_RX_READY() internal[USR] &= ~0x01;
 
+#define SR_UPPER_MASK (0xA700)
+
 /* shorts for addressing modes */
 
 #define ARIWPo(register, sizeInByte) AddressRegisterIndirectWithPostincrement(register, sizeInByte)
@@ -629,8 +633,6 @@ private:
 
 #define PCIWD() ProgramCounterIndirectWithDisplacement()
 #define PCIWI8() ProgramCounterIndirectWithIndex8()
-
-//#define AM7(register) AddressingMode7(register)
 
 #define ASA() AbsoluteShortAddressing()
 #define ALA() AbsoluteLongAddressing()

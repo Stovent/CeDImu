@@ -12,8 +12,11 @@ void SCC68070::Interpreter()
 
     do
     {
-        if(cycleCount == 0)
+        if(flushDisassembler)
+        {
             FlushDisassembler();
+            flushDisassembler = false;
+        }
 
         uint16_t executionCycles = 0;
 
@@ -48,6 +51,7 @@ void SCC68070::Interpreter()
         {
             board->DrawLine();
             cycleCount -= lineDisplayTime / cycleDelay;
+            flushDisassembler = true;
         }
 
         if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())

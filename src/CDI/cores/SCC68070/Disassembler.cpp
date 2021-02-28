@@ -51,7 +51,10 @@ std::string SCC68070::DisassembleException(const uint8_t vectorNumber)const
         case 61: return "Level 5 on-chip interrupt autovector";
         case 62: return "Level 6 on-chip interrupt autovector";
         case 63: return "Level 7 on-chip interrupt autovector";
-        default: return "Unknown exception";
+        default:
+            if(vectorNumber >= 64)
+                return "User interrupt vector " + std::to_string(vectorNumber - 64);
+            return "Unknown exception " + std::to_string(vectorNumber);
     }
 }
 

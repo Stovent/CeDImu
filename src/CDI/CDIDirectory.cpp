@@ -3,7 +3,7 @@
 #include "common/filesystem.hpp"
 #include "common/utils.hpp"
 
-#include <wx/msgdlg.h>
+#include <string>
 
 CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset) :
     nameSize(namesize),
@@ -71,8 +71,6 @@ void CDIDirectory::LoadContent(CDIDisc& disc)
                 {
                     dir.first->second.LoadContent(disc);
                 }
-                else
-                    wxMessageBox(name + " already exists in the current directory " + dirname);
             }
             else // file
             {
@@ -142,7 +140,7 @@ void CDIDirectory::Clear()
 std::stringstream CDIDirectory::ExportContent() const
 {
     std::stringstream ss;
-    std::string dirName = dirname == '/' ? "" : dirname;
+    std::string dirName = dirname == "/" ? "" : dirname;
     ss << "Dir: " << dirName << "/" << std::endl;
     ss << "LBN: " << dirLBN << std::endl;
 

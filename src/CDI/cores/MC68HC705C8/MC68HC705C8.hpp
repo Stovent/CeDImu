@@ -5,7 +5,7 @@ class MC68HC705C8;
 
 #include <bitset>
 #include <cstdint>
-#include <fstream>
+#include <cstdio>
 #include <string>
 
 #define SLAVE_MEMORY_SIZE (0x2000)
@@ -46,7 +46,7 @@ private:
 
     uint8_t currentOpcode;
     uint16_t currentPC;
-    std::ofstream instructions;
+    FILE* instructions;
     int pendingCycles;
 
     // Memory Access

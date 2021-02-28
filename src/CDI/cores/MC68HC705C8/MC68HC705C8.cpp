@@ -12,12 +12,14 @@ MC68HC705C8::MC68HC705C8(const void* bios, uint16_t size)
 
     if(size > SLAVE_MEMORY_SIZE)
         size = SLAVE_MEMORY_SIZE;
+
     if(bios != nullptr)
         memcpy(memory, bios, size);
 }
 
 MC68HC705C8::~MC68HC705C8()
 {
+    CLOSE_LOG(instructions)
     delete[] memory;
 }
 

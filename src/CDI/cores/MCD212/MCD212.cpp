@@ -2,9 +2,7 @@
 #include "../../common/utils.hpp"
 #include "../../common/Video.hpp"
 
-#include <wx/msgdlg.h>
-
-#include <iomanip>
+#include <cstring>
 
 MCD212::MCD212(Board* board) : VDSC(board) // TD = 0
 {
@@ -38,6 +36,9 @@ MCD212::MCD212(Board* board) : VDSC(board) // TD = 0
 
 MCD212::~MCD212()
 {
+    CLOSE_LOG(out_dram)
+    CLOSE_LOG(out_display)
+
     delete[] memory;
     delete[] controlRegisters;
     delete[] internalRegisters;
@@ -71,6 +72,8 @@ void MCD212::Reset()
     internalRegisters[MDCR2] &= 0x003F; // CM2, IC2, DC2
     internalRegisters[MDDR1] &= 0x003F; // MF1, MF2, FT1, FT2
     internalRegisters[MDDR2] &= 0x003F; // MF1, MF2, FT1, FT2
+    registerCSR1R = 0;
+    registerCSR2R = 0;
     MemorySwap();
 }
 
@@ -78,7 +81,7 @@ bool MCD212::LoadBIOS(const void* bios, uint32_t size)
 {
     if(size > 0xFFC00)
     {
-        LOG(out_dram << "WARNING: BIOS is bigger than ROM size (0xFFC00): got 0x" << std::hex << size << std::endl)
+        LOG(fprintf(out_dram, "WARNING: BIOS is bigger than ROM size (0xFFC00): got 0x%X\n", size);)
         size = 0xFFC00;
     }
 
@@ -109,10 +112,7 @@ void MCD212::ExecuteICA1()
     {
         const uint32_t ica = GetLong(addr);
 
-        LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << addr; \
-            out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
-            out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
-            out_display << "\tICA1 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << ica << std::endl)
+        LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tICA1 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, ica);)
         ICA1.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
 
         switch(ica >> 28)
@@ -168,10 +168,7 @@ void MCD212::ExecuteDCA1()
         const uint32_t addr = GetDCP1();
         const uint32_t dca = GetLong(addr);
 
-        LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << addr; \
-            out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
-            out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
-            out_display << "\tDCA1 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << dca << std::endl)
+        LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tDCA1 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, dca);)
         DCA1.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
@@ -227,10 +224,7 @@ void MCD212::ExecuteICA2()
     {
         const uint32_t ica = GetLong(addr);
 
-        LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << addr; \
-            out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
-            out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
-            out_display << "\tICA2 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << ica << std::endl)
+        LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tICA2 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, ica);)
         ICA2.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
 
         switch(ica >> 28)
@@ -269,7 +263,7 @@ void MCD212::ExecuteICA2()
             if(ica < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                LOG(if(bank > 1) { out_display << "WARNING: writing CLUT bank " << (int)bank << " from channel #2 is forbidden!" << std::endl;})
+                LOG(if(bank > 1) { fprintf(out_display, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
                 const uint8_t index = (uint8_t)(ica >> 24) - 0x80;
                 CLUT[bank + index] = ica & 0x00FFFFFF;
             }
@@ -287,10 +281,7 @@ void MCD212::ExecuteDCA2()
         const uint32_t addr = GetDCP2();
         const uint32_t dca = GetLong(addr);
 
-        LOG(out_display << std::setw(6) << std::setfill(' ') << std::hex << addr; \
-            out_display << "\tFrame: " << std::setw(6) << std::setfill(' ') << std::dec << totalFrameCount; \
-            out_display << "\tLine: " << std::setw(3) << std::setfill(' ') << std::dec << lineNumber; \
-            out_display << "\tDCA2 instruction: 0x" << std::setw(8) << std::setfill('0') << std::hex << dca << std::endl)
+        LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tDCA2 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, dca);)
         DCA2.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
@@ -329,7 +320,7 @@ void MCD212::ExecuteDCA2()
             if(dca < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                LOG(if(bank > 1) { out_display << "WARNING: writing CLUT bank " << (int)bank << " from channel #2 is forbidden!" << std::endl;})
+                LOG(if(bank > 1) { fprintf(out_display, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
                 const uint8_t index = (uint8_t)(dca >> 24) - 0x80;
                 CLUT[bank + index] = dca & 0x00FFFFFF;
             }

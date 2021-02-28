@@ -6,18 +6,21 @@ class MiniMMC;
 #include "../Board.hpp"
 #include "../../cores/SCC66470/SCC66470.hpp"
 
+#include <cstdio>
+#include <fstream>
+
 class MiniMMC : public Board
 {
     SCC66470 masterVDSC;
     SCC66470 slaveVDSC;
-    std::ofstream out;
+    FILE* out;
     std::ofstream uart_out;
     std::ifstream uart_in;
 
 public:
     MiniMMC(const void* bios, const uint32_t size, const bool initNVRAMClock);
     virtual ~MiniMMC();
-    virtual void Reset() override;
+    virtual void Reset(const bool resetCPU) override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;

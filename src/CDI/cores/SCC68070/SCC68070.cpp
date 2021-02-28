@@ -5,6 +5,11 @@
 #include <cstring>
 #include <iterator>
 
+/** \brief Build a new SCC68070 CPU.
+ *
+ * \param baord The board used to access memory.
+ * \param clockFrequency The frequency of the CPU.
+ */
 SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
 {
     board = baord;
@@ -15,7 +20,7 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
     DLUT = new DLUTFunctionPointer[UINT16_MAX+1];
 
     OPEN_LOG(out, "SCC68070.txt")
-    OPEN_LOG(instruction, "instructions.txt")
+    OPEN_LOG(instructions, "instructions.txt")
 
     internal = new uint8_t[SCC68070Peripherals::Size];
     speedDelay = cycleDelay = (1.0L / clockFrequency) * 1'000'000'000;
@@ -23,25 +28,48 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
     GenerateInstructionSet();
 }
 
+/** \brief Destroy the CPU, releasing its ressources.
+ */
 SCC68070::~SCC68070()
 {
     Stop(false);
     FlushDisassembler();
+    CLOSE_LOG(out)
+    CLOSE_LOG(instructions)
     delete[] ILUT;
     delete[] DLUT;
     delete[] internal;
 }
 
+/** \brief Check if the CPU is running.
+ *
+ * \return true if it is running, false otherwise.
+ */
 bool SCC68070::IsRunning() const
 {
     return isRunning;
 }
 
+/** \brief Set the CPU emulated speed.
+ *
+ * \param speed The speed multiplier based on the clock frequency used in the constructor.
+ *
+ * This method only changes the emulation speed, not the clock frequency.
+ * A multiplier of 2 will make the CPU runs twice as fast, the GPU to run at twice the framerate,
+ * the timekeeper to increment twice as fast, etc.
+ */
 void SCC68070::SetEmulationSpeed(const double speed)
 {
     speedDelay = cycleDelay / speed;
 }
 
+/** \brief Start emulation.
+ *
+ * \param loop If true, will run indefinitely as a thread. If false, will execute a single instruction.
+ *
+ * If loop = true, executes indefinitely in a thread (non-blocking).
+ * If loop = false, executes a single instruction and returns when it is executed (blocking).
+ */
 void SCC68070::Run(const bool loop)
 {
     if(!isRunning)
@@ -57,6 +85,10 @@ void SCC68070::Run(const bool loop)
     }
 }
 
+/** \brief Stop emulation.
+ *
+ * \param wait If true, will wait for the thread to join. If false, simply stop emulation.
+ */
 void SCC68070::Stop(const bool wait)
 {
     loop = false;
@@ -65,10 +97,12 @@ void SCC68070::Stop(const bool wait)
             executionThread.join();
 }
 
+/** \brief Reset the CPU to its initial state.
+ */
 void SCC68070::Reset()
 {
     loop = false;
-    LOG(out << "RESET" << std::endl; instruction << "RESET" << std::endl;)
+    LOG(fprintf(out, "RESET\n"); fprintf(instructions, "RESET\n");)
     disassembledInstructions.clear();
     cycleCount = totalCycleCount = 146;
 
@@ -76,23 +110,31 @@ void SCC68070::Reset()
     currentOpcode = 0;
     currentPC = 0;
     memset(internal, 0, SCC68070Peripherals::Size);
+    flushDisassembler = false;
 
     for(uint8_t i = 0; i < 8; i++)
     {
         D[i] = 0;
         A[i] = 0;
     }
-//    board->Reset(); // TODO: check when reseting other processors is mandatory
+    board->Reset(false);
     ResetOperation();
 }
 
+/** \brief Write the disassembled instructions to a file (in DEBUG mode).
+ */
 void SCC68070::FlushDisassembler()
 {
-    LOG(std::ostream_iterator<std::string> osit(instruction, "\n"); \
-        std::copy(disassembledInstructions.begin(), disassembledInstructions.end(), osit);)
+    LOG(for(const std::string& str : disassembledInstructions) \
+            fprintf(instructions, "%s\n", str.c_str());)
     disassembledInstructions.clear();
 }
 
+/** \brief Set the value of a CPU register.
+ *
+ * \param reg The register to set.
+ * \param value The value to set the register to.
+ */
 void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
 {
     switch(reg)
@@ -152,6 +194,10 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
     }
 }
 
+/** \brief Get the CPU registers.
+ *
+ * \return A map containing the CPU registers with their name and value.
+ */
 std::map<std::string, uint32_t> SCC68070::GetCPURegisters() const
 {
     return {
@@ -178,6 +224,10 @@ std::map<std::string, uint32_t> SCC68070::GetCPURegisters() const
     };
 }
 
+/** \brief Get the internal registers.
+ *
+ * \return A vector containing every internal register with their name, address, value and meaning.
+ */
 std::vector<CPUInternalRegister> SCC68070::GetInternalRegisters() const
 {
     std::vector<CPUInternalRegister> v({
@@ -271,6 +321,84 @@ void SCC68070::ResetOperation()
     exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top
 }
 
+bool SCC68070::GetS() const
+{
+    return SR & 0b0010'0000'0000'0000;
+}
+
+void SCC68070::SetS(const bool S) // From Bizhawk
+{
+    if(S == GetS())
+        return;
+    if(S) // entering supervisor mode
+    {
+        USP = A[7];
+        A[7] = SSP;
+        SR |= 0b0010'0000'0000'0000;
+    }
+    else // exiting supervisor mode
+    {
+        SSP = A[7];
+        A[7] = USP;
+        SR &= 0b1101'1111'1111'1111;
+    }
+}
+
+bool SCC68070::GetX() const
+{
+    return SR & 0b0000'0000'0001'0000;
+}
+
+void SCC68070::SetX(const bool X)
+{
+    SR &= 0b1111'1111'1110'1111;
+    SR |= X << 4;
+}
+
+bool SCC68070::GetN() const
+{
+    return SR & 0b0000'0000'0000'1000;
+}
+
+void SCC68070::SetN(const bool N)
+{
+    SR &= 0b1111'1111'1111'0111;
+    SR |= N << 3;
+}
+
+bool SCC68070::GetZ() const
+{
+    return SR & 0b0000'0000'0000'0100;
+}
+
+void SCC68070::SetZ(const bool Z)
+{
+    SR &= 0b1111'1111'1111'1011;
+    SR |= Z << 2;
+}
+
+bool SCC68070::GetV() const
+{
+    return SR & 0b0000'0000'0000'0010;
+}
+
+void SCC68070::SetV(const bool V)
+{
+    SR &= 0b1111'1111'1111'1101;
+    SR |= V << 1;
+}
+
+bool SCC68070::GetC() const
+{
+    return SR & 0b0000'0000'0000'0001;
+}
+
+void SCC68070::SetC(const bool C)
+{
+    SR &= 0b1111'1111'1111'1110;
+    SR |= C;
+}
+
 void SCC68070::SetXC(const bool XC)
 {
     SetX(XC);
@@ -281,83 +409,6 @@ void SCC68070::SetVC(const bool VC)
 {
     SetV(VC);
     SetC(VC);
-}
-
-void SCC68070::SetX(const bool X)
-{
-    SR &= 0b1111111111101111;
-    SR |= (X << 4);
-}
-
-bool SCC68070::GetX() const
-{
-    return SR & 0b0000000000010000;
-}
-
-void SCC68070::SetN(const bool N)
-{
-    SR &= 0b1111111111110111;
-    SR |= (N << 3);
-}
-
-bool SCC68070::GetN() const
-{
-    return SR & 0b0000000000001000;
-}
-
-void SCC68070::SetZ(const bool Z)
-{
-    SR &= 0b1111111111111011;
-    SR |= (Z << 2);
-}
-
-bool SCC68070::GetZ() const
-{
-    return SR & 0b0000000000000100;
-}
-
-void SCC68070::SetV(const bool V)
-{
-    SR &= 0b1111111111111101;
-    SR |= (V << 1);
-}
-
-bool SCC68070::GetV() const
-{
-    return SR & 0b0000000000000010;
-}
-
-void SCC68070::SetC(const bool C)
-{
-    SR &= 0b1111111111111110;
-    SR |= C;
-}
-
-bool SCC68070::GetC() const
-{
-    return SR & 0b0000000000000001;
-}
-
-void SCC68070::SetS(const bool S) // From Bizhawk
-{
-    if(S == GetS()) return;
-    if(S) // entering supervisor mode
-    {
-        USP = A[7];
-        A[7] = SSP;
-        SR |= 0b0010000000000000;
-    }
-    else // exiting supervisor mode
-    {
-        SSP = A[7];
-        A[7] = USP;
-        SR &= 0b1101111111111111;
-    }
-}
-
-bool SCC68070::GetS() const
-{
-    return SR & 0b0010000000000000;
 }
 
 void SCC68070::GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc)

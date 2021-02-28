@@ -5,7 +5,6 @@
 #include "common/Video.hpp"
 #include "cores/MCD212/MCD212.hpp"
 
-#include <wx/msgdlg.h>
 #include <wx/bitmap.h>
 
 #include <array>
@@ -32,10 +31,10 @@ CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t size, uint8_t namesize
 
 static std::string getAudioLevel(const bool bps, const uint32_t fs)
 {
-    if(bps)
-        return "A";
     if(fs == 18900)
         return "C";
+    if(bps)
+        return "A";
     return "B";
 }
 
@@ -48,7 +47,7 @@ static std::string getAudioLevel(const bool bps, const uint32_t fs)
  * Special thanks to this thread (http://www.cdinteractive.co.uk/forums/cdinteractive/viewtopic.php?t=3191)
  * for making me understand how the k0 and k1 filters worked in ADCPM decoder
  */
-void CDIFile::ExportAudio(std::string directoryPath)
+void CDIFile::ExportAudio(const std::string& directoryPath)
 {
     uint32_t pos = disc.Tell();
     int maxChannel = 0;
@@ -59,7 +58,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
         Audio::WAVHeader wavHeader;
         std::vector<int16_t> left;
         std::vector<int16_t> right;
-        bool bps = false;
+        uint8_t bps = 3;
 
         disc.GotoLBN(fileLBN);
 
@@ -77,17 +76,23 @@ void CDIFile::ExportAudio(std::string directoryPath)
                 continue;
             }
 
-            // bool emph = disc.subheader.codingInformation & Audio::CodingInformation::emphasis;
-                bps = disc.subheader.codingInformation & Audio::CodingInformation::bps;
-            bool sf = disc.subheader.codingInformation & Audio::CodingInformation::sf;
-            bool ms = disc.subheader.codingInformation & Audio::CodingInformation::ms;
+            // bool  emph = disc.subheader.codingInformation & Audio::CodingInformation::emphasis;
+                         bps = (disc.subheader.codingInformation & Audio::CodingInformation::bps) >> 4;
+            const uint8_t sf = (disc.subheader.codingInformation & Audio::CodingInformation::sf) >> 2;
+            const uint8_t ms =  disc.subheader.codingInformation & Audio::CodingInformation::ms;
+
+            if(bps > 1 || sf > 1 || ms > 1) // ignore reserved values
+            {
+                disc.GotoNextSector();
+                continue;
+            }
 
             uint8_t data[2304];
             disc.GetRaw((char*)data, 2304);
             Audio::decodeAudioSector(bps, ms, data, left, right);
 
             wavHeader.channelNumber = ms + 1;
-            wavHeader.frequency = bps ? 37800 : (sf ? 18900 : 37800);
+            wavHeader.frequency = sf ? 18900 : 37800;
 
             if(disc.subheader.submode & cdieor)
             {
@@ -116,7 +121,7 @@ void CDIFile::ExportAudio(std::string directoryPath)
  *
  * \param  directoryPath Path to the directory where the file will be written (must end with a '/').
  */
-void CDIFile::ExportFile(std::string directoryPath)
+void CDIFile::ExportFile(const std::string& directoryPath)
 {
     const uint32_t pos = disc.Tell();
 
@@ -139,7 +144,7 @@ void CDIFile::ExportFile(std::string directoryPath)
  * Converts and writes the video data from the ROM.
  * Each channel and logical records are exported individualy.
  */
-void CDIFile::ExportVideo(std::string directoryPath)
+void CDIFile::ExportVideo(const std::string& directoryPath)
 {
     uint32_t pos = disc.Tell();
     int maxChannel = 0;
@@ -219,13 +224,16 @@ void CDIFile::ExportVideo(std::string directoryPath)
             uint8_t resolution  = (disc.subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
             coding = disc.subheader.codingInformation & Video::CodingInformation::coding;
 
-            if(ascf)
+            if(ascf || coding > 7 || resolution == 2)
+            {
+                disc.GotoNextSector();
                 continue;
+            }
 
             std::array<uint8_t, 2324> d;
 
-            width = resolution == 0 ? 384 : 720;
-            height = resolution == 3 ? 480 : 245;
+            width = resolution == 0 ? 384 : 768;
+            height = resolution == 3 ? 480 : 242;
 
             disc.GetRaw((char*)d.data(), d.size());
             data.insert(data.end(), d.begin(), d.end());
@@ -292,10 +300,7 @@ char* CDIFile::GetFileContent(uint32_t& size)
     uint32_t readSize = (double)filesize / 2048.0 * 2324.0;
     char* data = new (std::nothrow) char[readSize];
     if(data == nullptr)
-    {
-        wxMessageBox("Could not allocate memory to export file " + filename);
         return nullptr;
-    }
 
     readSize = filesize;
     disc.GotoLBN(fileLBN);
