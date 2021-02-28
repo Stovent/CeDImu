@@ -46,7 +46,7 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
 
     CreateMenuBar();
 
-    CreateStatusBar();
+    CreateStatusBar(4);
     SetStatusText("CeDImu");
 
     renderTimer.SetOwner(this);
@@ -106,18 +106,20 @@ void MainFrame::RefreshTitle(wxTimerEvent& event)
         fps = app->cdi.board->GetTotalFrameCount() - oldFrameCount;
         oldFrameCount = app->cdi.board->GetTotalFrameCount();
     }
+
     double freq = 0.0;
     if(app->cdi.board)
     {
         freq = (app->cdi.board->cpu.totalCycleCount - (double)oldCycleCount) / 1000000.0;
         oldCycleCount = app->cdi.board->cpu.totalCycleCount;
     }
+
     const DiscTime discTime = app->cdi.disc.GetTime();
-    SetTitle((!app->cdi.disc.gameName.empty() ? app->cdi.disc.gameName + " | " : "") + \
-             (app->cdi.board ? app->biosName + " | " : "") + \
-             "CeDImu | FPS: " + std::to_string(fps) + " | " + \
-             std::to_string(freq) + " MHz" + " | " + \
-             "Disc position: " + std::to_string(discTime.minute) + ':' + std::to_string(discTime.second) + ':' + std::to_string(discTime.sector));
+
+    SetStatusText("FPS: " + std::to_string(fps), 1);
+    SetStatusText(std::to_string(freq) + " MHz", 2);
+    SetStatusText("Disc: " + std::to_string(discTime.minute) + ':' + std::to_string(discTime.second) + ':' + std::to_string(discTime.sector), 3);
+    SetTitle((!app->cdi.disc.gameName.empty() ? app->cdi.disc.gameName + " | " : "") + (app->cdi.board ? app->biosName + " | CeDImu" : "CeDImu"));
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
