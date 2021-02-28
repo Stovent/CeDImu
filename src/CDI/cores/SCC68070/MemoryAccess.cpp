@@ -117,7 +117,11 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
     if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
     {
         if(GetS())
-            return GetPeripheral(addr);
+        {
+            const uint8_t data = GetPeripheral(addr);
+            LOG(if(flags & Log) { fprintf(out, "%X\tGet peripheral at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
+            return data;
+        }
 
         const uint8_t data = board->GetByte(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
@@ -135,6 +139,20 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
+        const uint16_t data = board->GetWord(addr, flags);
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
+        return data;
+    }
+
+    if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
+    {
+        if(GetS())
+        {
+            const uint16_t data = (uint16_t)GetPeripheral(addr) << 8 | GetPeripheral(addr + 1);
+            LOG(if(flags & Log) { fprintf(out, "%X\tGet peripheral at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
+            return data;
+        }
+
         const uint16_t data = board->GetWord(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
         return data;
@@ -174,6 +192,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
         if(GetS())
         {
             SetPeripheral(addr, data);
+            LOG(if(flags & Log) { fprintf(out, "%X\tSet peripheral at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
             return;
         }
 
@@ -192,6 +211,21 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
+        board->SetWord(addr, data, flags);
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
+        return;
+    }
+
+    if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last)
+    {
+        if(GetS())
+        {
+            SetPeripheral(addr, data >> 8);
+            SetPeripheral(addr + 1, data);
+            LOG(if(flags & Log) { fprintf(out, "%X\tSet peripheral at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
+            return;
+        }
+
         board->SetWord(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
         return;
