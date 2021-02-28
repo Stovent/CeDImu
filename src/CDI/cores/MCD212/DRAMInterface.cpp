@@ -35,12 +35,12 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
     if(memorySwapCount < 4 && flags & Trigger)
     {
         memorySwapCount++;
-        return memory[addr + 0x400000] << 8 | memory[addr + 0x400001];
+        return (uint16_t)memory[addr + 0x400000] << 8 | memory[addr + 0x400001];
     }
 
     if(addr < 0x4FFFDF)
     {
-        const uint16_t data = memory[addr] << 8 | memory[addr + 1];
+        const uint16_t data = (uint16_t)memory[addr] << 8 | memory[addr + 1];
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet word at 0x%06X : %d %d 0x%X", board->cpu.currentPC, addr, (int16_t)data, data, data); })
         return data;
     }
@@ -94,8 +94,16 @@ void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flag
 
     if(addr >= 0x4FFFE0 || addr <= 0x4FFFFF)
     {
-        internalRegisters[addr-0x4FFFE0] &= 0xFF00;
-        internalRegisters[addr-0x4FFFE0] |= data;
+        if(isEven(addr))
+        {
+            internalRegisters[addr - 0x4FFFE0] &= 0x00FF;
+            internalRegisters[addr - 0x4FFFE0] |= (uint16_t)data << 8;
+        }
+        else
+        {
+            internalRegisters[addr - 0x4FFFE0] &= 0xFF00;
+            internalRegisters[addr - 0x4FFFE0] |= data;
+        }
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tSet byte register at 0x%06X : 0x%X", board->cpu.currentPC, addr, data); })
         return;
     }
@@ -108,14 +116,14 @@ void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fla
     if(addr < 0x400000)
     {
         memory[addr] = data >> 8;
-        memory[addr+1] = data;
+        memory[addr + 1] = data;
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tSet word at 0x%06X : %d %d 0x%X", board->cpu.currentPC, addr, (int16_t)data, data, data); })
         return;
     }
 
     if(addr >= 0x4FFFE0 || addr <= 0x4FFFFF)
     {
-        internalRegisters[addr-0x4FFFE0] = data;
+        internalRegisters[addr - 0x4FFFE0] = data;
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tSet word register at 0x%06X : 0x%X", board->cpu.currentPC, addr, data); })
         return;
     }
