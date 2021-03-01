@@ -263,12 +263,13 @@ enum class CPURegisters : uint16_t
     USP,
 };
 
-class SCC68070Exception
+struct SCC68070Exception
 {
-public:
     uint8_t vector;
     int8_t group;
-    SCC68070Exception(const uint8_t vec, const int8_t grp) : vector(vec), group(grp) {}
+    uint16_t data;
+    SCC68070Exception(const uint8_t vec, const int8_t grp) : vector(vec), group(grp), data(0) {}
+    SCC68070Exception(const uint8_t vec, const int8_t grp, const uint16_t d) : vector(vec), group(grp), data(d) {}
     SCC68070Exception(const SCC68070Exception&) = default;
 };
 
@@ -331,7 +332,9 @@ private:
 
     void Interpreter();
     uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
+    uint16_t PeekNextWord();
     void ResetOperation();
+    void DumpCPURegisters();
 
     // Registers
     uint32_t D[8];
@@ -358,7 +361,7 @@ private:
     void SetVC(const bool VC = 1); // Set both V and C at the same time
 
     uint16_t Exception(const uint8_t vectorNumber);
-    std::string DisassembleException(const uint8_t vectorNumber) const;
+    std::string DisassembleException(const SCC68070Exception& exception) const;
 
     // Addressing Modes
     uint32_t GetEffectiveAddress(const uint8_t mode, const uint8_t reg, const uint8_t sizeInBytes, uint16_t& calcTime);

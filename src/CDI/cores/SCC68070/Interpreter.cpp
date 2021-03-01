@@ -22,11 +22,12 @@ void SCC68070::Interpreter()
 
         if(exceptions.size())
         {
-            const uint8_t vector = exceptions.top().vector;
+            const SCC68070Exception exception = exceptions.top();
             exceptions.pop();
             if(disassemble)
-                disassembledInstructions.push_back("Exception vector " + std::to_string(vector) + ": " + DisassembleException(vector));
-            executionCycles += Exception(vector);
+                disassembledInstructions.push_back("Exception vector " + std::to_string(exception.vector) + ": " + DisassembleException(exception));
+//            DumpCPURegisters();
+            executionCycles += Exception(exception.vector);
         }
 
         try {

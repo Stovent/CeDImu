@@ -147,6 +147,14 @@ inline const void* subarrayOfArray(const void* container, size_t containerSize, 
     return nullptr;
 }
 
+inline std::string disassembleOS9Call(const uint16_t word)
+{
+    switch(word)
+    {
+    default: return "Unknown call 0x" + toHex(word);
+    }
+}
+
 #ifdef DEBUG
 #define OPEN_LOG(stream, name)  stream = fopen(name, "w");
 #define LOG(content) content;

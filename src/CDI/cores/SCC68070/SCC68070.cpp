@@ -314,11 +314,26 @@ uint16_t SCC68070::GetNextWord(const uint8_t flags)
     return opcode;
 }
 
+uint16_t SCC68070::PeekNextWord()
+{
+    return GetWord(PC, NoFlags);
+}
+
 void SCC68070::ResetOperation()
 {
     while(exceptions.size()) // clear it
         exceptions.pop();
     exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top
+}
+
+void SCC68070::DumpCPURegisters()
+{
+#ifdef DEBUG
+    const std::map<std::string, uint32_t>& regs = GetCPURegisters();
+    for(const std::pair<std::string, uint32_t> reg : regs)
+        fprintf(instructions, "%s: 0x%08X\n", reg.first.c_str(), reg.second);
+    fprintf(instructions, "\n");
+#endif // DEBUG
 }
 
 bool SCC68070::GetS() const

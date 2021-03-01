@@ -2855,7 +2855,7 @@ uint16_t SCC68070::TAS()
 uint16_t SCC68070::TRAP()
 {
     const uint8_t vector = currentOpcode & 0x000F;
-    exceptions.push({uint8_t(vector + 32), 2});
+    exceptions.push({uint8_t(vector + 32), 2, PeekNextWord()});
     return 0;
 }
 

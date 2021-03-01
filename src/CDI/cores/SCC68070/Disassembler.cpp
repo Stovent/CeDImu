@@ -2,9 +2,9 @@
 #include "../../boards/Board.hpp"
 #include "../../common/utils.hpp"
 
-std::string SCC68070::DisassembleException(const uint8_t vectorNumber)const
+std::string SCC68070::DisassembleException(const SCC68070Exception& exception)const
 {
-    switch(vectorNumber)
+    switch(exception.vector)
     {
         case 0:  return "Reset:Initial SSP";
         case 1:  return "Reset:Initial PC";
@@ -28,7 +28,7 @@ std::string SCC68070::DisassembleException(const uint8_t vectorNumber)const
         case 29: return "Level 5 interrupt autovector";
         case 30: return "Level 6 interrupt autovector";
         case 31: return "Level 7 interrupt autovector";
-        case 32: return "TRAP 0 instruction";
+        case 32: return "TRAP 0 instruction (0x" + toHex(exception.data) + " " + disassembleOS9Call(exception.data) + ")";
         case 33: return "TRAP 1 instruction";
         case 34: return "TRAP 2 instruction";
         case 35: return "TRAP 3 instruction";
@@ -52,9 +52,9 @@ std::string SCC68070::DisassembleException(const uint8_t vectorNumber)const
         case 62: return "Level 6 on-chip interrupt autovector";
         case 63: return "Level 7 on-chip interrupt autovector";
         default:
-            if(vectorNumber >= 64)
-                return "User interrupt vector " + std::to_string(vectorNumber - 64);
-            return "Unknown exception " + std::to_string(vectorNumber);
+            if(exception.vector >= 64)
+                return "User interrupt vector " + std::to_string(exception.vector - 64);
+            return "Unknown exception " + std::to_string(exception.vector);
     }
 }
 
