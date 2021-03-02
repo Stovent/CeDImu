@@ -129,7 +129,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tGet byte OUT OF RANGE at 0x%X\n", currentPC, addr); })
-    return 0;
+    throw SCC68070Exception(BusError, 0);
 }
 
 uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
@@ -159,7 +159,7 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tGet word OUT OF RANGE at 0x%X\n", currentPC, addr); })
-    return 0;
+    throw SCC68070Exception(BusError, 0);
 }
 
 uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
@@ -175,7 +175,7 @@ uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tGet long OUT OF RANGE at 0x%X\n", currentPC, addr); })
-    return 0;
+    throw SCC68070Exception(BusError, 0);
 }
 
 void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
@@ -202,6 +202,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tSet byte OUT OF RANGE at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
+    throw SCC68070Exception(BusError, 0);
 }
 
 void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
@@ -232,6 +233,7 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tSet word OUT OF RANGE at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
+    throw SCC68070Exception(BusError, 0);
 }
 
 void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
@@ -247,4 +249,5 @@ void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t f
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tSet long OUT OF RANGE at 0x%X: %d %d 0x%X\n", currentPC, addr, (int32_t)data, data, data); })
+    throw SCC68070Exception(BusError, 0);
 }

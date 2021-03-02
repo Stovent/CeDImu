@@ -25,7 +25,7 @@ uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tGet byte OUT OF RANGE at 0x%X\n", cpu.currentPC, addr); })
-    return 0;
+    throw SCC68070Exception(BusError, 0);
 }
 
 uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
@@ -52,7 +52,7 @@ uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tGet word OUT OF RANGE at 0x%X\n", cpu.currentPC, addr); })
-    return 0;
+    throw SCC68070Exception(BusError, 0);
 }
 
 uint32_t MiniMMC::GetLong(const uint32_t addr, const uint8_t flags)
@@ -72,7 +72,7 @@ uint32_t MiniMMC::GetLong(const uint32_t addr, const uint8_t flags)
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tGet long OUT OF RANGE at 0x%X\n", cpu.currentPC, addr); })
-    return 0;
+    throw SCC68070Exception(BusError, 0);
 }
 
 void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
@@ -99,6 +99,7 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tSet byte OUT OF RANGE at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
+    throw SCC68070Exception(BusError, 0);
 }
 
 void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
@@ -126,6 +127,7 @@ void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fl
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tSet word OUT OF RANGE at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
+    throw SCC68070Exception(BusError, 0);
 }
 
 void MiniMMC::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
@@ -145,6 +147,7 @@ void MiniMMC::SetLong(const uint32_t addr, const uint32_t data, const uint8_t fl
     }
 
     LOG(if(flags & Log) { fprintf(out, "%X\tSet long OUT OF RANGE at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
+    throw SCC68070Exception(BusError, 0);
 }
 
 uint8_t MiniMMC::CPUGetUART(const uint8_t flags)
