@@ -10,6 +10,20 @@ uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
+    if(addr >= 0x300000 && addr < 0x310000) // TODO
+    {
+        const uint8_t data = 0;
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet byte in CIAP at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
+        return data;
+    }
+
+    if(addr >= 0x310000 && addr < 0x320000) // TODO
+    {
+        const uint8_t data = 0;
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet byte in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
+        return data;
+    }
+
     if(addr >= 0x320000 && addr < 0x324000 && isEven(addr))
     {
         const uint8_t data = timekeeper.GetByte((addr - 0x320000) >> 1);
@@ -27,6 +41,20 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
     {
         const uint16_t data = mcd212.GetWord(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet word in VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
+        return data;
+    }
+
+    if(addr >= 0x300000 && addr < 0x310000) // TODO
+    {
+        const uint16_t data = 0;
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet word in CIAP at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
+        return data;
+    }
+
+    if(addr >= 0x310000 && addr < 0x320000) // TODO
+    {
+        const uint16_t data = 0;
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet word in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
         return data;
     }
 
@@ -63,6 +91,18 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
         return;
     }
 
+    if(addr >= 0x300000 && addr < 0x310000) // TODO
+    {
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet byte in CIAP at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
+        return;
+    }
+
+    if(addr >= 0x310000 && addr < 0x320000) // TODO
+    {
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet byte in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
+        return;
+    }
+
     if(addr >= 0x320000 && addr < 0x324000 && isEven(addr))
     {
         timekeeper.SetByte((addr - 0x320000) >> 1, data);
@@ -79,6 +119,18 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
     {
         mcd212.SetWord(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet word in VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
+        return;
+    }
+
+    if(addr >= 0x300000 && addr < 0x310000) // TODO
+    {
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet word in CIAP at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
+        return;
+    }
+
+    if(addr >= 0x310000 && addr < 0x320000) // TODO
+    {
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet word in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
         return;
     }
 
