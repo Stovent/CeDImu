@@ -315,7 +315,7 @@ void MainFrame::OnSettings(wxCommandEvent& event)
     wxSizer* slaveSizer = new wxBoxSizer(wxHORIZONTAL);
 
     wxTextCtrl* systemText = new wxTextCtrl(generalPage, wxID_ANY, Config::systemBIOS);
-    wxButton* selectSystem = new wxButton(generalPage, wxID_ANY, "Select");
+    wxButton* selectSystem = new wxButton(generalPage, wxID_ANY, "Select system BIOS");
     selectSystem->Bind(wxEVT_BUTTON, [settingsFrame, systemText, separator] (wxEvent& event) {
                wxFileDialog openFileDialog(settingsFrame, "Load system BIOS", wxString(Config::systemBIOS).BeforeLast(separator), "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
                if(openFileDialog.ShowModal() == wxID_CANCEL)
@@ -327,7 +327,7 @@ void MainFrame::OnSettings(wxCommandEvent& event)
     systemSizer->Add(selectSystem, 1, wxALIGN_RIGHT, 5);
 
     wxTextCtrl* slaveText = new wxTextCtrl(generalPage, wxID_ANY, Config::slaveBIOS);
-    wxButton* selectSlave = new wxButton(generalPage, wxID_ANY, "Select");
+    wxButton* selectSlave = new wxButton(generalPage, wxID_ANY, "Select slave BIOS ");
     selectSlave->Bind(wxEVT_BUTTON, [settingsFrame, slaveText, separator] (wxEvent& event) {
                wxFileDialog openFileDialog(settingsFrame, "Load slave BIOS", wxString(Config::slaveBIOS).BeforeLast(separator), "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
                if(openFileDialog.ShowModal() == wxID_CANCEL)
