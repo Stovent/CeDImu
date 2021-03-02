@@ -1,5 +1,6 @@
 #include "SCC68070.hpp"
 #include "../../boards/Board.hpp"
+#include "../../common/OS9.hpp"
 #include "../../common/utils.hpp"
 
 std::string SCC68070::DisassembleException(const SCC68070Exception& exception)const
