@@ -69,10 +69,16 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
     auiManager.Update();
 
     renderTimer.Start(16);
+
+    cpu.OnUARTOut = [=] (uint8_t byte) -> void {
+        if(mainFrame->cpuViewer)
+            mainFrame->cpuViewer->uartOut->AppendText((char)byte);
+    };
 }
 
 CPUViewer::~CPUViewer()
 {
+    cpu.OnUARTOut = nullptr;
     auiManager.UnInit();
     mainFrame->cpuViewer = nullptr;
 }

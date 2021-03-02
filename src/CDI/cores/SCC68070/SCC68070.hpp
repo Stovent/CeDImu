@@ -8,6 +8,7 @@ class SCC68070Exception;
 
 #include <cstdint>
 #include <cstdio>
+#include <functional>
 #include <map>
 #include <queue>
 #include <string>
@@ -292,6 +293,8 @@ public:
 
     std::vector<std::string> disassembledInstructions;
     std::vector<uint32_t> breakpoints;
+
+    std::function<void(uint8_t)> OnUARTOut;
 
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;

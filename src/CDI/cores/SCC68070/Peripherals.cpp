@@ -49,6 +49,8 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
     {
         board->CPUSetUART(data);
         internal[USR] |= 0x08; // set TXEMT bit
+        if(OnUARTOut)
+            OnUARTOut(data);
         LOG(disassembledInstructions.push_back("\tUTHR: 0x" + toHex(internal[UTHR])))
     }
 }
