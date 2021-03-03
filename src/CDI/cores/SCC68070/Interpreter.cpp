@@ -41,7 +41,6 @@ void SCC68070::Interpreter()
             exceptions.push(e);
         }
 
-        board->slave.Execute(executionCycles);
         board->timekeeper.IncrementClock(executionCycles * cycleDelay);
 
         cycleCount += executionCycles;

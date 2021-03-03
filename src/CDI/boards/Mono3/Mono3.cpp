@@ -1,7 +1,7 @@
 #include "Mono3.hpp"
 #include "../../common/utils.hpp"
 
-Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const void* slaveBios, const uint16_t slaveSize, const bool initNVRAMClock) : Board(slaveBios, slaveSize, initNVRAMClock), mcd212(this)
+Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock) : Board(initNVRAMClock), mcd212(this)
 {
     mcd212.LoadBIOS(vdscBios, vdscSize);
 
@@ -19,7 +19,6 @@ Mono3::~Mono3()
 void Mono3::Reset(const bool resetCPU)
 {
     mcd212.Reset();
-    slave.Reset();
     if(resetCPU)
         cpu.Reset();
 }

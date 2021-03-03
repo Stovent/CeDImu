@@ -17,7 +17,7 @@ class Mono3 : public Board
     std::ifstream uart_in;
 
 public:
-    Mono3(const void* vdscBios, const uint32_t vdscSize, const void* slaveBios, const uint16_t slaveSize, const bool initNVRAMClock);
+    Mono3(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock);
     virtual ~Mono3();
     virtual void Reset(const bool resetCPU) override;
 

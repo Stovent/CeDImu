@@ -7,7 +7,6 @@ namespace Config
 {
 // General
 extern std::string systemBIOS;
-extern std::string slaveBIOS;
 extern std::string ROMDirectory;
 
 // Emulation

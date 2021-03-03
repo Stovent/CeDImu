@@ -13,7 +13,6 @@ enum
     IDMainFrameOnExportFiles,
     IDMainFrameOnExportAudio,
     IDMainFrameOnExportVideo,
-    IDMainFrameOnSlaveViewer,
     IDMainFrameOnVDSCViewer,
     IDMainFrameOnCPUViewer,
     IDMainFrameOnRAMSearch,
@@ -33,7 +32,6 @@ enum
     IDRAMSearchListByte4,
 
     IDVDSCViewerTimer,
-    IDSlaveViewerTimer,
 };
 
 #endif // ENUMS_HPP

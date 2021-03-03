@@ -8,7 +8,6 @@ class CeDImu;
 #include "CPUViewer.hpp"
 #include "RAMSearchFrame.hpp"
 class VDSCViewer;
-class SlaveViewer;
 
 #include <wx/frame.h>
 #include <wx/menuitem.h>
@@ -25,7 +24,6 @@ public:
     CPUViewer* cpuViewer;
     RAMSearchFrame* ramSearchFrame;
     VDSCViewer* vdscViewer;
-    SlaveViewer* slaveViewer;
 
     void Pause();
     void RefreshTitle(wxTimerEvent& event);
@@ -51,7 +49,6 @@ private:
     void OnCPUViewer(wxCommandEvent& event);
     void OnVDSCViewer(wxCommandEvent& event);
     void OnRAMSearch(wxCommandEvent& event);
-    void OnSlaveViewer(wxCommandEvent& event);
 
     void OnSettings(wxCommandEvent& event);
 

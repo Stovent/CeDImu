@@ -13,10 +13,9 @@ class Board
 {
 public:
     SCC68070 cpu;
-    MC68HC705C8 slave;
     M48T08 timekeeper;
 
-    Board(const void* slaveBios, const uint16_t slaveSize, const bool initNVRAMClock) : cpu(this), slave(slaveBios, slaveSize), timekeeper(initNVRAMClock) {}
+    Board(const bool initNVRAMClock) : cpu(this), timekeeper(initNVRAMClock) {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
 

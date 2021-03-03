@@ -54,23 +54,8 @@ bool CeDImu::InitializeCores()
     fread(bios, 1, biosSize, f);;
     fclose(f);
 
-    FILE* ff = fopen(Config::slaveBIOS.c_str(), "rb");
-    if(!ff)
-    {
-        wxMessageBox("Could not open slave BIOS file!");
-        return false;
-    }
-
-    fseek(ff, 0, SEEK_END);
-    long slaveSize = ftell(ff);
-    fseek(ff, 0, SEEK_SET);
-    uint8_t* slave = new uint8_t[slaveSize];
-    fread(slave, 1, slaveSize, ff);;
-    fclose(ff);
-
-    cdi.LoadBoard(bios, biosSize, slave, slaveSize, Config::NVRAMUseCurrentTime);
+    cdi.LoadBoard(bios, biosSize, Config::NVRAMUseCurrentTime);
     delete[] bios;
-    delete[] slave;
 
 #ifdef _WIN32
     biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('\\')+1);

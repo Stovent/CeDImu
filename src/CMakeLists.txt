@@ -29,7 +29,6 @@ add_executable(CeDImu
     GUI/MainFrame.cpp
     GUI/RAMSearchFrame.cpp
     GUI/RAMSearchList.cpp
-    GUI/SlaveViewer.cpp
     GUI/VDSCViewer.cpp
 )
 

@@ -6,7 +6,6 @@ namespace Config
 {
 // General
 std::string systemBIOS;
-std::string slaveBIOS;
 std::string ROMDirectory;
 
 // Emulation
@@ -37,8 +36,6 @@ bool loadConfig()
             std::string key(line.substr(0, pos)), value(line.substr(pos+1));
             if(key == "systemBIOS")
                 systemBIOS = value;
-            else if(key == "slaveBIOS")
-                slaveBIOS = value;
             else if(key == "ROMDirectory")
                 ROMDirectory = value;
             else if(key == "NVRAMUseCurrentTime")
@@ -64,7 +61,6 @@ bool saveConfig()
 
     out << "[General]" << std::endl;
     out << "systemBIOS=" << systemBIOS << std::endl;
-    out << "slaveBIOS=" << slaveBIOS << std::endl;
     out << "ROMDirectory=" << ROMDirectory << std::endl;
 
     out << "[Emulation]" << std::endl;
@@ -80,7 +76,6 @@ bool saveConfig()
 void loadDefaultConfig()
 {
     systemBIOS = "";
-    slaveBIOS = "";
     ROMDirectory = "";
     NVRAMUseCurrentTime = false;
     skipBIOS = false;

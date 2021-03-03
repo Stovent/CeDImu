@@ -1,6 +1,5 @@
 #include "MainFrame.hpp"
 #include "enums.hpp"
-#include "SlaveViewer.hpp"
 #include "VDSCViewer.hpp"
 #include "../Config.hpp"
 
@@ -27,7 +26,6 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnCPUViewer,   MainFrame::OnCPUViewer)
     EVT_MENU(IDMainFrameOnVDSCViewer,  MainFrame::OnVDSCViewer)
     EVT_MENU(IDMainFrameOnRAMSearch,   MainFrame::OnRAMSearch)
-    EVT_MENU(IDMainFrameOnSlaveViewer, MainFrame::OnSlaveViewer)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
     EVT_MENU(IDMainFrameOnAbout, MainFrame::OnAbout)
     EVT_TIMER(wxID_ANY, MainFrame::RefreshTitle)
@@ -40,7 +38,6 @@ MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, co
     cpuViewer = nullptr;
     ramSearchFrame = nullptr;
     vdscViewer = nullptr;
-    slaveViewer = nullptr;
     oldFrameCount = 0;
     oldCycleCount = 0;
 
@@ -79,7 +76,6 @@ void MainFrame::CreateMenuBar()
     tools->Append(IDMainFrameOnCPUViewer, "CPU Viewer\tCtrl+C");
     tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer\tCtrl+V");
     tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+R");
-    tools->Append(IDMainFrameOnSlaveViewer, "Slave Viewer\tCtrl+S");
 
     wxMenu* config = new wxMenu;
     config->Append(IDMainFrameOnSettings, "Settings");
@@ -290,14 +286,6 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
     ramSearchFrame->Show();
 }
 
-void MainFrame::OnSlaveViewer(wxCommandEvent& event)
-{
-    if(slaveViewer != nullptr || !app->cdi.board)
-        return;
-    slaveViewer = new SlaveViewer(this, &app->cdi.board->slave);
-    slaveViewer->Show();
-}
-
 void MainFrame::OnSettings(wxCommandEvent& event)
 {
     wxFrame*    settingsFrame = new wxFrame(this, wxID_ANY, "Settings", GetPosition() + wxPoint(30, 30), wxDefaultSize);
@@ -312,7 +300,6 @@ void MainFrame::OnSettings(wxCommandEvent& event)
     wxPanel* generalPage = new wxPanel(notebook);
     wxSizer* generalSizer = new wxBoxSizer(wxVERTICAL);
     wxSizer* systemSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxSizer* slaveSizer = new wxBoxSizer(wxHORIZONTAL);
 
     wxTextCtrl* systemText = new wxTextCtrl(generalPage, wxID_ANY, Config::systemBIOS);
     wxButton* selectSystem = new wxButton(generalPage, wxID_ANY, "Select system BIOS");
@@ -326,20 +313,7 @@ void MainFrame::OnSettings(wxCommandEvent& event)
     systemSizer->Add(systemText, 1, wxALIGN_RIGHT, 5);
     systemSizer->Add(selectSystem, 1, wxALIGN_RIGHT, 5);
 
-    wxTextCtrl* slaveText = new wxTextCtrl(generalPage, wxID_ANY, Config::slaveBIOS);
-    wxButton* selectSlave = new wxButton(generalPage, wxID_ANY, "Select slave BIOS ");
-    selectSlave->Bind(wxEVT_BUTTON, [settingsFrame, slaveText, separator] (wxEvent& event) {
-               wxFileDialog openFileDialog(settingsFrame, "Load slave BIOS", wxString(Config::slaveBIOS).BeforeLast(separator), "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-               if(openFileDialog.ShowModal() == wxID_CANCEL)
-                   return;
-
-                slaveText->SetValue(openFileDialog.GetPath());
-    });
-    slaveSizer->Add(slaveText, 1, wxALIGN_RIGHT, 5);
-    slaveSizer->Add(selectSlave, 1, wxALIGN_RIGHT, 5);
-
     generalSizer->Add(systemSizer);
-    generalSizer->Add(slaveSizer);
     generalPage->SetSizer(generalSizer);
     notebook->AddPage(generalPage, "General");
 
@@ -361,11 +335,10 @@ void MainFrame::OnSettings(wxCommandEvent& event)
 
     wxBoxSizer* saveCancelPanel = new wxBoxSizer(wxHORIZONTAL);
     wxButton* save = new wxButton(settingsPanel, wxID_ANY, "Save");
-    save->Bind(wxEVT_BUTTON, [settingsFrame, systemText, slaveText, skipBIOS, NVRAMUseCurrentTime] (wxEvent& event) {
+    save->Bind(wxEVT_BUTTON, [settingsFrame, systemText, skipBIOS, NVRAMUseCurrentTime] (wxEvent& event) {
         Config::skipBIOS = skipBIOS->GetValue();
         Config::NVRAMUseCurrentTime = NVRAMUseCurrentTime->GetValue();
         Config::systemBIOS = systemText->GetValue();
-        Config::slaveBIOS  = slaveText->GetValue();
         Config::saveConfig();
         settingsFrame->Destroy();
     });
