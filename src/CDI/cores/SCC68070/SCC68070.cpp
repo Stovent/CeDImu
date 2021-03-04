@@ -10,11 +10,11 @@
  * \param baord The board used to access memory.
  * \param clockFrequency The frequency of the CPU.
  */
-SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) :
+SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
+    board(baord),
     cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
     timerDelay(cycleDelay * 96)
 {
-    board = baord;
     disassemble = false;
     isRunning = false;
 
@@ -24,7 +24,6 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) :
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instructions, "instructions.txt")
 
-    internal = new uint8_t[SCC68070Peripherals::Size];
     speedDelay = cycleDelay;
 
     GenerateInstructionSet();
@@ -40,7 +39,6 @@ SCC68070::~SCC68070()
     CLOSE_LOG(instructions)
     delete[] ILUT;
     delete[] DLUT;
-    delete[] internal;
 }
 
 /** \brief Check if the CPU is running.
@@ -119,7 +117,7 @@ void SCC68070::Reset()
         D[i] = 0;
         A[i] = 0;
     }
-    board->Reset(false);
+    board.Reset(false);
     ResetOperation();
 }
 

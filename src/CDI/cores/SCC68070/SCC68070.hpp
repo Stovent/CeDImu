@@ -299,7 +299,7 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    explicit SCC68070(Board* baord, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
+    explicit SCC68070(Board& baord, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
     ~SCC68070();
 
     bool IsRunning() const;
@@ -315,7 +315,7 @@ public:
     std::vector<CPUInternalRegister> GetInternalRegisters() const;
 
 private:
-    Board* board;
+    Board& board;
     std::thread executionThread;
     bool loop;
     bool isRunning;
@@ -323,7 +323,7 @@ private:
     FILE* out;
     FILE* instructions;
 
-    uint8_t* internal;
+    uint8_t internal[SCC68070Peripherals::Size];
 
     bool flushDisassembler;
     uint16_t currentOpcode;

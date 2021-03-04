@@ -15,7 +15,7 @@ public:
     SCC68070 cpu;
     M48T08 timekeeper;
 
-    Board(const bool initNVRAMClock) : cpu(this), timekeeper(initNVRAMClock) {}
+    Board(const bool initNVRAMClock) : cpu(*this), timekeeper(initNVRAMClock) {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
 

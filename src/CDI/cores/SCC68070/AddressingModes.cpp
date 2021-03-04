@@ -132,38 +132,38 @@ std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, c
     }
     else if(eamode == 5)
     {
-        mode = "(" + std::to_string((int16_t)board->GetWord(extWordAddress, NoFlags)) + ",A" + std::to_string(eareg) + ")";
+        mode = "(" + std::to_string((int16_t)board.GetWord(extWordAddress, NoFlags)) + ",A" + std::to_string(eareg) + ")";
     }
     else if(eamode == 6)
     {
-        uint16_t bew = board->GetWord(extWordAddress, NoFlags);
+        uint16_t bew = board.GetWord(extWordAddress, NoFlags);
         mode = "(" + std::to_string((int8_t)bew) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
     }
     else if(eamode == 7)
     {
         if(eareg == 0)
         {
-            mode = "(0x" + toHex(board->GetWord(extWordAddress, NoFlags)) + ").W";
+            mode = "(0x" + toHex(board.GetWord(extWordAddress, NoFlags)) + ").W";
         }
         else if(eareg == 1)
         {
-            mode = "(0x" + toHex(board->GetLong(extWordAddress, NoFlags)) + ").L";
+            mode = "(0x" + toHex(board.GetLong(extWordAddress, NoFlags)) + ").L";
         }
         else if(eareg == 2)
         {
-            mode = "(" + std::to_string((int16_t)board->GetWord(extWordAddress, NoFlags)) + ",PC)";
+            mode = "(" + std::to_string((int16_t)board.GetWord(extWordAddress, NoFlags)) + ",PC)";
         }
         else if(eareg == 3)
         {
-            uint16_t bew = board->GetWord(extWordAddress, NoFlags);
+            uint16_t bew = board.GetWord(extWordAddress, NoFlags);
             mode = "(" + std::to_string((int8_t)bew) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
         }
         else if(eareg == 4)
         {
             if(hexImmediateData)
-                mode = "#0x" + ((size == 1) ? toHex(board->GetWord(extWordAddress, NoFlags) & 0x00FF) : (size == 2) ? toHex(board->GetWord(extWordAddress, NoFlags)) : (size == 4) ? toHex(board->GetLong(extWordAddress, NoFlags)) : "Wrong size for immediate data");
+                mode = "#0x" + ((size == 1) ? toHex(board.GetWord(extWordAddress, NoFlags) & 0x00FF) : (size == 2) ? toHex(board.GetWord(extWordAddress, NoFlags)) : (size == 4) ? toHex(board.GetLong(extWordAddress, NoFlags)) : "Wrong size for immediate data");
             else
-                mode = "#" + ((size == 1) ? std::to_string(board->GetWord(extWordAddress, NoFlags) & 0x00FF) : (size == 2) ? std::to_string(board->GetWord(extWordAddress, NoFlags)) : (size == 4) ? std::to_string(board->GetLong(extWordAddress, NoFlags)) : "Wrong size for immediate data");
+                mode = "#" + ((size == 1) ? std::to_string(board.GetWord(extWordAddress, NoFlags) & 0x00FF) : (size == 2) ? std::to_string(board.GetWord(extWordAddress, NoFlags)) : (size == 4) ? std::to_string(board.GetLong(extWordAddress, NoFlags)) : "Wrong size for immediate data");
         }
         else
             mode = "Wrong register for mode 7";

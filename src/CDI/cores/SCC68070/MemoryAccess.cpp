@@ -109,7 +109,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        const uint8_t data = board->GetByte(addr, flags);
+        const uint8_t data = board.GetByte(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
         return data;
     }
@@ -123,7 +123,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
             return data;
         }
 
-        const uint8_t data = board->GetByte(addr, flags);
+        const uint8_t data = board.GetByte(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
         return data;
     }
@@ -139,7 +139,7 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        const uint16_t data = board->GetWord(addr, flags);
+        const uint16_t data = board.GetWord(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
         return data;
     }
@@ -153,7 +153,7 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
             return data;
         }
 
-        const uint16_t data = board->GetWord(addr, flags);
+        const uint16_t data = board.GetWord(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
         return data;
     }
@@ -169,7 +169,7 @@ uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        const uint32_t data = board->GetLong(addr, flags);
+        const uint32_t data = board.GetLong(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet long at 0x%X: %d %d 0x%X\n", currentPC, addr, (int32_t)data, data, data); })
         return data;
     }
@@ -182,7 +182,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 {
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        board->SetByte(addr, data, flags);
+        board.SetByte(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
         return;
     }
@@ -196,7 +196,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
             return;
         }
 
-        board->SetByte(addr, data, flags);
+        board.SetByte(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
         return;
     }
@@ -212,7 +212,7 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        board->SetWord(addr, data, flags);
+        board.SetWord(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
         return;
     }
@@ -227,7 +227,7 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
             return;
         }
 
-        board->SetWord(addr, data, flags);
+        board.SetWord(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
         return;
     }
@@ -243,7 +243,7 @@ void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t f
 
     if(addr < 0x80000000 || addr >= 0xC0000000)
     {
-        board->SetLong(addr, data, flags);
+        board.SetLong(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet long at 0x%X: %d %d 0x%X\n", currentPC, addr, (int32_t)data, data, data); })
         return;
     }

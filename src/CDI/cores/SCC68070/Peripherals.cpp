@@ -8,7 +8,7 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr)
 
     if(addr == URHR)
     {
-        internal[URHR] = board->CPUGetUART();
+        internal[URHR] = board.CPUGetUART();
         LOG(disassembledInstructions.push_back("\tURHR: 0x" + toHex(internal[URHR]))) // this or data ?
     }
 
@@ -47,7 +47,7 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
     }
     else if(addr == UTHR) // UART Transmit Holding Register
     {
-        board->CPUSetUART(data);
+        board.CPUSetUART(data);
         internal[USR] |= 0x08; // set TXEMT bit
         if(OnUARTOut)
             OnUARTOut(data);

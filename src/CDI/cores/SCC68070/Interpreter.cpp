@@ -45,12 +45,12 @@ void SCC68070::Interpreter()
         totalCycleCount += executionCycles;
 
         IncrementTimer(executionCycles * cycleDelay);
-        board->timekeeper.IncrementClock(executionCycles * cycleDelay);
+        board.timekeeper.IncrementClock(executionCycles * cycleDelay);
 
-        const uint32_t lineDisplayTime = board->GetLineDisplayTime();
+        const uint32_t lineDisplayTime = board.GetLineDisplayTime();
         if(cycleCount * cycleDelay >= lineDisplayTime)
         {
-            board->DrawLine();
+            board.DrawLine();
             cycleCount -= lineDisplayTime / cycleDelay;
             flushDisassembler = true;
         }

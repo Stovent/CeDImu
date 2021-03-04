@@ -15,9 +15,9 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
 
     if(vectorNumber == ResetSSPPC)
     {
-        SSP = board->GetLong(0, Trigger);
+        SSP = board.GetLong(0, Trigger);
         A[7] = SSP;
-        PC = board->GetLong(4, Trigger);
+        PC = board.GetLong(4, Trigger);
         SR = 0x2700;
         USP = 0;
 		return 0;
@@ -2176,7 +2176,7 @@ uint16_t SCC68070::RESET()
         return 0;
     }
 
-    board->Reset(false);
+    board.Reset(false);
     return 154;
 }
 
