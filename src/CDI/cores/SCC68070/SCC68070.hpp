@@ -329,8 +329,10 @@ private:
     uint16_t currentOpcode;
     uint32_t lastAddress;
     uint32_t cycleCount;
-    double cycleDelay; // Time between two clock cycles in nanoseconds
+    const double cycleDelay; // Time between two clock cycles in nanoseconds
+    const double timerDelay;
     double speedDelay; // used for emulation speed.
+    double timerCounter; // Counts the nanosconds when incrementing the timer.
     std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
     void Interpreter();
@@ -404,6 +406,7 @@ private:
     // Peripherals
     uint8_t GetPeripheral(uint32_t addr);
     void SetPeripheral(uint32_t addr, const uint8_t data);
+    void IncrementTimer(const double ns);
 
     // Conditional Tests
     bool T() const;

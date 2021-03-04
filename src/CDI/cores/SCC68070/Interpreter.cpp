@@ -41,10 +41,11 @@ void SCC68070::Interpreter()
             exceptions.push(e);
         }
 
-        board->timekeeper.IncrementClock(executionCycles * cycleDelay);
-
         cycleCount += executionCycles;
         totalCycleCount += executionCycles;
+
+        IncrementTimer(executionCycles * cycleDelay);
+        board->timekeeper.IncrementClock(executionCycles * cycleDelay);
 
         const uint32_t lineDisplayTime = board->GetLineDisplayTime();
         if(cycleCount * cycleDelay >= lineDisplayTime)

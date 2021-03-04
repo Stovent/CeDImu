@@ -10,7 +10,9 @@
  * \param baord The board used to access memory.
  * \param clockFrequency The frequency of the CPU.
  */
-SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
+SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency) :
+    cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
+    timerDelay(cycleDelay * 96)
 {
     board = baord;
     disassemble = false;
@@ -23,7 +25,7 @@ SCC68070::SCC68070(Board* baord, const uint32_t clockFrequency)
     OPEN_LOG(instructions, "instructions.txt")
 
     internal = new uint8_t[SCC68070Peripherals::Size];
-    speedDelay = cycleDelay = (1.0L / clockFrequency) * 1'000'000'000;
+    speedDelay = cycleDelay;
 
     GenerateInstructionSet();
 }
