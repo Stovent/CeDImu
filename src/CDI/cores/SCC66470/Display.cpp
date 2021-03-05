@@ -19,7 +19,7 @@ void SCC66470::DrawLine()
         totalFrameCount++;
         if(stopOnNextFrame)
         {
-            board->cpu.Stop(false);
+            board.cpu.Stop(false);
             stopOnNextFrame = false;
         }
     }

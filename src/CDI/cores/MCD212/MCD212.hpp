@@ -64,7 +64,7 @@ enum ImageCodingMethods
 class MCD212 : public VDSC
 {
 public:
-    explicit MCD212(Board* board);
+    explicit MCD212(Board& board);
     virtual ~MCD212();
 
     virtual void Reset() override;

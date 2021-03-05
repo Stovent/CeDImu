@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-MCD212::MCD212(Board* board) : VDSC(board) // TD = 0
+MCD212::MCD212(Board& board) : VDSC(board) // TD = 0
 {
     stopOnNextFrame = false;
     controlRegisters = new uint32_t[0x80];

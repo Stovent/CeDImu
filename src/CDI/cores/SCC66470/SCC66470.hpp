@@ -45,7 +45,7 @@ class SCC66470 : public VDSC
     FILE* out_dram;
 
 public:
-    explicit SCC66470(Board* board, const bool ismaster);
+    explicit SCC66470(Board& board, const bool ismaster);
     virtual ~SCC66470();
 
     virtual void Reset() override;

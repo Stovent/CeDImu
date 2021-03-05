@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstring>
 
-SCC66470::SCC66470(Board* board, const bool ismaster) : VDSC(board), isMaster(ismaster)
+SCC66470::SCC66470(Board& board, const bool ismaster) : VDSC(board), isMaster(ismaster)
 {
     memorySwapCount = 0;
     stopOnNextFrame = false;
