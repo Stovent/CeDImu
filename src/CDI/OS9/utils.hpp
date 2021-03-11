@@ -1,7 +1,10 @@
-#ifndef OS9_HPP
-#define OS9_HPP
+#ifndef OS9_UTILS_HPP
+#define OS9_UTILS_HPP
 
-#include "utils.hpp"
+#include "../common/utils.hpp"
+
+namespace OS9
+{
 
 inline std::string disassembleOS9Call(const uint16_t word)
 {
@@ -104,4 +107,6 @@ inline std::string disassembleOS9Call(const uint16_t word)
     }
 }
 
-#endif // OS9_HPP
+} // namespace OS9
+
+#endif // OS9_UTILS_HPP

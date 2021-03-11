@@ -1,7 +1,7 @@
 #include "SCC68070.hpp"
 #include "../../boards/Board.hpp"
-#include "../../common/OS9.hpp"
 #include "../../common/utils.hpp"
+#include "../../OS9/utils.hpp"
 
 std::string SCC68070::DisassembleException(const SCC68070Exception& exception)const
 {
@@ -29,7 +29,7 @@ std::string SCC68070::DisassembleException(const SCC68070Exception& exception)co
         case 29: return "Level 5 interrupt autovector";
         case 30: return "Level 6 interrupt autovector";
         case 31: return "Level 7 interrupt autovector";
-        case 32: return "TRAP 0 instruction (0x" + toHex(exception.data) + " " + disassembleOS9Call(exception.data) + ")";
+        case 32: return "TRAP 0 instruction (0x" + toHex(exception.data) + " " + OS9::disassembleOS9Call(exception.data) + ")";
         case 33: return "TRAP 1 instruction";
         case 34: return "TRAP 2 instruction";
         case 35: return "TRAP 3 instruction";
