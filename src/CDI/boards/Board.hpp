@@ -6,6 +6,7 @@ class Board;
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "../cores/MC68HC705C8/MC68HC705C8.hpp"
 #include "../cores/M48T08/M48T08.hpp"
+#include "../cores/ISlave.hpp"
 #include "../cores/VDSC.hpp"
 #include "../common/flags.hpp"
 
@@ -13,6 +14,7 @@ class Board
 {
 public:
     SCC68070 cpu;
+    ISlave* slave;
     M48T08 timekeeper;
 
     Board(const bool initNVRAMClock) : cpu(*this), timekeeper(initNVRAMClock) {}
