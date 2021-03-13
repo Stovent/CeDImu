@@ -61,7 +61,7 @@ std::string SCC68070::DisassembleException(const SCC68070Exception& exception)co
 
 std::string SCC68070::DisassembleUnknownInstruction(const uint32_t pc) const
 {
-    return toHex(pc) + "\tUnknown instruction 0x" + toHex(currentOpcode);
+    return "Unknown instruction 0x" + toHex(currentOpcode);
 }
 
 std::string SCC68070::DisassembleABCD(const uint32_t pc) const
@@ -69,7 +69,7 @@ std::string SCC68070::DisassembleABCD(const uint32_t pc) const
     const uint8_t Rx = (currentOpcode & 0x0E00) >> 9;
     const uint8_t Ry = (currentOpcode & 0x0007);
     const uint8_t rm = currentOpcode & 0x0008;
-    return toHex(pc) + "\tABCD " + (rm ? "-(A" + std::to_string(Ry) + "), -(A" + std::to_string(Rx) + ")" : \
+    return "ABCD " + (rm ? "-(A" + std::to_string(Ry) + "), -(A" + std::to_string(Rx) + ")" : \
                                          "D" + std::to_string(Ry) + ", D" + std::to_string(Rx));
 }
 
@@ -88,7 +88,7 @@ std::string SCC68070::DisassembleADD(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tADD" + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (opmode < 3 ? DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", D" + std::to_string(reg) \
+    return std::string("ADD") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (opmode < 3 ? DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", D" + std::to_string(reg) \
                                                                                                : "D" + std::to_string(reg) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size));
 }
 
@@ -104,7 +104,7 @@ std::string SCC68070::DisassembleADDA(const uint32_t pc) const
     else
         size = 2;
 
-    return toHex(pc) + "\tADDA" + (size == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", A" + std::to_string(reg);
+    return std::string("ADDA") + (size == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", A" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleADDI(const uint32_t pc) const
@@ -130,7 +130,7 @@ std::string SCC68070::DisassembleADDI(const uint32_t pc) const
         data = std::to_string((int32_t)board.GetLong(pc+2, NoFlags));
     }
 
-    return toHex(pc) + "\tADDI" + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc + (size == 4 ? 6 : 4), eamode, eareg, size);
+    return std::string("ADDI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc + (size == 4 ? 6 : 4), eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleADDQ(const uint32_t pc) const
@@ -148,7 +148,7 @@ std::string SCC68070::DisassembleADDQ(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tADDQ" + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + std::to_string(data) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size);
+    return std::string("ADDQ") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + std::to_string(data) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleADDX(const uint32_t pc) const
@@ -165,7 +165,7 @@ std::string SCC68070::DisassembleADDX(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tADDX" + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (rm ? "-(A" + std::to_string(Ry) + "), -(A" + std::to_string(Rx) + ")" \
+    return std::string("ADDX") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (rm ? "-(A" + std::to_string(Ry) + "), -(A" + std::to_string(Rx) + ")" \
                                                                                         : "D" + std::to_string(Ry) + ", D" + std::to_string(Rx));
 }
 
@@ -184,7 +184,7 @@ std::string SCC68070::DisassembleAND(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tAND" + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (opmode < 3 ? DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", D" + std::to_string(reg) \
+    return std::string("AND") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (opmode < 3 ? DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", D" + std::to_string(reg) \
                                                                                                : "D" + std::to_string(reg) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size));
 }
 
@@ -211,19 +211,19 @@ std::string SCC68070::DisassembleANDI(const uint32_t pc) const
         data = std::to_string(board.GetLong(pc+2, NoFlags));
     }
 
-    return toHex(pc) + "\tANDI" + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc + (size == 4 ? 6 : 4), eamode, eareg, size);
+    return std::string("ANDI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc + (size == 4 ? 6 : 4), eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleANDICCR(const uint32_t pc) const
 {
     const uint8_t data = board.GetWord(pc+2, NoFlags) & 0x1F;
-    return toHex(pc) + "\tANDI #0x" + toHex(data) + ", CCR";
+    return "ANDI #0x" + toHex(data) + ", CCR";
 }
 
 std::string SCC68070::DisassembleANDISR(const uint32_t pc) const
 {
     const uint16_t data = board.GetWord(pc+2, NoFlags);
-    return toHex(pc) + "\tANDI #0x" + toHex(data) + ", SR";
+    return "ANDI #0x" + toHex(data) + ", SR";
 }
 
 std::string SCC68070::DisassembleASm(const uint32_t pc) const
@@ -232,9 +232,9 @@ std::string SCC68070::DisassembleASm(const uint32_t pc) const
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
     if(dr)
-        return toHex(pc) + "\tASL " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+        return "ASL " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
     else
-        return toHex(pc) + "\tASR " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+        return "ASR " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
 }
 
 std::string SCC68070::DisassembleASr(const uint32_t pc) const
@@ -252,9 +252,9 @@ std::string SCC68070::DisassembleASr(const uint32_t pc) const
         leftOperand = "#" + std::to_string(count);
 
     if(dr)
-        return toHex(pc) + "\tASL" + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
+        return std::string("ASL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
     else
-        return toHex(pc) + "\tASR" + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
+        return std::string("ASR") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleBcc(const uint32_t pc) const
@@ -265,7 +265,7 @@ std::string SCC68070::DisassembleBcc(const uint32_t pc) const
     if(disp == 0)
         disp = board.GetWord(pc+2, NoFlags);
 
-    return toHex(pc) + "\tB" + DisassembleConditionalCode(condition) + " " + toHex(pc + 2 + disp);
+    return "B" + DisassembleConditionalCode(condition) + " " + toHex(pc + 2 + disp);
 }
 
 std::string SCC68070::DisassembleBCHG(const uint32_t pc) const
@@ -285,7 +285,7 @@ std::string SCC68070::DisassembleBCHG(const uint32_t pc) const
         data += "#" + std::to_string(bit) + ", " + DisassembleAddressingMode(pc+4, eamode, eareg, eamode ? 1 : 4);
     }
 
-    return toHex(pc) + "\tBCHG " + data;
+    return "BCHG " + data;
 }
 
 std::string SCC68070::DisassembleBCLR(const uint32_t pc) const
@@ -305,7 +305,7 @@ std::string SCC68070::DisassembleBCLR(const uint32_t pc) const
         data += "#" + std::to_string(bit) + ", " + DisassembleAddressingMode(pc+4, eamode, eareg, eamode ? 1 : 4);
     }
 
-    return toHex(pc) + "\tBCLR " + data;
+    return "BCLR " + data;
 }
 
 std::string SCC68070::DisassembleBRA(const uint32_t pc) const
@@ -315,7 +315,7 @@ std::string SCC68070::DisassembleBRA(const uint32_t pc) const
     if(disp == 0)
         disp = board.GetWord(pc+2, NoFlags);
 
-    return toHex(pc) + "\tBRA " + toHex(pc + 2 + disp);
+    return "BRA " + toHex(pc + 2 + disp);
 }
 
 std::string SCC68070::DisassembleBSET(const uint32_t pc) const
@@ -335,7 +335,7 @@ std::string SCC68070::DisassembleBSET(const uint32_t pc) const
         data += "#" + std::to_string(bit) + ", " + DisassembleAddressingMode(pc+4, eamode, eareg, eamode ? 1 : 4);
     }
 
-    return toHex(pc) + "\tBSET " + data;
+    return "BSET " + data;
 }
 
 std::string SCC68070::DisassembleBSR(const uint32_t pc) const
@@ -345,7 +345,7 @@ std::string SCC68070::DisassembleBSR(const uint32_t pc) const
     if(disp == 0)
         disp = board.GetWord(pc+2, NoFlags);
 
-    return toHex(pc) + "\tBSR " + toHex(pc + 2 + disp);
+    return "BSR " + toHex(pc + 2 + disp);
 }
 
 std::string SCC68070::DisassembleBTST(const uint32_t pc) const
@@ -365,7 +365,7 @@ std::string SCC68070::DisassembleBTST(const uint32_t pc) const
         data = "#" + std::to_string(bit) + ", " + DisassembleAddressingMode(pc+4, eamode, eareg, eamode ? 1 : 4);
     }
 
-    return toHex(pc) + "\tBTST " + data;
+    return "BTST " + data;
 }
 
 std::string SCC68070::DisassembleCHK(const uint32_t pc) const
@@ -373,7 +373,7 @@ std::string SCC68070::DisassembleCHK(const uint32_t pc) const
     const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tCHK " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
+    return "CHK " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleCLR(const uint32_t pc) const
@@ -389,7 +389,7 @@ std::string SCC68070::DisassembleCLR(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tCLR" + (size == 1 ? ".B " : (size == 2 ? ".W " : ".L ")) + DisassembleAddressingMode(pc+2, eamode, eareg, size);
+    return std::string("CLR") + (size == 1 ? ".B " : (size == 2 ? ".W " : ".L ")) + DisassembleAddressingMode(pc+2, eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleCMP(const uint32_t pc) const
@@ -406,7 +406,7 @@ std::string SCC68070::DisassembleCMP(const uint32_t pc) const
     else
         opmode = 4;
 
-    return toHex(pc) + "\tCMP" + (opmode == 1 ? ".B " : opmode == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, opmode) + ", D" + std::to_string(reg);
+    return std::string("CMP") + (opmode == 1 ? ".B " : opmode == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, opmode) + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleCMPA(const uint32_t pc) const
@@ -421,7 +421,7 @@ std::string SCC68070::DisassembleCMPA(const uint32_t pc) const
     else
         opmode = 2;
 
-    return toHex(pc) + "\tCMPA" + (opmode == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, opmode) + ", A" + std::to_string(reg);
+    return std::string("CMPA") + (opmode == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, opmode) + ", A" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleCMPI(const uint32_t pc) const
@@ -447,7 +447,7 @@ std::string SCC68070::DisassembleCMPI(const uint32_t pc) const
         data = std::to_string((int32_t)(board.GetLong(pc+2, NoFlags)));
     }
 
-    return toHex(pc) + "\tCMPI" + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc + (size == 4 ? 6 : 4), eamode, eareg, size);
+    return std::string("CMPI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc + (size == 4 ? 6 : 4), eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleCMPM(const uint32_t pc) const
@@ -463,7 +463,7 @@ std::string SCC68070::DisassembleCMPM(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tCMPM" + (size == 1 ? ".B (A" : size == 2 ? ".W (A" : ".L (A") + std::to_string(Ay) + ")+, (A" + std::to_string(Ax) + ")+";
+    return std::string("CMPM") + (size == 1 ? ".B (A" : size == 2 ? ".W (A" : ".L (A") + std::to_string(Ay) + ")+, (A" + std::to_string(Ax) + ")+";
 }
 
 std::string SCC68070::DisassembleDBcc(const uint32_t pc) const
@@ -471,7 +471,7 @@ std::string SCC68070::DisassembleDBcc(const uint32_t pc) const
     const uint8_t condition = (currentOpcode & 0x0F00) >> 8;
     const uint8_t       reg = (currentOpcode & 0x0007);
     const int16_t      disp = board.GetWord(pc+2, NoFlags);
-    return toHex(pc) + "\tDB" + DisassembleConditionalCode(condition) + " D" + std::to_string(reg) + ", " + toHex(pc + 2 + disp);
+    return "DB" + DisassembleConditionalCode(condition) + " D" + std::to_string(reg) + ", " + toHex(pc + 2 + disp);
 }
 
 std::string SCC68070::DisassembleDIVS(const uint32_t pc) const
@@ -479,7 +479,7 @@ std::string SCC68070::DisassembleDIVS(const uint32_t pc) const
     const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tDIVS.W " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
+    return "DIVS.W " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleDIVU(const uint32_t pc) const
@@ -487,7 +487,7 @@ std::string SCC68070::DisassembleDIVU(const uint32_t pc) const
     const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tDIVU.W " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
+    return "DIVU.W " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleEOR(const uint32_t pc) const
@@ -504,7 +504,7 @@ std::string SCC68070::DisassembleEOR(const uint32_t pc) const
     else
         opmode = 4;
 
-    return toHex(pc) + "\tEOR" + (opmode == 1 ? ".B D" : opmode == 2 ? ".W D" : ".L D") + std::to_string(reg) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, opmode);
+    return std::string("EOR") + (opmode == 1 ? ".B D" : opmode == 2 ? ".W D" : ".L D") + std::to_string(reg) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, opmode);
 }
 
 std::string SCC68070::DisassembleEORI(const uint32_t pc) const
@@ -530,19 +530,19 @@ std::string SCC68070::DisassembleEORI(const uint32_t pc) const
         data = std::to_string(board.GetLong(pc+2, NoFlags));
     }
 
-    return toHex(pc) + "\tEORI" + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc+(size == 4 ? 6 : 4), eamode, eareg, size);
+    return std::string("EORI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc+(size == 4 ? 6 : 4), eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleEORICCR(const uint32_t pc) const
 {
     const uint8_t data = board.GetWord(pc+2, NoFlags) & 0x1F;
-    return toHex(pc) + "\tEORI #0x" + toHex(data) + ", CCR";
+    return "EORI #0x" + toHex(data) + ", CCR";
 }
 
 std::string SCC68070::DisassembleEORISR(const uint32_t pc) const
 {
     const uint8_t data = board.GetWord(pc+2, NoFlags);
-    return toHex(pc) + "\tEORI #0x" + toHex(data) + ", SR";
+    return "EORI #0x" + toHex(data) + ", SR";
 }
 
 std::string SCC68070::DisassembleEXG(const uint32_t pc) const
@@ -568,33 +568,33 @@ std::string SCC68070::DisassembleEXG(const uint32_t pc) const
         right = ", A" + std::to_string(Ry);
     }
 
-    return toHex(pc) + "\tEXG " + left + right;
+    return "EXG " + left + right;
 }
 
 std::string SCC68070::DisassembleEXT(const uint32_t pc) const
 {
     const uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
     const uint8_t    reg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tEXT." + (opmode == 2 ? "W D" : "L D") + std::to_string(reg);
+    return std::string("EXT.") + (opmode == 2 ? "W D" : "L D") + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleILLEGAL(const uint32_t pc) const
 {
-    return toHex(pc) + "\tILLEGAL";
+    return "ILLEGAL";
 }
 
 std::string SCC68070::DisassembleJMP(const uint32_t pc) const
 {
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tJMP " + DisassembleAddressingMode(pc+2, eamode, eareg, 0);
+    return "JMP " + DisassembleAddressingMode(pc+2, eamode, eareg, 0);
 }
 
 std::string SCC68070::DisassembleJSR(const uint32_t pc) const
 {
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tJSR " + DisassembleAddressingMode(pc+2, eamode, eareg, 0);
+    return "JSR " + DisassembleAddressingMode(pc+2, eamode, eareg, 0);
 }
 
 std::string SCC68070::DisassembleLEA(const uint32_t pc) const
@@ -602,14 +602,14 @@ std::string SCC68070::DisassembleLEA(const uint32_t pc) const
     const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tLEA " + DisassembleAddressingMode(pc+2, eamode, eareg, 4) + ", A" + std::to_string(reg);
+    return "LEA " + DisassembleAddressingMode(pc+2, eamode, eareg, 4) + ", A" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleLINK(const uint32_t pc) const
 {
     const uint8_t reg = (currentOpcode & 0x0007);
     const int16_t disp = board.GetWord(pc+2, NoFlags);
-    return (toHex(pc) + "\tLINK A" + std::to_string(reg) + ", #" + std::to_string(disp));
+    return "LINK A" + std::to_string(reg) + ", #" + std::to_string(disp);
 }
 
 std::string SCC68070::DisassembleLSm(const uint32_t pc) const
@@ -619,9 +619,9 @@ std::string SCC68070::DisassembleLSm(const uint32_t pc) const
     const uint8_t  eareg = (currentOpcode & 0x0007);
 
     if(dr)
-        return toHex(pc) + "\tLSL " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+        return "LSL " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
     else
-        return toHex(pc) + "\tLSR " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+        return "LSR " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
 }
 
 std::string SCC68070::DisassembleLSr(const uint32_t pc) const
@@ -639,9 +639,9 @@ std::string SCC68070::DisassembleLSr(const uint32_t pc) const
         leftOperand = "#" + std::to_string(count);
 
     if(dr)
-        return toHex(pc) + "\tLSL" + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
+        return std::string("LSL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
     else
-        return toHex(pc) + "\tLSR" + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
+        return std::string("LSR") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleMOVE(const uint32_t pc) const
@@ -669,7 +669,7 @@ std::string SCC68070::DisassembleMOVE(const uint32_t pc) const
         dstEA = DisassembleAddressingMode(pc+(srcmode == 7 && (srcreg == 1 || srcreg == 4) ? 6 : (srcmode >= 5 ? 4 : 2)), dstmode, dstreg, 4);
     }
 
-    return toHex(pc) + "\tMOVE." + ((size == 1) ? "B " : (size == 3) ? "W " : "L ") + srcEA + ", " + dstEA;
+    return std::string("MOVE.") + ((size == 1) ? "B " : (size == 3) ? "W " : "L ") + srcEA + ", " + dstEA;
 }
 
 std::string SCC68070::DisassembleMOVEA(const uint32_t pc) const
@@ -678,35 +678,35 @@ std::string SCC68070::DisassembleMOVEA(const uint32_t pc) const
     const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tMOVEA" + (size == 3 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size == 3 ? 2 : 4, true) + ", A" + std::to_string(reg);
+    return std::string("MOVEA") + (size == 3 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size == 3 ? 2 : 4, true) + ", A" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleMOVECCR(const uint32_t pc) const
 {
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tMOVE " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", CCR";
+    return "MOVE " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", CCR";
 }
 
 std::string SCC68070::DisassembleMOVEfSR(const uint32_t pc) const
 {
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tMOVE SR, " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+    return "MOVE SR, " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
 }
 
 std::string SCC68070::DisassembleMOVESR(const uint32_t pc) const
 {
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tMOVE " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", SR";
+    return "MOVE " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", SR";
 }
 
 std::string SCC68070::DisassembleMOVEUSP(const uint32_t pc) const
 {
     const uint8_t  dr = (currentOpcode & 0x0008) >> 3;
     const uint8_t reg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tMOVE " + (dr ? "USP, A" + std::to_string(reg) : "A" + std::to_string(reg) + ", USP");
+    return std::string("MOVE ") + (dr ? "USP, A" + std::to_string(reg) : "A" + std::to_string(reg) + ", USP");
 }
 
 std::string SCC68070::DisassembleMOVEM(const uint32_t pc) const
@@ -720,7 +720,7 @@ std::string SCC68070::DisassembleMOVEM(const uint32_t pc) const
     std::string list;
     list = toBinString(mask >> 8, 8) + " " + toBinString(mask, 8);
 
-    return toHex(pc) + "\tMOVEM" + (size ? ".L " : ".W ") + (dr ? DisassembleAddressingMode(pc+4, eamode, eareg, size ? 4 : 2) + ", " + list : list + ", " + DisassembleAddressingMode(pc+4, eamode, eareg, size ? 4 : 2));
+    return std::string("MOVEM") + (size ? ".L " : ".W ") + (dr ? DisassembleAddressingMode(pc+4, eamode, eareg, size ? 4 : 2) + ", " + list : list + ", " + DisassembleAddressingMode(pc+4, eamode, eareg, size ? 4 : 2));
 }
 
 std::string SCC68070::DisassembleMOVEP(const uint32_t pc) const
@@ -748,14 +748,14 @@ std::string SCC68070::DisassembleMOVEP(const uint32_t pc) const
         operands = ".L D" + std::to_string(datareg) + ", (" + std::to_string(disp) + ", A" + std::to_string(addrreg) + ")";
     }
 
-    return toHex(pc) + "\tMOVEP" + operands;
+    return "MOVEP" + operands;
 }
 
 std::string SCC68070::DisassembleMOVEQ(const uint32_t pc) const
 {
     const uint8_t reg = (currentOpcode & 0x0E00) >> 9;
     const int8_t data = (currentOpcode & 0x00FF);
-    return toHex(pc) + "\tMOVEQ #" + std::to_string(data) + ", D" + std::to_string(reg);
+    return "MOVEQ #" + std::to_string(data) + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleMULS(const uint32_t pc) const
@@ -763,7 +763,7 @@ std::string SCC68070::DisassembleMULS(const uint32_t pc) const
     const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tMULS.W " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
+    return "MULS.W " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleMULU(const uint32_t pc) const
@@ -771,14 +771,14 @@ std::string SCC68070::DisassembleMULU(const uint32_t pc) const
     const uint8_t    reg = (currentOpcode & 0x0E00) >> 9;
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tMULU.W " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
+    return "MULU.W " + DisassembleAddressingMode(pc+2, eamode, eareg, 2) + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleNBCD(const uint32_t pc) const
 {
     const uint8_t mode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  reg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tNBCD " + DisassembleAddressingMode(pc+2, mode, reg, 1);
+    return "NBCD " + DisassembleAddressingMode(pc+2, mode, reg, 1);
 }
 
 std::string SCC68070::DisassembleNEG(const uint32_t pc) const
@@ -794,7 +794,7 @@ std::string SCC68070::DisassembleNEG(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tNEG" + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size);
+    return std::string("NEG") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleNEGX(const uint32_t pc) const
@@ -810,12 +810,12 @@ std::string SCC68070::DisassembleNEGX(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tNEGX" + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size);
+    return std::string("NEGX") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleNOP(const uint32_t pc) const
 {
-    return toHex(pc) + "\tNOP";
+    return "NOP";
 }
 
 std::string SCC68070::DisassembleNOT(const uint32_t pc) const
@@ -831,7 +831,7 @@ std::string SCC68070::DisassembleNOT(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tNOT" + (size == 1 ? ".B " : (size == 2 ? ".W " : ".L ")) + DisassembleAddressingMode(pc+2, eamode, eareg, size);
+    return std::string("NOT") + (size == 1 ? ".B " : (size == 2 ? ".W " : ".L ")) + DisassembleAddressingMode(pc+2, eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleOR(const uint32_t pc) const
@@ -849,7 +849,7 @@ std::string SCC68070::DisassembleOR(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tOR" + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (opmode < 3 ? DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", D" + std::to_string(reg) \
+    return std::string("OR") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (opmode < 3 ? DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", D" + std::to_string(reg) \
                                                                                               : "D" + std::to_string(reg) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size));
 }
 
@@ -876,31 +876,31 @@ std::string SCC68070::DisassembleORI(const uint32_t pc) const
         data = std::to_string(board.GetLong(pc+2, NoFlags));
     }
 
-    return toHex(pc) + "\tORI" + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc+(size == 4 ? 6 : 4), eamode, eareg, size);
+    return std::string("ORI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc+(size == 4 ? 6 : 4), eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleORICCR(const uint32_t pc) const
 {
     const uint8_t data = board.GetWord(pc+2, NoFlags) & 0x1F;
-    return toHex(pc) + "\tORI #0x" + toHex(data) + ", CCR";
+    return "ORI #0x" + toHex(data) + ", CCR";
 }
 
 std::string SCC68070::DisassembleORISR(const uint32_t pc) const
 {
     const uint16_t data = board.GetWord(pc+2, NoFlags);
-    return toHex(pc) + "\tORI #0x" + toHex(data) + ", SR";
+    return "ORI #0x" + toHex(data) + ", SR";
 }
 
 std::string SCC68070::DisassemblePEA(const uint32_t pc) const
 {
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tPEA " + DisassembleAddressingMode(pc+2, eamode, eareg, 4);
+    return "PEA " + DisassembleAddressingMode(pc+2, eamode, eareg, 4);
 }
 
 std::string SCC68070::DisassembleRESET(const uint32_t pc) const
 {
-    return toHex(pc) + "\tRESET";
+    return "RESET";
 }
 
 std::string SCC68070::DisassembleROm(const uint32_t pc) const
@@ -910,9 +910,9 @@ std::string SCC68070::DisassembleROm(const uint32_t pc) const
     const uint8_t  eareg = (currentOpcode & 0x0007);
 
     if(dr)
-        return toHex(pc) + "\tROL " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+        return "ROL " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
     else
-        return toHex(pc) + "\tROR " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+        return "ROR " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
 }
 
 std::string SCC68070::DisassembleROr(const uint32_t pc) const
@@ -930,9 +930,9 @@ std::string SCC68070::DisassembleROr(const uint32_t pc) const
         leftOperand = "#" + std::to_string(count);
 
     if(dr)
-        return toHex(pc) + "\tROL" + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
+        return std::string("ROL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
     else
-        return toHex(pc) + "\tROR" + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
+        return std::string("ROR") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleROXm(const uint32_t pc) const
@@ -942,9 +942,9 @@ std::string SCC68070::DisassembleROXm(const uint32_t pc) const
     const uint8_t  eareg = (currentOpcode & 0x0007);
 
     if(dr)
-        return toHex(pc) + "\tROXL " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+        return "ROXL " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
     else
-        return toHex(pc) + "\tROXR " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
+        return "ROXR " + DisassembleAddressingMode(pc+2, eamode, eareg, 2);
 }
 
 std::string SCC68070::DisassembleROXr(const uint32_t pc) const
@@ -962,24 +962,24 @@ std::string SCC68070::DisassembleROXr(const uint32_t pc) const
         leftOperand = "#" + std::to_string(count);
 
     if(dr)
-        return toHex(pc) + "\tROXL" + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
+        return std::string("ROXL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
     else
-        return toHex(pc) + "\tROXR" + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
+        return std::string("ROXR") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleRTE(const uint32_t pc) const
 {
-    return toHex(pc) + "\tRTE";
+    return "RTE";
 }
 
 std::string SCC68070::DisassembleRTR(const uint32_t pc) const
 {
-    return toHex(pc) + "\tRTR";
+    return "RTR";
 }
 
 std::string SCC68070::DisassembleRTS(const uint32_t pc) const
 {
-    return toHex(pc) + "\tRTS";
+    return "RTS";
 }
 
 std::string SCC68070::DisassembleSBCD(const uint32_t pc) const
@@ -987,7 +987,7 @@ std::string SCC68070::DisassembleSBCD(const uint32_t pc) const
     const uint8_t Ry = (currentOpcode & 0x0E00) >> 9;
     const uint8_t rm = (currentOpcode & 0x0008);
     const uint8_t Rx = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tSBCD " + (rm ? "-(A" + std::to_string(Rx) + "), -(A" + std::to_string(Ry) + ")" : \
+    return "SBCD " + (rm ? "-(A" + std::to_string(Rx) + "), -(A" + std::to_string(Ry) + ")" : \
                                          "D" + std::to_string(Rx) + ", D" + std::to_string(Ry));
 }
 
@@ -996,13 +996,13 @@ std::string SCC68070::DisassembleScc(const uint32_t pc) const
     const uint8_t condition = (currentOpcode & 0x0F00) >> 8;
     const uint8_t    eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t     eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tS" + DisassembleConditionalCode(condition) + " " + DisassembleAddressingMode(pc+2, eamode, eareg, 1);
+    return "S" + DisassembleConditionalCode(condition) + " " + DisassembleAddressingMode(pc+2, eamode, eareg, 1);
 }
 
 std::string SCC68070::DisassembleSTOP(const uint32_t pc) const
 {
     const uint16_t data = board.GetWord(pc+2, NoFlags);
-    return toHex(pc) + "\tSTOP #0x" + toHex(data);
+    return "STOP #0x" + toHex(data);
 }
 
 std::string SCC68070::DisassembleSUB(const uint32_t pc) const
@@ -1020,7 +1020,7 @@ std::string SCC68070::DisassembleSUB(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tSUB" + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (opmode < 3 ? (DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", D" + std::to_string(reg)) \
+    return std::string("SUB") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (opmode < 3 ? (DisassembleAddressingMode(pc+2, eamode, eareg, size) + ", D" + std::to_string(reg)) \
                                                                                                : ("D" + std::to_string(reg) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size)));
 }
 
@@ -1036,7 +1036,7 @@ std::string SCC68070::DisassembleSUBA(const uint32_t pc) const
     else
         opmode = 2;
 
-    return toHex(pc) + "\tSUBA" + (opmode == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, opmode) + ", A" + std::to_string(reg);
+    return std::string("SUBA") + (opmode == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, opmode) + ", A" + std::to_string(reg);
 }
 
 std::string SCC68070::DisassembleSUBI(const uint32_t pc) const
@@ -1062,7 +1062,7 @@ std::string SCC68070::DisassembleSUBI(const uint32_t pc) const
         data = std::to_string((int32_t)(board.GetLong(pc+2, NoFlags)));
     }
 
-    return toHex(pc) + "\tSUBI" + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc+ (size == 4 ? 6 : 4), eamode, eareg, size);
+    return std::string("SUBI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc+ (size == 4 ? 6 : 4), eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleSUBQ(const uint32_t pc) const
@@ -1080,7 +1080,7 @@ std::string SCC68070::DisassembleSUBQ(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tSUBQ" + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + std::to_string(data) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size);
+    return std::string("SUBQ") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + std::to_string(data) + ", " + DisassembleAddressingMode(pc+2, eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleSUBX(const uint32_t pc) const
@@ -1097,30 +1097,30 @@ std::string SCC68070::DisassembleSUBX(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tSUBX" + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (rm ? "-(A" + std::to_string(rx) + "), -(A" + std::to_string(ry) + ")" \
+    return std::string("SUBX") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + (rm ? "-(A" + std::to_string(rx) + "), -(A" + std::to_string(ry) + ")" \
                                                                                         : "D" + std::to_string(rx) + ", D" + std::to_string(ry));
 }
 
 std::string SCC68070::DisassembleSWAP(const uint32_t pc) const
 {
-    return toHex(pc) + "\tSWAP D" + std::to_string(currentOpcode & 0x0007);
+    return "SWAP D" + std::to_string(currentOpcode & 0x0007);
 }
 
 std::string SCC68070::DisassembleTAS(const uint32_t pc) const
 {
     const uint8_t eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t  eareg = (currentOpcode & 0x0007);
-    return toHex(pc) + "\tTAS " + DisassembleAddressingMode(pc+2, eamode, eareg, 1);
+    return "TAS " + DisassembleAddressingMode(pc+2, eamode, eareg, 1);
 }
 
 std::string SCC68070::DisassembleTRAP(const uint32_t pc) const
 {
-    return toHex(pc) + "\tTRAP #" + std::to_string(currentOpcode & 0x000F);
+    return "TRAP #" + std::to_string(currentOpcode & 0x000F);
 }
 
 std::string SCC68070::DisassembleTRAPV(const uint32_t pc) const
 {
-    return toHex(pc) + "\tTRAPV";
+    return "TRAPV";
 }
 
 std::string SCC68070::DisassembleTST(const uint32_t pc) const
@@ -1136,10 +1136,10 @@ std::string SCC68070::DisassembleTST(const uint32_t pc) const
     else
         size = 4;
 
-    return toHex(pc) + "\tTST " + DisassembleAddressingMode(pc+2, eamode, eareg, size);
+    return "TST " + DisassembleAddressingMode(pc+2, eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleUNLK(const uint32_t pc) const
 {
-    return toHex(pc) + "\tUNLK A" + std::to_string(currentOpcode & 0x0007);
+    return "UNLK A" + std::to_string(currentOpcode & 0x0007);
 }

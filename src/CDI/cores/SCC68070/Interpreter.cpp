@@ -34,7 +34,7 @@ void SCC68070::Interpreter()
             currentPC = PC;
             currentOpcode = GetNextWord(Trigger);
             if(disassemble)
-                disassembledInstructions.push_back((this->*DLUT[currentOpcode])(currentPC));
+                disassembledInstructions.push_back(toHex(currentPC) + "\t" + (this->*DLUT[currentOpcode])(currentPC));
             executionCycles += (this->*ILUT[currentOpcode])();
         }
         catch(const SCC68070Exception& e) {
