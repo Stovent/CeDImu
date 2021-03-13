@@ -8,7 +8,7 @@ uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcT
         return D[reg] & 0x000000FF;
 
     if(mode == 1)
-        return A[reg] & 0x000000FF;
+        return A(reg) & 0x000000FF;
 
     if(mode == 7 && reg == 4)
     {
@@ -26,7 +26,7 @@ uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calc
         return D[reg] & 0x0000FFFF;
 
     if(mode == 1)
-        return A[reg] & 0x0000FFFF;
+        return A(reg) & 0x0000FFFF;
 
     if(mode == 7 && reg == 4)
     {
@@ -44,7 +44,7 @@ uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calc
         return D[reg];
 
     if(mode == 1)
-        return A[reg];
+        return A(reg);
 
     if(mode == 7 && reg == 4)
     {
@@ -79,7 +79,7 @@ void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
     }
     else if(mode == 1)
     {
-        A[reg] = signExtend<int16_t, uint32_t>(data);
+        A(reg) = signExtend<int16_t, uint32_t>(data);
     }
     else
     {
@@ -96,7 +96,7 @@ void SCC68070::SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
     }
     else if(mode == 1)
     {
-        A[reg] = data;
+        A(reg) = data;
     }
     else
     {

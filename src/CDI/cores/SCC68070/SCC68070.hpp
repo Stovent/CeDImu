@@ -343,11 +343,14 @@ private:
 
     // Registers
     uint32_t D[8];
-    uint32_t A[8];
+    uint32_t A_[8]; // A_[7] is a dummy register, use A() for safety.
     uint32_t PC;
     uint16_t SR;
     uint32_t USP;
     uint32_t SSP;
+
+    inline uint32_t& A(const uint8_t reg) { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
+    inline uint32_t A(const uint8_t reg) const { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
 
     // Conditional Codes
     bool GetS() const;

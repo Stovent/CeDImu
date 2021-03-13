@@ -115,7 +115,7 @@ void SCC68070::Reset()
     for(uint8_t i = 0; i < 8; i++)
     {
         D[i] = 0;
-        A[i] = 0;
+        A_[i] = 0;
     }
     board.Reset(false);
     ResetOperation();
@@ -148,49 +148,20 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
     case CPURegisters::D6: D[6] = value; break;
     case CPURegisters::D7: D[7] = value; break;
 
-    case CPURegisters::A0: A[0] = value; break;
-    case CPURegisters::A1: A[1] = value; break;
-    case CPURegisters::A2: A[2] = value; break;
-    case CPURegisters::A3: A[3] = value; break;
-    case CPURegisters::A4: A[4] = value; break;
-    case CPURegisters::A5: A[5] = value; break;
-    case CPURegisters::A6: A[6] = value; break;
-    case CPURegisters::A7:
-        A[7] = value;
-        if(GetS())
-            SSP = value;
-        else
-            USP = value;
-        break;
+    case CPURegisters::A0: A(0) = value; break;
+    case CPURegisters::A1: A(1) = value; break;
+    case CPURegisters::A2: A(2) = value; break;
+    case CPURegisters::A3: A(3) = value; break;
+    case CPURegisters::A4: A(4) = value; break;
+    case CPURegisters::A5: A(5) = value; break;
+    case CPURegisters::A6: A(6) = value; break;
+    case CPURegisters::A7: A(7) = value; break;
 
     case CPURegisters::PC: PC = value; break;
-    case CPURegisters::SR:
-        if((SR & 0x2000) ^ (value & 0x2000))
-        {
-            if(value & 0x2000)
-            {
-                USP = A[7];
-                A[7] = SSP;
-            }
-            else
-            {
-                SSP = A[7];
-                A[7] = USP;
-            }
-        }
-        SR = value;
-        break;
+    case CPURegisters::SR: SR = value; break;
 
-    case CPURegisters::USP:
-        USP = A[7];
-        if(!GetS())
-            A[7] = value;
-        break;
-
-    case CPURegisters::SSP:
-        SSP = A[7];
-        if(GetS())
-            A[7] = value;
+    case CPURegisters::USP: USP = A(7); break;
+    case CPURegisters::SSP: SSP = A(7); break;
     }
 }
 
@@ -209,14 +180,14 @@ std::map<std::string, uint32_t> SCC68070::GetCPURegisters() const
         {"D5", D[5]},
         {"D6", D[6]},
         {"D7", D[7]},
-        {"A0", A[0]},
-        {"A1", A[1]},
-        {"A2", A[2]},
-        {"A3", A[3]},
-        {"A4", A[4]},
-        {"A5", A[5]},
-        {"A6", A[6]},
-        {"A7", A[7]},
+        {"A0", A(0)},
+        {"A1", A(1)},
+        {"A2", A(2)},
+        {"A3", A(3)},
+        {"A4", A(4)},
+        {"A5", A(5)},
+        {"A6", A(6)},
+        {"A7", A(7)},
         {"PC", PC},
         {"SR", SR},
         {"SSP", SSP},
@@ -341,22 +312,10 @@ bool SCC68070::GetS() const
     return SR & 0b0010'0000'0000'0000;
 }
 
-void SCC68070::SetS(const bool S) // From Bizhawk
+void SCC68070::SetS(const bool S)
 {
-    if(S == GetS())
-        return;
-    if(S) // entering supervisor mode
-    {
-        USP = A[7];
-        A[7] = SSP;
-        SR |= 0b0010'0000'0000'0000;
-    }
-    else // exiting supervisor mode
-    {
-        SSP = A[7];
-        A[7] = USP;
-        SR &= 0b1101'1111'1111'1111;
-    }
+    SR &= 0b1101'1111'1111'1111;
+    SR |= S << 13;
 }
 
 bool SCC68070::GetX() const

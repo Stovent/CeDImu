@@ -16,7 +16,6 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
     if(vectorNumber == ResetSSPPC)
     {
         SSP = board.GetLong(0, Trigger);
-        A[7] = SSP;
         PC = board.GetLong(4, Trigger);
         SR = 0x2700;
         USP = 0;
@@ -220,7 +219,7 @@ uint16_t SCC68070::ADDA()
     else // Word
         src = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
 
-    A[reg] += src;
+    A(reg) += src;
 
     return calcTime;
 }
@@ -306,7 +305,7 @@ uint16_t SCC68070::ADDQ()
 
     if(eamode == 1)
     {
-        A[eareg] += data;
+        A(eareg) += data;
         return 7;
     }
 
@@ -392,7 +391,7 @@ uint16_t SCC68070::ADDX()
 
         if(rm)
         {
-            SetByte(A[rx], res);
+            SetByte(A(rx), res);
             calcTime = 28;
         }
         else
@@ -415,7 +414,7 @@ uint16_t SCC68070::ADDX()
 
         if(rm)
         {
-            SetWord(A[rx], res);
+            SetWord(A(rx), res);
             calcTime = 28;
         }
         else
@@ -438,7 +437,7 @@ uint16_t SCC68070::ADDX()
 
         if(rm)
         {
-            SetLong(A[rx], res);
+            SetLong(A(rx), res);
             calcTime = 40;
         }
         else
@@ -582,11 +581,6 @@ uint16_t SCC68070::ANDISR()
     }
 
     SR &= data;
-    if(!GetS()) // S bit changed from supervisor to user
-    {
-        SSP = A[7];
-        A[7] = USP;
-    }
     SR &= 0xA71F;
 
     return 14;
@@ -1001,13 +995,13 @@ uint16_t SCC68070::CMPA()
     else // Word
         src = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
 
-    const int64_t vres = signExtend<int32_t, int64_t>(A[reg]) - src;
+    const int64_t vres = signExtend<int32_t, int64_t>(A(reg)) - src;
     const int32_t res = vres;
 
     SetN(res < 0);
     SetZ(res == 0);
     SetV(vres < INT32_MIN || vres > INT32_MAX);
-    SetC((uint32_t)src > A[reg]);
+    SetC((uint32_t)src > A(reg));
 
     return calcTime;
 }
@@ -1303,11 +1297,6 @@ uint16_t SCC68070::EORISR()
     }
 
     SR ^= data;
-    if(!GetS()) // S bit changed from supervisor to user
-    {
-        SSP = A[7];
-        A[7] = USP;
-    }
     SR &= 0xA71F; // Set all unimplemented bytes to 0.
 
     return 14;
@@ -1327,15 +1316,15 @@ uint16_t SCC68070::EXG()
     }
     else if(opmode == 0b01001) // Address registers
     {
-        const uint32_t tmp = A[rx];
-        A[rx] = A[ry];
-        A[ry] = tmp;
+        const uint32_t tmp = A(rx);
+        A(rx) = A(ry);
+        A(ry) = tmp;
     }
     else // Data register and address register
     {
         const uint32_t tmp = D[rx];
-        D[rx] = A[ry];
-        A[ry] = tmp;
+        D[rx] = A(ry);
+        A(ry) = tmp;
     }
 
     return 13;
@@ -1402,7 +1391,7 @@ uint16_t SCC68070::LEA()
     const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = (eamode == 7 && eareg <= 1) ? 6 : 3;
 
-    A[reg] = GetEffectiveAddress(eamode, eareg, 2, calcTime);
+    A(reg) = GetEffectiveAddress(eamode, eareg, 2, calcTime);
     // 2 so it uses the byte/word addressing timing, which is better for calculation time.
 
     return calcTime;
@@ -1412,9 +1401,9 @@ uint16_t SCC68070::LINK()
 {
     const uint8_t reg = currentOpcode & 0x0007;
 
-    SetLong(ARIWPr(7, 4), A[reg]);
-    A[reg] = A[7];
-    A[7] += signExtend<int16_t, int32_t>(GetNextWord());
+    SetLong(ARIWPr(7, 4), A(reg));
+    A(reg) = A(7);
+    A(7) += signExtend<int16_t, int32_t>(GetNextWord());
 
     return 25;
 }
@@ -1551,11 +1540,11 @@ uint16_t SCC68070::MOVEA()
 
     if(size == 3) // Word
     {
-        A[reg] = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
+        A(reg) = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
     }
     else // Long
     {
-        A[reg] = GetLong(eamode, eareg, calcTime);
+        A(reg) = GetLong(eamode, eareg, calcTime);
     }
 
     return calcTime;
@@ -1599,12 +1588,6 @@ uint16_t SCC68070::MOVESR()
 
     SR = GetWord(eamode, eareg, calcTime) & 0xA71F;
 
-    if(!GetS()) // S bit changes from supervisor to user
-    {
-        SSP = A[7];
-        A[7] = USP;
-    }
-
     return calcTime;
 }
 
@@ -1620,11 +1603,11 @@ uint16_t SCC68070::MOVEUSP()
 
     if(currentOpcode & 0x0008) // USP to An
     {
-        A[reg] = USP;
+        A(reg) = USP;
     }
     else // An to USP
     {
-        USP = A[reg];
+        USP = A(reg);
     }
 
     return 7;
@@ -1645,16 +1628,16 @@ uint16_t SCC68070::MOVEM()
 
     uint8_t count = 0;
     const int gap = size ? 4 : 2;
-    const uint32_t initialReg = A[eareg];
+    const uint32_t initialReg = A(eareg);
     uint32_t addr = GetEffectiveAddress(eamode, eareg, gap, calcTime);
     if(eamode == 4)
     {
-        A[eareg] = initialReg;
+        A(eareg) = initialReg;
         for(int i = 7; i >= 0; i--)
         {
             if(list & 1)
             {
-                size ? SetLong(addr, A[i]) : SetWord(addr, A[i]);
+                size ? SetLong(addr, A(i)) : SetWord(addr, A(i));
                 addr -= gap;
                 count++;
             }
@@ -1672,7 +1655,7 @@ uint16_t SCC68070::MOVEM()
             list >>= 1;
         }
 
-        A[eareg] = addr + gap;
+        A(eareg) = addr + gap;
     }
     else
     {
@@ -1695,9 +1678,9 @@ uint16_t SCC68070::MOVEM()
             if(list & 1)
             {
                 if(dr) // Memory to register
-                    A[i] = size ? GetLong(addr) : signExtend<int16_t, int32_t>(GetWord(addr));
+                    A(i) = size ? GetLong(addr) : signExtend<int16_t, int32_t>(GetWord(addr));
                 else // Register to memory
-                    size ? SetLong(addr, A[i]) : SetWord(addr, A[i]);
+                    size ? SetLong(addr, A(i)) : SetWord(addr, A(i));
                 addr += gap;
                 count++;
             }
@@ -1705,7 +1688,7 @@ uint16_t SCC68070::MOVEM()
         }
 
         if(eamode == 3)
-            A[eareg] = addr;
+            A(eareg) = addr;
     }
 
     return calcTime + count * (size ? 11 : 7);
@@ -2368,17 +2351,12 @@ uint16_t SCC68070::RTE()
 
     uint16_t calcTime = 39;
     SR = GetWord(ARIWPo(7, 2));
-    if(!GetS()) // S bit changes from supervisor to user
-    {
-        SSP = A[7];
-        A[7] = USP;
-    }
     PC = GetLong(ARIWPo(7, 4));
     const uint16_t format = GetWord(ARIWPo(7, 2));
 
     if((format & 0xF000) == 0xF000) // long format
     {
-        A[7] += 26;
+        A(7) += 26;
         calcTime = 146;
     }
     else if((format & 0xF000) != 0) // Format error
@@ -2469,11 +2447,6 @@ uint16_t SCC68070::STOP() // TODO: correctly implement it.
     }
 
     SR = data;
-    if(!GetS()) // S bit changed from supervisor to user
-    {
-        SSP = A[7];
-        A[7] = USP;
-    }
     SR &= 0xA71F; // Set all unimplemented bytes to 0.
 
     return 13;
@@ -2586,7 +2559,7 @@ uint16_t SCC68070::SUBA()
     else // Word
         src = signExtend<int16_t, int32_t>(GetWord(eamode, eareg, calcTime));
 
-    A[reg] -= src;
+    A(reg) -= src;
 
     return calcTime;
 }
@@ -2672,7 +2645,7 @@ uint16_t SCC68070::SUBQ()
 
     if(eamode == 1)
     {
-        A[eareg] -= data;
+        A(eareg) -= data;
         return 7;
     }
 
@@ -2758,7 +2731,7 @@ uint16_t SCC68070::SUBX()
 
         if(rm)
         {
-            SetByte(A[ry], res);
+            SetByte(A(ry), res);
             calcTime = 28;
         }
         else
@@ -2781,7 +2754,7 @@ uint16_t SCC68070::SUBX()
 
         if(rm)
         {
-            SetWord(A[ry], res);
+            SetWord(A(ry), res);
             calcTime = 28;
         }
         else
@@ -2804,7 +2777,7 @@ uint16_t SCC68070::SUBX()
 
         if(rm)
         {
-            SetLong(A[ry], res);
+            SetLong(A(ry), res);
             calcTime = 40;
         }
         else
@@ -2908,8 +2881,8 @@ uint16_t SCC68070::UNLK()
 {
     const uint8_t reg = currentOpcode & 0x0007;
 
-    A[7] = A[reg];
-    A[reg] = GetLong(ARIWPo(7, 4));
+    A(7) = A(reg);
+    A(reg) = GetLong(ARIWPo(7, 4));
 
     return 15;
 }

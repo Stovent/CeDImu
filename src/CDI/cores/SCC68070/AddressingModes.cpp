@@ -8,7 +8,7 @@ uint32_t SCC68070::GetEffectiveAddress(const uint8_t mode, const uint8_t reg, co
     {
     case 2:
         calcTime += sizeInBytes < 4 ? ITARIBW : ITARIL;
-        return A[reg];
+        return A(reg);
     case 3:
         calcTime += sizeInBytes < 4 ? ITARIWPoBW : ITARIWPoL;
         return AddressRegisterIndirectWithPostincrement(reg, sizeInBytes);
@@ -48,9 +48,9 @@ int32_t SCC68070::GetIndexRegister(const uint16_t bew) const
 {
     if(bew & 0x8000)
         if(bew & 0x0800)
-            return A[(bew & 0x7000) >> 12];
+            return A((bew & 0x7000) >> 12);
         else
-            return signExtend<int16_t, int32_t>(A[(bew & 0x7000) >> 12]);
+            return signExtend<int16_t, int32_t>(A((bew & 0x7000) >> 12));
     else
         if(bew & 0x0800)
             return D[(bew & 0x7000) >> 12];
@@ -60,26 +60,26 @@ int32_t SCC68070::GetIndexRegister(const uint16_t bew) const
 
 uint32_t SCC68070::AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte)
 {
-    const uint32_t addr = A[reg];
-    A[reg] += (reg == 7 && sizeInByte == 1) ? 2 : sizeInByte;
+    const uint32_t addr = A(reg);
+    A(reg) += (reg == 7 && sizeInByte == 1) ? 2 : sizeInByte;
     return addr;
 }
 
 uint32_t SCC68070::AddressRegisterIndirectWithPredecrement(const uint8_t reg, const uint8_t sizeInByte)
 {
-    A[reg] -= (reg == 7 && sizeInByte == 1) ? 2 : sizeInByte;
-    return A[reg];
+    A(reg) -= (reg == 7 && sizeInByte == 1) ? 2 : sizeInByte;
+    return A(reg);
 }
 
 uint32_t SCC68070::AddressRegisterIndirectWithDisplacement(const uint8_t reg)
 {
-    return A[reg] + signExtend<int16_t, int32_t>(GetNextWord());
+    return A(reg) + signExtend<int16_t, int32_t>(GetNextWord());
 }
 
 uint32_t SCC68070::AddressRegisterIndirectWithIndex8(const uint8_t reg)
 {
     const uint16_t bew = GetNextWord();
-    return A[reg] + GetIndexRegister(bew) + signExtend<int8_t, int32_t>(bew & 0x00FF);
+    return A(reg) + GetIndexRegister(bew) + signExtend<int8_t, int32_t>(bew & 0x00FF);
 }
 
 uint32_t SCC68070::ProgramCounterIndirectWithDisplacement()
