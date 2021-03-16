@@ -17,6 +17,13 @@ uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
+    if(addr >= 0x200000 && addr < 0x200008 && !isEven(addr))
+    {
+        const uint8_t data = 0; // TODO: slave->GetByte((addr - 0x200000) >> 1);
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet byte in Slave at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
+        return data;
+    }
+
     if(addr >= 0x3F8000 && addr < 0x3FC000 && isEven(addr))
     {
         const uint8_t data = timekeeper.GetByte((addr - 0x3F8000) >> 1);
@@ -41,6 +48,13 @@ uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
     {
         const uint16_t data = slaveVDSC.GetWord(addr, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet word in slave VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
+        return data;
+    }
+
+    if(addr >= 0x200000 && addr < 0x200008)
+    {
+        const uint8_t data = 0; // TODO: slave->GetByte((addr - 0x200000) >> 1);
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet word in Slave at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
         return data;
     }
 
@@ -91,6 +105,13 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
         return;
     }
 
+    if(addr >= 0x200000 && addr < 0x200008 && !isEven(addr))
+    {
+        // slave->SetByte((addr - 0x200000) >> 1, data);
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet byte in Slave at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
+        return;
+    }
+
     if(addr >= 0x3F8000 && addr < 0x3FC000 && isEven(addr))
     {
         timekeeper.SetByte((addr - 0x3F8000) >> 1, data);
@@ -115,6 +136,14 @@ void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fl
     {
         slaveVDSC.SetWord(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet word in slave VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
+        return;
+    }
+
+    if(addr >= 0x200000 && addr < 0x200008)
+    {
+        const uint8_t d = data;
+        // slave->SetByte((addr - 0x200000) >> 1, d);
+        LOG(if(flags & Log) { fprintf(out, "%X\tSet word in Slave at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)d, d, d); })
         return;
     }
 

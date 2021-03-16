@@ -2,8 +2,6 @@
 #define SCC68070_HPP
 
 class Board;
-class SCC68070;
-class SCC68070Exception;
 #include "../../common/flags.hpp"
 
 #include <cstdint>
@@ -269,9 +267,10 @@ struct SCC68070Exception
     uint8_t vector;
     int8_t group;
     uint16_t data;
+    SCC68070Exception() = delete;
+    SCC68070Exception(const SCC68070Exception&) = default;
     SCC68070Exception(const uint8_t vec, const int8_t grp) : vector(vec), group(grp), data(0) {}
     SCC68070Exception(const uint8_t vec, const int8_t grp, const uint16_t d) : vector(vec), group(grp), data(d) {}
-    SCC68070Exception(const SCC68070Exception&) = default;
 };
 
 bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs);
@@ -444,7 +443,7 @@ private:
         &SCC68070::GE,
         &SCC68070::LT,
         &SCC68070::GT,
-        &SCC68070::LE
+        &SCC68070::LE,
     };
     std::string DisassembleConditionalCode(const uint8_t cc) const;
 
@@ -454,7 +453,7 @@ private:
     void GenerateInstructionSet();
     void GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc);
 
-    uint16_t (SCC68070::**ILUT)(); // Instructions Look Up Table
+    ILUTFunctionPointer* ILUT; // Instructions Look Up Table
     uint16_t UnknownInstruction();
     uint16_t ABCD();
     uint16_t ADD();
@@ -541,7 +540,7 @@ private:
     uint16_t TST();
     uint16_t UNLK();
 
-    std::string (SCC68070::**DLUT)(const uint32_t) const; // Disassembler Look Up Table
+    DLUTFunctionPointer* DLUT; // Disassembler Look Up Table
     std::string DisassembleUnknownInstruction(const uint32_t pc) const;
     std::string DisassembleABCD(const uint32_t pc) const;
     std::string DisassembleADD(const uint32_t pc) const;
