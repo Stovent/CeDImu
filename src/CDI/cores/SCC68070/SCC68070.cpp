@@ -15,16 +15,15 @@ SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
     cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
     timerDelay(cycleDelay * 96)
 {
-    disassemble = false;
-    isRunning = false;
-
     ILUT = new ILUTFunctionPointer[UINT16_MAX+1];
     DLUT = new DLUTFunctionPointer[UINT16_MAX+1];
 
+    disassemble = false;
+    isRunning = false;
+    speedDelay = cycleDelay;
+
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instructions, "instructions.txt")
-
-    speedDelay = cycleDelay;
 
     GenerateInstructionSet();
 }
