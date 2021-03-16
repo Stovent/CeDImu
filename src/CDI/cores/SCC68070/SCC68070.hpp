@@ -15,7 +15,7 @@ class SCC68070Exception;
 #include <thread>
 #include <vector>
 
-#define SCC68070_DEFAULT_FREQUENCY (15500000L)
+#define SCC68070_DEFAULT_FREQUENCY (15'000'000)
 
 // Actually, figure VI.1 of the Green Book
 // and Table 2-2 of the MC68000UM
