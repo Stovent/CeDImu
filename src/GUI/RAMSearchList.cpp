@@ -27,35 +27,40 @@ RAMSearchList::RAMSearchList(RAMSearchFrame* parent) : wxListCtrl(parent, wxID_A
 
 wxString RAMSearchList::OnGetItemText(long item, long column) const
 {
-    if(column == 1)
-        if(ramSearchFrame->byte1->GetValue())
-            if(ramSearchFrame->signed_->GetValue())
-                return std::to_string((int8_t)ramSearchFrame->board->GetByte(item, NoFlags));
-            else if(ramSearchFrame->unsigned_->GetValue())
-                return std::to_string(ramSearchFrame->board->GetByte(item, NoFlags));
-            else
-                return toHex(ramSearchFrame->board->GetByte(item, NoFlags));
+    try {
+        if(column == 1)
+            if(ramSearchFrame->byte1->GetValue())
+                if(ramSearchFrame->signed_->GetValue())
+                    return std::to_string((int8_t)ramSearchFrame->board->GetByte(item, NoFlags));
+                else if(ramSearchFrame->unsigned_->GetValue())
+                    return std::to_string(ramSearchFrame->board->GetByte(item, NoFlags));
+                else
+                    return toHex(ramSearchFrame->board->GetByte(item, NoFlags));
 
-        else if(ramSearchFrame->byte2->GetValue())
-            if(ramSearchFrame->signed_->GetValue())
-                return std::to_string((int16_t)ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
-            else if(ramSearchFrame->unsigned_->GetValue())
-                return std::to_string(ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
-            else
-                return toHex(ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
+            else if(ramSearchFrame->byte2->GetValue())
+                if(ramSearchFrame->signed_->GetValue())
+                    return std::to_string((int16_t)ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
+                else if(ramSearchFrame->unsigned_->GetValue())
+                    return std::to_string(ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
+                else
+                    return toHex(ramSearchFrame->board->GetWord(ramSearchFrame->checkMisaligned->GetValue() ? item : item*2, NoFlags));
 
-        else
-            if(ramSearchFrame->signed_->GetValue())
-                return std::to_string((int32_t)ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
-            else if(ramSearchFrame->unsigned_->GetValue())
-                return std::to_string(ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
             else
-                return toHex(ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
-    else
-        if(ramSearchFrame->byte1->GetValue() || ramSearchFrame->checkMisaligned->GetValue())
-            return toHex(item);
-        else if(ramSearchFrame->byte2->GetValue())
-            return toHex(item*2);
+                if(ramSearchFrame->signed_->GetValue())
+                    return std::to_string((int32_t)ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
+                else if(ramSearchFrame->unsigned_->GetValue())
+                    return std::to_string(ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
+                else
+                    return toHex(ramSearchFrame->board->GetLong(ramSearchFrame->checkMisaligned->GetValue() ? item : item*4, NoFlags));
         else
-            return toHex(item*4);
+            if(ramSearchFrame->byte1->GetValue() || ramSearchFrame->checkMisaligned->GetValue())
+                return toHex(item);
+            else if(ramSearchFrame->byte2->GetValue())
+                return toHex(item*2);
+            else
+                return toHex(item*4);
+    }
+    catch(...) {
+        return "0";
+    }
 }
