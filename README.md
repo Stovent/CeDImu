@@ -52,20 +52,33 @@ Use MinGW
 * ``wxIMSWU``: mswu directory inside the static libraries directory
 2. Open a terminal and type ``make -f WinMakefile`` (Assuming ``make`` is in your PATH variable).
 
-## TODO
+## Compatibility
+
+DVC support will be added when CeDImu will have a good compatibility with the base case system on several boards.
+
+### Chips
+
 - [x] SCC68070
+- [ ] SCC66470 (Mini-MMC)
+- [x] MCD212 (Mono-1, 2, 3, 4)
+- [ ] CDIC (Mini-MMC, Mono-1)
+- [ ] DSP (Mono-2)
+- [ ] CIAP (Mono-3, 4)
+- [ ] Slave (Mini-MMC, Mono-1, 2)
+- [ ] MCD221 IKAT (Mono-3, 4)
+- [x] M48T08
 
-- [x] MCD212
+### Boards
 
-- [ ] SCC66470
+- [ ] Mini-MMC
 
-- [ ] MCD221 (audio)
+  ​	Not working. SCC66470 and Timekeeper mapped.
 
-- [ ] MC68HC05 (slave)
+- [ ] Mono-3
 
-- [ ] CDIC
+  ​	Not working. MCD212 and Timekeeper mapped.
 
-  
+## Features
 
 - [ ] CDI-related functions
 
