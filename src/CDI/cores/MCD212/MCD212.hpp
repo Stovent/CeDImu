@@ -76,11 +76,9 @@ public:
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
-    virtual uint32_t GetLong(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
 
     virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) override;
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
-    virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger) override;
 
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const override // as nano seconds
     {
@@ -164,6 +162,8 @@ private:
     std::string DisassembleVSR2Register() const;
     std::string DisassembleDDR2Register() const;
     std::string DisassembleDCP2Register() const;
+
+    uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
 
     bool GetDA() const;
     bool GetPA() const;

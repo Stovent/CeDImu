@@ -71,20 +71,14 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t Mono3::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
-    {
-        const uint32_t data = mcd212.GetLong(addr, flags);
-        LOG(if(flags & Log) { fprintf(out, "%X\tGet long in VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
-        return data;
-    }
-
-    LOG(if(flags & Log) { fprintf(out, "%X\tGet long OUT OF RANGE at 0x%X\n", cpu.currentPC, addr); })
-    throw SCC68070Exception(BusError, 0);
+    const uint32_t data = (uint32_t)GetWord(addr, flags) << 16 | GetWord(addr + 2, flags);
+    LOG(if(flags & Log) { fprintf(out, "%X\tGet long at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
+    return data;
 }
 
 void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x4FFFE0 && addr < 0x500000))
     {
         mcd212.SetByte(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet byte in VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
@@ -116,7 +110,7 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
 
 void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x4FFFE0 && addr < 0x500000))
     {
         mcd212.SetWord(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet word in VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
@@ -149,15 +143,9 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
 
 void Mono3::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
-    {
-        mcd212.SetLong(addr, data, flags);
-        LOG(if(flags & Log) { fprintf(out, "%X\tSet long in VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
-        return;
-    }
-
-    LOG(if(flags & Log) { fprintf(out, "%X\tSet long OUT OF RANGE at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
-    throw SCC68070Exception(BusError, 0);
+    SetWord(addr, data >> 16, flags);
+    SetWord(addr + 2, data, flags);
+    LOG(if(flags & Log) { fprintf(out, "%X\tSet long at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
 }
 
 uint8_t Mono3::CPUGetUART(const uint8_t flags)

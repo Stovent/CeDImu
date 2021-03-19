@@ -71,27 +71,14 @@ uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t MiniMMC::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
-    {
-        const uint32_t data = masterVDSC.GetLong(addr, flags);
-        LOG(if(flags & Log) { fprintf(out, "%X\tGet long in master VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
-        return data;
-    }
-
-    if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
-    {
-        const uint32_t data = slaveVDSC.GetLong(addr, flags);
-        LOG(if(flags & Log) { fprintf(out, "%X\tGet long in slave VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
-        return data;
-    }
-
-    LOG(if(flags & Log) { fprintf(out, "%X\tGet long OUT OF RANGE at 0x%X\n", cpu.currentPC, addr); })
-    throw SCC68070Exception(BusError, 0);
+    const uint32_t data = (uint32_t)GetWord(addr, flags) << 16 | GetWord(addr + 2, flags);
+    LOG(if(flags & Log) { fprintf(out, "%X\tGet long in master VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
+    return data;
 }
 
 void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
         masterVDSC.SetByte(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet byte in master VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
@@ -125,7 +112,7 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
 
 void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
         masterVDSC.SetWord(addr, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet word in master VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
@@ -161,16 +148,18 @@ void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fl
 
 void MiniMMC::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
 {
-    if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00) || (addr >= 0x1FFFE0 && addr < 0x200000))
+    if(addr < 0x080000 || (addr >= 0x1FFFE0 && addr < 0x200000))
     {
-        masterVDSC.SetLong(addr, data, flags);
+        masterVDSC.SetWord(addr, data >> 16, flags);
+        masterVDSC.SetWord(addr + 2, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet long in master VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
         return;
     }
 
     if((addr >= 0x080000 && addr < 0x100000) || (addr >= 0x1FFFC0 && addr < 0x1FFFE0))
     {
-        slaveVDSC.SetLong(addr, data, flags);
+        slaveVDSC.SetWord(addr, data >> 16, flags);
+        slaveVDSC.SetWord(addr + 2, data, flags);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet long in slave VDSC at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
         return;
     }

@@ -4,7 +4,7 @@
 
 uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
 {
-    if(addr <= 0x4FFFDF)
+    if(addr < 0x4FFFE0)
     {
         const uint8_t data = memory[addr];
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet byte at 0x%06X : %d %d 0x%X", board.cpu.currentPC, addr, (int8_t)data, data, data); })
@@ -38,7 +38,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
         return (uint16_t)memory[addr + 0x400000] << 8 | memory[addr + 0x400001];
     }
 
-    if(addr < 0x4FFFDF)
+    if(addr < 0x4FFFE0)
     {
         const uint16_t data = (uint16_t)memory[addr] << 8 | memory[addr + 1];
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet word at 0x%06X : %d %d 0x%X", board.cpu.currentPC, addr, (int16_t)data, data, data); })
@@ -66,21 +66,9 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t MCD212::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    if(memorySwapCount < 4 && flags & Trigger)
-    {
-        memorySwapCount += 2;
-        return memory[addr + 0x400000] << 24 | memory[addr + 0x400001] << 16 | memory[addr + 0x400002] << 8 | memory[addr + 0x400003];
-    }
-
-    if(addr < 0x4FFFDF)
-    {
-        const uint32_t data = memory[addr] << 24 | memory[addr + 1] << 16 | memory[addr + 2] << 8 | memory[addr + 3];
-        LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet long at 0x%06X : %d %d 0x%X", board.cpu.currentPC, addr, (int32_t)data, data, data); })
-        return data;
-    }
-
-    LOG(fprintf(out_dram, "%6X\tGet long OUT OF RANGE at 0x%X\n", board.cpu.currentPC, addr);)
-    return 0;
+    const uint32_t data = (uint32_t)GetWord(addr, flags) << 16 | GetWord(addr + 2, flags);
+    LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet long at 0x%06X : %d %d 0x%X", board.cpu.currentPC, addr, (int32_t)data, data, data); })
+    return data;
 }
 
 void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
@@ -92,7 +80,7 @@ void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flag
         return;
     }
 
-    if(addr >= 0x4FFFE0 || addr <= 0x4FFFFF)
+    if(addr >= 0x4FFFE0 && addr < 0x500000)
     {
         if(isEven(addr))
         {
@@ -115,13 +103,13 @@ void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fla
 {
     if(addr < 0x400000)
     {
-        memory[addr] = data >> 8;
+        memory[addr]     = data >> 8;
         memory[addr + 1] = data;
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tSet word at 0x%06X : %d %d 0x%X", board.cpu.currentPC, addr, (int16_t)data, data, data); })
         return;
     }
 
-    if(addr >= 0x4FFFE0 || addr <= 0x4FFFFF)
+    if(addr >= 0x4FFFE0 && addr < 0x500000)
     {
         internalRegisters[addr - 0x4FFFE0] = data;
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tSet word register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
@@ -129,19 +117,4 @@ void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fla
     }
 
     LOG(fprintf(out_dram, "%6X\tSet word OUT OF RANGE at 0x%X : %d %d 0x%X\n", board.cpu.currentPC, addr, (int16_t)data, data, data);)
-}
-
-void MCD212::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
-{
-    if(addr < 0x400000)
-    {
-        memory[addr]   = data >> 24;
-        memory[addr+1] = (data & 0x00FF0000) >> 16;
-        memory[addr+2] = (data & 0x0000FF00) >> 8;
-        memory[addr+3] = data;
-        LOG(if(flags & Log) { fprintf(out_dram, "%6X\tSet long at 0x%06X : %d %d 0x%X", board.cpu.currentPC, addr, (int32_t)data, data, data); })
-        return;
-    }
-
-    LOG(fprintf(out_dram, "%6X\tSet long OUT OF RANGE at 0x%X : %d %d 0x%X\n", board.cpu.currentPC, addr, (int32_t)data, data, data);)
 }
