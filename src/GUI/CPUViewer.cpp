@@ -24,8 +24,10 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
         d[i] = new wxTextCtrl(registersPanel, wxID_ANY, "D" + std::to_string(i) + ": 0", wxPoint(0, i * 23), wxSize(125, 23), wxTE_READONLY); d[i]->SetBackgroundColour(*wxWHITE);
         a[i] = new wxTextCtrl(registersPanel, wxID_ANY, "A" + std::to_string(i) + ": 0", wxPoint(0, i * 23 + 189), wxSize(125, 23), wxTE_READONLY); a[i]->SetBackgroundColour(*wxWHITE);
     }
-    pc = new wxTextCtrl(registersPanel, IDCPUViewerpc, "PC: 0", wxPoint(0, 377), wxSize(125, 23), wxTE_READONLY); pc->SetBackgroundColour(*wxWHITE);
-    sr = new wxTextCtrl(registersPanel, IDCPUViewersr, "SR: 0", wxPoint(0, 400), wxSize(125, 23), wxTE_READONLY); sr->SetBackgroundColour(*wxWHITE);
+    usp = new wxTextCtrl(registersPanel, wxID_ANY, "USP: 0", wxPoint(0, 377), wxSize(125, 23), wxTE_READONLY); usp->SetBackgroundColour(*wxWHITE);
+    ssp = new wxTextCtrl(registersPanel, wxID_ANY, "SSP: 0", wxPoint(0, 400), wxSize(125, 23), wxTE_READONLY); ssp->SetBackgroundColour(*wxWHITE);
+    pc = new wxTextCtrl(registersPanel, IDCPUViewerpc, "PC: 0", wxPoint(0, 423), wxSize(125, 23), wxTE_READONLY); pc->SetBackgroundColour(*wxWHITE);
+    sr = new wxTextCtrl(registersPanel, IDCPUViewersr, "SR: 0", wxPoint(0, 446), wxSize(125, 23), wxTE_READONLY); sr->SetBackgroundColour(*wxWHITE);
 
     internalRegisters = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(300, 0), wxLC_REPORT | wxLC_HRULES | wxLC_VRULES);
     wxListItem nameCol;
@@ -108,6 +110,8 @@ void CPUViewer::PaintEvent()
         d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(regs["D" + std::to_string(i)]));
         a[i]->SetLabelText("A" + std::to_string(i) + ": 0x" + toHex(regs["A" + std::to_string(i)]));
     }
+    usp->SetLabelText("USP: 0x" + toHex(regs["USP"]));
+    ssp->SetLabelText("SSP: 0x" + toHex(regs["SSP"]));
     pc->SetLabelText("PC: 0x" + toHex(regs["PC"]));
     sr->SetLabelText("SR: " + toBinString(regs["SR"], 16));
 

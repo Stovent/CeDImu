@@ -35,6 +35,8 @@ public:
 
     wxTextCtrl* d[8];
     wxTextCtrl* a[8];
+    wxTextCtrl* usp;
+    wxTextCtrl* ssp;
     wxTextCtrl* pc;
     wxTextCtrl* sr;
 
