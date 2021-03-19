@@ -2350,7 +2350,7 @@ uint16_t SCC68070::RTE()
     }
 
     uint16_t calcTime = 39;
-    SR = GetWord(ARIWPo(7, 2));
+    const uint16_t sr = GetWord(ARIWPo(7, 2));
     PC = GetLong(ARIWPo(7, 4));
     const uint16_t format = GetWord(ARIWPo(7, 2));
 
@@ -2364,6 +2364,7 @@ uint16_t SCC68070::RTE()
         exceptions.push({FormatError, 2});
     }
 
+    SR = sr;
     return calcTime;
 }
 
