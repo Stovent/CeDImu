@@ -317,6 +317,7 @@ private:
     Board& board;
     std::thread executionThread;
     bool loop;
+    bool stop;
     bool isRunning;
 
     FILE* out;

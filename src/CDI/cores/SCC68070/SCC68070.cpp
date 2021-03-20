@@ -101,6 +101,7 @@ void SCC68070::Stop(const bool wait)
 void SCC68070::Reset()
 {
     loop = false;
+    stop = false;
     LOG(fprintf(out, "RESET\n"); fprintf(instructions, "RESET\n");)
     disassembledInstructions.clear();
     cycleCount = totalCycleCount = 146;

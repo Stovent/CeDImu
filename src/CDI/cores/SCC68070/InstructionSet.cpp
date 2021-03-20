@@ -19,10 +19,17 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
         PC = board.GetLong(4, Trigger);
         SR = 0x2700;
         USP = 0;
+        stop = false;
 		return 0;
     }
 
-    if(vectorNumber == 2 || vectorNumber == 3) // TODO: implement long Stack format
+    if(vectorNumber == Trace || (vectorNumber >= SpuriousInterrupt && vectorNumber <= Level7ExternalInterruptAutovector) || \
+                                (vectorNumber >= Level1OnChipInterruptAutovector && vectorNumber <= Level7OnChipInterruptAutovector))
+    {
+        stop = false;
+    }
+
+    if(vectorNumber == BusError || vectorNumber == AddressError) // TODO: implement long Stack format
     {
         uint32_t last = lastAddress;
         SetWord(ARIWPr(7, 2), 0); // internal information
@@ -2449,6 +2456,7 @@ uint16_t SCC68070::STOP() // TODO: correctly implement it.
 
     SR = data;
     SR &= 0xA71F; // Set all unimplemented bytes to 0.
+    stop = true;
 
     return 13;
 }
