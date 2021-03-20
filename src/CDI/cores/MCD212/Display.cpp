@@ -7,10 +7,12 @@
 
 #define   SET_DA_BIT() registerCSR1R |= 0x80;
 #define UNSET_DA_BIT() registerCSR1R &= 0x20;
+#define   SET_PA_BIT() registerCSR1R |= 0x20;
 
 void MCD212::DrawLine()
 {
     SET_DA_BIT()
+    SET_PA_BIT()
 
     if(GetDE())
     {
