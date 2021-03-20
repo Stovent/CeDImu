@@ -121,6 +121,17 @@ void SCC68070::Reset()
     ResetOperation();
 }
 
+/** \brief Trigger interrupt processing.
+ * \param vector The vector number of the interrupt.
+ * \param priority The priority level of the interrupt.
+ */
+void SCC68070::Interrupt(const uint8_t vector, const uint8_t priority)
+{
+    // TODO: vectors, pins and priority.
+    if(priority > GetIPM())
+        exceptions.push({vector, 1});
+}
+
 /** \brief Write the disassembled instructions to a file (in DEBUG mode).
  */
 void SCC68070::FlushDisassembler()
@@ -383,6 +394,11 @@ void SCC68070::SetVC(const bool VC)
 {
     SetV(VC);
     SetC(VC);
+}
+
+uint8_t SCC68070::GetIPM() const
+{
+    return SR >> 8 & 0x0007;
 }
 
 void SCC68070::GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc)

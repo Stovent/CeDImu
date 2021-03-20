@@ -308,6 +308,7 @@ public:
     void Run(const bool loop = true);
     void Stop(const bool wait = true);
     void Reset();
+    void Interrupt(const uint8_t vector, const uint8_t priority);
 
     void SetRegister(CPURegisters reg, const uint32_t value);
     std::map<std::string, uint32_t> GetCPURegisters() const;
@@ -367,6 +368,7 @@ private:
     void SetC(const bool C = 1);
     void SetXC(const bool XC = 1); // Set both X and C at the same time
     void SetVC(const bool VC = 1); // Set both V and C at the same time
+    uint8_t GetIPM() const; // Interrupt Priority Mask
 
     uint16_t Exception(const uint8_t vectorNumber);
     std::string DisassembleException(const SCC68070Exception& exception) const;

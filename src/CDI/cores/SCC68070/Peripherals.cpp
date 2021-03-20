@@ -63,6 +63,7 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
 void SCC68070::IncrementTimer(const double ns)
 {
     timerCounter += ns;
+    const uint8_t priority = internal[PICR1] & 0x07;
     while(timerCounter >= timerDelay)
     {
         timerCounter -= timerDelay;
@@ -73,6 +74,8 @@ void SCC68070::IncrementTimer(const double ns)
             internal[TSR] |= 0x80; // If overflow, set OV flag
             internal[T0H] = internal[RRH];
             internal[T0L] = internal[RRL];
+            if(priority)
+                Interrupt((Level1OnChipInterruptAutovector - 1) + priority, priority);
         }
         else
         {
@@ -86,7 +89,11 @@ void SCC68070::IncrementTimer(const double ns)
             uint16_t T1 = (uint16_t)internal[T1H] << 8 | internal[T1L];
 
             if(T1 == 0xFFFF)
+            {
                 internal[TSR] |= 0x10;
+                if(priority)
+                    Interrupt((Level1OnChipInterruptAutovector - 1) + priority, priority);
+            }
             else if((internal[TCR] & 0x30) == 0x30)
                 internal[TSR] &= 0xEE; // Event-counter mode resets OV bit
 
@@ -105,7 +112,11 @@ void SCC68070::IncrementTimer(const double ns)
             uint16_t T2 = (uint16_t)internal[T2H] << 8 | internal[T2L];
 
             if(T2 == 0xFFFF)
+            {
                 internal[TSR] |= 0x02;
+                if(priority)
+                    Interrupt((Level1OnChipInterruptAutovector - 1) + priority, priority);
+            }
             else if((internal[TCR] & 0x03) == 0x03)
                 internal[TSR] &= 0xFC; // Event-counter mode resets OV bit
 
