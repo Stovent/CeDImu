@@ -61,6 +61,11 @@ void Mono3::SetOnFrameCompletedCallback(std::function<void()> callback)
     mcd212.SetOnFrameCompletedCallback(callback);
 }
 
+std::string Mono3::GetPositionInformation(const uint32_t offset)
+{
+    return mcd212.BIOS.GetPositionInformation(offset - 0x400000);
+}
+
 std::vector<std::string> Mono3::GetICA1()
 {
     return mcd212.ICA1;

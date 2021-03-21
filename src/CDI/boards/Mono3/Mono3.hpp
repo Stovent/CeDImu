@@ -42,6 +42,7 @@ public:
     virtual uint32_t GetAllocatedMemory() override;
     virtual uint32_t GetTotalFrameCount() override;
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
+    virtual std::string GetPositionInformation(const uint32_t offset) override;
 
     virtual std::vector<std::string> GetICA1() override;
     virtual std::vector<std::string> GetDCA1() override;

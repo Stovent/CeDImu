@@ -3,12 +3,11 @@
 
 class Board;
 
-#include "../cores/SCC68070/SCC68070.hpp"
-#include "../cores/MC68HC705C8/MC68HC705C8.hpp"
-#include "../cores/M48T08/M48T08.hpp"
+#include "../common/flags.hpp"
 #include "../cores/ISlave.hpp"
 #include "../cores/VDSC.hpp"
-#include "../common/flags.hpp"
+#include "../cores/M48T08/M48T08.hpp"
+#include "../cores/SCC68070/SCC68070.hpp"
 
 class Board
 {
@@ -42,6 +41,7 @@ public:
     virtual uint32_t GetAllocatedMemory() = 0;
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
+    virtual std::string GetPositionInformation(const uint32_t offset) = 0;
 
     virtual std::vector<std::string> GetICA1() = 0;
     virtual std::vector<std::string> GetDCA1() = 0;
