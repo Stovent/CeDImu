@@ -6,9 +6,16 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
 {
     if(isMaster)
     {
-        if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00))
+        if(addr < 0x080000)
         {
             const uint8_t data = memory[addr];
+            LOG(if(flags & Log) { fprintf(out_dram, "%X\tGet byte at 0x%X: %d %d 0x%X\n", board.cpu.currentPC, addr, (int8_t)data, data, data); })
+            return data;
+        }
+
+        if(addr >= 0x180000 && addr < 0x1FFC00)
+        {
+            const uint8_t data = BIOS[addr];
             LOG(if(flags & Log) { fprintf(out_dram, "%X\tGet byte at 0x%X: %d %d 0x%X\n", board.cpu.currentPC, addr, (int8_t)data, data, data); })
             return data;
         }
@@ -69,17 +76,24 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
 
 uint16_t SCC66470::GetWord(const uint32_t addr, const uint8_t flags)
 {
-    if(memorySwapCount < 4 && flags & Trigger)
+    if(memorySwapCount < 4 && isMaster && flags & Trigger)
     {
         memorySwapCount += 1;
-        return memory[addr + 0x180000] << 8 | memory[addr + 0x180001];
+        return BIOS[addr] << 8 | BIOS[addr + 1];
     }
 
     if(isMaster)
     {
-        if(addr < 0x080000 || (addr >= 0x180000 && addr < 0x1FFC00))
+        if(addr < 0x080000)
         {
             const uint16_t data = memory[addr] << 8 | memory[addr + 1];
+            LOG(if(flags & Log) { fprintf(out_dram, "%X\tGet word at 0x%X: %d %d 0x%X\n", board.cpu.currentPC, addr, (int16_t)data, data, data); })
+            return data;
+        }
+
+        if(addr >= 0x180000 && addr < 0x1FFC00)
+        {
+            const uint16_t data = (uint16_t)BIOS[addr - 0x180000] << 8 | BIOS[addr - 0x17FFFF];
             LOG(if(flags & Log) { fprintf(out_dram, "%X\tGet word at 0x%X: %d %d 0x%X\n", board.cpu.currentPC, addr, (int16_t)data, data, data); })
             return data;
         }

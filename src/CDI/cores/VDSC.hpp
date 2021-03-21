@@ -5,6 +5,7 @@ class VDSC;
 
 class Board;
 #include "../common/flags.hpp"
+#include "../OS9/BIOS.hpp"
 
 #include <string>
 #include <vector>
@@ -32,6 +33,7 @@ protected:
 
 public:
     Board& board;
+    OS9::BIOS BIOS;
     bool biosLoaded;
     uint32_t allocatedMemory;
     uint32_t totalFrameCount;
@@ -40,12 +42,11 @@ public:
     std::vector<std::string> ICA2;
     std::vector<std::string> DCA2;
 
-    VDSC(Board& baord) : lineNumber(0), board(baord), biosLoaded(false), allocatedMemory(0), totalFrameCount(0) {}
+    VDSC(Board& baord, const void* bios, const uint32_t size) : lineNumber(0), board(baord), BIOS(bios, size), biosLoaded(false), allocatedMemory(0), totalFrameCount(0) {}
     virtual ~VDSC() {}
 
     virtual void Reset() = 0;
 
-    virtual bool LoadBIOS(const void* bios, uint32_t size) = 0;
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void MemorySwap() = 0;

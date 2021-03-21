@@ -1,10 +1,8 @@
 #include "Mono3.hpp"
 #include "../../common/utils.hpp"
 
-Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock) : Board(initNVRAMClock), mcd212(*this)
+Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock) : Board(initNVRAMClock), mcd212(*this, vdscBios, vdscSize)
 {
-    mcd212.LoadBIOS(vdscBios, vdscSize);
-
     OPEN_LOG(out, "Mono3.txt")
     uart_out.open("uart_out", std::ios::binary | std::ios::out);
     uart_in.open("uart_in", std::ios::binary | std::ios::in);

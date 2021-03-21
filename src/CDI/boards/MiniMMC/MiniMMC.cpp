@@ -1,10 +1,8 @@
 #include "MiniMMC.hpp"
 #include "../../common/utils.hpp"
 
-MiniMMC::MiniMMC(const void* bios, const uint32_t size, const bool initNVRAMClock) : Board(initNVRAMClock), masterVDSC(*this, true), slaveVDSC(*this, false)
+MiniMMC::MiniMMC(const void* bios, const uint32_t size, const bool initNVRAMClock) : Board(initNVRAMClock), masterVDSC(*this, true, bios, size), slaveVDSC(*this, false, "\0", 2)
 {
-    masterVDSC.LoadBIOS(bios, size);
-
     OPEN_LOG(out, "MiniMMC.txt")
     uart_out.open("uart_out", std::ios::binary | std::ios::out);
     uart_in.open("uart_in", std::ios::binary | std::ios::in);

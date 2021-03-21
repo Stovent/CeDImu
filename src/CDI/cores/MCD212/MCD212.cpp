@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-MCD212::MCD212(Board& board) : VDSC(board) // TD = 0
+MCD212::MCD212(Board& board, const void* bios, const uint32_t size) : VDSC(board, bios, size) // TD = 0
 {
     stopOnNextFrame = false;
     controlRegisters = new uint32_t[0x80];
@@ -75,19 +75,6 @@ void MCD212::Reset()
     registerCSR1R = 0;
     registerCSR2R = 0;
     MemorySwap();
-}
-
-bool MCD212::LoadBIOS(const void* bios, uint32_t size)
-{
-    if(size > 0xFFC00)
-    {
-        LOG(fprintf(out_dram, "WARNING: BIOS is bigger than ROM size (0xFFC00): got 0x%X\n", size);)
-        size = 0xFFC00;
-    }
-
-    memcpy(&memory[0x400000], bios, size);
-
-    return biosLoaded = true;
 }
 
 void MCD212::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
