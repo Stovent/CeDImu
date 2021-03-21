@@ -8,11 +8,16 @@
 #define   SET_DA_BIT() registerCSR1R |= 0x80;
 #define UNSET_DA_BIT() registerCSR1R &= 0x20;
 #define   SET_PA_BIT() registerCSR1R |= 0x20;
+#define UNSET_PA_BIT() registerCSR1R &= 0x80;
 
 void MCD212::DrawLine()
 {
     SET_DA_BIT()
-    SET_PA_BIT()
+
+    if(GetSM() && !isEven(lineNumber)) // not even because my line count starts at 0.
+        UNSET_PA_BIT()
+    else
+        SET_PA_BIT()
 
     if(GetDE())
     {
