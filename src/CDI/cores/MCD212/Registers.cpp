@@ -308,7 +308,14 @@ std::vector<VDSCRegister> MCD212::GetControlRegisters() const
     registers.push_back(VDSCRegister({"Cursor Position",                  CursorPosition             + 0x80, controlRegisters[CursorPosition]}));
     registers.push_back(VDSCRegister({"Cursor Control",                   CursorControl              + 0x80, controlRegisters[CursorControl]}));
     registers.push_back(VDSCRegister({"Cursor Pattern",                   CursorPattern              + 0x80, controlRegisters[CursorPattern]}));
-    registers.push_back(VDSCRegister({"Region Control",                   RegionControl              + 0x80, controlRegisters[RegionControl]}));
+    registers.push_back(VDSCRegister({"Region Control 0",                 RegionControl              + 0x80, controlRegisters[RegionControl]}));
+    registers.push_back(VDSCRegister({"Region Control 1",                 RegionControl + 1          + 0x80, controlRegisters[RegionControl + 1]}));
+    registers.push_back(VDSCRegister({"Region Control 2",                 RegionControl + 2          + 0x80, controlRegisters[RegionControl + 2]}));
+    registers.push_back(VDSCRegister({"Region Control 3",                 RegionControl + 3          + 0x80, controlRegisters[RegionControl + 3]}));
+    registers.push_back(VDSCRegister({"Region Control 4",                 RegionControl + 4          + 0x80, controlRegisters[RegionControl + 4]}));
+    registers.push_back(VDSCRegister({"Region Control 5",                 RegionControl + 5          + 0x80, controlRegisters[RegionControl + 5]}));
+    registers.push_back(VDSCRegister({"Region Control 6",                 RegionControl + 6          + 0x80, controlRegisters[RegionControl + 6]}));
+    registers.push_back(VDSCRegister({"Region Control 7",                 RegionControl + 7          + 0x80, controlRegisters[RegionControl + 7]}));
     registers.push_back(VDSCRegister({"Backdrop Color",                   BackdropColor              + 0x80, controlRegisters[BackdropColor]}));
     registers.push_back(VDSCRegister({"Mosaic Pixel Hold For Plane A",    MosaicPixelHoldForPlaneA   + 0x80, controlRegisters[MosaicPixelHoldForPlaneA]}));
     registers.push_back(VDSCRegister({"Mosaic Pixel Hold For Plane B",    MosaicPixelHoldForPlaneB   + 0x80, controlRegisters[MosaicPixelHoldForPlaneB]}));
