@@ -69,22 +69,24 @@ void MCD212::DrawLine()
 
 void MCD212::DrawLinePlaneA()
 {
+    uint16_t bytes = 0;
     if(controlRegisters[ImageCodingMethod] & 0x00000F) // plane on
     {
         if(GetFT12_1() <= 1)
         {
             const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
-            Video::decodeBitmapLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), nullptr, &memory[GetVSR1()], codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
+            bytes = Video::decodeBitmapLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), nullptr, &memory[GetVSR1()], codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
         }
         else if(GetFT12_1() == 2)
         {
-            Video::decodeRunLengthLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), &memory[GetVSR1()], CLUT, GetCM1());
+            bytes = Video::decodeRunLengthLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), &memory[GetVSR1()], CLUT, GetCM1());
         }
         else
         {
             DecodeMosaicLineA();
         }
     }
+    SetVSR1(GetVSR1() + bytes);
 
     if(GetIC1() && GetDC1())
     {
@@ -101,23 +103,24 @@ void MCD212::DrawLinePlaneA()
 
 void MCD212::DrawLinePlaneB()
 {
-
+    uint16_t bytes = 0;
     if(controlRegisters[ImageCodingMethod] & 0x000F00) // plane on
     {
         if(GetFT12_2() <= 1)
         {
             const uint8_t codingMethod = controlRegisters[ImageCodingMethod] >> 8 & 0x00000F;
-            Video::decodeBitmapLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
+            bytes = Video::decodeBitmapLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
         }
         else if(GetFT12_2() == 2)
         {
-            Video::decodeRunLengthLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &memory[GetVSR2()], &CLUT[128], GetCM2());
+            bytes = Video::decodeRunLengthLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &memory[GetVSR2()], &CLUT[128], GetCM2());
         }
         else
         {
             DecodeMosaicLineB();
         }
     }
+    SetVSR2(GetVSR2() + bytes);
 
     if(GetIC2() && GetDC2())
     {
