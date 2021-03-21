@@ -141,8 +141,16 @@ void MCD212::ExecuteICA1()
                 const uint8_t index = (uint8_t)(ica >> 24) - 0x80;
                 CLUT[bank + index] = ica & 0x00FFFFFF;
             }
+            else if((ica & 0xFF000000) == 0xCF000000) // Cursor Pattern
+            {
+                const uint8_t reg = ica >> 16 & 0xF;
+                cursorPatterns[reg] = ica;
+                controlRegisters[CursorPattern] = ica & 0x00FFFFFF;
+            }
             else
+            {
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
+            }
         }
         addr += 4;
     }
@@ -197,8 +205,16 @@ void MCD212::ExecuteDCA1()
                 const uint8_t index = (uint8_t)(dca >> 24) - 0x80;
                 CLUT[bank + index] = dca & 0x00FFFFFF;
             }
+            else if((dca & 0xFF000000) == 0xCF000000) // Cursor Pattern
+            {
+                const uint8_t reg = dca >> 16 & 0xF;
+                cursorPatterns[reg] = dca;
+                controlRegisters[CursorPattern] = dca & 0x00FFFFFF;
+            }
             else
+            {
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
+            }
         }
         SetDCP1(addr + 4);
     }

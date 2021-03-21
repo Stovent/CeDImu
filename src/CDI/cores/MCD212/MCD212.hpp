@@ -111,6 +111,7 @@ private:
     bool stopOnNextFrame;
     uint32_t* controlRegisters;
     uint16_t* internalRegisters;
+    uint16_t  cursorPatterns[16];
     uint8_t registerCSR1R;
     uint8_t registerCSR2R;
     uint32_t CLUT[256];

@@ -35,7 +35,7 @@ void MCD212::DrawLine()
         {
             Video::splitARGB(backgroundPlane, GetHorizontalResolution1() * GetVerticalResolution() * 4, nullptr, screen);
 
-            if(controlRegisters[PlaneOrder])
+            if(controlRegisters[PlaneOrder] & 1)
             {
                 Video::paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), planeA, GetHorizontalResolution1(), GetVerticalResolution());
                 Video::paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), planeB, GetHorizontalResolution2(), GetVerticalResolution());
@@ -48,7 +48,7 @@ void MCD212::DrawLine()
 
             if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
             {
-                const uint16_t x = controlRegisters[CursorPosition] & 0x0003FF;
+                const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // address is in double resolution mode
                 const uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
                 Video::paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), cursorPlane, 16, 16, x, y);
             }
@@ -152,11 +152,11 @@ void MCD212::DrawLineBackground()
 void MCD212::DrawLineCursor()
 {
     // check if Y position starts at 0 or 1 (assuming 0 in this code)
-    uint16_t yPosition = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
-    if(lineNumber < yPosition || lineNumber + 16 > yPosition)
+    const uint16_t yPosition = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
+    if(lineNumber < yPosition || lineNumber > yPosition + 16)
         return;
 
-    uint8_t yAddress = controlRegisters[CursorPattern] >> 16 & 0x0F;
+    const uint8_t yAddress = lineNumber - yPosition;
     uint8_t* pixels = cursorPlane + yAddress * 16 * 4;
 
     const uint8_t A = (controlRegisters[CursorControl] & 0x000008) ? 255 : 128;
@@ -167,7 +167,7 @@ void MCD212::DrawLineCursor()
     uint16_t mask = 1 << 15;
     for(uint8_t i = 0, j = 0; i < 16; i++)
     {
-        if(controlRegisters[CursorPattern] & mask)
+        if(cursorPatterns[yAddress] & mask)
         {
             pixels[j++] = A;
             pixels[j++] = R;
