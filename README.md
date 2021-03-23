@@ -2,6 +2,8 @@
 
 # CeDImu
 
+![CeDImu concept by jongg-eater](https://raw.githubusercontent.com/Stovent/CeDImu/master/resources/CeDImu-concept.png "CeDImu concept by jongg-eater")
+
 Experimental Philips CD-I emulator  
 (I use a capital `I` instead of a lower case `i` because the Green Book capitalizes it)
 
@@ -98,3 +100,9 @@ DVC support will be added when CeDImu will have a good compatibility with the ba
 
 ## libCeDImu
 If I get everything listed upper working, stable and fully functional, the goal is to create libCeDImu, a complete library (static and/or dynamic) to allow any program to implement CDI applications (other emulators like Bizhawk, MAME, etc).
+
+## Special Thanks
+
+- [CD-i Fan](https://github.com/cdifan) for his help and his information that made me progress way faster than I could imagine.
+-  jongg-eater for the logo.
+
