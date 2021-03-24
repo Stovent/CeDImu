@@ -65,12 +65,14 @@ DVC support will be added when CeDImu will have a good compatibility with the ba
 - [x] MCD212 (Mono-1, 2, 3, 4)
 - [ ] CDIC (Mini-MMC, Mono-1)
 - [ ] DSP (Mono-2)
-- [ ] CIAP (Mono-3, 4)
+- [ ] MCD221 CIAP (Mono-3, 4)
 - [ ] Slave (Mini-MMC, Mono-1, 2)
-- [ ] MCD221 IKAT (Mono-3, 4)
+- [ ] IKAT (Mono-3, 4)
 - [x] M48T08
 
 ### Boards
+
+Compatible means it is capable of playing discs.
 
 - [ ] Mini-MMC
 
@@ -78,7 +80,7 @@ DVC support will be added when CeDImu will have a good compatibility with the ba
 
 - [ ] Mono-3
 
-  ​	Not working. MCD212 and Timekeeper mapped.
+  BIOS boots to player shell. MCD212, Timekeeper and HLE IKAT mapped.
 
 ## Features
 
