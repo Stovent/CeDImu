@@ -25,7 +25,7 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
             const uint8_t data = registerCSR;
             if(flags & Trigger)
                 registerCSR &= 0xE6; // clear BE bit on status read
-            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X\n", board.cpu.currentPC, addr, data); })
             return data;
         }
 
@@ -36,7 +36,7 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
                 data = internalRegisters[SB] >> 8;
             else
                 data = internalRegisters[SB];
-            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B register at 0x%06X : 0x%X\n", board.cpu.currentPC, addr, data); })
             return data;
         }
     }
@@ -54,7 +54,7 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
             const uint8_t data = registerCSR;
             if(flags & Trigger)
                 registerCSR &= 0xE6; // clear BE bit on status read
-            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X\n", board.cpu.currentPC, addr, data); })
             return data;
         }
 
@@ -65,7 +65,7 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
                 data = internalRegisters[SB] >> 8;
             else
                 data = internalRegisters[SB];
-            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B register at 0x%06X : 0x%X\n", board.cpu.currentPC, addr, data); })
             return data;
         }
     }
@@ -103,13 +103,13 @@ uint16_t SCC66470::GetWord(const uint32_t addr, const uint8_t flags)
             const uint8_t data = registerCSR;
             if(flags & Trigger)
                 registerCSR &= 0xE6; // clear BE bit on status read
-            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X\n", board.cpu.currentPC, addr, data); })
             return data;
         }
 
         if(addr == 0x1FFFF2)
         {
-            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B at 0x%06X : 0x%X", board.cpu.currentPC, addr, registerB); })
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B at 0x%06X : 0x%X\n", board.cpu.currentPC, addr, registerB); })
             return registerB;
         }
     }
@@ -127,13 +127,13 @@ uint16_t SCC66470::GetWord(const uint32_t addr, const uint8_t flags)
             const uint8_t data = registerCSR;
             if(flags & Trigger)
                 registerCSR &= 0xE6; // clear BE bit on status read
-            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR register at 0x%06X : 0x%X\n", board.cpu.currentPC, addr, data); })
             return data;
         }
 
         if(addr == 0x1FFFD2)
         {
-            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B at 0x%06X : 0x%X", board.cpu.currentPC, addr, registerB); })
+            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B at 0x%06X : 0x%X\n", board.cpu.currentPC, addr, registerB); })
             return registerB;
         }
     }
