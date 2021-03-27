@@ -18,11 +18,15 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr)
 void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
 {
     addr -= SCC68070Peripherals::Base;
-    if(addr != MSR)
-        internal[addr] = data;
 
-    if(addr == UCR) // UART Command Register
+    switch(addr)
     {
+    case LIR:
+        // TODO: reset interrupts
+        internal[LIR] = data & 0x77; // PIR is read as 0
+        break;
+
+    case UCR:
         switch(data & 0x70)
         {
         case 0x20: // reset receiver
@@ -44,19 +48,26 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
             SET_TX_READY();
         if(data & 0x08)
             UNSET_TX_READY();
-    }
-    else if(addr == UTHR) // UART Transmit Holding Register
-    {
+
+        internal[UCR] = data;
+        break;
+
+    case UTHR:
         board.CPUSetUART(data);
         internal[USR] |= 0x08; // set TXEMT bit
         if(OnUARTOut)
             OnUARTOut(data);
         LOG(disassembledInstructions.push_back("\tUTHR: 0x" + toHex(internal[UTHR])))
-    }
-    else if(addr == TSR) // Timer Status Register
-    {
-        // Reset bits when a 1 is written in the register
-        internal[TSR] ^= data;
+        internal[UTHR] = data;
+        break;
+
+    case TSR:
+        internal[TSR] ^= data; // Reset bits when a 1 is written in the register
+        break;
+
+    default:
+        if(addr != MSR)
+            internal[addr] = data;
     }
 }
 
