@@ -48,7 +48,7 @@ void MCD212::DrawLine()
 
             if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
             {
-                const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // address is in double resolution mode
+                const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // TODO: address is in double resolution mode
                 const uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
                 Video::paste(screen, GetHorizontalResolution1(), GetVerticalResolution(), cursorPlane, 16, 16, x, y);
             }
@@ -275,6 +275,3 @@ void MCD212::DecodeMosaicLineB() // TODO
         }
     }
 }
-
-#undef   SET_DA_BIT
-#undef UNSET_DA_BIT

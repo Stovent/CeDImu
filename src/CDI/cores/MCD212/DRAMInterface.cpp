@@ -22,7 +22,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
     {
         const uint8_t data = registerCSR2R;
         if(flags & Trigger)
-            registerCSR2R &= 0x06; // clear BE bit on status read
+            registerCSR2R = 0; // clear IT1, IT2 and BE bits on status read
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR2R register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
         return data;
     }
@@ -63,7 +63,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
     {
         const uint16_t data = registerCSR2R;
         if(flags & Trigger)
-            registerCSR2R &= 0x06; // clear BE bit on status read
+            registerCSR2R = 0; // clear IT1, IT2 and BE bits on status read
         LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet CSR2R register at 0x%06X : 0x%X", board.cpu.currentPC, addr, data); })
         return data;
     }

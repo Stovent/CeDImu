@@ -132,6 +132,24 @@ void SCC68070::Interrupt(const uint8_t vector, const uint8_t priority)
         exceptions.push({vector, 1});
 }
 
+/** \brief Trigger interrupt with LIR1 level.
+ */
+void SCC68070::INT1()
+{
+    const uint8_t level = internal[LIR] >> 4 & 0x07;
+    if(level && !(internal[LIR] & 0x80))
+        Interrupt(Level1ExternalInterruptAutovector - 1 + level, level);
+}
+
+/** \brief Trigger interrupt with LIR2 level.
+ */
+void SCC68070::INT2()
+{
+    const uint8_t level = internal[LIR] & 0x07;
+    if(level && !(internal[LIR] & 0x08))
+        Interrupt(Level1ExternalInterruptAutovector - 1 + level, level);
+}
+
 /** \brief Write the disassembled instructions to a file (in DEBUG mode).
  */
 void SCC68070::FlushDisassembler()

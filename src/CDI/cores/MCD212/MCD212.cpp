@@ -1,4 +1,5 @@
 #include "MCD212.hpp"
+#include "../../boards/Board.hpp"
 #include "../../common/utils.hpp"
 #include "../../common/Video.hpp"
 
@@ -128,6 +129,8 @@ void MCD212::ExecuteICA1()
 
         case 6: // INTERRUPT
             SetIT1();
+            if(!GetDI1())
+                board.cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -192,6 +195,8 @@ void MCD212::ExecuteDCA1()
 
         case 6: // INTERRUPT
             SetIT1();
+            if(!GetDI1())
+                board.cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -256,6 +261,8 @@ void MCD212::ExecuteICA2()
 
         case 6: // INTERRUPT
             SetIT2();
+            if(!GetDI2())
+                board.cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -313,6 +320,8 @@ void MCD212::ExecuteDCA2()
 
         case 6: // INTERRUPT
             SetIT2();
+            if(!GetDI2())
+                board.cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS

@@ -308,7 +308,10 @@ public:
     void Run(const bool loop = true);
     void Stop(const bool wait = true);
     void Reset();
+
     void Interrupt(const uint8_t vector, const uint8_t priority);
+    void INT1();
+    void INT2();
 
     void SetRegister(CPURegisters reg, const uint32_t value);
     std::map<std::string, uint32_t> GetCPURegisters() const;
