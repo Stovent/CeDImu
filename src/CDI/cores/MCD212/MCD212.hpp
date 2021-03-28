@@ -81,7 +81,7 @@ public:
 
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const override // as nano seconds
     {
-        return GetCF() ? (GetST() ? 48000 : 51200) : 51400;
+        return 64000; // TODO: 30.2097 MHz
     }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
