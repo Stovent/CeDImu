@@ -17,9 +17,9 @@ uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
-    if(addr >= 0x310000 && addr < 0x320000) // TODO
+    if(addr >= 0x310000 && addr < 0x31001E && !isEven(addr))
     {
-        const uint8_t data = 0;
+        const uint8_t data = slave->GetByte((addr - 0x310000) >> 1);
         LOG(if(flags & Log) { fprintf(out, "%X\tGet byte in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
         return data;
     }
@@ -51,10 +51,10 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
-    if(addr >= 0x310000 && addr < 0x320000) // TODO
+    if(addr >= 0x310000 && addr < 0x31001E)
     {
-        const uint16_t data = 0;
-        LOG(if(flags & Log) { fprintf(out, "%X\tGet word in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
+        const uint8_t data = slave->GetByte((addr - 0x310000) >> 1);
+        LOG(if(flags & Log) { fprintf(out, "%X\tGet word in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
         return data;
     }
 
@@ -91,8 +91,9 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
         return;
     }
 
-    if(addr >= 0x310000 && addr < 0x320000) // TODO
+    if(addr >= 0x310000 && addr < 0x31001E && !isEven(addr))
     {
+        slave->SetByte((addr - 0x310000) >> 1, data);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet byte in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int8_t)data, data, data); })
         return;
     }
@@ -123,8 +124,9 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
         return;
     }
 
-    if(addr >= 0x310000 && addr < 0x320000) // TODO
+    if(addr >= 0x310000 && addr < 0x31001E)
     {
+        slave->SetByte((addr - 0x310000) >> 1, data);
         LOG(if(flags & Log) { fprintf(out, "%X\tSet word in IKAT at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
         return;
     }

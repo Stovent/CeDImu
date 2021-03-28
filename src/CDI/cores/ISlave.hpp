@@ -6,8 +6,10 @@
 class ISlave
 {
 public:
-    virtual uint8_t GetByte(const uint8_t addr);
-    virtual void SetByte(const uint8_t addr, const uint8_t data);
+    virtual ~ISlave() {}
+
+    virtual uint8_t GetByte(const uint8_t addr) = 0;
+    virtual void SetByte(const uint8_t addr, const uint8_t data) = 0;
 };
 
 #endif // ISLAVE_HPP
