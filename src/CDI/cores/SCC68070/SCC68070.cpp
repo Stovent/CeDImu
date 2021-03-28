@@ -25,25 +25,6 @@ SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
     OPEN_LOG(out, "SCC68070.txt")
     OPEN_LOG(instructions, "instructions.txt")
 
-//    breakpoints.push_back(0x41BBBA); // 18 Z 27 E
-//    breakpoints.push_back(0x4097D6); // ANDI #0xF8FF, SR
-//    breakpoints.push_back(0x4076b0); // MOVEM.L (A7)+
-//    breakpoints.push_back(0x432322); // MOVE.W (A1)+, D2
-//    breakpoints.push_back(0x407066); // MOVE.W (A1)+, D2
-//    breakpoints.push_back(0x40a5a6); // MOVEM.L (A7)+, 11000001 00000001
-//    breakpoints.push_back(0x403d92); // MOVEM.L (A7)+, 11000001 00000001
-//    breakpoints.push_back(0x409860); // MOVEA.L (8,A4), A7
-
-    /* TODO:
-    - Proper interrupts handling
-    - Different frequency in PAL or NTSC
-    - The GUI should provide the Export functions with the path
-    - CDIC interface
-    - Basic SCC66470 emulation
-    - Semaphore to access interpreter
-    - Atomic access to the board to prevent crash
-    */
-
     GenerateInstructionSet();
 }
 

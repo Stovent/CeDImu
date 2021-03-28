@@ -19,6 +19,21 @@ void MCD212::DrawLine()
     else
         SET_PA_BIT()
 
+    if(lineNumber == 0)
+    {
+        if(GetIC1())
+        {
+            ICA1.clear();
+            ExecuteICA1();
+        }
+
+        if(GetIC2())
+        {
+            ICA2.clear();
+            ExecuteICA2();
+        }
+    }
+
     if(GetDE())
     {
         DrawLinePlaneA();
@@ -94,11 +109,11 @@ void MCD212::DrawLinePlaneA()
         ExecuteDCA1();
     }
 
-    if(GetIC1() && lineNumber >= GetVerticalResolution()-1)
-    {
-        ICA1.clear();
-        ExecuteICA1();
-    }
+//    if(GetIC1() && lineNumber >= GetVerticalResolution()-1)
+//    {
+//        ICA1.clear();
+//        ExecuteICA1();
+//    }
 }
 
 void MCD212::DrawLinePlaneB()
@@ -128,11 +143,11 @@ void MCD212::DrawLinePlaneB()
         ExecuteDCA2();
     }
 
-    if(GetIC2() && lineNumber >= GetVerticalResolution()-1)
-    {
-        ICA2.clear();
-        ExecuteICA2();
-    }
+//    if(GetIC2() && lineNumber >= GetVerticalResolution()-1)
+//    {
+//        ICA2.clear();
+//        ExecuteICA2();
+//    }
 }
 
 void MCD212::DrawLineBackground()
