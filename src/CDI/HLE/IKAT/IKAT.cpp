@@ -6,9 +6,11 @@ namespace HLE
 static uint8_t responseF4[3] = {0xA5, 0xF4, 0}; // 1 for service shell, 0 for player shell
 static uint8_t responseF6[4] = {0xA5, 0xF6, 1, 0xFF}; // 1 for NTSC, 2 for PAL
 
-IKAT::IKAT()
+IKAT::IKAT(const bool PAL)
 {
     index = -1;
+    commandSize = 0;
+    responseF6[2] = PAL + 1;
 }
 
 uint8_t IKAT::GetByte(const uint8_t addr)

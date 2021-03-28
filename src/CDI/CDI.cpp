@@ -13,12 +13,12 @@ CDI::~CDI()
     delete board;
 }
 
-void CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock)
+void CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock, const bool PAL)
 {
     delete board;
 
     if(vdscSize == 523264)
         board = new MiniMMC(vdscBios, vdscSize, initNVRAMClock);
     else
-        board = new Mono3(vdscBios, vdscSize, initNVRAMClock);
+        board = new Mono3(vdscBios, vdscSize, initNVRAMClock, PAL);
 }

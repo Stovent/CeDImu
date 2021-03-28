@@ -5,7 +5,7 @@
 
 #include <cstring>
 
-MCD212::MCD212(Board& board, const void* bios, const uint32_t size) : VDSC(board, bios, size) // TD = 0
+MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool PAL) : VDSC(board, bios, size), isPAL(PAL) // TD = 0
 {
     stopOnNextFrame = false;
     controlRegisters = new uint32_t[0x80];

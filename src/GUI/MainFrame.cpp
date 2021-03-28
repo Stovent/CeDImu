@@ -327,16 +327,21 @@ void MainFrame::OnSettings(wxCommandEvent& event)
     wxCheckBox* NVRAMUseCurrentTime = new wxCheckBox(emulationPage, wxID_ANY, "NVRAM use current time");
     NVRAMUseCurrentTime->SetValue(Config::NVRAMUseCurrentTime);
 
+    wxCheckBox* PAL = new wxCheckBox(emulationPage, wxID_ANY, "PAL mode");
+    PAL->SetValue(Config::PAL);
+
     emulationSizer->Add(skipBIOS);
     emulationSizer->Add(NVRAMUseCurrentTime);
+    emulationSizer->Add(PAL);
     emulationPage->SetSizer(emulationSizer);
     notebook->AddPage(emulationPage, "Emulation");
 
 
     wxBoxSizer* saveCancelPanel = new wxBoxSizer(wxHORIZONTAL);
     wxButton* save = new wxButton(settingsPanel, wxID_ANY, "Save");
-    save->Bind(wxEVT_BUTTON, [settingsFrame, systemText, skipBIOS, NVRAMUseCurrentTime] (wxEvent& event) {
+    save->Bind(wxEVT_BUTTON, [settingsFrame, systemText, skipBIOS, NVRAMUseCurrentTime, PAL] (wxEvent& event) {
         Config::skipBIOS = skipBIOS->GetValue();
+        Config::PAL = PAL->GetValue();
         Config::NVRAMUseCurrentTime = NVRAMUseCurrentTime->GetValue();
         Config::systemBIOS = systemText->GetValue();
         Config::saveConfig();

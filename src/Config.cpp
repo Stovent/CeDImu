@@ -10,6 +10,7 @@ std::string ROMDirectory;
 
 // Emulation
 bool NVRAMUseCurrentTime;
+bool PAL;
 bool skipBIOS;
 
 /** \brief Loads the emulator configuration from a file named "CeDImu.ini".
@@ -40,6 +41,8 @@ bool loadConfig()
                 ROMDirectory = value;
             else if(key == "NVRAMUseCurrentTime")
                 NVRAMUseCurrentTime = stoi(value);
+            else if(key == "PAL")
+                PAL = stoi(value);
             else if(key == "skipBIOS")
                 skipBIOS = stoi(value);
         }
@@ -65,6 +68,7 @@ bool saveConfig()
 
     out << "[Emulation]" << std::endl;
     out << "NVRAMUseCurrentTime=" << NVRAMUseCurrentTime << std::endl;
+    out << "PAL=" << PAL << std::endl;
     out << "skipBIOS=" << skipBIOS << std::endl;
 
     out.close();
@@ -78,6 +82,7 @@ void loadDefaultConfig()
     systemBIOS = "";
     ROMDirectory = "";
     NVRAMUseCurrentTime = false;
+    PAL = false;
     skipBIOS = false;
 }
 

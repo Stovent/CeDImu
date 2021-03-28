@@ -13,7 +13,7 @@ public:
     CDI();
     ~CDI();
 
-    void LoadBoard(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock);
+    void LoadBoard(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock, const bool PAL);
 };
 
 #endif // CDI_HPP

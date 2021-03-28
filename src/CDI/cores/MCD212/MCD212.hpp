@@ -64,7 +64,8 @@ enum ImageCodingMethods
 class MCD212 : public VDSC
 {
 public:
-    explicit MCD212(Board& board, const void* bios, const uint32_t size);
+    MCD212() = delete;
+    explicit MCD212(Board& board, const void* bios, const uint32_t size, const bool PAL);
     virtual ~MCD212();
 
     virtual void Reset() override;
@@ -81,7 +82,7 @@ public:
 
     virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const override // as nano seconds
     {
-        return 64000; // TODO: 30.2097 MHz
+        return isPAL ? 64000 : 63560;
     }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
@@ -98,6 +99,7 @@ public:
     virtual Plane GetCursor() const override;
 
 private:
+    const bool isPAL;
     uint8_t memorySwapCount;
 
     uint8_t* memory;

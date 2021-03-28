@@ -54,7 +54,7 @@ bool CeDImu::InitializeCores()
     fread(bios, 1, biosSize, f);;
     fclose(f);
 
-    cdi.LoadBoard(bios, biosSize, Config::NVRAMUseCurrentTime);
+    cdi.LoadBoard(bios, biosSize, Config::NVRAMUseCurrentTime, Config::PAL);
     delete[] bios;
 
 #ifdef _WIN32

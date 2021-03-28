@@ -32,7 +32,8 @@ class IKAT : public ISlave
     const uint8_t* command;
 
 public:
-    IKAT();
+    IKAT() = delete;
+    IKAT(const bool PAL);
 
     virtual uint8_t GetByte(const uint8_t addr) override;
     virtual void SetByte(const uint8_t addr, const uint8_t data) override;

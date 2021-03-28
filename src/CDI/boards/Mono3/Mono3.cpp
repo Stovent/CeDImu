@@ -2,9 +2,9 @@
 #include "../../common/utils.hpp"
 #include "../../HLE/IKAT/IKAT.hpp"
 
-Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock) : Board(initNVRAMClock), mcd212(*this, vdscBios, vdscSize)
+Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock, const bool PAL) : Board(initNVRAMClock), mcd212(*this, vdscBios, vdscSize, PAL)
 {
-    slave = new HLE::IKAT();
+    slave = new HLE::IKAT(PAL);
     OPEN_LOG(out, "Mono3.txt")
     uart_out.open("uart_out", std::ios::binary | std::ios::out);
     uart_in.open("uart_in", std::ios::binary | std::ios::in);
