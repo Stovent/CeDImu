@@ -16,11 +16,9 @@ wxBEGIN_EVENT_TABLE(VDSCViewer, wxFrame)
     EVT_TIMER(IDVDSCViewerTimer, VDSCViewer::RefreshLoop)
 wxEND_EVENT_TABLE()
 
-VDSCViewer::VDSCViewer(MainFrame* parent, Board* board) : wxFrame(parent, wxID_ANY, "VDSC Viewer"), timer(this, IDVDSCViewerTimer)
+VDSCViewer::VDSCViewer(MainFrame* parent, Board& baord) : wxFrame(parent, wxID_ANY, "VDSC Viewer"), board(baord), timer(this, IDVDSCViewerTimer)
 {
     mainFrame = parent;
-    this->board = board;
-    timer.Start(16);
 
     wxPanel* notebookPanel = new wxPanel(this);
     notebook = new wxNotebook(notebookPanel, wxID_ANY);
@@ -80,7 +78,7 @@ VDSCViewer::VDSCViewer(MainFrame* parent, Board* board) : wxFrame(parent, wxID_A
 
         registersPage->SetSizer(listsSizer);
 
-        std::vector<VDSCRegister> iregs = board->GetInternalRegisters();
+        std::vector<VDSCRegister> iregs = board.GetInternalRegisters();
         long i = 0;
         for(const VDSCRegister& reg : iregs)
         {
@@ -90,7 +88,7 @@ VDSCViewer::VDSCViewer(MainFrame* parent, Board* board) : wxFrame(parent, wxID_A
             internalList->SetItem(itemIndex, 3, reg.disassembledValue);
         }
 
-        std::vector<VDSCRegister> cregs = board->GetControlRegisters();
+        std::vector<VDSCRegister> cregs = board.GetControlRegisters();
         i = 0;
         for(const VDSCRegister& reg : cregs)
         {
@@ -175,6 +173,8 @@ VDSCViewer::VDSCViewer(MainFrame* parent, Board* board) : wxFrame(parent, wxID_A
     notebookSizer->Add(notebook, 1, wxEXPAND);
 
     notebookPanel->SetSizer(notebookSizer);
+
+    timer.Start(16);
 }
 
 VDSCViewer::~VDSCViewer()
@@ -187,7 +187,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
     const int selectedPage = notebook->GetSelection();
     if(selectedPage == 0) // Registers
     {
-        std::vector<VDSCRegister> iregs = board->GetInternalRegisters();
+        std::vector<VDSCRegister> iregs = board.GetInternalRegisters();
         long i = 0;
         for(const VDSCRegister& reg : iregs)
         {
@@ -195,7 +195,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
             internalList->SetItem(i++, 3, reg.disassembledValue);
         }
 
-        std::vector<VDSCRegister> cregs = board->GetControlRegisters();
+        std::vector<VDSCRegister> cregs = board.GetControlRegisters();
         i = 0;
         for(const VDSCRegister& reg : cregs)
         {
@@ -206,25 +206,25 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
     {
         std::stringstream ica1;
         std::ostream_iterator<std::string> ssica1(ica1, "\n");
-        std::vector<std::string> vica1 = board->GetICA1();
+        std::vector<std::string> vica1 = board.GetICA1();
         std::copy(vica1.begin(), vica1.end(), ssica1);
         ica1Text->SetValue(ica1.str());
 
         std::stringstream dca1;
         std::ostream_iterator<std::string> ssdca1(dca1, "\n");
-        std::vector<std::string> vdca1 = board->GetDCA1();
+        std::vector<std::string> vdca1 = board.GetDCA1();
         std::copy(vdca1.begin(), vdca1.end(), ssdca1);
         dca1Text->SetValue(dca1.str());
 
         std::stringstream ica2;
         std::ostream_iterator<std::string> ssica2(ica2, "\n");
-        std::vector<std::string> vica2 = board->GetICA2();
+        std::vector<std::string> vica2 = board.GetICA2();
         std::copy(vica2.begin(), vica2.end(), ssica2);
         ica2Text->SetValue(ica2.str());
 
         std::stringstream dca2;
         std::ostream_iterator<std::string> ssdca2(dca2, "\n");
-        std::vector<std::string> vdca2 = board->GetDCA2();
+        std::vector<std::string> vdca2 = board.GetDCA2();
         std::copy(vdca2.begin(), vdca2.end(), ssdca2);
         dca2Text->SetValue(dca2.str());
     }
@@ -235,10 +235,10 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
         wxClientDC dcBackground(backgroundPanel);
         wxClientDC dcCursor(cursorPanel);
 
-        Plane a = board->GetPlaneA();
-        Plane b = board->GetPlaneB();
-        Plane bg = board->GetBackground();
-        Plane c = board->GetCursor();
+        Plane a = board.GetPlaneA();
+        Plane b = board.GetPlaneB();
+        Plane bg = board.GetBackground();
+        Plane c = board.GetCursor();
 
         if(a.pixels != nullptr)
         {
@@ -252,7 +252,6 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
 
         if(b.pixels != nullptr)
         {
-
             wxImage planeB(b.width, b.height);
             if(!planeB.HasAlpha())
                 planeB.InitAlpha();

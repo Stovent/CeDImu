@@ -5,12 +5,12 @@
 
 #include <string>
 
-CDIDirectory::CDIDirectory(uint8_t namesize, std::string name, uint32_t lbn, uint16_t parent, uint16_t offset) :
+CDIDirectory::CDIDirectory(uint8_t namesize, std::string dirName, uint32_t lbn, uint16_t parent, uint16_t offset) :
     nameSize(namesize),
-    relOffset(offset),
+    name(dirName),
+    LBN(lbn),
     parentDirectory(parent),
-    dirLBN(lbn),
-    dirname(name)
+    relOffset(offset)
 {
 }
 
@@ -25,11 +25,11 @@ void CDIDirectory::LoadContent(CDIDisc& disc)
     const uint32_t pos = disc.Tell();
     uint8_t c;
 
-    disc.GotoLBN(dirLBN);
+    disc.GotoLBN(LBN);
     c = disc.GetByte();
-    disc.Seek(c-1, std::ios::cur); // describe the current directory, so we skip it
+    disc.Seek(c - 1, std::ios::cur); // describe the current directory, so we skip it
     c = disc.GetByte();
-    disc.Seek(c-1, std::ios::cur); // describe the parent directory, so we skip it
+    disc.Seek(c - 1, std::ios::cur); // describe the parent directory, so we skip it
 
     do
     {
@@ -80,6 +80,7 @@ void CDIDirectory::LoadContent(CDIDisc& disc)
         if(!(disc.subheader.submode & cdieof))
             disc.GotoNextSector();
     } while(!(disc.subheader.submode & cdieof)); // in case the directory structure is spreaded over several sectors
+
     disc.Seek(pos);
 }
 
@@ -105,7 +106,7 @@ CDIFile* CDIDirectory::GetFile(std::string filename)
     else
     {
         std::string dir = filename.substr(0, pos);
-        filename = filename.substr(pos+1);
+        filename = filename.substr(pos + 1);
 
         std::map<std::string, CDIDirectory>::iterator it = subdirectories.find(dir);
         if(it == subdirectories.end())
@@ -127,37 +128,38 @@ void CDIDirectory::Clear()
 
 /** \brief Returns the directory structure as a stringstream.
  *
- * \return A stringstream containing the directory structure
+ * \return A stringstream containing the directory structure.
  *
  * The structure is designed as follow:
- * Dir: <dirname>/
+ * Dir: <name>/
  * LBN: <logical block number of the directory>
  * Then for each file inside the directory:
  *     File: <file name>
  *     Size: <file size>
  *     LBN : <logical block number of the file>
  */
-std::stringstream CDIDirectory::ExportContent() const
+std::stringstream CDIDirectory::GetChildrenTree() const
 {
     std::stringstream ss;
-    std::string dirName = dirname == "/" ? "" : dirname;
+    std::string dirName = name == "/" ? "" : name;
     ss << "Dir: " << dirName << "/" << std::endl;
-    ss << "LBN: " << dirLBN << std::endl;
+    ss << "LBN: " << LBN << std::endl;
 
-    for(std::pair<std::string, CDIDirectory> dir : subdirectories)
+    for(const std::pair<std::string, CDIDirectory>& dir : subdirectories)
     {
-        std::stringstream dirss = dir.second.ExportContent();
+        std::stringstream dirss = dir.second.GetChildrenTree();
         std::string line;
         while(std::getline(dirss, line))
             ss << "\t" << line << std::endl;
     }
 
-    for(std::pair<std::string, CDIFile> file : files)
+    for(const std::pair<std::string, CDIFile>& file : files)
     {
-        ss << "\tFile: " << file.second.filename << std::endl;
-        ss << "\tSize: " << file.second.filesize << std::endl;
-        ss << "\tLBN : " << file.second.fileLBN << std::endl << std::endl;
+        ss << "\tFile: " << file.second.name << std::endl;
+        ss << "\tSize: " << file.second.size << std::endl;
+        ss << "\tLBN : " << file.second.LBN << std::endl << std::endl;
     }
+
     return ss;
 }
 
@@ -167,8 +169,8 @@ std::stringstream CDIDirectory::ExportContent() const
  */
 void CDIDirectory::ExportAudio(std::string basePath) const
 {
-    if(dirname != "/")
-        basePath += dirname + "/";
+    if(name != "/")
+        basePath += name + "/";
 
     if(!createDirectories(basePath))
         return;
@@ -190,8 +192,8 @@ void CDIDirectory::ExportAudio(std::string basePath) const
  */
 void CDIDirectory::ExportFiles(std::string basePath) const
 {
-    if(dirname != "/")
-        basePath += dirname + "/";
+    if(name != "/")
+        basePath += name + "/";
 
     if(!createDirectories(basePath))
         return;
@@ -213,8 +215,8 @@ void CDIDirectory::ExportFiles(std::string basePath) const
  */
 void CDIDirectory::ExportVideo(std::string basePath) const
 {
-    if(dirname != "/")
-        basePath += dirname + "/";
+    if(name != "/")
+        basePath += name + "/";
 
     if(!createDirectories(basePath))
         return;

@@ -17,7 +17,7 @@ class MainFrame;
 class VDSCViewer : public wxFrame
 {
     MainFrame* mainFrame;
-    Board* board;
+    Board& board;
     wxTimer timer;
     wxNotebook* notebook;
     wxListCtrl* internalList;
@@ -32,7 +32,7 @@ class VDSCViewer : public wxFrame
     wxTextCtrl* dca2Text;
 
 public:
-    VDSCViewer(MainFrame* parent, Board* board);
+    VDSCViewer(MainFrame* parent, Board& baord);
     ~VDSCViewer();
 
     void RefreshLoop(wxTimerEvent& event);

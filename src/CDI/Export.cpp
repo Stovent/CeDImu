@@ -87,7 +87,7 @@ void CDIDisc::ExportFileSystem()
 
     std::ofstream out(gameFolder + "files_info.txt");
 
-    out << rootDirectory.ExportContent().str();
+    out << rootDirectory.GetChildrenTree().str();
 
     out.close();
 }

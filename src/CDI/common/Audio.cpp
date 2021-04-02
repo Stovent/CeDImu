@@ -60,6 +60,9 @@ uint16_t decodeAudioSector(const bool levelA, const bool stereo, const uint8_t d
  * \param  left Destination left audio channel. If audio is mono, it will contain the decoded data and right will remain untouched.
  * \param  right Destination right audio channel. If audio is mono, it will remain untouched.
  * \return number of samples decoded.
+ *
+ * Special thanks to this thread (http://www.cdinteractive.co.uk/forums/cdinteractive/viewtopic.php?t=3191)
+ * for making me understand how the k0 and k1 filters worked in ADCPM decoder
  */
 uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::vector<int16_t>& left, std::vector<int16_t>& right)
 {

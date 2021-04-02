@@ -67,8 +67,8 @@ class CDIDisc
     bool GotoLBN(const uint32_t lbn, const uint32_t offset = 0);
     bool GotoNextSector(uint8_t submodeMask = 0);
 
-    bool GetData(char* dst, uint32_t& size, const bool includeEmptySectors = true);
-    bool GetRaw(char* dst, uint32_t size);
+    bool GetData(uint8_t* dst, uint32_t& size, const bool includeEmptySectors = true);
+    bool GetRaw(uint8_t* dst, uint32_t size);
     uint8_t  GetByte();
     uint16_t GetWord();
     uint32_t GetLong();

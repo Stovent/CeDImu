@@ -17,9 +17,8 @@ wxBEGIN_EVENT_TABLE(RAMSearchFrame, wxFrame)
     EVT_RADIOBUTTON(IDRAMSearchListByte4, RAMSearchFrame::OnByte4)
 wxEND_EVENT_TABLE()
 
-RAMSearchFrame::RAMSearchFrame(Board* board, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "RAM Search", pos, size)
+RAMSearchFrame::RAMSearchFrame(Board& baord, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "RAM Search", pos, size), board(baord)
 {
-    this->board = board;
     mainFrame = parent;
 
     ramSearchList = new RAMSearchList(this);

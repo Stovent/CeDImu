@@ -4,11 +4,13 @@
 #include "CDIDisc.hpp"
 #include "boards/Board.hpp"
 
+#include <memory>
+
 class CDI
 {
 public:
     CDIDisc disc;
-    Board* board;
+    std::unique_ptr<Board> board;
 
     CDI();
     ~CDI();

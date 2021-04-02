@@ -18,14 +18,14 @@ static constexpr uint8_t codingLookUp[16] = {
     OFF, OFF, OFF, OFF,
 };
 
-CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t size, uint8_t namesize, std::string name, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
+CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
     disc(cdidisc),
-    fileLBN(lbn),
-    filesize(size),
+    LBN(lbn),
+    size(filesize),
     nameSize(namesize),
-    filename(name),
+    name(filename),
     attributes(attr),
-    fileNumber(filenumber),
+    number(filenumber),
     parent(parentRelpos)
 {}
 
@@ -44,8 +44,6 @@ static std::string getAudioLevel(const bool bps, const uint32_t fs)
  *
  * Converts and writes the audio data from the ROM to 16-bit PCM.
  * Each channel and logical records are exported individualy.
- * Special thanks to this thread (http://www.cdinteractive.co.uk/forums/cdinteractive/viewtopic.php?t=3191)
- * for making me understand how the k0 and k1 filters worked in ADCPM decoder
  */
 void CDIFile::ExportAudio(const std::string& directoryPath)
 {
@@ -60,10 +58,10 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
         std::vector<int16_t> right;
         uint8_t bps = 3;
 
-        disc.GotoLBN(fileLBN);
+        disc.GotoLBN(LBN);
 
         uint8_t record = 0;
-        int32_t sizeLeft = filesize;
+        int32_t sizeLeft = size;
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
@@ -88,7 +86,7 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
             }
 
             uint8_t data[2304];
-            disc.GetRaw((char*)data, 2304);
+            disc.GetRaw(data, 2304);
             Audio::decodeAudioSector(bps, ms, data, left, right);
 
             wavHeader.channelNumber = ms + 1;
@@ -96,7 +94,7 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
 
             if(disc.subheader.submode & cdieor)
             {
-                std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record++) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
+                std::ofstream out(directoryPath + name + '_' + std::to_string(channel) + "_" + std::to_string(record++) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
                 Audio::writeWAV(out, wavHeader, left, right);
                 out.close();
                 left.clear();
@@ -108,7 +106,7 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
 
         if(left.size())
         {
-            std::ofstream out(directoryPath + filename + '_' + std::to_string(channel) + "_" + std::to_string(record) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
+            std::ofstream out(directoryPath + name + '_' + std::to_string(channel) + "_" + std::to_string(record) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
             Audio::writeWAV(out, wavHeader, left, right);
             out.close();
         }
@@ -125,12 +123,12 @@ void CDIFile::ExportFile(const std::string& directoryPath)
 {
     const uint32_t pos = disc.Tell();
 
-    std::ofstream out(directoryPath + filename, std::ios::out | std::ios::binary);
+    std::ofstream out(directoryPath + name, std::ios::out | std::ios::binary);
 
     uint32_t size = 0;
-    char const * const data = GetFileContent(size);
+    uint8_t const * const data = GetContent(size);
     if(data && size)
-        out.write(data, size);
+        out.write((char*)data, size);
     delete[] data;
 
     out.close();
@@ -156,10 +154,10 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
         uint8_t pixels[768 * 560 * 4] = {0};
         std::vector<uint8_t> data;
 
-        disc.GotoLBN(fileLBN);
+        disc.GotoLBN(LBN);
 
         uint8_t record = 0;
-        int32_t sizeLeft = filesize;
+        int32_t sizeLeft = size;
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
@@ -169,7 +167,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
             if(disc.subheader.submode & cdid) // Get CLUT table from a sector before the video data
             {
                 uint8_t data[2048];
-                disc.GetRaw((char*)data, 2048);
+                disc.GetRaw(data, 2048);
 
                 char* clut = (char*)subarrayOfArray(data, 2048, "cluts", 5);
                 if(clut != nullptr)
@@ -235,7 +233,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
             width = resolution == 0 ? 384 : 768;
             height = resolution == 3 ? 480 : 242;
 
-            disc.GetRaw((char*)d.data(), d.size());
+            disc.GetRaw(d.data(), d.size());
             data.insert(data.end(), d.begin(), d.end());
 
             disc.GotoNextSector();
@@ -252,7 +250,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
                 {
                     uint8_t* pix = new uint8_t[width * height * 3];
                     Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-                    wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
+                    wxImage(width, height, pix, true).SaveFile(directoryPath + name + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
                     delete[] pix;
                     y = 0;
                 }
@@ -268,7 +266,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
                 {
                     uint8_t* pix = new uint8_t[width * height * 3];
                     Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-                    wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
+                    wxImage(width, height, pix, true).SaveFile(directoryPath + name + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
                     delete[] pix;
                     y = 0;
                 }
@@ -279,7 +277,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
         {
             uint8_t* pix = new uint8_t[width * height * 4];
             Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-            wxImage(width, height, pix, true).SaveFile(directoryPath + filename + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
+            wxImage(width, height, pix, true).SaveFile(directoryPath + name + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
             delete[] pix;
             y = 0;
         }
@@ -293,17 +291,17 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
  * \param  size A reference to a uint32_t that will contain the size of the returned array.
  * \return An array containing the file content, or nullptr if memory allocation failed. It is the caller's responsability to delete the returned array (allocated with new[]).
  */
-char* CDIFile::GetFileContent(uint32_t& size)
+uint8_t* CDIFile::GetContent(uint32_t& size)
 {
     const uint32_t pos = disc.Tell();
 
-    uint32_t readSize = (double)filesize / 2048.0 * 2324.0;
-    char* data = new (std::nothrow) char[readSize];
+    uint32_t readSize = (double)this->size / 2048.0 * 2324.0;
+    uint8_t* data = new (std::nothrow) uint8_t[readSize];
     if(data == nullptr)
         return nullptr;
 
-    readSize = filesize;
-    disc.GotoLBN(fileLBN);
+    readSize = this->size;
+    disc.GotoLBN(LBN);
     disc.GetData(data, readSize, true);
     size = readSize;
 

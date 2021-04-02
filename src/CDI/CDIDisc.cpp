@@ -136,7 +136,7 @@ bool CDIDisc::LoadFileSystem()
 
         if(dirname[0] == '\0')
         {
-            rootDirectory.dirLBN = lbn;
+            rootDirectory.LBN = lbn;
         }
     }
     rootDirectory.LoadContent(*this);
@@ -244,7 +244,7 @@ bool CDIDisc::GotoNextSector(uint8_t submodeMask)
  * Returns true if no problems occured, false otherwise.
  * After execution, {size} is set to the actual data size read from the disc.
  */
-bool CDIDisc::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
+bool CDIDisc::GetData(uint8_t* dst, uint32_t& size, const bool includeEmptySectors)
 {
     uint32_t index = 0;
     if(!includeEmptySectors && IsEmptySector())
@@ -253,7 +253,7 @@ bool CDIDisc::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
     {
         uint16_t length = GetSectorDataSize();
         length = (size == 2048) ? length : ((size < length) ? size : length);
-        disc.read(&dst[index], length);
+        disc.read((char*)&dst[index], length);
         index += length;
         size -= (size < 2048) ? size : 2048;
         if(size) // to make sure GetData let the file cursor at the last read data and not at the next sector
@@ -271,9 +271,9 @@ bool CDIDisc::GetData(char* dst, uint32_t& size, const bool includeEmptySectors)
  *
  * Simply reads the next {size} bytes, without any check.
  */
-bool CDIDisc::GetRaw(char* dst, uint32_t size)
+bool CDIDisc::GetRaw(uint8_t* dst, uint32_t size)
 {
-    disc.read(dst, size);
+    disc.read((char*)dst, size);
     return disc.good();
 }
 

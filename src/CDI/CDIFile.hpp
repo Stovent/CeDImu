@@ -10,21 +10,21 @@ class CDIFile
     CDIDisc& disc;
 
 public:
-    const uint32_t fileLBN;
-    const uint32_t filesize;
+    const uint32_t LBN;
+    const uint32_t size;
     const uint8_t nameSize;
-    const std::string filename;
+    const std::string name;
     const uint16_t attributes;
-    const uint8_t fileNumber;
+    const uint8_t number;
     const uint16_t parent;
 
     CDIFile() = delete;
-    CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string name, uint16_t attr, uint8_t fileNumber, uint16_t parentRelpos);
+    CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos);
 
     void ExportAudio(const std::string& directoryPath);
     void ExportFile(const std::string& directoryPath);
     void ExportVideo(const std::string& directoryPath);
-    char* GetFileContent(uint32_t& size);
+    uint8_t* GetContent(uint32_t& size);
 };
 
 #endif // CDIFILE_HPP

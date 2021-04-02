@@ -32,7 +32,7 @@ void SCC68070::Interpreter()
 
         if(stop)
         {
-            executionCycles = 1;
+            executionCycles = 5;
         }
         else
         {
@@ -51,8 +51,9 @@ void SCC68070::Interpreter()
         cycleCount += executionCycles;
         totalCycleCount += executionCycles;
 
-        IncrementTimer(executionCycles * cycleDelay);
-        board.timekeeper.IncrementClock(executionCycles * cycleDelay);
+        const double ns = executionCycles * cycleDelay;
+        IncrementTimer(ns);
+        board.timekeeper.IncrementClock(ns);
 
         const uint32_t lineDisplayTime = board.GetLineDisplayTime();
         if(cycleCount * cycleDelay >= lineDisplayTime)

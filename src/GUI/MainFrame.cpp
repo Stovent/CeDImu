@@ -144,7 +144,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
     {
         CDIFile* module = app->cdi.disc.GetFile(app->cdi.disc.mainModule);
         uint32_t size;
-        char* d = module->GetFileContent(size);
+        uint8_t* d = module->GetContent(size);
         if(d != nullptr && size)
         {
             uint32_t address = 0;
@@ -274,7 +274,7 @@ void MainFrame::OnVDSCViewer(wxCommandEvent& event)
 {
     if(vdscViewer != nullptr || !app->cdi.board)
         return;
-    vdscViewer = new VDSCViewer(this, app->cdi.board);
+    vdscViewer = new VDSCViewer(this, *app->cdi.board);
     vdscViewer->Show();
 }
 
@@ -282,7 +282,7 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
 {
     if(ramSearchFrame != nullptr || !app->cdi.board)
         return;
-    ramSearchFrame = new RAMSearchFrame(app->cdi.board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
+    ramSearchFrame = new RAMSearchFrame(*app->cdi.board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
     ramSearchFrame->Show();
 }
 

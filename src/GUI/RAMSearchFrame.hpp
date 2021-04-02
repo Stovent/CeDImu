@@ -15,7 +15,7 @@ class RAMSearchFrame;
 class RAMSearchFrame : public wxFrame
 {
 public:
-    Board* board;
+    Board& board;
     MainFrame* mainFrame;
     RAMSearchList* ramSearchList;
     wxTimer* renderTimer;
@@ -29,7 +29,7 @@ public:
     wxRadioButton* byte4;
     wxRadioButton* lastByte;
 
-    RAMSearchFrame(Board* board, MainFrame* parent, const wxPoint& pos, const wxSize& size);
+    RAMSearchFrame(Board& baord, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~RAMSearchFrame();
 
     void OnClose(wxCloseEvent& event);
