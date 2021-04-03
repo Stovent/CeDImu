@@ -51,7 +51,7 @@ bool CeDImu::InitializeCores()
     long biosSize = ftell(f);
     fseek(f, 0, SEEK_SET);
     uint8_t* bios = new uint8_t[biosSize];
-    fread(bios, 1, biosSize, f);;
+    biosSize = fread(bios, 1, biosSize, f);;
     fclose(f);
 
     cdi.LoadBoard(bios, biosSize, Config::NVRAMUseCurrentTime, Config::PAL);

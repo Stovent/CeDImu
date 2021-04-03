@@ -9,11 +9,13 @@ class Board;
 #include "../cores/M48T08/M48T08.hpp"
 #include "../cores/SCC68070/SCC68070.hpp"
 
+#include <memory>
+
 class Board
 {
 public:
     SCC68070 cpu;
-    ISlave* slave;
+    std::unique_ptr<ISlave> slave;
     M48T08 timekeeper;
 
     Board(const bool initNVRAMClock) : cpu(*this), timekeeper(initNVRAMClock) {}

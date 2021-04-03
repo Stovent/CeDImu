@@ -4,7 +4,7 @@
 
 Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock, const bool PAL) : Board(initNVRAMClock), mcd212(*this, vdscBios, vdscSize, PAL)
 {
-    slave = new HLE::IKAT(PAL);
+    slave = std::make_unique<HLE::IKAT>(PAL);
     OPEN_LOG(out, "Mono3.txt")
     uart_out.open("uart_out", std::ios::binary | std::ios::out);
     uart_in.open("uart_in", std::ios::binary | std::ios::in);
@@ -14,7 +14,6 @@ Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAM
 Mono3::~Mono3()
 {
     CLOSE_LOG(out)
-    delete slave;
 }
 
 void Mono3::Reset(const bool resetCPU)
