@@ -100,7 +100,7 @@ void MCD212::DrawLinePlaneA()
         else if(fileType == 2)
         {
             bytes = Video::decodeRunLengthLine(&planeA[lineNumber * hRes * 4], hRes, &memory[GetVSR1()], CLUT, GetCM1());
-            HandleCLUTTransparency(&planeA[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
+            HandleCLUTTransparency(&planeA[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
         }
         else
         {

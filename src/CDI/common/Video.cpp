@@ -257,9 +257,9 @@ void paste(uint8_t* dst, const uint16_t dstWidth, const uint16_t dstHeight, cons
         const uint8_t* srcRow = src + srcWidth * 4 * sy;
         for(uint16_t dx = xOffset, sx = 0; dx < dstWidth && sx < srcWidth; dx++, sx++)
         {
-            dstRow[dx * 3]     = (srcRow[sx * 4 + 1] * (srcRow[sx * 4]) + dstRow[dx * 3]     * (255 - srcRow[sx * 4])) / 255;
-            dstRow[dx * 3 + 1] = (srcRow[sx * 4 + 2] * (srcRow[sx * 4]) + dstRow[dx * 3 + 1] * (255 - srcRow[sx * 4])) / 255;
-            dstRow[dx * 3 + 2] = (srcRow[sx * 4 + 3] * (srcRow[sx * 4]) + dstRow[dx * 3 + 2] * (255 - srcRow[sx * 4])) / 255;
+            dstRow[dx * 3]     = (srcRow[sx * 4 + 1] * srcRow[sx * 4] + dstRow[dx * 3]     * (255 - srcRow[sx * 4])) / 255;
+            dstRow[dx * 3 + 1] = (srcRow[sx * 4 + 2] * srcRow[sx * 4] + dstRow[dx * 3 + 1] * (255 - srcRow[sx * 4])) / 255;
+            dstRow[dx * 3 + 2] = (srcRow[sx * 4 + 3] * srcRow[sx * 4] + dstRow[dx * 3 + 2] * (255 - srcRow[sx * 4])) / 255;
         }
     }
 }
