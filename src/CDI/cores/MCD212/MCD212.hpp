@@ -125,6 +125,7 @@ private:
     void DrawLinePlaneB();
     void DrawLineCursor();
     void DrawLineBackground();
+    void HandleCLUTTransparency(uint8_t* pixels, const uint16_t width, const uint32_t control, const uint32_t color);
 
     // Display File Decoders
     void DecodeMosaicLineA();
@@ -135,6 +136,8 @@ private:
     void ExecuteDCA1();
     void ExecuteICA2();
     void ExecuteDCA2();
+
+    uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
 
     // internal registers
     uint16_t GetCSR1RRegister() const;
@@ -164,8 +167,6 @@ private:
     std::string DisassembleVSR2Register() const;
     std::string DisassembleDDR2Register() const;
     std::string DisassembleDCP2Register() const;
-
-    uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
 
     bool GetDA() const;
     bool GetPA() const;

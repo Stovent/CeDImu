@@ -87,14 +87,20 @@ void MCD212::DrawLinePlaneA()
     uint16_t bytes = 0;
     if(controlRegisters[ImageCodingMethod] & 0x00000F) // plane on
     {
-        if(GetFT12_1() <= 1)
+        const uint8_t fileType = GetFT12_1();
+        const uint16_t hRes = GetHorizontalResolution1();
+        if(fileType <= 1)
         {
             const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
-            bytes = Video::decodeBitmapLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), nullptr, &memory[GetVSR1()], codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
+            bytes = Video::decodeBitmapLine(&planeA[lineNumber * hRes * 4], hRes, nullptr, &memory[GetVSR1()], codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
+
+            if(codingMethod == CLUT4 || codingMethod == CLUT7 || codingMethod == CLUT77 || codingMethod == CLUT8)
+                HandleCLUTTransparency(&planeA[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
         }
-        else if(GetFT12_1() == 2)
+        else if(fileType == 2)
         {
-            bytes = Video::decodeRunLengthLine(&planeA[lineNumber * GetHorizontalResolution1() * 4], GetHorizontalResolution1(), &memory[GetVSR1()], CLUT, GetCM1());
+            bytes = Video::decodeRunLengthLine(&planeA[lineNumber * hRes * 4], hRes, &memory[GetVSR1()], CLUT, GetCM1());
+            HandleCLUTTransparency(&planeA[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
         }
         else
         {
@@ -121,14 +127,20 @@ void MCD212::DrawLinePlaneB()
     uint16_t bytes = 0;
     if(controlRegisters[ImageCodingMethod] & 0x000F00) // plane on
     {
-        if(GetFT12_2() <= 1)
+        const uint8_t fileType = GetFT12_2();
+        const uint16_t hRes = GetHorizontalResolution2();
+        if(fileType <= 1)
         {
             const uint8_t codingMethod = controlRegisters[ImageCodingMethod] >> 8 & 0x00000F;
-            bytes = Video::decodeBitmapLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
+            bytes = Video::decodeBitmapLine(&planeB[lineNumber * hRes * 4], hRes, &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
+
+            if(codingMethod == CLUT4 || codingMethod == CLUT7)
+                HandleCLUTTransparency(&planeB[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
         }
-        else if(GetFT12_2() == 2)
+        else if(fileType == 2)
         {
-            bytes = Video::decodeRunLengthLine(&planeB[lineNumber * GetHorizontalResolution2() * 4], GetHorizontalResolution2(), &memory[GetVSR2()], &CLUT[128], GetCM2());
+            bytes = Video::decodeRunLengthLine(&planeB[lineNumber * hRes * 4], hRes, &memory[GetVSR2()], &CLUT[128], GetCM2());
+            HandleCLUTTransparency(&planeB[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
         }
         else
         {
@@ -198,6 +210,29 @@ void MCD212::DrawLineCursor()
             j += 4;
         }
         mask >>= 1;
+    }
+}
+
+void MCD212::HandleCLUTTransparency(uint8_t* pixels, const uint16_t width, const uint32_t control, const uint32_t color)
+{
+    switch(control)
+    {
+    case 0: // Always
+        for(uint16_t i = 0; i < width; i++, pixels += 4)
+            *pixels = 0;
+        break;
+
+    case 1: // Color Key = True
+        for(uint16_t i = 0; i < width; i++, pixels += 4)
+            if(*(pixels + 1) == (color >> 16 & 0xFF) && *(pixels + 2) == (color >> 8 & 0xFF) && *(pixels + 3) == (color & 0xFF))
+                *pixels = 0;
+        break;
+
+    case 9: // Color Key = False
+        for(uint16_t i = 0; i < width; i++, pixels += 4)
+            if(!(*(pixels + 1) == (color >> 16 & 0xFF) && *(pixels + 2) == (color >> 8 & 0xFF) && *(pixels + 3) == (color & 0xFF)))
+                *pixels = 0;
+        break;
     }
 }
 
