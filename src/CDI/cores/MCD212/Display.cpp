@@ -60,7 +60,7 @@ void MCD212::ExecuteVideoLine()
     }
 
     lineNumber++;
-    if(verticalLines > GetTotalVerticalLines())
+    if(verticalLines >= GetTotalVerticalLines())
     {
         if(GetDE())
         {

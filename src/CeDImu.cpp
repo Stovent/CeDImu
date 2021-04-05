@@ -3,7 +3,10 @@
 
 #include <wx/msgdlg.h>
 
-constexpr float cpuSpeeds[12] = {
+constexpr float cpuSpeeds[17] = {
+    0.01,
+    0.03,
+    0.06,
     0.12,
     0.25,
     0.33,
@@ -16,13 +19,15 @@ constexpr float cpuSpeeds[12] = {
     4,
     8,
     16,
+    32,
+    64,
 };
 
 bool CeDImu::OnInit()
 {
     Config::loadConfig();
 
-    cpuSpeed = 5;
+    cpuSpeed = 8;
 
     mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
     mainFrame->Show(true);
@@ -51,7 +56,7 @@ bool CeDImu::InitializeCores()
     long biosSize = ftell(f);
     fseek(f, 0, SEEK_SET);
     uint8_t* bios = new uint8_t[biosSize];
-    biosSize = fread(bios, 1, biosSize, f);;
+    biosSize = fread(bios, 1, biosSize, f);
     fclose(f);
 
     cdi.LoadBoard(bios, biosSize, Config::NVRAMUseCurrentTime, Config::PAL);
@@ -73,7 +78,7 @@ bool CeDImu::InitializeCores()
 
 void CeDImu::IncreaseEmulationSpeed()
 {
-    if(cpuSpeed < 11)
+    if(cpuSpeed < 16)
     {
         cpuSpeed++;
         if(cdi.board)
