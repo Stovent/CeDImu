@@ -80,15 +80,15 @@ public:
     virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) override;
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
 
-    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const override // as nano seconds
+    virtual inline uint32_t GetLineDisplayTime() const override // as nano seconds
     {
-        return isPAL ? 64000 : 63560;
+        return isPAL || !GetCF() ? 64000 : 63560;
     }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
     virtual void StopOnNextFrame(const bool stop = true) override;
 
-    virtual void DrawLine() override;
+    virtual void ExecuteVideoLine() override;
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
     virtual std::vector<VDSCRegister> GetControlRegisters() const override;
@@ -111,6 +111,7 @@ private:
     uint8_t* backgroundPlane;
 
     bool stopOnNextFrame;
+    uint16_t verticalLines; // starts at 0.
     uint32_t* controlRegisters;
     uint16_t* internalRegisters;
     uint16_t  cursorPatterns[16];
@@ -211,6 +212,9 @@ private:
     inline uint16_t GetHorizontalResolution1() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM1() ? a*2 : a; }
     inline uint16_t GetHorizontalResolution2() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }
     inline uint16_t GetVerticalResolution() const { return GetFD() ? 240 : (GetST() ? 240 : 280); }
+
+    inline uint16_t GetTotalVerticalLines() const { return GetFD() ? 262 : 312; } // Table 5.6
+    inline uint8_t  GetVerticalRetraceLines() const { return GetFD() ? 22 : (GetST() ? 72 : 32); }
 };
 
 #endif // MCD212_HPP

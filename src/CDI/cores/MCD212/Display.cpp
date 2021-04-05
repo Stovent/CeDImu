@@ -10,29 +10,33 @@
 #define   SET_PA_BIT() registerCSR1R |= 0x20;
 #define UNSET_PA_BIT() registerCSR1R &= 0x80;
 
-void MCD212::DrawLine()
+void MCD212::ExecuteVideoLine()
 {
+    if(++verticalLines <= GetVerticalRetraceLines())
+    {
+        if(verticalLines == 1) // TODO: how to do this on every vertical line?
+        {
+            if(GetIC1())
+            {
+                ICA1.clear();
+                ExecuteICA1();
+            }
+
+            if(GetIC2())
+            {
+                ICA2.clear();
+                ExecuteICA2();
+            }
+        }
+        return;
+    }
+
     SET_DA_BIT()
 
     if(GetSM() && !isEven(lineNumber)) // not even because my line count starts at 0.
         UNSET_PA_BIT()
     else
         SET_PA_BIT()
-
-    if(lineNumber == 0)
-    {
-        if(GetIC1())
-        {
-            ICA1.clear();
-            ExecuteICA1();
-        }
-
-        if(GetIC2())
-        {
-            ICA2.clear();
-            ExecuteICA2();
-        }
-    }
 
     if(GetDE())
     {
@@ -43,9 +47,21 @@ void MCD212::DrawLine()
             DrawLineCursor();
     }
 
-    if(++lineNumber >= GetVerticalResolution())
+    if(GetIC1() && GetDC1())
     {
-        UNSET_DA_BIT()
+        DCA1.clear();
+        ExecuteDCA1();
+    }
+
+    if(GetIC2() && GetDC2())
+    {
+        DCA2.clear();
+        ExecuteDCA2();
+    }
+
+    lineNumber++;
+    if(verticalLines > GetTotalVerticalLines())
+    {
         if(GetDE())
         {
             Video::splitARGB(backgroundPlane, GetHorizontalResolution1() * GetVerticalResolution() * 4, nullptr, screen);
@@ -69,16 +85,19 @@ void MCD212::DrawLine()
             }
         }
 
-        if(OnFrameCompleted)
-            OnFrameCompleted();
-
-        lineNumber = 0;
+        UNSET_DA_BIT()
         totalFrameCount++;
+        lineNumber = 0;
+        verticalLines = 0;
+
         if(stopOnNextFrame)
         {
             board.cpu.Stop(false);
             stopOnNextFrame = false;
         }
+
+        if(OnFrameCompleted)
+            OnFrameCompleted();
     }
 }
 
@@ -108,18 +127,6 @@ void MCD212::DrawLinePlaneA()
         }
     }
     SetVSR1(GetVSR1() + bytes);
-
-    if(GetIC1() && GetDC1())
-    {
-        DCA1.clear();
-        ExecuteDCA1();
-    }
-
-//    if(GetIC1() && lineNumber >= GetVerticalResolution()-1)
-//    {
-//        ICA1.clear();
-//        ExecuteICA1();
-//    }
 }
 
 void MCD212::DrawLinePlaneB()
@@ -148,18 +155,6 @@ void MCD212::DrawLinePlaneB()
         }
     }
     SetVSR2(GetVSR2() + bytes);
-
-    if(GetIC2() && GetDC2())
-    {
-        DCA2.clear();
-        ExecuteDCA2();
-    }
-
-//    if(GetIC2() && lineNumber >= GetVerticalResolution()-1)
-//    {
-//        ICA2.clear();
-//        ExecuteICA2();
-//    }
 }
 
 void MCD212::DrawLineBackground()
@@ -181,7 +176,7 @@ void MCD212::DrawLineBackground()
 
 void MCD212::DrawLineCursor()
 {
-    // check if Y position starts at 0 or 1 (assuming 0 in this code)
+    // TODO: check if Y position starts at 0 or 1 (assuming 0 in this code)
     const uint16_t yPosition = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
     if(lineNumber < yPosition || lineNumber > yPosition + 16)
         return;

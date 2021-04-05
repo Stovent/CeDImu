@@ -75,6 +75,9 @@ void MCD212::Reset()
     internalRegisters[MDDR2] &= 0x003F; // MF1, MF2, FT1, FT2
     registerCSR1R = 0;
     registerCSR2R = 0;
+
+    verticalLines = 0;
+    lineNumber = 0;
     MemorySwap();
 }
 
@@ -102,6 +105,7 @@ void MCD212::ExecuteICA1()
 
         LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tICA1 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, ica);)
         ICA1.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
+        addr += 4;
 
         switch(ica >> 28)
         {
@@ -120,7 +124,7 @@ void MCD212::ExecuteICA1()
             return;
 
         case 4: // RELOAD ICA
-            addr = (ica & 0x003FFFFF) - 4;
+            addr = ica & 0x003FFFFF;
             break;
 
         case 5: // RELOAD VSR AND STOP
@@ -155,13 +159,12 @@ void MCD212::ExecuteICA1()
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
             }
         }
-        addr += 4;
     }
 }
 
 void MCD212::ExecuteDCA1()
 {
-    for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++)
+    for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++) // Table 5.10
     {
         const uint32_t addr = GetDCP1();
         const uint32_t dca = GetLong(addr);
@@ -234,6 +237,7 @@ void MCD212::ExecuteICA2()
 
         LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tICA2 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, ica);)
         ICA2.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
+        addr += 4;
 
         switch(ica >> 28)
         {
@@ -252,7 +256,7 @@ void MCD212::ExecuteICA2()
             return;
 
         case 4: // RELOAD ICA
-            addr = (ica & 0x003FFFFF) - 4;
+            addr = ica & 0x003FFFFF;
             break;
 
         case 5: // RELOAD VSR AND STOP
@@ -280,13 +284,12 @@ void MCD212::ExecuteICA2()
             else
                 controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
         }
-        addr += 4;
     }
 }
 
 void MCD212::ExecuteDCA2()
 {
-    for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++)
+    for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++) // Table 5.10
     {
         const uint32_t addr = GetDCP2();
         const uint32_t dca = GetLong(addr);

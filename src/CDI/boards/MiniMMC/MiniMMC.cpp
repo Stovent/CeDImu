@@ -22,15 +22,15 @@ void MiniMMC::Reset(const bool resetCPU)
         cpu.Reset();
 }
 
-void MiniMMC::DrawLine()
+void MiniMMC::ExecuteVideoLine()
 {
-    masterVDSC.DrawLine();
-    slaveVDSC.DrawLine();
+    masterVDSC.ExecuteVideoLine();
+    slaveVDSC.ExecuteVideoLine();
 }
 
 uint32_t MiniMMC::GetLineDisplayTime()
 {
-    return masterVDSC.GetLineDisplayTimeNanoSeconds();
+    return masterVDSC.GetLineDisplayTime();
 }
 
 void MiniMMC::PutDataInMemory(const void* s, unsigned int size, unsigned int position)

@@ -62,8 +62,8 @@ public:
     virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) override;
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
 
-    virtual void DrawLine() override;
-    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const override
+    virtual void ExecuteVideoLine() override;
+    virtual inline uint32_t GetLineDisplayTime() const override
     {
         return 41000;
     }

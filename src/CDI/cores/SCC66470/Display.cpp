@@ -4,7 +4,7 @@
 #define   SET_DA_BIT() registerCSR |= 0x80;
 #define UNSET_DA_BIT() registerCSR &= 0x67;
 
-void SCC66470::DrawLine()
+void SCC66470::ExecuteVideoLine()
 {
     SET_DA_BIT()
 

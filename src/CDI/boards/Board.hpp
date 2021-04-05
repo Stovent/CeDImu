@@ -33,7 +33,7 @@ public:
     virtual uint8_t CPUGetUART(const uint8_t flags = Trigger | Log) = 0;
     virtual void CPUSetUART(const uint8_t data, const uint8_t flags = Trigger | Log) = 0;
 
-    virtual void DrawLine() = 0;
+    virtual void ExecuteVideoLine() = 0;
     virtual uint32_t GetLineDisplayTime() = 0;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;

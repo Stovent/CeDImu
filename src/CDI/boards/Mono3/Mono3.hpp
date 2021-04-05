@@ -32,7 +32,7 @@ public:
     virtual uint8_t CPUGetUART(const uint8_t flags = Trigger | Log) override;
     virtual void CPUSetUART(const uint8_t data, const uint8_t flags = Trigger | Log) override;
 
-    virtual void DrawLine() override;
+    virtual void ExecuteVideoLine() override;
     virtual uint32_t GetLineDisplayTime() override;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;

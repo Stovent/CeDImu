@@ -57,8 +57,8 @@ public:
     virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) = 0;
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) = 0;
 
-    virtual void DrawLine() = 0;
-    virtual inline uint32_t GetLineDisplayTimeNanoSeconds() const { return 0; }
+    virtual void ExecuteVideoLine() = 0;
+    virtual inline uint32_t GetLineDisplayTime() const { return 0; }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
     virtual void StopOnNextFrame(const bool stop = true) = 0;

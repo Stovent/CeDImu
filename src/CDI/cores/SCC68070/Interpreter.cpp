@@ -58,7 +58,7 @@ void SCC68070::Interpreter()
         const uint32_t lineDisplayTime = board.GetLineDisplayTime();
         if(cycleCount * cycleDelay >= lineDisplayTime)
         {
-            board.DrawLine();
+            board.ExecuteVideoLine();
             cycleCount -= lineDisplayTime / cycleDelay;
             flushDisassembler = true;
         }
