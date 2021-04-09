@@ -4,38 +4,49 @@
 #include <cstring>
 #include <fstream>
 
+std::tm M48T08::defaultTime = {0, 0, 0, 1, 0, 89, 0, 0, 0};
+
 /** \brief Construct a new timekeeper.
  *
- * \param useCurrentTime If true, clock is set to the current UTC date. If false, the last date is used.
+ * \param initialTime A pointer to a std::tm object to be used as the initial time.
  *
  * If existing, loads its initial state from a file named "sram.bin".
-*/
-M48T08::M48T08(const bool useCurrentTime)
+ * If initialTime is nullptr, then time will continue from the time stored in sram.bin.
+ * initialTime is modified because of std::mktime.
+ */
+M48T08::M48T08(std::tm* initialTime)
 {
+    internalClock.nsec = 0;
     std::ifstream in("sram.bin", std::ios::in | std::ios::binary);
     if(in)
     {
-        in.read((char*)sram, 8192);
+        in.read((char*)sram, 0x2000);
         in.close();
+
+        if(initialTime != nullptr)
+        {
+            internalClock.sec = std::mktime(initialTime);
+            ClockToSRAM();
+        }
+        else
+            SRAMToClock();
     }
     else
-        memset(sram, 0xFF, 8192);
-    sram[Control] = 0;
-
-    internalClock.nsec = 0;
-    if(useCurrentTime)
     {
-        std::time(&internalClock.sec);
+        memset(sram, 0xFF, 0x1FF8);
+        if(initialTime == nullptr)
+            initialTime = &M48T08::defaultTime;
+
+        internalClock.sec = std::mktime(initialTime);
         ClockToSRAM();
     }
-    else
-        SRAMToClock();
+    sram[Control] = 0;
 }
 
 /** \brief Destroy the timekeeper.
  *
  * It writes its content in a file named "sram.bin".
-*/
+ */
 M48T08::~M48T08()
 {
     ClockToSRAM();
@@ -49,7 +60,7 @@ M48T08::~M48T08()
  * \param ns The number of nanoseconds to increment the clock by.
  *
  * Increment only occurs if the READ or WRITE bit are not set.
-*/
+ */
 void M48T08::IncrementClock(const size_t ns)
 {
     if(sram[Control] & 0xC0)
@@ -64,7 +75,7 @@ void M48T08::IncrementClock(const size_t ns)
 }
 
 /** \brief Move the internal clock to SRAM.
-*/
+ */
 void M48T08::ClockToSRAM()
 {
     const std::tm* gmt = std::gmtime(&internalClock.sec);
@@ -78,7 +89,7 @@ void M48T08::ClockToSRAM()
 }
 
 /** \brief Move the SRAM clock into the internal clock.
-*/
+ */
 void M48T08::SRAMToClock()
 {
     std::tm gmt;
@@ -100,7 +111,7 @@ void M48T08::SRAMToClock()
  * \return The byte at the given address.
  *
  * In order to read the clock, the READ bit must be set in the control register using SetByte(0x1FF8).
-*/
+ */
 uint8_t M48T08::GetByte(const uint16_t addr) const
 {
     return sram[addr];
@@ -113,7 +124,7 @@ uint8_t M48T08::GetByte(const uint16_t addr) const
  *
  * If the address is the control register and the WRITE bit is going from set to unset, the clock in SRAM is moved in the internal clock.
  * If the address is the control register and the READ  bit is going from unset to set, the internal clock is moved in SRAM to be read.
-*/
+ */
 void M48T08::SetByte(const uint16_t addr, const uint8_t data)
 {
     if(addr == Control)

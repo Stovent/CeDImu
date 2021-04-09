@@ -11,10 +11,10 @@ CDI::~CDI()
     disc.Close();
 }
 
-void CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const bool initNVRAMClock, const bool PAL)
+void CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, std::tm* initialTime, const bool PAL)
 {
     if(vdscSize == 523264)
-        board = std::make_unique<MiniMMC>(vdscBios, vdscSize, initNVRAMClock);
+        board = std::make_unique<MiniMMC>(vdscBios, vdscSize, initialTime);
     else
-        board = std::make_unique<Mono3>(vdscBios, vdscSize, initNVRAMClock, PAL);
+        board = std::make_unique<Mono3>(vdscBios, vdscSize, initialTime, PAL);
 }

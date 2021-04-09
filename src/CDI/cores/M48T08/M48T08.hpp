@@ -25,14 +25,15 @@ struct Clock
 class M48T08
 {
     Clock internalClock;
-    uint8_t sram[8192];
+    uint8_t sram[0x2000];
 
     void ClockToSRAM();
     void SRAMToClock();
 
 public:
-    M48T08() = delete;
-    explicit M48T08(const bool useCurrentTime);
+    static std::tm defaultTime;
+
+    explicit M48T08(std::tm* initialTime = &M48T08::defaultTime);
     ~M48T08();
 
     void IncrementClock(const size_t ns);

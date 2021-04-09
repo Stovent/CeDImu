@@ -18,7 +18,7 @@ class MiniMMC : public Board
     std::ifstream uart_in;
 
 public:
-    MiniMMC(const void* bios, const uint32_t size, const bool initNVRAMClock);
+    MiniMMC(const void* bios, const uint32_t size, std::tm* initialTime);
     virtual ~MiniMMC();
     virtual void Reset(const bool resetCPU) override;
 
