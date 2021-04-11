@@ -96,7 +96,6 @@ void M48T08::SRAMToClock()
     gmt.tm_sec  = PBCDToByte(sram[Seconds] & 0x7F);
     gmt.tm_min  = PBCDToByte(sram[Minutes]);
     gmt.tm_hour = PBCDToByte(sram[Hours]);
-    gmt.tm_wday = PBCDToByte((sram[Day] & 0x7) == 7 ? 0 : (sram[Day] & 0x7));
     gmt.tm_mday = PBCDToByte(sram[Date]);
     gmt.tm_mon  = PBCDToByte(sram[Month] - 1);
     gmt.tm_year = PBCDToByte(sram[Year]); gmt.tm_year += (gmt.tm_year >= 70 ? 0 : 100);

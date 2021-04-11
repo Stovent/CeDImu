@@ -59,7 +59,8 @@ bool CeDImu::InitializeCores()
     biosSize = fread(bios, 1, biosSize, f);
     fclose(f);
 
-    cdi.LoadBoard(bios, biosSize, &M48T08::defaultTime, Config::PAL);
+    std::time_t time = std::time(nullptr);
+    cdi.LoadBoard(bios, biosSize, Config::NVRAMUseCurrentTime ? std::gmtime(&time) : &M48T08::defaultTime, Config::PAL);
     delete[] bios;
 
 #ifdef _WIN32

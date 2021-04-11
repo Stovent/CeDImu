@@ -32,7 +32,7 @@ void SCC68070::Interpreter()
 
         if(stop)
         {
-            executionCycles = 5;
+            executionCycles = 25;
         }
         else
         {
