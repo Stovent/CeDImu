@@ -7,15 +7,14 @@
 
 SCC66470::SCC66470(Board& board, const bool ismaster, const void* bios, const uint32_t size) : VDSC(board, bios, size), isMaster(ismaster)
 {
+    memory = new uint8_t[0x100000];
+    memset(memory, 0, 0x100000);
+    memset(internalRegisters, 0, 0x20 * sizeof *internalRegisters);
+
     memorySwapCount = 0;
     stopOnNextFrame = false;
-    allocatedMemory = 0x200000;
 
     OPEN_LOG(out_dram, isMaster ? "SCC66470_master_DRAM.txt" : "SCC66470_slave_DRAM.txt")
-
-    memory = new uint8_t[allocatedMemory];
-    memset(memory, 0, allocatedMemory);
-    memset(internalRegisters, 0, 0x20 * sizeof *internalRegisters);
 }
 
 SCC66470::~SCC66470()

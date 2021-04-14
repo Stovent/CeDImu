@@ -30,6 +30,7 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Trigger | Log) override;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Trigger | Log) override;
 
+    virtual uint32_t GetRAMSize() const override;
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
 
@@ -43,7 +44,6 @@ public:
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
     virtual void StopOnNextFrame(const bool stop = true) override;
 
-    virtual uint32_t GetAllocatedMemory() override;
     virtual uint32_t GetTotalFrameCount() override;
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
     virtual std::string GetPositionInformation(const uint32_t offset) override;

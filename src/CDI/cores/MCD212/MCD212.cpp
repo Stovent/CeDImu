@@ -7,8 +7,7 @@
 
 MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool PAL) : VDSC(board, bios, size), isPAL(PAL) // TD = 0
 {
-    allocatedMemory = 0x400000;
-    memory = new uint8_t[allocatedMemory];
+    memory = new uint8_t[0x280000];
 
     screen = new uint8_t[768 * 560 * 3]; // RGB
     planeA = new uint8_t[768 * 560 * 4]; // ARGB
@@ -24,7 +23,7 @@ MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool P
 
     memset(controlRegisters, 0, 0x80*sizeof(*controlRegisters));
     memset(internalRegisters, 0, 32*sizeof(*internalRegisters));
-    memset(memory, 0, allocatedMemory);
+    memset(memory, 0, 0x280000);
     memset(CLUT, 0, 256 * sizeof(*CLUT));
 
     memset(screen, 0, 768 * 560 * 3);

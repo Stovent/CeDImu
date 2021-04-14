@@ -42,14 +42,13 @@ public:
     Board& board;
     OS9::BIOS BIOS;
     bool biosLoaded;
-    uint32_t allocatedMemory;
     uint32_t totalFrameCount;
     std::vector<std::string> ICA1;
     std::vector<std::string> DCA1;
     std::vector<std::string> ICA2;
     std::vector<std::string> DCA2;
 
-    VDSC(Board& baord, const void* bios, const uint32_t size) : lineNumber(0), board(baord), BIOS(bios, size), biosLoaded(false), allocatedMemory(0), totalFrameCount(0) {}
+    VDSC(Board& baord, const void* bios, const uint32_t size) : lineNumber(0), board(baord), BIOS(bios, size), biosLoaded(false), totalFrameCount(0) {}
     virtual ~VDSC() {}
 
     virtual void Reset() = 0;

@@ -51,11 +51,6 @@ void MiniMMC::StopOnNextFrame(const bool stop)
     masterVDSC.StopOnNextFrame(stop);
 }
 
-uint32_t MiniMMC::GetAllocatedMemory()
-{
-    return masterVDSC.allocatedMemory;
-}
-
 uint32_t MiniMMC::GetTotalFrameCount()
 {
     return masterVDSC.totalFrameCount;
@@ -126,6 +121,11 @@ std::vector<std::string> MiniMMC::GetDCA2()
     ca.push_back("Slave:");
     ca.insert(ca.end(), slaveVDSC.DCA2.begin(), slaveVDSC.DCA2.end());
     return ca;
+}
+
+uint32_t MiniMMC::GetRAMSize() const
+{
+    return 0x100000;
 }
 
 RAMBank MiniMMC::GetRAMBank1() const

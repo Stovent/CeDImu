@@ -48,11 +48,6 @@ void Mono3::StopOnNextFrame(const bool stop)
     mcd212.StopOnNextFrame(stop);
 }
 
-uint32_t Mono3::GetAllocatedMemory()
-{
-    return mcd212.allocatedMemory;
-}
-
 uint32_t Mono3::GetTotalFrameCount()
 {
     return mcd212.totalFrameCount;
@@ -96,6 +91,11 @@ std::vector<VDSCRegister> Mono3::GetInternalRegisters()
 std::vector<VDSCRegister> Mono3::GetControlRegisters()
 {
     return mcd212.GetControlRegisters();
+}
+
+uint32_t Mono3::GetRAMSize() const
+{
+    return 0x100000;
 }
 
 RAMBank Mono3::GetRAMBank1() const
