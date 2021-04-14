@@ -229,7 +229,7 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
     if(app->cdi.board)
-        app->InitializeCores();
+        app->cdi.board->Reset(true);
 }
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)
