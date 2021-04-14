@@ -309,7 +309,6 @@ public:
     void Stop(const bool wait = true);
     void Reset();
 
-    void Interrupt(const uint8_t vector, const uint8_t priority);
     void INT1();
     void INT2();
 
@@ -373,6 +372,7 @@ private:
     void SetVC(const bool VC = 1); // Set both V and C at the same time
     uint8_t GetIPM() const; // Interrupt Priority Mask
 
+    void Interrupt(const uint8_t vector, const uint8_t priority);
     uint16_t Exception(const uint8_t vectorNumber);
     std::string DisassembleException(const SCC68070Exception& exception) const;
 

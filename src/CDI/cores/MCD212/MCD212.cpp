@@ -7,21 +7,20 @@
 
 MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool PAL) : VDSC(board, bios, size), isPAL(PAL) // TD = 0
 {
-    stopOnNextFrame = false;
-    controlRegisters = new uint32_t[0x80];
-    internalRegisters = new uint16_t[32];
-    allocatedMemory = 0x500000;
+    allocatedMemory = 0x400000;
     memory = new uint8_t[allocatedMemory];
-    memorySwapCount = 0;
-
-    OPEN_LOG(out_dram, "MCD212_DRAM.txt")
-    OPEN_LOG(out_display, "MCD212.txt")
 
     screen = new uint8_t[768 * 560 * 3]; // RGB
     planeA = new uint8_t[768 * 560 * 4]; // ARGB
     planeB = new uint8_t[768 * 560 * 4]; // ARGB
     cursorPlane = new uint8_t[16 * 16 * 4]; // ARGB
     backgroundPlane = new uint8_t[768 * 560 * 4]; // ARGB
+
+    controlRegisters = new uint32_t[0x80];
+    internalRegisters = new uint16_t[32];
+
+    stopOnNextFrame = false;
+    memorySwapCount = 0;
 
     memset(controlRegisters, 0, 0x80*sizeof(*controlRegisters));
     memset(internalRegisters, 0, 32*sizeof(*internalRegisters));
@@ -33,6 +32,9 @@ MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool P
     memset(planeB, 0, 768 * 560 * 4);
     memset(cursorPlane, 0, 16 * 16 * 4);
     memset(backgroundPlane, 0, 768 * 560 * 4);
+
+    OPEN_LOG(out_dram, "MCD212_DRAM.txt")
+    OPEN_LOG(out_display, "MCD212.txt")
 }
 
 MCD212::~MCD212()
@@ -344,6 +346,16 @@ void MCD212::ExecuteDCA2()
         }
         SetDCP2(addr + 4);
     }
+}
+
+RAMBank MCD212::GetRAMBank1() const
+{
+    return {memory, 0, 0x80000};
+}
+
+RAMBank MCD212::GetRAMBank2() const
+{
+    return {&memory[0x200000], 0x200000, 0x80000};
 }
 
 Plane MCD212::GetScreen() const

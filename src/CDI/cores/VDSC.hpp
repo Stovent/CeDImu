@@ -26,6 +26,13 @@ struct Plane
     uint16_t height;
 };
 
+struct RAMBank
+{
+    const uint8_t* data;
+    uint32_t base;
+    uint32_t size;
+};
+
 class VDSC
 {
 protected:
@@ -56,6 +63,9 @@ public:
 
     virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) = 0;
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) = 0;
+
+    virtual RAMBank GetRAMBank1() const = 0;
+    virtual RAMBank GetRAMBank2() const = 0;
 
     virtual void ExecuteVideoLine() = 0;
     virtual inline uint32_t GetLineDisplayTime() const { return 0; }

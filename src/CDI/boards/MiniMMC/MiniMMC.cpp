@@ -128,6 +128,16 @@ std::vector<std::string> MiniMMC::GetDCA2()
     return ca;
 }
 
+RAMBank MiniMMC::GetRAMBank1() const
+{
+    return masterVDSC.GetRAMBank1();
+}
+
+RAMBank MiniMMC::GetRAMBank2() const
+{
+    return slaveVDSC.GetRAMBank2();
+}
+
 Plane MiniMMC::GetScreen()
 {
     return masterVDSC.GetScreen();

@@ -29,6 +29,9 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Trigger | Log) override;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Trigger | Log) override;
 
+    virtual RAMBank GetRAMBank1() const override;
+    virtual RAMBank GetRAMBank2() const override;
+
     virtual uint8_t CPUGetUART(const uint8_t flags = Trigger | Log) override;
     virtual void CPUSetUART(const uint8_t data, const uint8_t flags = Trigger | Log) override;
 

@@ -98,6 +98,16 @@ std::vector<VDSCRegister> Mono3::GetControlRegisters()
     return mcd212.GetControlRegisters();
 }
 
+RAMBank Mono3::GetRAMBank1() const
+{
+    return mcd212.GetRAMBank1();
+}
+
+RAMBank Mono3::GetRAMBank2() const
+{
+    return mcd212.GetRAMBank2();
+}
+
 Plane Mono3::GetScreen()
 {
     return mcd212.GetScreen();

@@ -54,6 +54,16 @@ void SCC66470::StopOnNextFrame(const bool stop)
     stopOnNextFrame = stop;
 }
 
+RAMBank SCC66470::GetRAMBank1() const
+{
+    return {memory, 0, 0x80000};
+}
+
+RAMBank SCC66470::GetRAMBank2() const
+{
+    return {&memory[0x80000], 0x80000, 0x80000};
+}
+
 Plane SCC66470::GetScreen() const
 {
     return {nullptr, 0, 0};

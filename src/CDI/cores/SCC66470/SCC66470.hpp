@@ -62,6 +62,9 @@ public:
     virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) override;
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
 
+    virtual RAMBank GetRAMBank1() const override;
+    virtual RAMBank GetRAMBank2() const override;
+
     virtual void ExecuteVideoLine() override;
     virtual inline uint32_t GetLineDisplayTime() const override
     {

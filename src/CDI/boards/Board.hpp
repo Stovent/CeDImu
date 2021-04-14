@@ -30,6 +30,9 @@ public:
     virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Trigger | Log) = 0;
     virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Trigger | Log) = 0;
 
+    virtual RAMBank GetRAMBank1() const = 0;
+    virtual RAMBank GetRAMBank2() const = 0;
+
     virtual uint8_t CPUGetUART(const uint8_t flags = Trigger | Log) = 0;
     virtual void CPUSetUART(const uint8_t data, const uint8_t flags = Trigger | Log) = 0;
 
