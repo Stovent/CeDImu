@@ -72,7 +72,6 @@ public:
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
-    virtual void MemorySwap() override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
@@ -114,6 +113,7 @@ private:
     uint8_t* backgroundPlane;
 
     bool stopOnNextFrame;
+    uint16_t lineNumber; // starts at 0
     uint16_t verticalLines; // starts at 0.
     uint32_t* controlRegisters;
     uint16_t* internalRegisters;
@@ -141,6 +141,7 @@ private:
     void ExecuteICA2();
     void ExecuteDCA2();
 
+    void MemorySwap();
     uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
 
     // internal registers

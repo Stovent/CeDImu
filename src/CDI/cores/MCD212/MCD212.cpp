@@ -21,10 +21,10 @@ MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool P
     stopOnNextFrame = false;
     memorySwapCount = 0;
 
-    memset(controlRegisters, 0, 0x80*sizeof(*controlRegisters));
-    memset(internalRegisters, 0, 32*sizeof(*internalRegisters));
     memset(memory, 0, 0x280000);
-    memset(CLUT, 0, 256 * sizeof(*CLUT));
+    memset(controlRegisters, 0, 0x80 * sizeof *controlRegisters);
+    memset(internalRegisters, 0, 32 * sizeof *internalRegisters);
+    memset(CLUT, 0, 256 * sizeof *CLUT);
 
     memset(screen, 0, 768 * 560 * 3);
     memset(planeA, 0, 768 * 560 * 4);

@@ -33,6 +33,7 @@ class SCC66470 : public VDSC
 {
     uint8_t* memory;
     uint8_t memorySwapCount;
+    uint16_t lineNumber; // starts at 0
 
     uint16_t internalRegisters[0x20];
     uint8_t registerCSR;
@@ -44,6 +45,7 @@ class SCC66470 : public VDSC
 
     FILE* out_dram;
 
+    void MemorySwap();
     uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
 
 public:
@@ -54,7 +56,6 @@ public:
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
-    virtual void MemorySwap() override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
