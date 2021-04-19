@@ -29,7 +29,7 @@ bool CeDImu::OnInit()
 
     cpuSpeed = 8;
 
-    mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(384, 240));
+    mainFrame = new MainFrame(this, "CeDImu", wxPoint(50, 50), wxSize(420, 310));
     mainFrame->Show(true);
 
     InitializeCores();
