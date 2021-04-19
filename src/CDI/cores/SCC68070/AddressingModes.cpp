@@ -9,36 +9,46 @@ uint32_t SCC68070::GetEffectiveAddress(const uint8_t mode, const uint8_t reg, co
     case 2:
         calcTime += sizeInBytes < 4 ? ITARIBW : ITARIL;
         return A(reg);
+
     case 3:
         calcTime += sizeInBytes < 4 ? ITARIWPoBW : ITARIWPoL;
         return AddressRegisterIndirectWithPostincrement(reg, sizeInBytes);
+
     case 4:
         calcTime += sizeInBytes < 4 ? ITARIWPrBW : ITARIWPrL;
         return AddressRegisterIndirectWithPredecrement(reg, sizeInBytes);
+
     case 5:
         calcTime += sizeInBytes < 4 ? ITARIWDBW : ITARIWDL;
         return AddressRegisterIndirectWithDisplacement(reg);
+
     case 6:
         calcTime += sizeInBytes < 4 ? ITARIWI8BW : ITARIWI8L;
         return AddressRegisterIndirectWithIndex8(reg);
+
     case 7:
         switch(reg)
         {
         case 0:
             calcTime += sizeInBytes < 4 ? ITASBW : ITASL;
             return AbsoluteShortAddressing();
+
         case 1:
             calcTime += sizeInBytes < 4 ? ITALBW : ITALL;
             return AbsoluteLongAddressing();
+
         case 2:
             calcTime += sizeInBytes < 4 ? ITPCIWDBW : ITPCIWDL;
             return ProgramCounterIndirectWithDisplacement();
+
         case 3:
             calcTime += sizeInBytes < 4 ? ITPCIWI8BW : ITPCIWI8L;
             return ProgramCounterIndirectWithIndex8();
+
         default:
             return UINT32_MAX;
         }
+
     default:
         return UINT32_MAX;
     }
@@ -109,68 +119,61 @@ uint32_t SCC68070::AbsoluteLongAddressing()
 
 std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData) const
 {
-    std::string mode;
-    if(eamode == 0)
+    switch(eamode)
     {
-        mode = "D" + std::to_string(eareg);
+    case 0:
+        return "D" + std::to_string(eareg);
+
+    case 1:
+        return "A" + std::to_string(eareg);
+
+    case 2:
+        return "(A" + std::to_string(eareg) + ")";
+
+    case 3:
+        return "(A" + std::to_string(eareg) + ")+";
+
+    case 4:
+        return "-(A" + std::to_string(eareg) + ")";
+
+    case 5:
+        return "(" + std::to_string((int16_t)board.GetWord(extWordAddress, NoFlags)) + ",A" + std::to_string(eareg) + ")";
+
+    case 6:
+    {
+        const uint16_t bew = board.GetWord(extWordAddress, NoFlags);
+        return "(" + std::to_string((int8_t)bew) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
     }
-    else if(eamode == 1)
-    {
-        mode = "A" + std::to_string(eareg);
-    }
-    else if(eamode == 2)
-    {
-        mode = "(A" + std::to_string(eareg) + ")";
-    }
-    else if(eamode == 3)
-    {
-        mode = "(A" + std::to_string(eareg) + ")+";
-    }
-    else if(eamode == 4)
-    {
-        mode = "-(A" + std::to_string(eareg) + ")";
-    }
-    else if(eamode == 5)
-    {
-        mode = "(" + std::to_string((int16_t)board.GetWord(extWordAddress, NoFlags)) + ",A" + std::to_string(eareg) + ")";
-    }
-    else if(eamode == 6)
-    {
-        uint16_t bew = board.GetWord(extWordAddress, NoFlags);
-        mode = "(" + std::to_string((int8_t)bew) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
-    }
-    else if(eamode == 7)
-    {
-        if(eareg == 0)
+
+    case 7:
+        switch(eareg)
         {
-            mode = "(0x" + toHex(board.GetWord(extWordAddress, NoFlags)) + ").W";
+        case 0:
+            return "(0x" + toHex(board.GetWord(extWordAddress, NoFlags)) + ").W";
+
+        case 1:
+            return "(0x" + toHex(board.GetLong(extWordAddress, NoFlags)) + ").L";
+
+        case 2:
+            return "(" + std::to_string((int16_t)board.GetWord(extWordAddress, NoFlags)) + ",PC)";
+
+        case 3:
+        {
+            const uint16_t bew = board.GetWord(extWordAddress, NoFlags);
+            return "(" + std::to_string((int8_t)bew) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
         }
-        else if(eareg == 1)
-        {
-            mode = "(0x" + toHex(board.GetLong(extWordAddress, NoFlags)) + ").L";
-        }
-        else if(eareg == 2)
-        {
-            mode = "(" + std::to_string((int16_t)board.GetWord(extWordAddress, NoFlags)) + ",PC)";
-        }
-        else if(eareg == 3)
-        {
-            uint16_t bew = board.GetWord(extWordAddress, NoFlags);
-            mode = "(" + std::to_string((int8_t)bew) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
-        }
-        else if(eareg == 4)
-        {
+
+        case 4:
             if(hexImmediateData)
-                mode = "#0x" + ((size == 1) ? toHex(board.GetWord(extWordAddress, NoFlags) & 0x00FF) : (size == 2) ? toHex(board.GetWord(extWordAddress, NoFlags)) : (size == 4) ? toHex(board.GetLong(extWordAddress, NoFlags)) : "Wrong size for immediate data");
+                return "#0x" + ((size == 1) ? toHex(board.GetWord(extWordAddress, NoFlags) & 0x00FF) : (size == 2) ? toHex(board.GetWord(extWordAddress, NoFlags)) : (size == 4) ? toHex(board.GetLong(extWordAddress, NoFlags)) : "Wrong size for immediate data");
             else
-                mode = "#" + ((size == 1) ? std::to_string(board.GetWord(extWordAddress, NoFlags) & 0x00FF) : (size == 2) ? std::to_string(board.GetWord(extWordAddress, NoFlags)) : (size == 4) ? std::to_string(board.GetLong(extWordAddress, NoFlags)) : "Wrong size for immediate data");
+                return "#" + ((size == 1) ? std::to_string(board.GetWord(extWordAddress, NoFlags) & 0x00FF) : (size == 2) ? std::to_string(board.GetWord(extWordAddress, NoFlags)) : (size == 4) ? std::to_string(board.GetLong(extWordAddress, NoFlags)) : "Wrong size for immediate data");
+
+        default:
+            return "Wrong register for addressing mode 7";
         }
-        else
-            mode = "Wrong register for mode 7";
+
+    default:
+        return "Unknown addressing mode";
     }
-    else
-    {
-        mode = "Unknown addressing mode";
-    }
-    return mode;
 }

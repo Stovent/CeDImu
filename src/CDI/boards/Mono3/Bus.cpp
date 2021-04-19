@@ -46,7 +46,7 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr >= 0x300000 && addr < 0x310000) // TODO
     {
-        const uint16_t data = 0;
+        const uint16_t data = addr == 0x3025C4 ? 0xCD02 : 0;
         LOG(if(flags & Log) { fprintf(out, "%X\tGet word in CIAP at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int16_t)data, data, data); })
         return data;
     }
