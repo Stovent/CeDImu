@@ -4,11 +4,25 @@
 
 uint8_t SCC68070::GetPeripheral(uint32_t addr)
 {
+    std::unique_lock<std::mutex> lock(uartInMutex);
     addr -= SCC68070Peripherals::Base;
+
+    if(uartIn.size())
+        SET_RX_READY()
+    else
+        UNSET_RX_READY()
 
     if(addr == URHR)
     {
-        internal[URHR] = board.CPUGetUART();
+        if(uartIn.size())
+        {
+            internal[URHR] = uartIn.front();
+            uartIn.pop_front();
+        }
+        else
+            internal[URHR] = 0;
+
+        lock.unlock();
         LOG(disassembledInstructions.push_back("\tURHR: 0x" + toHex(internal[URHR]))) // this or data ?
     }
 
@@ -39,15 +53,6 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
             internal[USR] &= 0x0F;
             break;
         }
-
-        if(data & 0x01)
-            SET_RX_READY();
-        if(data & 0x02)
-            UNSET_RX_READY();
-        if(data & 0x04)
-            SET_TX_READY();
-        if(data & 0x08)
-            UNSET_TX_READY();
 
         internal[UCR] = data;
         break;

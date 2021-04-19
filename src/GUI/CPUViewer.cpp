@@ -67,7 +67,7 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
     auiManager.AddPane(disassembler, wxAuiPaneInfo().Caption("Disassembler").Center().CloseButton(false).Resizable());
     auiManager.AddPane(internalRegisters, wxAuiPaneInfo().Caption("Internal Registers").Left().CloseButton(false).Resizable().BestSize(300, 0));
     auiManager.AddPane(registersPanel, wxAuiPaneInfo().Caption("CPU Registers").Right().CloseButton(false).Resizable().BestSize(130, 0));
-    auiManager.AddPane(uartOut, wxAuiPaneInfo().Caption("UART Output").Bottom().CloseButton(false).Resizable().BestSize(0, 100));
+    auiManager.AddPane(uartOut, wxAuiPaneInfo().Caption("UART").Bottom().CloseButton(false).Resizable().BestSize(0, 100));
     auiManager.Update();
 
     renderTimer.Start(16);
@@ -76,6 +76,15 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
         if(mainFrame->cpuViewer)
             mainFrame->cpuViewer->uartOut->AppendText((char)byte);
     };
+
+    uartOut->Bind(wxEVT_KEY_DOWN, [this] (wxKeyEvent& event) {
+        int key = event.GetKeyCode();
+        if(key < 128)
+        {
+            std::lock_guard<std::mutex> lock(this->cpu.uartInMutex);
+            this->cpu.uartIn.push_back(key);
+        }
+    });
 }
 
 CPUViewer::~CPUViewer()

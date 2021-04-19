@@ -8,6 +8,7 @@ class Board;
 #include <cstdio>
 #include <functional>
 #include <map>
+#include <mutex>
 #include <queue>
 #include <string>
 #include <thread>
@@ -293,6 +294,8 @@ public:
     std::vector<std::string> disassembledInstructions;
     std::vector<uint32_t> breakpoints;
 
+    std::mutex uartInMutex;
+    std::deque<uint8_t> uartIn;
     std::function<void(uint8_t)> OnUARTOut;
 
     SCC68070() = delete;

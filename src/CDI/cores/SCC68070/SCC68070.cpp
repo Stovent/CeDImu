@@ -119,6 +119,7 @@ void SCC68070::Reset()
     }
     board.Reset(false);
     ResetOperation();
+    SET_TX_READY()
 }
 
 /** \brief Trigger interrupt processing.
