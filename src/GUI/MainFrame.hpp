@@ -16,17 +16,18 @@ class VDSCViewer;
 class MainFrame : public wxFrame
 {
 public:
-    CeDImu* app;
+    CeDImu& app;
     GamePanel* gamePanel;
     wxMenuItem* pauseItem;
 
-    MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size);
+    MainFrame(CeDImu& appp, const wxString& title, const wxPoint& pos, const wxSize& size);
     CPUViewer* cpuViewer;
     RAMSearchFrame* ramSearchFrame;
     VDSCViewer* vdscViewer;
 
     void Pause();
-    void RefreshTitle(wxTimerEvent& event);
+    void RefreshTitle();
+    void RefreshStatusBar(wxTimerEvent& event);
 
 private:
     wxTimer renderTimer;

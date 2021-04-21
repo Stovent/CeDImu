@@ -14,11 +14,13 @@ class Board;
 class Board
 {
 public:
+    const std::string name;
+
     SCC68070 cpu;
     std::unique_ptr<ISlave> slave;
     M48T08 timekeeper;
 
-    Board(std::tm* initialTime) : cpu(*this), timekeeper(initialTime) {}
+    Board(const std::string& name, std::tm* initialTime, const bool isPAL) : name(name), cpu(*this, isPAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY), timekeeper(initialTime) {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
 

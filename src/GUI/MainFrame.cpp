@@ -28,12 +28,11 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnRAMSearch,   MainFrame::OnRAMSearch)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
     EVT_MENU(IDMainFrameOnAbout, MainFrame::OnAbout)
-    EVT_TIMER(wxID_ANY, MainFrame::RefreshTitle)
+    EVT_TIMER(wxID_ANY, MainFrame::RefreshStatusBar)
 wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame(CeDImu* appp, const wxString& title, const wxPoint& pos, const wxSize& size) : wxFrame(NULL, wxID_ANY, title, pos, size)
+MainFrame::MainFrame(CeDImu& appp, const wxString& title, const wxPoint& pos, const wxSize& size) : wxFrame(NULL, wxID_ANY, title, pos, size), app(appp)
 {
-    app = appp;
     gamePanel = new GamePanel(this, appp);
     cpuViewer = nullptr;
     ramSearchFrame = nullptr;
@@ -94,34 +93,42 @@ void MainFrame::CreateMenuBar()
     SetMenuBar(menuBar);
 }
 
-void MainFrame::RefreshTitle(wxTimerEvent& event)
+void MainFrame::RefreshTitle()
+{
+    const std::string gameName = !app.cdi.disc.gameName.empty() ? app.cdi.disc.gameName + " | " : "";
+    const std::string biosName = app.cdi.board ? app.biosName + " | " : "";
+    const std::string boardName = app.cdi.board ? app.cdi.board->name + " | " : "";
+    SetTitle(gameName + biosName + boardName + "CeDImu");
+}
+
+void MainFrame::RefreshStatusBar(wxTimerEvent& event)
 {
     uint16_t fps = 0;
-    if(app->cdi.board)
+    if(app.cdi.board)
     {
-        fps = app->cdi.board->GetTotalFrameCount() - oldFrameCount;
-        oldFrameCount = app->cdi.board->GetTotalFrameCount();
+        fps = app.cdi.board->GetTotalFrameCount() - oldFrameCount;
+        oldFrameCount = app.cdi.board->GetTotalFrameCount();
     }
 
     double freq = 0.0;
-    if(app->cdi.board)
+    if(app.cdi.board)
     {
-        freq = (app->cdi.board->cpu.totalCycleCount - (double)oldCycleCount) / 1000000.0;
-        oldCycleCount = app->cdi.board->cpu.totalCycleCount;
+        freq = (app.cdi.board->cpu.totalCycleCount - (double)oldCycleCount) / 1'000'000.0;
+        oldCycleCount = app.cdi.board->cpu.totalCycleCount;
     }
 
-    const DiscTime discTime = app->cdi.disc.GetTime();
+    const DiscTime discTime = app.cdi.disc.GetTime();
 
     SetStatusText("FPS: " + std::to_string(fps), 1);
     SetStatusText("Frames: " + std::to_string(oldFrameCount), 2);
     SetStatusText(std::to_string(freq) + " MHz", 3);
     SetStatusText("Disc: " + std::to_string(discTime.minute) + ':' + std::to_string(discTime.second) + ':' + std::to_string(discTime.sector), 4);
-    SetTitle((!app->cdi.disc.gameName.empty() ? app->cdi.disc.gameName + " | " : "") + (app->cdi.board ? app->biosName + " | CeDImu" : "CeDImu"));
+    RefreshTitle();
 }
 
 void MainFrame::OnOpenROM(wxCommandEvent& event)
 {
-    if(app->cdi.board == nullptr)
+    if(app.cdi.board == nullptr)
     {
         wxMessageBox("The BIOS has not been loaded yet.");
     }
@@ -135,7 +142,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 #else
     Config::ROMDirectory = openFileDialog.GetPath().BeforeLast('/');
 #endif
-    if(!app->cdi.disc.Open(openFileDialog.GetPath().ToStdString()))
+    if(!app.cdi.disc.Open(openFileDialog.GetPath().ToStdString()))
     {
         wxMessageBox("Could not open ROM!");
         return;
@@ -143,35 +150,35 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
 
     if(Config::skipBIOS)
     {
-        CDIFile* module = app->cdi.disc.GetFile(app->cdi.disc.mainModule);
+        CDIFile* module = app.cdi.disc.GetFile(app.cdi.disc.mainModule);
         uint32_t size;
         uint8_t* d = module->GetContent(size);
         if(d != nullptr && size)
         {
             uint32_t address = 0;
-            app->cdi.board->PutDataInMemory(d, size, address);
+            app.cdi.board->PutDataInMemory(d, size, address);
             // Get the module execution offset based on the module header,
             // assuming the loaded module will always be a program
-            address += app->cdi.board->GetLong(address + 0x30, NoFlags);
+            address += app.cdi.board->GetLong(address + 0x30, NoFlags);
             uint8_t arr[4] = {(uint8_t)(address >> 24), (uint8_t)(address >> 16), (uint8_t)(address >> 8), (uint8_t)(address)};
-            app->cdi.board->WriteToBIOSArea(arr, 4, 4);
+            app.cdi.board->WriteToBIOSArea(arr, 4, 4);
         }
     }
 
-    if(app->cdi.board)
+    if(app.cdi.board)
         if(!pauseItem->IsChecked())
-            app->StartGameThread();
+            app.StartGameThread();
 }
 
 void MainFrame::OnCloseROM(wxCommandEvent& event)
 {
-    app->StopGameThread();
-    app->cdi.disc.Close();
+    app.StopGameThread();
+    app.cdi.disc.Close();
 }
 
 void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
-    app->StopGameThread();
+    app.StopGameThread();
     Close(true);
 }
 
@@ -179,12 +186,12 @@ void MainFrame::OnPause(wxCommandEvent& event)
 {
     if(pauseItem->IsChecked())
     {
-        app->StopGameThread();
+        app.StopGameThread();
         SetStatusText("Pause");
     }
     else
     {
-        app->StartGameThread();
+        app.StartGameThread();
         SetStatusText("Running");
     }
 }
@@ -193,13 +200,13 @@ void MainFrame::Pause()
 {
     if(pauseItem->IsChecked())
     {
-        app->StartGameThread();
+        app.StartGameThread();
         pauseItem->Check(false);
         SetStatusText("Running");
     }
     else
     {
-        app->StopGameThread();
+        app.StopGameThread();
         pauseItem->Check(true);
         SetStatusText("Pause");
     }
@@ -207,7 +214,7 @@ void MainFrame::Pause()
 
 void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 {
-    if(!app->cdi.board)
+    if(!app.cdi.board)
         return;
 
     wxFrame* genericFrame = new wxFrame(this, wxID_ANY, "Execute instructions", GetPosition(), wxSize(200, 60));
@@ -217,7 +224,7 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 
     button->Bind(wxEVT_BUTTON, [this, genericFrame, input] (wxEvent& event) {
         for(int i = 0; i < stoi(input->GetValue().ToStdString()); i++)
-            this->app->cdi.board->cpu.Run(false);
+            this->app.cdi.board->cpu.Run(false);
     });
 
     sizer->Add(input, 1, wxEXPAND);
@@ -229,15 +236,15 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
 
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
-    if(app->cdi.board)
-        app->cdi.board->Reset(true);
+    if(app.cdi.board)
+        app.cdi.board->Reset(true);
 }
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
     SetStatusText("Exporting files...");
-    if(app->cdi.disc.IsOpen())
-        app->cdi.disc.ExportFiles();
+    if(app.cdi.disc.IsOpen())
+        app.cdi.disc.ExportFiles();
     else
         wxMessageBox("No ROM loaded, no file to export");
     SetStatusText("Files exported!");
@@ -246,8 +253,8 @@ void MainFrame::OnExportFiles(wxCommandEvent& event)
 void MainFrame::OnExportAudio(wxCommandEvent& event)
 {
     SetStatusText("Exporting audio...");
-    if(app->cdi.disc.IsOpen())
-        app->cdi.disc.ExportAudio();
+    if(app.cdi.disc.IsOpen())
+        app.cdi.disc.ExportAudio();
     else
         wxMessageBox("No ROM loaded, no file to export");
     SetStatusText("Audio exported!");
@@ -256,8 +263,8 @@ void MainFrame::OnExportAudio(wxCommandEvent& event)
 void MainFrame::OnExportVideo(wxCommandEvent& event)
 {
     SetStatusText("Exporting video...");
-    if(app->cdi.disc.IsOpen())
-        app->cdi.disc.ExportVideo();
+    if(app.cdi.disc.IsOpen())
+        app.cdi.disc.ExportVideo();
     else
         wxMessageBox("No ROM loaded, no file to export");
     SetStatusText("Video exported!");
@@ -265,25 +272,25 @@ void MainFrame::OnExportVideo(wxCommandEvent& event)
 
 void MainFrame::OnCPUViewer(wxCommandEvent& event)
 {
-    if(cpuViewer != nullptr || !app->cdi.board)
+    if(cpuViewer != nullptr || !app.cdi.board)
         return;
-    cpuViewer = new CPUViewer(app->cdi.board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(700, 650));
+    cpuViewer = new CPUViewer(app.cdi.board->cpu, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(700, 650));
     cpuViewer->Show();
 }
 
 void MainFrame::OnVDSCViewer(wxCommandEvent& event)
 {
-    if(vdscViewer != nullptr || !app->cdi.board)
+    if(vdscViewer != nullptr || !app.cdi.board)
         return;
-    vdscViewer = new VDSCViewer(this, *app->cdi.board);
+    vdscViewer = new VDSCViewer(this, *app.cdi.board);
     vdscViewer->Show();
 }
 
 void MainFrame::OnRAMSearch(wxCommandEvent& event)
 {
-    if(ramSearchFrame != nullptr || !app->cdi.board)
+    if(ramSearchFrame != nullptr || !app.cdi.board)
         return;
-    ramSearchFrame = new RAMSearchFrame(*app->cdi.board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
+    ramSearchFrame = new RAMSearchFrame(*app.cdi.board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
     ramSearchFrame->Show();
 }
 

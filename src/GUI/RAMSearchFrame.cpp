@@ -134,7 +134,7 @@ void RAMSearchFrame::OnCheckMisaligned(wxCommandEvent& event)
 {
     if(checkMisaligned->GetValue())
     {
-        ramSearchList->SetItemCount(mainFrame->app->cdi.board->GetRAMSize());
+        ramSearchList->SetItemCount(mainFrame->app.cdi.board->GetRAMSize());
         if(lastByte == byte2)
         {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() * 2 + ramSearchList->GetCountPerPage()-1);
@@ -149,16 +149,16 @@ void RAMSearchFrame::OnCheckMisaligned(wxCommandEvent& event)
         if(lastByte == byte2)
         {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 2);
-            ramSearchList->SetItemCount(mainFrame->app->cdi.board->GetRAMSize() / 2);
+            ramSearchList->SetItemCount(mainFrame->app.cdi.board->GetRAMSize() / 2);
         }
         else if (lastByte == byte4)
         {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 4);
-            ramSearchList->SetItemCount(mainFrame->app->cdi.board->GetRAMSize() / 4);
+            ramSearchList->SetItemCount(mainFrame->app.cdi.board->GetRAMSize() / 4);
         }
         else
         {
-            ramSearchList->SetItemCount(mainFrame->app->cdi.board->GetRAMSize());
+            ramSearchList->SetItemCount(mainFrame->app.cdi.board->GetRAMSize());
         }
     }
     ramSearchList->Refresh();
@@ -183,7 +183,7 @@ void RAMSearchFrame::OnByte1(wxCommandEvent& event)
 {
     if(!checkMisaligned->GetValue())
     {
-        ramSearchList->SetItemCount(mainFrame->app->cdi.board->GetRAMSize());
+        ramSearchList->SetItemCount(mainFrame->app.cdi.board->GetRAMSize());
         if(lastByte == byte2)
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() * 2 + ramSearchList->GetCountPerPage()-1);
         else
@@ -201,11 +201,11 @@ void RAMSearchFrame::OnByte2(wxCommandEvent& event)
         if(lastByte == byte1)
         {
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 2);
-            ramSearchList->SetItemCount(mainFrame->app->cdi.board->GetRAMSize() / 2);
+            ramSearchList->SetItemCount(mainFrame->app.cdi.board->GetRAMSize() / 2);
         }
         else
         {
-            ramSearchList->SetItemCount(mainFrame->app->cdi.board->GetRAMSize() / 2);
+            ramSearchList->SetItemCount(mainFrame->app.cdi.board->GetRAMSize() / 2);
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() * 2 + ramSearchList->GetCountPerPage()-1);
         }
     }
@@ -222,7 +222,7 @@ void RAMSearchFrame::OnByte4(wxCommandEvent& event)
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 4);
         else
             ramSearchList->EnsureVisible(ramSearchList->GetTopItem() / 2);
-        ramSearchList->SetItemCount(mainFrame->app->cdi.board->GetRAMSize() / 4);
+        ramSearchList->SetItemCount(mainFrame->app.cdi.board->GetRAMSize() / 4);
     }
 
     lastByte = byte4;

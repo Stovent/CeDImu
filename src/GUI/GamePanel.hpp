@@ -12,10 +12,10 @@ class GamePanel;
 class GamePanel : public wxPanel
 {
 public:
-    CeDImu* app;
+    CeDImu& app;
     MainFrame* mainFrame;
 
-    GamePanel(MainFrame* parent, CeDImu* appp);
+    GamePanel(MainFrame* parent, CeDImu& appp);
     ~GamePanel();
 
     void RefreshScreen();

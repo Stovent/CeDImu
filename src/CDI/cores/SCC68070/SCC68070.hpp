@@ -14,7 +14,8 @@ class Board;
 #include <thread>
 #include <vector>
 
-#define SCC68070_DEFAULT_FREQUENCY (15'000'000)
+#define SCC68070_PAL_FREQUENCY (15'000'000)
+#define SCC68070_NTSC_FREQUENCY (15'104'900)
 
 // Actually, figure VI.1 of the Green Book
 // and Table 2-2 of the MC68000UM
@@ -301,7 +302,7 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    explicit SCC68070(Board& baord, const uint32_t clockFrequency = SCC68070_DEFAULT_FREQUENCY);
+    explicit SCC68070(Board& baord, const uint32_t clockFrequency);
     ~SCC68070();
 
     bool IsRunning() const;

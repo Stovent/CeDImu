@@ -4,10 +4,9 @@ wxBEGIN_EVENT_TABLE(GamePanel, wxPanel)
     EVT_KEY_DOWN(GamePanel::OnKeyDown)
 wxEND_EVENT_TABLE()
 
-GamePanel::GamePanel(MainFrame* parent, CeDImu* appp) : wxPanel(parent)
+GamePanel::GamePanel(MainFrame* parent, CeDImu& appp) : wxPanel(parent), app(appp)
 {
     mainFrame = parent;
-    app = appp;
 }
 
 GamePanel::~GamePanel()
@@ -16,7 +15,7 @@ GamePanel::~GamePanel()
 
 void GamePanel::RefreshLoop(wxPaintEvent& event)
 {
-    Plane p = app->cdi.board->GetScreen();
+    Plane p = app.cdi.board->GetScreen();
     if(p.pixels == nullptr)
         return;
 
@@ -30,7 +29,7 @@ void GamePanel::RefreshLoop(wxPaintEvent& event)
 
 void GamePanel::RefreshScreen()
 {
-    Plane p = app->cdi.board->GetScreen();
+    Plane p = app.cdi.board->GetScreen();
     if(p.pixels == nullptr)
         return;
 
@@ -48,22 +47,22 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
         break;
 
     case 'Z':
-        if(!app->cdi.board)
+        if(!app.cdi.board)
             break;
-        app->cdi.board->StopOnNextFrame();
-        if(!app->cdi.board->cpu.IsRunning())
-            app->StartGameThread();
+        app.cdi.board->StopOnNextFrame();
+        if(!app.cdi.board->cpu.IsRunning())
+            app.StartGameThread();
         break;
 
     case 'E':
-        if(app->cdi.board && app->mainFrame->pauseItem->IsChecked())
-            app->cdi.board->cpu.Run(false);
+        if(app.cdi.board && app.mainFrame->pauseItem->IsChecked())
+            app.cdi.board->cpu.Run(false);
         break;
     case 'M':
-        app->DecreaseEmulationSpeed();
+        app.DecreaseEmulationSpeed();
         break;
     case '=':
-        app->IncreaseEmulationSpeed();
+        app.IncreaseEmulationSpeed();
         break;
     }
 }
