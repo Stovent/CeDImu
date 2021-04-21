@@ -4,8 +4,8 @@
 
 uint8_t SCC68070::GetPeripheral(uint32_t addr)
 {
-    std::unique_lock<std::mutex> lock(uartInMutex);
     addr -= SCC68070Peripherals::Base;
+    std::unique_lock<std::mutex> lock(uartInMutex);
 
     if(uartIn.size())
         SET_RX_READY()
@@ -58,12 +58,11 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
         break;
 
     case UTHR:
-        board.CPUSetUART(data);
         internal[USR] |= 0x08; // set TXEMT bit
         if(OnUARTOut)
             OnUARTOut(data);
-        LOG(disassembledInstructions.push_back("\tUTHR: 0x" + toHex(internal[UTHR])))
         internal[UTHR] = data;
+        LOG(disassembledInstructions.push_back("\tUTHR: 0x" + toHex(internal[UTHR])))
         break;
 
     case TSR:

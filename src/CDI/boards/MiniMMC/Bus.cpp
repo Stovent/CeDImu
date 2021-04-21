@@ -167,16 +167,3 @@ void MiniMMC::SetLong(const uint32_t addr, const uint32_t data, const uint8_t fl
     LOG(if(flags & Log) { fprintf(out, "%X\tSet long OUT OF RANGE at 0x%X : %d %d 0x%X\n", cpu.currentPC, addr, (int32_t)data, data, data); })
     throw SCC68070Exception(BusError, 0);
 }
-
-uint8_t MiniMMC::CPUGetUART(const uint8_t flags)
-{
-    int c = uart_in.get();
-    LOG(if(flags & Log) { fprintf(out, "%X\tCPU Get UART: %d '%c' 0x%X\n", cpu.currentPC, c, (char)c, c); })
-    return (c != EOF) ? c : 0;
-}
-
-void MiniMMC::CPUSetUART(const uint8_t data, const uint8_t flags)
-{
-    uart_out.write((char*)&data, 1);
-    LOG(if(flags & Log) { fprintf(out, "%X\tCPU Set UART: %d %d '%c' 0x%X\n", cpu.currentPC, (int8_t)data, data, (char)data, data); })
-}

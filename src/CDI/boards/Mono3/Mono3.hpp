@@ -33,9 +33,6 @@ public:
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
 
-    virtual uint8_t CPUGetUART(const uint8_t flags = Trigger | Log) override;
-    virtual void CPUSetUART(const uint8_t data, const uint8_t flags = Trigger | Log) override;
-
     virtual void ExecuteVideoLine() override;
     virtual uint32_t GetLineDisplayTime() override;
 
