@@ -9,6 +9,7 @@ enum
     IDMainFrameOnCloseROM,
     IDMainFrameOnPause,
     IDMainFrameOnExecuteXInstructions,
+    IDMainFrameOnReset,
     IDMainFrameOnRebootCore,
     IDMainFrameOnExportFiles,
     IDMainFrameOnExportAudio,

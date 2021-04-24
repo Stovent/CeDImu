@@ -77,6 +77,8 @@ void MCD212::Reset()
     registerCSR1R = 0;
     registerCSR2R = 0;
 
+    memset(screen, 0, 768 * 560 * 3);
+
     verticalLines = 0;
     lineNumber = 0;
     MemorySwap();

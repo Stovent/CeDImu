@@ -19,6 +19,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
     EVT_MENU(IDMainFrameOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
+    EVT_MENU(IDMainFrameOnReset,  MainFrame::OnReset)
     EVT_MENU(IDMainFrameOnRebootCore,  MainFrame::OnRebootCore)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
@@ -62,7 +63,8 @@ void MainFrame::CreateMenuBar()
     pauseItem->Check();
     emulation->Append(IDMainFrameOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
     emulation->AppendSeparator();
-    emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+Maj+R");
+    emulation->Append(IDMainFrameOnReset, "Reset\tCtrl+Maj+R");
+    emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+Maj+B");
 
     wxMenu* cdi = new wxMenu;
     wxMenu* cdiexport = new wxMenu;
@@ -234,10 +236,16 @@ void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
     genericFrame->Show();
 }
 
-void MainFrame::OnRebootCore(wxCommandEvent& event)
+void MainFrame::OnReset(wxCommandEvent& event)
 {
     if(app.cdi.board)
         app.cdi.board->Reset(true);
+}
+
+void MainFrame::OnRebootCore(wxCommandEvent& event)
+{
+    if(app.cdi.board)
+        app.InitializeCores();
 }
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)

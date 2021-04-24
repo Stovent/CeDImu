@@ -41,6 +41,7 @@ private:
 
     void OnPause(wxCommandEvent& event);
     void OnExecuteXInstructions(wxCommandEvent& event);
+    void OnReset(wxCommandEvent& event);
     void OnRebootCore(wxCommandEvent& event);
 
     void OnExportFiles(wxCommandEvent& event);
