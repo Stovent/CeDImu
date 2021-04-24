@@ -151,6 +151,15 @@ void SCC68070::INT2()
         Interrupt(Level1ExternalInterruptAutovector - 1 + level, level);
 }
 
+/** \brief Send a byte through UART.
+ * \param byte The byte to send.
+ */
+void SCC68070::SendUARTIn(const uint8_t byte)
+{
+    std::lock_guard<std::mutex> lock(uartInMutex);
+    uartIn.push_back(byte);
+}
+
 /** \brief Write the disassembled instructions to a file (in DEBUG mode).
  */
 void SCC68070::FlushDisassembler()

@@ -294,9 +294,6 @@ public:
 
     std::vector<std::string> disassembledInstructions;
     std::vector<uint32_t> breakpoints;
-
-    std::mutex uartInMutex;
-    std::deque<uint8_t> uartIn;
     std::function<void(uint8_t)> OnUARTOut;
 
     SCC68070() = delete;
@@ -315,6 +312,7 @@ public:
 
     void INT1();
     void INT2();
+    void SendUARTIn(const uint8_t byte);
 
     void SetRegister(CPURegisters reg, const uint32_t value);
     std::map<std::string, uint32_t> GetCPURegisters() const;
@@ -326,6 +324,10 @@ private:
     bool loop;
     bool stop;
     bool isRunning;
+
+    std::mutex uartInMutex;
+    std::deque<uint8_t> uartIn;
+    std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
     FILE* out;
     FILE* instructions;
@@ -340,7 +342,6 @@ private:
     const double timerDelay;
     double speedDelay; // used for emulation speed.
     double timerCounter; // Counts the nanosconds when incrementing the timer.
-    std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
     void Interpreter();
     uint16_t GetNextWord(const uint8_t flags = Log | Trigger);

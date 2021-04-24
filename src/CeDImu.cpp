@@ -76,7 +76,7 @@ bool CeDImu::InitializeCores()
     cdi.board->cpu.OnUARTOut = [this] (uint8_t byte) -> void {
         this->uart_out.put((char)byte);
         if(this->mainFrame->cpuViewer)
-            this->mainFrame->cpuViewer->uartOut->AppendText((char)byte);
+            this->mainFrame->cpuViewer->uart->AppendText((char)byte);
     };
 
     cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);

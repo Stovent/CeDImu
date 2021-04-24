@@ -30,7 +30,7 @@ public:
     wxTimer renderTimer;
 
     wxListCtrl* internalRegisters;
-    wxTextCtrl* uartOut;
+    wxTextCtrl* uart;
     wxTextCtrl* disassembler;
 
     wxTextCtrl* d[8];
