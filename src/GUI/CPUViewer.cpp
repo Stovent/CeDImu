@@ -72,11 +72,6 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
 
     renderTimer.Start(16);
 
-    cpu.OnUARTOut = [=] (uint8_t byte) -> void {
-        if(mainFrame->cpuViewer)
-            mainFrame->cpuViewer->uartOut->AppendText((char)byte);
-    };
-
     uartOut->Bind(wxEVT_KEY_DOWN, [this] (wxKeyEvent& event) {
         int key = event.GetKeyCode();
         if(key < 128)

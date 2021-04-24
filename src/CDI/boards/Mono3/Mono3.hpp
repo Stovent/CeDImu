@@ -13,8 +13,6 @@ class Mono3 : public Board
 {
     MCD212 mcd212;
     FILE* out;
-    std::ofstream uart_out;
-    std::ifstream uart_in;
 
 public:
     Mono3(const void* vdscBios, const uint32_t vdscSize, std::tm* initialTime, const bool PAL);

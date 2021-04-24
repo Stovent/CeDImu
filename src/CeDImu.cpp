@@ -26,7 +26,7 @@ constexpr float cpuSpeeds[17] = {
 bool CeDImu::OnInit()
 {
     Config::loadConfig();
-
+    uart_out.open("uart_out", std::ios::out | std::ios::binary);
     cpuSpeed = 8;
 
     mainFrame = new MainFrame(*this, "CeDImu", wxPoint(50, 50), wxSize(420, 310));
@@ -72,6 +72,12 @@ bool CeDImu::InitializeCores()
     cdi.board->SetOnFrameCompletedCallback([=] () -> void {
         mainFrame->gamePanel->RefreshScreen();
     });
+
+    cdi.board->cpu.OnUARTOut = [this] (uint8_t byte) -> void {
+        this->uart_out.put((char)byte);
+        if(this->mainFrame->cpuViewer)
+            this->mainFrame->cpuViewer->uartOut->AppendText((char)byte);
+    };
 
     cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
     return true;

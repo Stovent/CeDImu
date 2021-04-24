@@ -4,8 +4,6 @@
 MiniMMC::MiniMMC(const void* bios, const uint32_t size, std::tm* initialTime) : Board("Mini-MMC", initialTime, false), masterVDSC(*this, true, bios, size), slaveVDSC(*this, false, "\0", 2)
 {
     OPEN_LOG(out, "MiniMMC.txt")
-    uart_out.open("uart_out", std::ios::binary | std::ios::out);
-    uart_in.open("uart_in", std::ios::binary | std::ios::in);
     Reset(true);
 }
 

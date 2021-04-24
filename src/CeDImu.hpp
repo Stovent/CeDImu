@@ -17,9 +17,10 @@ class CeDImu : public wxApp
 public:
     CDI cdi;
     std::string biosName;
+    std::ofstream uart_out;
+    uint16_t cpuSpeed;
 
     MainFrame* mainFrame;
-    uint16_t cpuSpeed;
 
     virtual bool OnInit() override;
     virtual int OnExit() override;
