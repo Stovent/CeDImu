@@ -60,9 +60,9 @@ void MiniMMC::SetOnFrameCompletedCallback(std::function<void()> callback)
     slaveVDSC.SetOnFrameCompletedCallback(callback);
 }
 
-std::string MiniMMC::GetPositionInformation(const uint32_t offset)
+const OS9::BIOS& MiniMMC::GetBIOS() const
 {
-    return masterVDSC.BIOS.GetPositionInformation(offset - 0x180000);
+    return masterVDSC.BIOS;
 }
 
 std::vector<VDSCRegister> MiniMMC::GetInternalRegisters()

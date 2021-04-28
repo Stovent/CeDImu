@@ -58,8 +58,9 @@ public:
     ~BIOS();
 
     inline uint8_t operator[](const uint32_t offset) const { return memory[offset]; }
+    inline const uint8_t* operator()() const { return memory; }
 
-    std::string GetPositionInformation(const uint32_t offset);
+    std::string GetPositionInformation(const uint32_t offset) const;
 };
 
 } // nampespace OS9

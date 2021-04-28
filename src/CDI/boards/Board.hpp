@@ -45,7 +45,7 @@ public:
 
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
-    virtual std::string GetPositionInformation(const uint32_t offset) = 0;
+    virtual const OS9::BIOS& GetBIOS() const = 0;
 
     virtual std::vector<std::string> GetICA1() = 0;
     virtual std::vector<std::string> GetDCA1() = 0;
