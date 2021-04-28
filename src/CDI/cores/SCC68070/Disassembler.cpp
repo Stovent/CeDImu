@@ -5,6 +5,23 @@
 
 std::string SCC68070::DisassembleException(const SCC68070Exception& exception)const
 {
+    const std::function<const uint8_t*(const uint32_t)> getString = [this] (const uint32_t addr) -> const uint8_t* {
+        const RAMBank ram1 = this->board.GetRAMBank1();
+        const RAMBank ram2 = this->board.GetRAMBank2();
+        const OS9::BIOS& bios = this->board.GetBIOS();
+
+        if(addr >= ram1.base && addr < ram1.base + ram1.size)
+            return &ram1.data[addr - ram1.base];
+
+        if(addr >= ram2.base && addr < ram2.base + ram2.size)
+            return &ram2.data[addr - ram2.base];
+
+        if(addr >= bios.base && addr < bios.base + bios.size)
+            return bios(addr - bios.base);
+
+        return nullptr;
+    };
+
     switch(exception.vector)
     {
         case 0:  return "Reset:Initial SSP";
@@ -29,7 +46,7 @@ std::string SCC68070::DisassembleException(const SCC68070Exception& exception)co
         case 29: return "Level 5 interrupt autovector";
         case 30: return "Level 6 interrupt autovector";
         case 31: return "Level 7 interrupt autovector";
-        case 32: return "TRAP 0 instruction (0x" + toHex(exception.data) + " " + OS9::disassembleOS9Call(exception.data, D, A_, board.GetBIOS()()) + ")";
+        case 32: return "TRAP 0 instruction (0x" + toHex(exception.data) + " " + OS9::disassembleOS9Call(exception.data, D, A_, getString) + ")";
         case 33: return "TRAP 1 instruction";
         case 34: return "TRAP 2 instruction";
         case 35: return "TRAP 3 instruction";

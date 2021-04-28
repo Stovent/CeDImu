@@ -45,7 +45,6 @@ struct ModuleHeader
 
 class BIOS
 {
-    const uint32_t size;
     uint8_t* memory; // TODO: allocate on stack?
 
     std::vector<ModuleHeader> modules;
@@ -53,12 +52,15 @@ class BIOS
     void LoadModules();
 
 public:
+    const uint32_t base;
+    const uint32_t size;
+
     BIOS() = delete;
-    BIOS(const void* bios, const uint32_t sz);
+    BIOS(const void* bios, const uint32_t sz, const uint32_t bs);
     ~BIOS();
 
     inline uint8_t operator[](const uint32_t offset) const { return memory[offset]; }
-    inline const uint8_t* operator()() const { return memory; }
+    inline const uint8_t* operator()(const uint32_t pos = 0) const { return &memory[pos]; }
 
     std::string GetPositionInformation(const uint32_t offset) const;
 };

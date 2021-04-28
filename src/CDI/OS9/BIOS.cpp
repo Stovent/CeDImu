@@ -44,8 +44,10 @@ ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
 /** \brief OS9 BIOS.
  * \param bios The BIOS data.
  * \param sz The size of the BIOS.
+ * \param bs The base address of the BIOS.
  */
-BIOS::BIOS(const void* bios, const uint32_t sz) :
+BIOS::BIOS(const void* bios, const uint32_t sz, const uint32_t bs) :
+    base(bs),
     size(sz)
 {
     memory = new uint8_t[size];

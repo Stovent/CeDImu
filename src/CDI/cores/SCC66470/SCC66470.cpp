@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstring>
 
-SCC66470::SCC66470(Board& board, const bool ismaster, const void* bios, const uint32_t size) : VDSC(board, bios, size), isMaster(ismaster)
+SCC66470::SCC66470(Board& board, const bool ismaster, const void* bios, const uint32_t size) : VDSC(board, bios, size, 0x180000), isMaster(ismaster)
 {
     memory = new uint8_t[0x100000];
     memset(memory, 0, 0x100000);

@@ -45,7 +45,7 @@ public:
     std::vector<std::string> DCA2;
 
     VDSC() = delete;
-    VDSC(Board& baord, const void* bios, const uint32_t size) : board(baord), BIOS(bios, size), totalFrameCount(0) {}
+    VDSC(Board& baord, const void* bios, const uint32_t size, const uint32_t base) : board(baord), BIOS(bios, size, base), totalFrameCount(0) {}
     virtual ~VDSC() {}
 
     virtual void Reset() = 0;
