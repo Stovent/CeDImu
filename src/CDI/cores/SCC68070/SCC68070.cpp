@@ -151,6 +151,13 @@ void SCC68070::INT2()
         Interrupt(Level1ExternalInterruptAutovector - 1 + level, level);
 }
 
+/** \brief Trigger level 2 external interrupt vector.
+ */
+void SCC68070::IN2()
+{
+    Interrupt(Level2ExternalInterruptAutovector, 2);
+}
+
 /** \brief Send a byte through UART.
  * \param byte The byte to send.
  */

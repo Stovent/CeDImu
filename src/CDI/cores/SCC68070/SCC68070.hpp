@@ -312,6 +312,7 @@ public:
 
     void INT1();
     void INT2();
+    void IN2();
     void SendUARTIn(const uint8_t byte);
 
     void SetRegister(CPURegisters reg, const uint32_t value);
