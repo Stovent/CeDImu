@@ -9,7 +9,7 @@ static uint8_t responseDB0[3] = {0xB0, 0x02, 0x10}; // Disc status: 0x0210 accor
 static uint8_t responseDB1[4] = {0xB1, 0, 2, 0}; // Disc base: 00:02:00
 static uint8_t responseDB2[4] = {0xB2, 0x20, 0, 0x10}; // Disc select: 0x200010 according to cdiemu
 
-IKAT::IKAT(const bool PAL)
+IKAT::IKAT(SCC68070& cpu, const bool PAL) : ISlave(cpu)
 {
     index = -1;
     commandSize = 0;

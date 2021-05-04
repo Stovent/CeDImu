@@ -4,7 +4,7 @@
 
 Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, std::tm* initialTime, const bool PAL) : Board("Mono-III", initialTime, PAL), mcd212(*this, vdscBios, vdscSize, PAL)
 {
-    slave = std::make_unique<HLE::IKAT>(PAL);
+    slave = std::make_unique<HLE::IKAT>(cpu, PAL);
     OPEN_LOG(out, "Mono3.txt")
     Reset(true);
 }

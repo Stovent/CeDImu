@@ -33,7 +33,7 @@ class IKAT : public ISlave
 
 public:
     IKAT() = delete;
-    IKAT(const bool PAL);
+    IKAT(SCC68070& cpu, const bool PAL);
 
     virtual uint8_t GetByte(const uint8_t addr) override;
     virtual void SetByte(const uint8_t addr, const uint8_t data) override;
