@@ -62,7 +62,7 @@ public:
     inline uint8_t operator[](const uint32_t offset) const { return memory[offset]; }
     inline const uint8_t* operator()(const uint32_t pos = 0) const { return &memory[pos]; }
 
-    std::string GetPositionInformation(const uint32_t offset) const;
+    std::string GetModuleNameAt(const uint32_t offset) const;
 };
 
 } // nampespace OS9

@@ -83,7 +83,7 @@ void BIOS::LoadModules()
  * \param offset The location in the BIOS area.
  * \return The name of the module if inside one, an empty string otherwise.
  */
-std::string BIOS::GetPositionInformation(const uint32_t offset) const
+std::string BIOS::GetModuleNameAt(const uint32_t offset) const
 {
     for(const ModuleHeader header : modules)
     {
