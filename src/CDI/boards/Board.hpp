@@ -35,6 +35,23 @@ public:
     virtual uint32_t GetRAMSize() const = 0;
     virtual RAMBank GetRAMBank1() const = 0;
     virtual RAMBank GetRAMBank2() const = 0;
+    virtual const uint8_t* GetPointer(const uint32_t addr) const
+    {
+        const RAMBank ram1 = GetRAMBank1();
+        const RAMBank ram2 = GetRAMBank2();
+        const OS9::BIOS& bios = GetBIOS();
+
+        if(addr >= ram1.base && addr < ram1.base + ram1.size)
+            return &ram1.data[addr - ram1.base];
+
+        if(addr >= ram2.base && addr < ram2.base + ram2.size)
+            return &ram2.data[addr - ram2.base];
+
+        if(addr >= bios.base && addr < bios.base + bios.size)
+            return bios(addr - bios.base);
+
+        return nullptr;
+    }
 
     virtual void ExecuteVideoLine() = 0;
     virtual uint32_t GetLineDisplayTime() = 0;

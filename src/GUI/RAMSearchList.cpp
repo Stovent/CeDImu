@@ -2,9 +2,6 @@
 #include "../CeDImu.hpp"
 #include "../CDI/common/utils.hpp"
 
-#define GET_ARRAY16(array, index) ((uint16_t)array[(index)] << 8 | array[(index)+1])
-#define GET_ARRAY32(array, index) ((uint32_t)array[(index)] << 24 | array[(index)+1] << 16 | array[(index)+2] << 8 | array[(index)+3])
-
 RAMSearchList::RAMSearchList(RAMSearchFrame* parent) : wxListCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxLC_HRULES | wxLC_VRULES)
 {
     ramSearchFrame = parent;
