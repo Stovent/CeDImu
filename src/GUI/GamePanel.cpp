@@ -2,6 +2,7 @@
 
 wxBEGIN_EVENT_TABLE(GamePanel, wxPanel)
     EVT_KEY_DOWN(GamePanel::OnKeyDown)
+    EVT_KEY_UP(GamePanel::OnKeyUp)
 wxEND_EVENT_TABLE()
 
 GamePanel::GamePanel(MainFrame* parent, CeDImu& appp) : wxPanel(parent), app(appp)
@@ -42,6 +43,7 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
 {
     switch(event.GetKeyCode())
     {
+    // Shortcuts
     case 'A':
         mainFrame->Pause();
         break;
@@ -63,6 +65,74 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
         break;
     case '=':
         app.IncreaseEmulationSpeed();
+        break;
+
+    // Controller
+    case 'O':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetButton1(true);
+        break;
+
+    case 'P':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetButton2(true);
+        break;
+
+    case 'D':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetLeft(true);
+        break;
+
+    case 'R':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetUp(true);
+        break;
+
+    case 'G':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetRight(true);
+        break;
+
+    case 'F':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetDown(true);
+        break;
+    }
+}
+
+void GamePanel::OnKeyUp(wxKeyEvent& event)
+{
+    switch(event.GetKeyCode())
+    {
+    // Controller
+    case 'O':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetButton1(false);
+        break;
+
+    case 'P':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetButton2(false);
+        break;
+
+    case 'D':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetLeft(false);
+        break;
+
+    case 'R':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetUp(false);
+        break;
+
+    case 'G':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetRight(false);
+        break;
+
+    case 'F':
+        if(app.cdi.board)
+            app.cdi.board->slave->pointingDevice->SetDown(false);
         break;
     }
 }

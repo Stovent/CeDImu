@@ -53,6 +53,7 @@ void SCC68070::Interpreter()
 
         const double ns = executionCycles * cycleDelay;
         IncrementTimer(ns);
+        board.slave->IncrementTime(ns);
         board.timekeeper.IncrementClock(ns);
 
         const uint32_t lineDisplayTime = board.GetLineDisplayTime();

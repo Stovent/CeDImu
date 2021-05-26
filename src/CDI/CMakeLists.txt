@@ -66,6 +66,8 @@ add_library(cdi ${LIBRARY_TYPE}
     cores/SCC68070/MemoryAccess.cpp
     cores/SCC68070/Peripherals.cpp
     cores/SCC68070/SCC68070.cpp
+    devices/ManeuveringDevice.cpp
+    devices/PointingDevice.cpp
     HLE/IKAT/IKAT.cpp
     OS9/BIOS.cpp
 )

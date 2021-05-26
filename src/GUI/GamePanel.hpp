@@ -21,6 +21,7 @@ public:
     void RefreshScreen();
 
     void OnKeyDown(wxKeyEvent& event);
+    void OnKeyUp(wxKeyEvent& event);
     void RefreshLoop(wxPaintEvent& event);
 
     wxDECLARE_EVENT_TABLE();

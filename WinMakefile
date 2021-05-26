@@ -21,6 +21,7 @@ bin/obj/MC68HC705C8.o bin/obj/MC68HC705C8_Interpreter.o bin/obj/MC68HC705C8_Memo
 bin/obj/M48T08.o \
 bin/obj/CDI.o bin/obj/CDIDisc.o bin/obj/CDIDirectory.o bin/obj/CDIFile.o bin/obj/Export.o \
 bin/obj/Mono3.o bin/obj/Mono3Bus.o bin/obj/MiniMMC.o bin/obj/MiniMMCBus.o \
+bin/obj/ManeuveringDevice.o bin/obj/PointingDevice.o \
 bin/obj/HLEIKAT.o \
 bin/obj/OS9BIOS.o
 
@@ -59,6 +60,8 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MCD212/Display.cpp -o bin/obj/MCD212Display.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MCD212/Registers.cpp -o bin/obj/MCD212Registers.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/M48T08/M48T08.cpp -o bin/obj/M48T08.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/devices/ManeuveringDevice.cpp -o bin/obj/ManeuveringDevice.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/devices/PointingDevice.cpp -o bin/obj/PointingDevice.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/HLE/IKAT/IKAT.cpp -o bin/obj/HLEIKAT.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/OS9/BIOS.cpp -o bin/obj/OS9BIOS.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/GUI/MainFrame.cpp -o bin/obj/MainFrame.o

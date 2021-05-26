@@ -40,14 +40,16 @@ class IKAT : public ISlave
 {
     uint8_t registers[15];
 
+    void ProcessCommandC(uint8_t data);
+    void ProcessCommandD(uint8_t data);
+
     std::vector<uint8_t> commands[4];
     std::array<uint8_t, 4>::const_iterator responsesIterator[4];
     std::array<uint8_t, 4>::const_iterator responsesEnd[4];
 
-    void ProcessCommandC(uint8_t data);
-    void ProcessCommandD(uint8_t data);
-
     // https://github.com/cdifan/cdichips/blob/master/mc6805ikat.md
+    std::array<uint8_t, 4> responseB4X = {0x43, 0x3F, 0, 0}; // Relative pointer state
+
     std::array<uint8_t, 3> responseCF4 = {0xA5, 0xF4, 0}; // Boot mode: 1 for service shell, 0 for player shell
     std::array<uint8_t, 4> responseCF6 = {0xA5, 0xF6, 1, 0xFF}; // Video standard: 1 for NTSC, 2 for PAL
 
@@ -58,6 +60,9 @@ class IKAT : public ISlave
 public:
     IKAT() = delete;
     IKAT(SCC68070& cpu, const bool PAL);
+
+    virtual void UpdatePointerState() override;
+    virtual void IncrementTime(const size_t ns) override;
 
     virtual uint8_t GetByte(const uint8_t addr) override;
     virtual void SetByte(const uint8_t addr, const uint8_t data) override;
