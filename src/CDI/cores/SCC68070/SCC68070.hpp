@@ -295,6 +295,7 @@ public:
     std::vector<std::string> disassembledInstructions;
     std::vector<uint32_t> breakpoints;
     std::function<void(uint8_t)> OnUARTOut;
+    std::function<void(const std::string&)> OnDisassembler;
 
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;

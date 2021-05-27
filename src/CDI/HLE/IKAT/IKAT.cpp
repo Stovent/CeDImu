@@ -22,7 +22,8 @@ void IKAT::UpdatePointerState()
     responsesIterator[PB] = pointingDevice->Begin();
     responsesEnd[PB] = pointingDevice->End();
     registers[ISR] |= 0x08;
-    cpu.IN2();
+    if(registers[ICR] & 0x08)
+        cpu.IN2();
 }
 
 void IKAT::IncrementTime(const size_t ns)

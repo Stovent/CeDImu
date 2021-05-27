@@ -25,7 +25,12 @@ void SCC68070::Interpreter()
             const SCC68070Exception exception = exceptions.top();
             exceptions.pop();
             if(disassemble)
-                disassembledInstructions.push_back("Exception vector " + std::to_string(exception.vector) + ": " + DisassembleException(exception));
+            {
+                const std::string str = "Exception vector " + std::to_string(exception.vector) + ": " + DisassembleException(exception);
+                disassembledInstructions.push_back(str);
+                if(OnDisassembler)
+                    OnDisassembler(str);
+            }
 //            DumpCPURegisters();
             executionCycles += Exception(exception.vector);
         }
@@ -40,7 +45,12 @@ void SCC68070::Interpreter()
                 currentPC = PC;
                 currentOpcode = GetNextWord(Trigger);
                 if(disassemble)
-                    disassembledInstructions.push_back(toHex(currentPC) + "\t(" + board.GetBIOS().GetModuleNameAt(currentPC - board.GetBIOS().base) + ")\t" + (this->*DLUT[currentOpcode])(currentPC));
+                {
+                    const std::string inst = toHex(currentPC) + "\t(" + board.GetBIOS().GetModuleNameAt(currentPC - board.GetBIOS().base) + ")\t" + (this->*DLUT[currentOpcode])(currentPC);
+                    disassembledInstructions.push_back(inst);
+                    if(OnDisassembler)
+                        OnDisassembler(inst);
+                }
                 executionCycles += (this->*ILUT[currentOpcode])();
             }
             catch(const SCC68070Exception& e) {

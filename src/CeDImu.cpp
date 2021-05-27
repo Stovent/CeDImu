@@ -73,12 +73,6 @@ bool CeDImu::InitializeCores()
         mainFrame->gamePanel->RefreshScreen();
     });
 
-    cdi.board->cpu.OnUARTOut = [this] (uint8_t byte) -> void {
-        this->uart_out.put((char)byte);
-        if(this->mainFrame->cpuViewer)
-            this->mainFrame->cpuViewer->uart->AppendText((char)byte);
-    };
-
     cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
     return true;
 }

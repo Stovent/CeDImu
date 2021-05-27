@@ -77,6 +77,11 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
         if(key < 128)
             this->cpu.SendUARTIn(key);
     });
+
+    cpu.OnUARTOut = [this] (uint8_t byte) -> void {
+        this->mainFrame->app.uart_out.put((char)byte);
+        this->uart->AppendText((char)byte);
+    };
 }
 
 CPUViewer::~CPUViewer()
