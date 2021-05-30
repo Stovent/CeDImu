@@ -11,6 +11,15 @@ class Board;
 #include <vector>
 #include <functional>
 
+#define PLANE_MAX_WIDTH  (768)
+#define PLANE_MAX_HEIGHT (560)
+#define CURSOR_WIDTH  (16)
+#define CURSOR_HEIGHT (16)
+
+#define PLANE_RGB_SIZE   (PLANE_MAX_WIDTH * PLANE_MAX_HEIGHT * 3)
+#define PLANE_ARGB_SIZE  (PLANE_MAX_WIDTH * PLANE_MAX_HEIGHT * 4)
+#define CURSOR_ARGB_SIZE (CURSOR_WIDTH * CURSOR_HEIGHT * 4)
+
 struct VDSCRegister
 {
     std::string name;
@@ -21,7 +30,7 @@ struct VDSCRegister
 
 struct Plane
 {
-    uint8_t* pixels;
+    const uint8_t* pixels;
     uint16_t width;
     uint16_t height;
 };

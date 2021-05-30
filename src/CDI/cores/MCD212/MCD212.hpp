@@ -5,7 +5,9 @@ class MCD212;
 
 #include "../VDSC.hpp"
 
+#include <array>
 #include <cstdio>
+#include <vector>
 
 enum MCD212Registers
 {
@@ -104,23 +106,25 @@ private:
     const bool isPAL;
     uint8_t memorySwapCount;
 
-    uint8_t* memory;
+    std::vector<uint8_t> memory;
 
-    uint8_t* screen;
-    uint8_t* planeA;
-    uint8_t* planeB;
-    uint8_t* cursorPlane;
-    uint8_t* backgroundPlane;
+    std::vector<uint8_t> screen;
+    std::vector<uint8_t> planeA;
+    std::vector<uint8_t> planeB;
+    std::vector<uint8_t> cursorPlane;
+    std::vector<uint8_t> backgroundPlane;
+
+    uint32_t* controlRegisters;
+    std::array<uint32_t, 256> CLUT;
+    std::array<uint16_t, 16>  cursorPatterns;
+
+    std::array<uint16_t, 32> internalRegisters;
+    uint8_t registerCSR1R;
+    uint8_t registerCSR2R;
 
     bool stopOnNextFrame;
     uint16_t lineNumber; // starts at 0
     uint16_t verticalLines; // starts at 0.
-    uint32_t* controlRegisters;
-    uint16_t* internalRegisters;
-    uint16_t  cursorPatterns[16];
-    uint8_t registerCSR1R;
-    uint8_t registerCSR2R;
-    uint32_t CLUT[256];
     FILE* out_dram;
     FILE* out_display;
     std::function<void()> OnFrameCompleted;

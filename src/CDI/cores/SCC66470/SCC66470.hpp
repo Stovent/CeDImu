@@ -31,11 +31,11 @@ enum SCC66470Registers
 
 class SCC66470 : public VDSC
 {
-    uint8_t* memory;
+    std::vector<uint8_t> memory;
     uint8_t memorySwapCount;
     uint16_t lineNumber; // starts at 0
 
-    uint16_t internalRegisters[0x20];
+    std::array<uint16_t, 0x20> internalRegisters;
     uint8_t registerCSR;
     uint16_t registerB;
 

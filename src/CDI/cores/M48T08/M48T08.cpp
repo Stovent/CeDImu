@@ -20,7 +20,7 @@ M48T08::M48T08(std::tm* initialTime)
     std::ifstream in("sram.bin", std::ios::in | std::ios::binary);
     if(in)
     {
-        in.read((char*)sram, 0x2000);
+        in.read((char*)sram.data(), 0x2000);
         in.close();
 
         if(initialTime != nullptr)
@@ -33,7 +33,7 @@ M48T08::M48T08(std::tm* initialTime)
     }
     else
     {
-        memset(sram, 0xFF, 0x1FF8);
+        memset(sram.data(), 0xFF, 0x1FF8);
         if(initialTime == nullptr)
             initialTime = &M48T08::defaultTime;
 
@@ -51,7 +51,7 @@ M48T08::~M48T08()
 {
     ClockToSRAM();
     std::ofstream out("sram.bin", std::ios::out | std::ios::binary);
-    out.write((char*)sram, 8192);
+    out.write((char*)sram.data(), 8192);
     out.close();
 }
 

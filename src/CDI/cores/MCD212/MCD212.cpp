@@ -3,34 +3,28 @@
 #include "../../common/utils.hpp"
 #include "../../common/Video.hpp"
 
+#include <algorithm>
 #include <cstring>
 
-MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool PAL) : VDSC(board, bios, size, 0x400000), isPAL(PAL) // TD = 0
+MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool PAL) :
+    VDSC(board, bios, size, 0x400000),
+    isPAL(PAL),
+    memory(0x280000, 0),
+    screen(PLANE_RGB_SIZE, 0),
+    planeA(PLANE_ARGB_SIZE, 0),
+    planeB(PLANE_ARGB_SIZE, 0),
+    cursorPlane(CURSOR_ARGB_SIZE, 0),
+    backgroundPlane(PLANE_ARGB_SIZE, 0)
 {
-    memory = new uint8_t[0x280000];
-
-    screen = new uint8_t[768 * 560 * 3]; // RGB
-    planeA = new uint8_t[768 * 560 * 4]; // ARGB
-    planeB = new uint8_t[768 * 560 * 4]; // ARGB
-    cursorPlane = new uint8_t[16 * 16 * 4]; // ARGB
-    backgroundPlane = new uint8_t[768 * 560 * 4]; // ARGB
-
     controlRegisters = new uint32_t[0x80];
-    internalRegisters = new uint16_t[32];
 
     stopOnNextFrame = false;
     memorySwapCount = 0;
 
-    memset(memory, 0, 0x280000);
     memset(controlRegisters, 0, 0x80 * sizeof *controlRegisters);
-    memset(internalRegisters, 0, 32 * sizeof *internalRegisters);
-    memset(CLUT, 0, 256 * sizeof *CLUT);
-
-    memset(screen, 0, 768 * 560 * 3);
-    memset(planeA, 0, 768 * 560 * 4);
-    memset(planeB, 0, 768 * 560 * 4);
-    memset(cursorPlane, 0, 16 * 16 * 4);
-    memset(backgroundPlane, 0, 768 * 560 * 4);
+    std::fill(internalRegisters.begin(), internalRegisters.end(), 0);
+    std::fill(CLUT.begin(), CLUT.end(), 0);
+    std::fill(cursorPatterns.begin(), cursorPatterns.end(), 0);
 
     OPEN_LOG(out_dram, "MCD212_DRAM.txt")
     OPEN_LOG(out_display, "MCD212.txt")
@@ -41,15 +35,7 @@ MCD212::~MCD212()
     CLOSE_LOG(out_dram)
     CLOSE_LOG(out_display)
 
-    delete[] memory;
     delete[] controlRegisters;
-    delete[] internalRegisters;
-
-    delete[] screen;
-    delete[] planeA;
-    delete[] planeB;
-    delete[] cursorPlane;
-    delete[] backgroundPlane;
 }
 
 void MCD212::StopOnNextFrame(const bool stop)
@@ -77,7 +63,7 @@ void MCD212::Reset()
     registerCSR1R = 0;
     registerCSR2R = 0;
 
-    memset(screen, 0, 768 * 560 * 3);
+    std::fill(screen.begin(), screen.end(), 0);
 
     verticalLines = 0;
     lineNumber = 0;
@@ -351,7 +337,7 @@ void MCD212::ExecuteDCA2()
 
 RAMBank MCD212::GetRAMBank1() const
 {
-    return {memory, 0, 0x80000};
+    return {memory.data(), 0, 0x80000};
 }
 
 RAMBank MCD212::GetRAMBank2() const
@@ -361,25 +347,25 @@ RAMBank MCD212::GetRAMBank2() const
 
 Plane MCD212::GetScreen() const
 {
-    return {screen, GetHorizontalResolution1(), GetVerticalResolution()};
+    return {screen.data(), GetHorizontalResolution1(), GetVerticalResolution()};
 }
 
 Plane MCD212::GetPlaneA() const
 {
-    return {planeA, GetHorizontalResolution1(), GetVerticalResolution()};
+    return {planeA.data(), GetHorizontalResolution1(), GetVerticalResolution()};
 }
 
 Plane MCD212::GetPlaneB() const
 {
-    return {planeB, GetHorizontalResolution2(), GetVerticalResolution()};
+    return {planeB.data(), GetHorizontalResolution2(), GetVerticalResolution()};
 }
 
 Plane MCD212::GetBackground() const
 {
-    return {backgroundPlane, GetHorizontalResolution1(), GetVerticalResolution()};
+    return {backgroundPlane.data(), GetHorizontalResolution1(), GetVerticalResolution()};
 }
 
 Plane MCD212::GetCursor() const
 {
-    return {cursorPlane, 16, 16};
+    return {cursorPlane.data(), 16, 16};
 }

@@ -20,7 +20,9 @@ void GamePanel::RefreshLoop(wxPaintEvent& event)
     if(p.pixels == nullptr)
         return;
 
-    wxImage screen(p.width, p.height, p.pixels, true);
+    wxImage screen(p.width, p.height);
+    memcpy(screen.GetData(), p.pixels, p.width * p.height * 3);
+
     wxPaintDC dc(this);
     dc.Clear();
     dc.SetBrush(*wxBLACK_BRUSH);
@@ -34,7 +36,9 @@ void GamePanel::RefreshScreen()
     if(p.pixels == nullptr)
         return;
 
-    wxImage screen(p.width, p.height, p.pixels, true);
+    wxImage screen(p.width, p.height);
+    memcpy(screen.GetData(), p.pixels, p.width * p.height * 3);
+
     wxClientDC dc(this);
     dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
 }

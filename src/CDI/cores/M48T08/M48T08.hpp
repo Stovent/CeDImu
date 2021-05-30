@@ -1,6 +1,7 @@
 #ifndef M48T08_HPP
 #define M48T08_HPP
 
+#include <array>
 #include <cstdint>
 #include <ctime>
 
@@ -25,7 +26,7 @@ struct Clock
 class M48T08
 {
     Clock internalClock;
-    uint8_t sram[0x2000];
+    std::array<uint8_t, 0x2000> sram;
 
     void ClockToSRAM();
     void SRAMToClock();

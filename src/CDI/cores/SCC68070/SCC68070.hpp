@@ -4,10 +4,12 @@
 class Board;
 #include "../../common/flags.hpp"
 
+#include <array>
 #include <cstdint>
 #include <cstdio>
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <string>
@@ -334,7 +336,7 @@ private:
     FILE* out;
     FILE* instructions;
 
-    uint8_t internal[SCC68070Peripherals::Size];
+    std::array<uint8_t, SCC68070Peripherals::Size> internal;
 
     bool flushDisassembler;
     uint16_t currentOpcode;
@@ -466,7 +468,7 @@ private:
     void GenerateInstructionSet();
     void GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc);
 
-    ILUTFunctionPointer* ILUT; // Instructions Look Up Table
+    std::unique_ptr<ILUTFunctionPointer[]> ILUT; // Instructions Look Up Table
     uint16_t UnknownInstruction();
     uint16_t ABCD();
     uint16_t ADD();
@@ -553,7 +555,7 @@ private:
     uint16_t TST();
     uint16_t UNLK();
 
-    DLUTFunctionPointer* DLUT; // Disassembler Look Up Table
+    std::unique_ptr<DLUTFunctionPointer[]> DLUT; // Disassembler Look Up Table
     std::string DisassembleUnknownInstruction(const uint32_t pc) const;
     std::string DisassembleABCD(const uint32_t pc) const;
     std::string DisassembleADD(const uint32_t pc) const;

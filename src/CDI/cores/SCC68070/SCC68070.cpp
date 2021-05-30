@@ -13,11 +13,10 @@
 SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
     board(baord),
     cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
-    timerDelay(cycleDelay * 96)
+    timerDelay(cycleDelay * 96),
+    ILUT(std::make_unique<ILUTFunctionPointer[]>(UINT16_MAX + 1)),
+    DLUT(std::make_unique<DLUTFunctionPointer[]>(UINT16_MAX + 1))
 {
-    ILUT = new ILUTFunctionPointer[UINT16_MAX+1];
-    DLUT = new DLUTFunctionPointer[UINT16_MAX+1];
-
     disassemble = false;
     isRunning = false;
     speedDelay = cycleDelay;
@@ -36,8 +35,6 @@ SCC68070::~SCC68070()
     FlushDisassembler();
     CLOSE_LOG(out)
     CLOSE_LOG(instructions)
-    delete[] ILUT;
-    delete[] DLUT;
 }
 
 /** \brief Check if the CPU is running.
@@ -109,7 +106,7 @@ void SCC68070::Reset()
     lastAddress = 0;
     currentOpcode = 0;
     currentPC = 0;
-    memset(internal, 0, SCC68070Peripherals::Size);
+    std::fill(internal.begin(), internal.end(), 0);
     flushDisassembler = false;
 
     for(uint8_t i = 0; i < 8; i++)
