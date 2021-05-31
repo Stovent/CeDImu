@@ -48,7 +48,7 @@ class IKAT : public ISlave
     std::array<uint8_t, 4>::const_iterator responsesEnd[4];
 
     // https://github.com/cdifan/cdichips/blob/master/mc6805ikat.md
-    std::array<uint8_t, 4> responseB4X = {0x43, 0x3F, 0, 0}; // Relative pointer state
+    std::array<uint8_t, 4> responseB4X = {0, 0, 0, 0}; // Absolute/Relative pointer state
 
     std::array<uint8_t, 3> responseCF4 = {0xA5, 0xF4, 0}; // Boot mode: 1 for service shell, 0 for player shell
     std::array<uint8_t, 4> responseCF6 = {0xA5, 0xF6, 1, 0xFF}; // Video standard: 1 for NTSC, 2 for PAL

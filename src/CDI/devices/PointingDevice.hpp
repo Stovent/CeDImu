@@ -32,7 +32,7 @@ public:
     std::array<uint8_t, 4> pointerMessage;
 
     PointingDevice() = delete;
-    PointingDevice(ISlave& slv, const PointingDeviceTypes deviceType) : slave(slv), type(deviceType), dataPacketDelay((type == PointingDeviceTypes::Absolute || type == PointingDeviceTypes::AbsoluteScreen) ? 33'000'000 : 25'000'000) {}
+    PointingDevice(ISlave& slv, const PointingDeviceTypes deviceType) : slave(slv), type(deviceType), dataPacketDelay((type == PointingDeviceTypes::Absolute || type == PointingDeviceTypes::AbsoluteScreen) ? 33'333'333 : 25'000'000) {}
     virtual ~PointingDevice() {}
 
     virtual void IncrementTime(const size_t ns) = 0;
@@ -45,9 +45,6 @@ public:
     void SetRight(const bool pressed);
     void SetDown(const bool pressed);
     void SetAbsolutePointerLocation(const bool pd, const int x, const int y);
-
-    std::array<uint8_t, 4>::const_iterator Begin() { return pointerMessage.begin(); }
-    std::array<uint8_t, 4>::const_iterator End() { auto it = pointerMessage.end(); return (type == PointingDeviceTypes::Absolute || type == PointingDeviceTypes::AbsoluteScreen) ? it : --it; }
 
 protected:
     size_t timeSinceLastCommand;

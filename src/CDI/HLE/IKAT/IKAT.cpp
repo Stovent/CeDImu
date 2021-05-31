@@ -17,9 +17,8 @@ IKAT::IKAT(SCC68070& cpu, const bool PAL) : ISlave(cpu)
 
 void IKAT::UpdatePointerState()
 {
-    std::copy(pointingDevice->pointerMessage.begin(), pointingDevice->pointerMessage.end(), responseB4X.begin());
-    responsesIterator[PB] = pointingDevice->Begin();
-    responsesEnd[PB] = pointingDevice->End();
+    responsesEnd[PB] = std::copy(pointingDevice->pointerMessage.begin(), pointingDevice->pointerMessage.end(), responseB4X.begin());
+    responsesIterator[PB] = responseB4X.begin();
     registers[ISR] |= 0x08;
     if(registers[ICR] & 0x08)
         cpu.IN2();
@@ -41,11 +40,6 @@ uint8_t IKAT::GetByte(const uint8_t addr)
                 SET_RDWRIDLE(registers[PASR + i])
 
         return registers[addr];
-    }
-
-    if(addr == PBRD && responsesIterator[PB] == responsesEnd[PB])
-    {
-        responsesIterator[PB] = responseB4X.begin();
     }
 
     const uint8_t reg = addr % 4;

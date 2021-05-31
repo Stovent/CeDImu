@@ -102,6 +102,7 @@ void PointingDevice::GeneratePointerMessage()
         pointerMessage[0] = 0x40 | pointerState.btn1 << 5 | pointerState.btn2 << 4 | (pointerState.y >> 4 & 0xC) | (pointerState.x >> 6 & 3);
         pointerMessage[1] = pointerState.x & 0x3F;
         pointerMessage[2] = pointerState.y & 0x3F;
+        pointerMessage[3] = 0;
         break;
     }
     lastPointerState = pointerState;
