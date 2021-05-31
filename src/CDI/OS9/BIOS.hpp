@@ -24,7 +24,7 @@ struct ModuleExtraHeader
 
 struct ModuleHeader
 {
-    explicit ModuleHeader(const uint8_t* memory, const uint32_t beg);
+    ModuleHeader(const uint8_t* memory, const uint32_t beg);
 
     const uint16_t M_SysRev;
     const uint32_t M_Size;
@@ -45,24 +45,30 @@ struct ModuleHeader
 
 class BIOS
 {
-    uint8_t* memory; // TODO: allocate on stack?
-
-    std::vector<ModuleHeader> modules;
-
-    void LoadModules();
-
 public:
-    const uint32_t base;
-    const uint32_t size;
+    const uint32_t base; /**< Base address of the BIOS in the memory map. */
+    const uint32_t size; /**< Size of the BIOS in bytes. */
 
     BIOS() = delete;
     BIOS(const void* bios, const uint32_t sz, const uint32_t bs);
     ~BIOS();
 
-    inline uint8_t operator[](const uint32_t offset) const { return memory[offset]; }
+    /** \brief Returns a const reference to the byte at \p offset.
+        \param offset The location of the byte in the BIOS area. */
+    inline const uint8_t& operator[](const uint32_t offset) const { return memory[offset]; }
+
+    /** \brief Returns a pointer to the location \p pos.
+        \param pos The location of the desired  pointer in the BIOS area. */
     inline const uint8_t* operator()(const uint32_t pos = 0) const { return &memory[pos]; }
 
     std::string GetModuleNameAt(const uint32_t offset) const;
+
+private:
+    const std::vector<uint8_t> memory;
+
+    std::vector<ModuleHeader> modules;
+
+    void LoadModules();
 };
 
 } // nampespace OS9

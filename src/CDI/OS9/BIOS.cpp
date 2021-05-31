@@ -7,7 +7,6 @@ namespace OS9
 
 /** \brief OS9 Module Additional Header.
  * \param memory A pointer to the beginning of the additional header.
- * \param type The type of header.
  */
 ModuleExtraHeader::ModuleExtraHeader(const uint8_t* memory) :
     M_Exec((uint32_t)memory[0x00] << 24 | memory[0x01] << 16 | memory[0x02] << 8 | memory[0x03]),
@@ -43,22 +42,19 @@ ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
 
 /** \brief OS9 BIOS.
  * \param bios The BIOS data.
- * \param sz The size of the BIOS.
- * \param bs The base address of the BIOS.
+ * \param sz The size of the BIOS data.
+ * \param bs The base address of the BIOS in the memory map.
  */
 BIOS::BIOS(const void* bios, const uint32_t sz, const uint32_t bs) :
     base(bs),
-    size(sz)
+    size(sz),
+    memory((uint8_t*)bios, (uint8_t*)bios + size)
 {
-    memory = new uint8_t[size];
-    memcpy(memory, bios, size);
-
     LoadModules();
 }
 
 BIOS::~BIOS()
 {
-    delete[] memory;
 }
 
 void BIOS::LoadModules()
