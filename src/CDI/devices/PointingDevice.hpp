@@ -4,10 +4,9 @@
 class ISlave;
 
 #include <array>
+#include <mutex>
 
-#define DATA_PACKET_DELAY (25'000'000) // 25ms
-
-enum class PointingDeviceTypes
+enum class PointingDeviceTypes : char
 {
     Relative = 'M',
     Maneuvering = 'J',
@@ -26,21 +25,14 @@ struct PointerState
 
 class PointingDevice
 {
-protected:
-    size_t timeSinceLastCommand;
-    PointerState pointerState = {false, false, false, 0, 0};
-    bool padLeft = false;
-    bool padUp = false;
-    bool padRight = false;
-    bool padDown = false;
-
 public:
     ISlave& slave;
     const PointingDeviceTypes type;
+    const uint64_t dataPacketDelay;
     std::array<uint8_t, 4> pointerMessage;
 
     PointingDevice() = delete;
-    PointingDevice(ISlave& slv, const PointingDeviceTypes deviceType) : slave(slv), type(deviceType) {}
+    PointingDevice(ISlave& slv, const PointingDeviceTypes deviceType) : slave(slv), type(deviceType), dataPacketDelay((type == PointingDeviceTypes::Absolute || type == PointingDeviceTypes::AbsoluteScreen) ? 33'000'000 : 25'000'000) {}
     virtual ~PointingDevice() {}
 
     virtual void IncrementTime(const size_t ns) = 0;
@@ -54,9 +46,21 @@ public:
     void SetDown(const bool pressed);
     void SetAbsolutePointerLocation(const bool pd, const int x, const int y);
 
-    void GeneratePointerMessage();
     std::array<uint8_t, 4>::const_iterator Begin() { return pointerMessage.begin(); }
     std::array<uint8_t, 4>::const_iterator End() { auto it = pointerMessage.end(); return (type == PointingDeviceTypes::Absolute || type == PointingDeviceTypes::AbsoluteScreen) ? it : --it; }
+
+protected:
+    size_t timeSinceLastCommand;
+    std::mutex pointerMutex;
+
+    PointerState pointerState = {false, false, false, 0, 0};
+    PointerState lastPointerState = {false, false, false, 0, 0};
+    bool padLeft = false;
+    bool padUp = false;
+    bool padRight = false;
+    bool padDown = false;
+
+    void GeneratePointerMessage();
 };
 
 #endif // POINTINGDEVICE_HPP

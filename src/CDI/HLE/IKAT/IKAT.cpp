@@ -17,7 +17,6 @@ IKAT::IKAT(SCC68070& cpu, const bool PAL) : ISlave(cpu)
 
 void IKAT::UpdatePointerState()
 {
-    pointingDevice->GeneratePointerMessage();
     std::copy(pointingDevice->pointerMessage.begin(), pointingDevice->pointerMessage.end(), responseB4X.begin());
     responsesIterator[PB] = pointingDevice->Begin();
     responsesEnd[PB] = pointingDevice->End();

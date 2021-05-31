@@ -32,9 +32,9 @@ void ManeuveringDevice::IncrementTime(const size_t ns)
 {
     timer += ns;
 
-    if(timer >= DATA_PACKET_DELAY)
+    if(timer >= dataPacketDelay)
     {
-        timer = 0;
+        std::lock_guard<std::mutex> lock(pointerMutex);
         bool update = false;
 
         // TODO: handle acceleration and speeds 1, 8, 16
@@ -64,7 +64,17 @@ void ManeuveringDevice::IncrementTime(const size_t ns)
         else
             pointerState.y = 0;
 
+        if(pointerState.btn1 != lastPointerState.btn1)
+            update = true;
+
+        if(pointerState.btn2 != lastPointerState.btn2)
+            update = true;
+
         if(update)
+        {
+            timer = 0;
+            GeneratePointerMessage();
             slave.UpdatePointerState();
+        }
     }
 }

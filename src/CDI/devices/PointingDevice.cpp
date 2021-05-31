@@ -6,8 +6,8 @@
  */
 void PointingDevice::SetButton1(const bool pressed)
 {
+    std::lock_guard<std::mutex> lock(pointerMutex);
     pointerState.btn1 = pressed;
-    slave.UpdatePointerState();
 }
 
 /** \brief Set button 2 state.
@@ -15,8 +15,8 @@ void PointingDevice::SetButton1(const bool pressed)
  */
 void PointingDevice::SetButton2(const bool pressed)
 {
+    std::lock_guard<std::mutex> lock(pointerMutex);
     pointerState.btn2 = pressed;
-    slave.UpdatePointerState();
 }
 
 /** \brief Set pad left state.
@@ -26,6 +26,7 @@ void PointingDevice::SetButton2(const bool pressed)
  */
 void PointingDevice::SetLeft(const bool pressed)
 {
+    std::lock_guard<std::mutex> lock(pointerMutex);
     padLeft = pressed;
     if(pressed && padRight)
         padRight = false;
@@ -38,6 +39,7 @@ void PointingDevice::SetLeft(const bool pressed)
  */
 void PointingDevice::SetUp(const bool pressed)
 {
+    std::lock_guard<std::mutex> lock(pointerMutex);
     padUp = pressed;
     if(pressed && padDown)
         padDown = false;
@@ -50,6 +52,7 @@ void PointingDevice::SetUp(const bool pressed)
  */
 void PointingDevice::SetRight(const bool pressed)
 {
+    std::lock_guard<std::mutex> lock(pointerMutex);
     padRight = pressed;
     if(pressed && padLeft)
         padLeft = false;
@@ -62,6 +65,7 @@ void PointingDevice::SetRight(const bool pressed)
  */
 void PointingDevice::SetDown(const bool pressed)
 {
+    std::lock_guard<std::mutex> lock(pointerMutex);
     padDown = pressed;
     if(pressed && padUp)
         padUp = false;
@@ -74,12 +78,13 @@ void PointingDevice::SetDown(const bool pressed)
  */
 void PointingDevice::SetAbsolutePointerLocation(const bool pd, const int x, const int y)
 {
+    std::lock_guard<std::mutex> lock(pointerMutex);
     pointerState.pd = pd;
     pointerState.x = x;
     pointerState.y = y;
 }
 
-// Must be called right before reading the pointer message.
+// pointerLock must be locked before calling this method.
 void PointingDevice::GeneratePointerMessage()
 {
     switch(type)
@@ -99,4 +104,5 @@ void PointingDevice::GeneratePointerMessage()
         pointerMessage[2] = pointerState.y & 0x3F;
         break;
     }
+    lastPointerState = pointerState;
 }
