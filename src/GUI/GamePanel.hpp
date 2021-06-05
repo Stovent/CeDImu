@@ -15,6 +15,9 @@ public:
     CeDImu& app;
     MainFrame* mainFrame;
 
+    int frameWidth;
+    int frameHeight;
+
     GamePanel(MainFrame* parent, CeDImu& appp);
     ~GamePanel();
 

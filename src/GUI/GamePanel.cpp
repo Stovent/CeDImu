@@ -36,6 +36,8 @@ void GamePanel::RefreshScreen()
     if(p.pixels == nullptr)
         return;
 
+    frameWidth = p.width;
+    frameHeight = p.height;
     wxImage screen(p.width, p.height);
     memcpy(screen.GetData(), p.pixels, p.width * p.height * 3);
 

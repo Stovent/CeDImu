@@ -43,6 +43,7 @@ private:
     void OnExecuteXInstructions(wxCommandEvent& event);
     void OnReset(wxCommandEvent& event);
     void OnRebootCore(wxCommandEvent& event);
+    void OnResizeView(wxCommandEvent& event);
 
     void OnExportFiles(wxCommandEvent& event);
     void OnExportAudio(wxCommandEvent& event);

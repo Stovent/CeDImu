@@ -11,6 +11,7 @@ enum
     IDMainFrameOnExecuteXInstructions,
     IDMainFrameOnReset,
     IDMainFrameOnRebootCore,
+    IDMainFrameOnResizeView,
     IDMainFrameOnExportFiles,
     IDMainFrameOnExportAudio,
     IDMainFrameOnExportVideo,

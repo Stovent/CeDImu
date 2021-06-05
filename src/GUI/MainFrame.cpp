@@ -21,6 +21,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
     EVT_MENU(IDMainFrameOnReset,  MainFrame::OnReset)
     EVT_MENU(IDMainFrameOnRebootCore,  MainFrame::OnRebootCore)
+    EVT_MENU(IDMainFrameOnResizeView,  MainFrame::OnResizeView)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
@@ -65,6 +66,7 @@ void MainFrame::CreateMenuBar()
     emulation->AppendSeparator();
     emulation->Append(IDMainFrameOnReset, "Reset\tCtrl+Maj+R");
     emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+Maj+B");
+    emulation->Append(IDMainFrameOnResizeView, "Resize view");
 
     wxMenu* cdi = new wxMenu;
     wxMenu* cdiexport = new wxMenu;
@@ -246,6 +248,11 @@ void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
     if(app.cdi.board)
         app.InitializeCores();
+}
+
+void MainFrame::OnResizeView(wxCommandEvent& event)
+{
+    SetClientSize(gamePanel->frameWidth, gamePanel->frameHeight);
 }
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)
