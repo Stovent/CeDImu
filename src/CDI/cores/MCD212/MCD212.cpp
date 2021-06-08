@@ -14,14 +14,12 @@ MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool P
     planeA(PLANE_ARGB_SIZE, 0),
     planeB(PLANE_ARGB_SIZE, 0),
     cursorPlane(CURSOR_ARGB_SIZE, 0),
-    backgroundPlane(PLANE_ARGB_SIZE, 0)
+    backgroundPlane(PLANE_ARGB_SIZE, 0),
+    controlRegisters(0x80, 0)
 {
-    controlRegisters = new uint32_t[0x80];
-
     stopOnNextFrame = false;
     memorySwapCount = 0;
 
-    memset(controlRegisters, 0, 0x80 * sizeof *controlRegisters);
     std::fill(internalRegisters.begin(), internalRegisters.end(), 0);
     std::fill(CLUT.begin(), CLUT.end(), 0);
     std::fill(cursorPatterns.begin(), cursorPatterns.end(), 0);
@@ -34,8 +32,6 @@ MCD212::~MCD212()
 {
     CLOSE_LOG(out_dram)
     CLOSE_LOG(out_display)
-
-    delete[] controlRegisters;
 }
 
 void MCD212::StopOnNextFrame(const bool stop)
