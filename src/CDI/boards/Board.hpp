@@ -3,6 +3,7 @@
 
 class Board;
 
+#include "../CDIConfig.hpp"
 #include "../common/flags.hpp"
 #include "../cores/ISlave.hpp"
 #include "../cores/VDSC.hpp"
@@ -20,7 +21,7 @@ public:
     std::unique_ptr<ISlave> slave;
     M48T08 timekeeper;
 
-    Board(const std::string& name, std::tm* initialTime, const bool isPAL) : name(name), cpu(*this, isPAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY), timekeeper(initialTime) {}
+    Board(const std::string& name, const CDIConfig& conf) : name(name), cpu(*this, conf.PAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY), timekeeper(conf.initialTime) {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
 

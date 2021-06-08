@@ -4,17 +4,14 @@
 #include <cstring>
 #include <fstream>
 
-std::tm M48T08::defaultTime = {0, 0, 0, 1, 0, 89, 0, 0, 0};
-
 /** \brief Construct a new timekeeper.
  *
- * \param initialTime A pointer to a std::tm object to be used as the initial time.
+ * \param initialTime The timestamp to be used as the initial time.
  *
  * If existing, loads its initial state from a file named "sram.bin".
- * If initialTime is nullptr, then time will continue from the time stored in sram.bin.
- * initialTime is modified because of std::mktime.
+ * If \p initialTime is 0, then time will continue from the time stored in sram.bin.
  */
-M48T08::M48T08(std::tm* initialTime)
+M48T08::M48T08(std::time_t initialTime)
 {
     internalClock.nsec = 0;
     std::ifstream in("sram.bin", std::ios::in | std::ios::binary);
@@ -23,9 +20,9 @@ M48T08::M48T08(std::tm* initialTime)
         in.read((char*)sram.data(), 0x2000);
         in.close();
 
-        if(initialTime != nullptr)
+        if(initialTime)
         {
-            internalClock.sec = std::mktime(initialTime);
+            internalClock.sec = initialTime;
             ClockToSRAM();
         }
         else
@@ -34,10 +31,11 @@ M48T08::M48T08(std::tm* initialTime)
     else
     {
         memset(sram.data(), 0xFF, 0x1FF8);
-        if(initialTime == nullptr)
-            initialTime = &M48T08::defaultTime;
+        memset(&sram[0x1FF8], 0, 8);
+        if(initialTime == 0)
+            initialTime = M48T08::defaultTime;
 
-        internalClock.sec = std::mktime(initialTime);
+        internalClock.sec = initialTime;
         ClockToSRAM();
     }
     sram[Control] = 0;

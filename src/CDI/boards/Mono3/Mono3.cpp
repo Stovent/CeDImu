@@ -2,9 +2,11 @@
 #include "../../common/utils.hpp"
 #include "../../HLE/IKAT/IKAT.hpp"
 
-Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, std::tm* initialTime, const bool PAL) : Board("Mono-III", initialTime, PAL), mcd212(*this, vdscBios, vdscSize, PAL)
+Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf) :
+    Board("Mono-III", conf),
+    mcd212(*this, vdscBios, vdscSize, conf.PAL)
 {
-    slave = std::make_unique<HLE::IKAT>(cpu, PAL);
+    slave = std::make_unique<HLE::IKAT>(cpu, conf.PAL);
     OPEN_LOG(out, "Mono3.txt")
     Reset(true);
 }

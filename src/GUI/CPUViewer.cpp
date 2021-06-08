@@ -79,7 +79,7 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
     });
 
     cpu.OnUARTOut = [this] (uint8_t byte) -> void {
-        this->mainFrame->app.uart_out.put((char)byte);
+        this->mainFrame->app.uartOut.put((char)byte);
         this->uart->AppendText((char)byte);
     };
 }

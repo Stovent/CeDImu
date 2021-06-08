@@ -15,7 +15,7 @@ class Mono3 : public Board
     FILE* out;
 
 public:
-    Mono3(const void* vdscBios, const uint32_t vdscSize, std::tm* initialTime, const bool PAL);
+    Mono3(const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf);
     virtual ~Mono3();
     virtual void Reset(const bool resetCPU) override;
 

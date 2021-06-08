@@ -32,9 +32,9 @@ class M48T08
     void SRAMToClock();
 
 public:
-    static std::tm defaultTime;
+    static constexpr std::time_t defaultTime = 599616000; // 1989/01/01 00:00:00
 
-    explicit M48T08(std::tm* initialTime = &M48T08::defaultTime);
+    explicit M48T08(std::time_t initialTime = 0);
     ~M48T08();
 
     void IncrementClock(const size_t ns);

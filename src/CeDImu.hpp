@@ -17,7 +17,7 @@ class CeDImu : public wxApp
 public:
     CDI cdi;
     std::string biosName;
-    std::ofstream uart_out;
+    std::ofstream uartOut;
     uint16_t cpuSpeed;
 
     MainFrame* mainFrame;

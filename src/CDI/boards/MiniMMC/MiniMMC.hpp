@@ -16,7 +16,7 @@ class MiniMMC : public Board
     FILE* out;
 
 public:
-    MiniMMC(const void* bios, const uint32_t size, std::tm* initialTime);
+    MiniMMC(const void* bios, const uint32_t size, const CDIConfig& conf);
     virtual ~MiniMMC();
     virtual void Reset(const bool resetCPU) override;
 

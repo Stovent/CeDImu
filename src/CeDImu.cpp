@@ -26,7 +26,7 @@ constexpr float cpuSpeeds[17] = {
 bool CeDImu::OnInit()
 {
     Config::loadConfig();
-    uart_out.open("uart_out", std::ios::out | std::ios::binary);
+    uartOut.open("uart_out", std::ios::out | std::ios::binary);
     cpuSpeed = 8;
 
     mainFrame = new MainFrame(*this, "CeDImu", wxPoint(50, 50), wxSize(420, 310));
@@ -48,7 +48,7 @@ bool CeDImu::InitializeCores()
     FILE* f = fopen(Config::systemBIOS.c_str(), "rb");
     if(!f)
     {
-        wxMessageBox("Could not open system BIOS file!");
+        wxMessageBox("Could not open system BIOS file!\nPlease check the file in menu Config -> Settings");
         return false;
     }
 
@@ -59,8 +59,7 @@ bool CeDImu::InitializeCores()
     biosSize = fread(bios, 1, biosSize, f);
     fclose(f);
 
-    std::time_t time = std::time(nullptr);
-    cdi.LoadBoard(bios, biosSize, Config::NVRAMUseCurrentTime ? std::gmtime(&time) : &M48T08::defaultTime, Config::PAL);
+    cdi.LoadBoard(bios, biosSize, Boards::AutoDetect);
     delete[] bios;
 
 #ifdef _WIN32
