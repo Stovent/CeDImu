@@ -12,24 +12,16 @@ void SCC68070::Interpreter()
 
     do
     {
-        if(flushDisassembler)
-        {
-            FlushDisassembler();
-            flushDisassembler = false;
-        }
-
         uint16_t executionCycles = 0;
 
         if(exceptions.size())
         {
             const SCC68070Exception exception = exceptions.top();
             exceptions.pop();
-            if(disassemble)
+            if(OnDisassembler)
             {
                 const std::string str = "Exception vector " + std::to_string(exception.vector) + ": " + DisassembleException(exception);
-                disassembledInstructions.push_back(str);
-                if(OnDisassembler)
-                    OnDisassembler(str);
+                OnDisassembler({0, "", str});
             }
 //            DumpCPURegisters();
             executionCycles += Exception(exception.vector);
@@ -44,12 +36,10 @@ void SCC68070::Interpreter()
             try {
                 currentPC = PC;
                 currentOpcode = GetNextWord(Trigger);
-                if(disassemble)
+                if(OnDisassembler)
                 {
-                    const std::string inst = toHex(currentPC) + "\t(" + board.GetBIOS().GetModuleNameAt(currentPC - board.GetBIOS().base) + ")\t" + (this->*DLUT[currentOpcode])(currentPC);
-                    disassembledInstructions.push_back(inst);
-                    if(OnDisassembler)
-                        OnDisassembler(inst);
+                    const Instruction inst = {currentPC, board.GetBIOS().GetModuleNameAt(currentPC - board.GetBIOS().base), (this->*DLUT[currentOpcode])(currentPC)};
+                    OnDisassembler(inst);
                 }
                 executionCycles += (this->*ILUT[currentOpcode])();
             }
@@ -71,7 +61,6 @@ void SCC68070::Interpreter()
         {
             board.ExecuteVideoLine();
             cycleCount -= lineDisplayTime / cycleDelay;
-            flushDisassembler = true;
         }
 
         if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())

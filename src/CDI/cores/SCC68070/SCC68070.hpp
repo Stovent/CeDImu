@@ -287,17 +287,22 @@ struct CPUInternalRegister
     std::string disassembledValue;
 };
 
+struct Instruction
+{
+    uint32_t address;
+    std::string biosLocation;
+    std::string instruction;
+};
+
 class SCC68070
 {
 public:
-    bool disassemble;
     uint32_t currentPC;
     uint64_t totalCycleCount;
 
-    std::vector<std::string> disassembledInstructions;
     std::vector<uint32_t> breakpoints;
     std::function<void(uint8_t)> OnUARTOut;
-    std::function<void(const std::string&)> OnDisassembler;
+    std::function<void(const Instruction&)> OnDisassembler;
 
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
@@ -307,7 +312,6 @@ public:
 
     bool IsRunning() const;
     void SetEmulationSpeed(const double speed);
-    void FlushDisassembler();
 
     void Run(const bool loop = true);
     void Stop(const bool wait = true);
@@ -338,7 +342,6 @@ private:
 
     std::array<uint8_t, SCC68070Peripherals::Size> internal;
 
-    bool flushDisassembler;
     uint16_t currentOpcode;
     uint32_t lastAddress;
     uint32_t cycleCount;

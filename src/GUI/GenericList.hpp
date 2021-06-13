@@ -3,15 +3,24 @@
 
 #include <wx/listctrl.h>
 
+#include <functional>
+
 class GenericList : public wxListCtrl
 {
-    uint8_t* memory;
-    long size;
+    std::function<std::string(long item, long column)> OnGetItem;
 
 public:
-    GenericList(wxWindow* parent, uint8_t* memory, long size);
+    GenericList(wxWindow* parent, std::function<void(wxListCtrl*)> builder, std::function<std::string(long, long)> getter) :
+        wxListCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxLC_HRULES | wxLC_VRULES),
+        OnGetItem(getter)
+    {
+        builder(this);
+    }
 
-    virtual wxString OnGetItemText(long item, long column) const override;
+    virtual wxString OnGetItemText(long item, long column) const override
+    {
+        return OnGetItem(item, column);
+    }
 };
 
 #endif // GENERICLIST_HPP

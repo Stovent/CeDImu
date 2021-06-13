@@ -7,15 +7,47 @@
 wxBEGIN_EVENT_TABLE(CPUViewer, wxFrame)
     EVT_TIMER(IDCPUViewerTimer, CPUViewer::RefreshLoop)
     EVT_PAINT(CPUViewer::PaintEvent)
-    EVT_CLOSE(CPUViewer::OnClose)
 wxEND_EVENT_TABLE()
 
-CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size) : wxFrame(parent, wxID_ANY, "SCC68070 viewer", pos, size), auiManager(this), cpu(core), renderTimer(this, IDCPUViewerTimer)
+CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size) :
+    wxFrame(parent, wxID_ANY, "SCC68070 viewer", pos, size),
+    auiManager(this),
+    cpu(core),
+    renderTimer(this, IDCPUViewerTimer)
 {
-    cpu.disassemble = true;
     mainFrame = parent;
+    flushInstructions = false;
 
-    disassembler = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxTE_MULTILINE);
+    disassembler = new GenericList(this, [=] (wxListCtrl* frame) {
+
+        frame->EnableAlternateRowColours();
+
+        wxListItem addressCol;
+        addressCol.SetId(0);
+        addressCol.SetText("Address");
+        addressCol.SetWidth(70);
+        frame->InsertColumn(0, addressCol);
+
+        wxListItem kernelCol;
+        kernelCol.SetId(1);
+        kernelCol.SetText("Kernel location");
+        kernelCol.SetWidth(100);
+        frame->InsertColumn(1, kernelCol);
+
+        wxListItem instructionCol;
+        instructionCol.SetId(2);
+        instructionCol.SetText("Instruction");
+        instructionCol.SetWidth(700);
+        frame->InsertColumn(2, instructionCol);
+
+    }, [this] (long item, long column) -> std::string {
+        if(column == 0)
+            return toHex(this->instructions[item].address);
+        if(column == 1)
+            return this->instructions[item].biosLocation;
+        return this->instructions[item].instruction;
+    });
+
     uart = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxTE_MULTILINE);
 
     wxPanel* registersPanel = new wxPanel(this);
@@ -70,8 +102,6 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
     auiManager.AddPane(uart, wxAuiPaneInfo().Caption("UART").Bottom().CloseButton(false).Resizable().BestSize(0, 100));
     auiManager.Update();
 
-    renderTimer.Start(16);
-
     uart->Bind(wxEVT_KEY_DOWN, [this] (wxKeyEvent& event) {
         const int key = event.GetKeyCode();
         if(key < 128)
@@ -82,20 +112,26 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
         this->mainFrame->app.uartOut.put((char)byte);
         this->uart->AppendText((char)byte);
     };
+
+    cpu.OnDisassembler = [this] (const Instruction& inst) {
+        if(this->flushInstructions)
+        {
+            this->instructions.clear();
+            this->flushInstructions = false;
+        }
+        this->instructions.push_back(inst);
+    };
+
+    renderTimer.Start(16);
 }
 
 CPUViewer::~CPUViewer()
 {
+    cpu.OnDisassembler = nullptr;
     cpu.OnUARTOut = nullptr;
-    auiManager.UnInit();
     mainFrame->cpuViewer = nullptr;
-}
-
-void CPUViewer::OnClose(wxCloseEvent& event)
-{
-    cpu.disassemble = false;
     renderTimer.Stop();
-    Destroy();
+    auiManager.UnInit();
 }
 
 void CPUViewer::PaintEvent(wxPaintEvent& event)
@@ -121,10 +157,8 @@ void CPUViewer::PaintEvent()
     pc->SetLabelText("PC: 0x" + toHex(regs["PC"]));
     sr->SetLabelText("SR: " + toBinString(regs["SR"], 16));
 
-    instructions.str("");
-    std::ostream_iterator<std::string> ssit(instructions, "\n");
-    std::copy(cpu.disassembledInstructions.begin(), cpu.disassembledInstructions.end(), ssit);
-    disassembler->SetValue(instructions.str());
+    disassembler->SetItemCount(instructions.size());
+    disassembler->Refresh();
 
     std::vector<CPUInternalRegister> iregs = cpu.GetInternalRegisters();
     long i = 0;

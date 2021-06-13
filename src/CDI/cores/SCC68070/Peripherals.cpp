@@ -23,7 +23,8 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr)
             internal[URHR] = 0;
 
         lock.unlock();
-        LOG(disassembledInstructions.push_back("\tURHR: 0x" + toHex(internal[URHR]))) // this or data ?
+        if(OnDisassembler)
+            OnDisassembler({currentPC, "", "URHR: 0x" + toHex(internal[URHR])}); // this or data ?
     }
 
     return internal[addr];
@@ -62,7 +63,8 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
         if(OnUARTOut)
             OnUARTOut(data);
         internal[UTHR] = data;
-        LOG(disassembledInstructions.push_back("\tUTHR: 0x" + toHex(internal[UTHR])))
+        if(OnDisassembler)
+            OnDisassembler({currentPC, "", "UTHR: 0x" + toHex(internal[UTHR])});
         break;
 
     case TSR:

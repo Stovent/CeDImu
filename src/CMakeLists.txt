@@ -25,7 +25,6 @@ add_executable(CeDImu
     main.cpp
     GUI/CPUViewer.cpp
     GUI/GamePanel.cpp
-    GUI/GenericList.cpp
     GUI/MainFrame.cpp
     GUI/RAMSearchFrame.cpp
     GUI/RAMSearchList.cpp

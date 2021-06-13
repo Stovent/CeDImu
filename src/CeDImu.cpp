@@ -70,6 +70,8 @@ bool CeDImu::InitializeCores()
 
     cdi.board->SetOnFrameCompletedCallback([=] () -> void {
         mainFrame->gamePanel->RefreshScreen();
+        if(mainFrame->cpuViewer)
+            mainFrame->cpuViewer->flushInstructions = true;
     });
 
     cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);

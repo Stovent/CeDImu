@@ -17,7 +17,6 @@ SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
     ILUT(std::make_unique<ILUTFunctionPointer[]>(UINT16_MAX + 1)),
     DLUT(std::make_unique<DLUTFunctionPointer[]>(UINT16_MAX + 1))
 {
-    disassemble = false;
     isRunning = false;
     speedDelay = cycleDelay;
 
@@ -32,7 +31,6 @@ SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
 SCC68070::~SCC68070()
 {
     Stop(false);
-    FlushDisassembler();
     CLOSE_LOG(out)
     CLOSE_LOG(instructions)
 }
@@ -100,14 +98,12 @@ void SCC68070::Reset()
     loop = false;
     stop = false;
     LOG(fprintf(out, "RESET\n"); fprintf(instructions, "RESET\n");)
-    disassembledInstructions.clear();
     cycleCount = totalCycleCount = 146;
 
     lastAddress = 0;
     currentOpcode = 0;
     currentPC = 0;
     std::fill(internal.begin(), internal.end(), 0);
-    flushDisassembler = false;
 
     for(uint8_t i = 0; i < 8; i++)
     {
@@ -162,15 +158,6 @@ void SCC68070::SendUARTIn(const uint8_t byte)
 {
     std::lock_guard<std::mutex> lock(uartInMutex);
     uartIn.push_back(byte);
-}
-
-/** \brief Write the disassembled instructions to a file (in DEBUG mode).
- */
-void SCC68070::FlushDisassembler()
-{
-    LOG(for(const std::string& str : disassembledInstructions) \
-            fprintf(instructions, "%s\n", str.c_str());)
-    disassembledInstructions.clear();
 }
 
 /** \brief Set the value of a CPU register.

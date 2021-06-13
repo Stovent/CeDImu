@@ -4,6 +4,7 @@
 class CPUViewer;
 
 #include "MainFrame.hpp"
+#include "GenericList.hpp"
 #include "../CDI/cores/SCC68070/SCC68070.hpp"
 
 #include <wx/frame.h>
@@ -13,12 +14,13 @@ class CPUViewer;
 #include <wx/timer.h>
 #include <wx/aui/framemanager.h>
 
-#include <sstream>
+#include <vector>
 
 class CPUViewer : public wxFrame
 {
 public:
-    std::stringstream instructions;
+    bool flushInstructions;
+    std::vector<Instruction> instructions;
 
     CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~CPUViewer();
@@ -30,8 +32,8 @@ public:
     wxTimer renderTimer;
 
     wxListCtrl* internalRegisters;
+    GenericList* disassembler;
     wxTextCtrl* uart;
-    wxTextCtrl* disassembler;
 
     wxTextCtrl* d[8];
     wxTextCtrl* a[8];
@@ -40,7 +42,6 @@ public:
     wxTextCtrl* pc;
     wxTextCtrl* sr;
 
-    void OnClose(wxCloseEvent& event);
     void PaintEvent(wxPaintEvent& event);
     void PaintEvent();
     void RefreshLoop(wxTimerEvent& event);
