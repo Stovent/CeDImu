@@ -26,8 +26,10 @@ constexpr float cpuSpeeds[17] = {
 bool CeDImu::OnInit()
 {
     Config::loadConfig();
-    uartOut.open("uart_out", std::ios::out | std::ios::binary);
     cpuSpeed = 8;
+
+    uartOut.open("uart_out", std::ios::out | std::ios::binary);
+    logInstructions.open("instructions.txt");
 
     mainFrame = new MainFrame(*this, "CeDImu", wxPoint(50, 50), wxSize(420, 310));
     mainFrame->Show(true);

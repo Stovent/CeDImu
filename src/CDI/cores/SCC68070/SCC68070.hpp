@@ -301,8 +301,6 @@ public:
     uint64_t totalCycleCount;
 
     std::vector<uint32_t> breakpoints;
-    std::function<void(uint8_t)> OnUARTOut;
-    std::function<void(const Instruction&)> OnDisassembler;
 
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
@@ -312,6 +310,9 @@ public:
 
     bool IsRunning() const;
     void SetEmulationSpeed(const double speed);
+
+    void SetOnUARTOutCallback(std::function<void(uint8_t)> callback);
+    void SetOnDisassemblerCallback(std::function<void(const Instruction&)> callback);
 
     void Run(const bool loop = true);
     void Stop(const bool wait = true);
@@ -333,12 +334,18 @@ private:
     bool stop;
     bool isRunning;
 
+    std::mutex onDisassemblerMutex;
+    std::mutex onUARTOutMutex;
     std::mutex uartInMutex;
+    std::function<void(const Instruction&)> OnDisassembler;
+    std::function<void(uint8_t)> OnUARTOut;
     std::deque<uint8_t> uartIn;
     std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
+    void OnDisassemblerHelper(const Instruction&);
+    void OnUARTOutHelper(uint8_t byte);
+
     FILE* out;
-    FILE* instructions;
 
     std::array<uint8_t, SCC68070Peripherals::Size> internal;
 

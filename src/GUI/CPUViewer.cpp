@@ -108,27 +108,30 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
             this->cpu.SendUARTIn(key);
     });
 
-    cpu.OnUARTOut = [this] (uint8_t byte) -> void {
+    cpu.SetOnUARTOutCallback([this] (uint8_t byte) -> void {
         this->mainFrame->app.uartOut.put((char)byte);
         this->uart->AppendText((char)byte);
-    };
+    });
 
-    cpu.OnDisassembler = [this] (const Instruction& inst) {
+    cpu.SetOnDisassemblerCallback([this] (const Instruction& inst) {
         if(this->flushInstructions)
         {
+            for(const Instruction& inst : this->instructions)
+                this->mainFrame->app.logInstructions << std::hex << inst.address << "\t(" << inst.biosLocation << ")\t" << inst.instruction << std::endl;
+
             this->instructions.clear();
             this->flushInstructions = false;
         }
         this->instructions.push_back(inst);
-    };
+    });
 
     renderTimer.Start(16);
 }
 
 CPUViewer::~CPUViewer()
 {
-    cpu.OnDisassembler = nullptr;
-    cpu.OnUARTOut = nullptr;
+    cpu.SetOnDisassemblerCallback(nullptr);
+    cpu.SetOnUARTOutCallback(nullptr);
     mainFrame->cpuViewer = nullptr;
     renderTimer.Stop();
     auiManager.UnInit();

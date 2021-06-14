@@ -21,7 +21,7 @@ void SCC68070::Interpreter()
             if(OnDisassembler)
             {
                 const std::string str = "Exception vector " + std::to_string(exception.vector) + ": " + DisassembleException(exception);
-                OnDisassembler({0, "", str});
+                OnDisassemblerHelper({0, "", str});
             }
 //            DumpCPURegisters();
             executionCycles += Exception(exception.vector);
@@ -39,7 +39,7 @@ void SCC68070::Interpreter()
                 if(OnDisassembler)
                 {
                     const Instruction inst = {currentPC, board.GetBIOS().GetModuleNameAt(currentPC - board.GetBIOS().base), (this->*DLUT[currentOpcode])(currentPC)};
-                    OnDisassembler(inst);
+                    OnDisassemblerHelper(inst);
                 }
                 executionCycles += (this->*ILUT[currentOpcode])();
             }

@@ -24,7 +24,7 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr)
 
         lock.unlock();
         if(OnDisassembler)
-            OnDisassembler({currentPC, "", "URHR: 0x" + toHex(internal[URHR])}); // this or data ?
+            OnDisassemblerHelper({currentPC, "", "URHR: 0x" + toHex(internal[URHR])}); // this or data ?
     }
 
     return internal[addr];
@@ -60,11 +60,10 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
 
     case UTHR:
         internal[USR] |= 0x08; // set TXEMT bit
-        if(OnUARTOut)
-            OnUARTOut(data);
+        OnUARTOutHelper(data);
         internal[UTHR] = data;
         if(OnDisassembler)
-            OnDisassembler({currentPC, "", "UTHR: 0x" + toHex(internal[UTHR])});
+            OnDisassemblerHelper({currentPC, "", "UTHR: 0x" + toHex(internal[UTHR])});
         break;
 
     case TSR:

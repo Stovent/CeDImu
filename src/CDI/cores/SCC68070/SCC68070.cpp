@@ -21,7 +21,6 @@ SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
     speedDelay = cycleDelay;
 
     OPEN_LOG(out, "SCC68070.txt")
-    OPEN_LOG(instructions, "instructions.txt")
 
     GenerateInstructionSet();
 }
@@ -32,7 +31,6 @@ SCC68070::~SCC68070()
 {
     Stop(false);
     CLOSE_LOG(out)
-    CLOSE_LOG(instructions)
 }
 
 /** \brief Check if the CPU is running.
@@ -55,6 +53,18 @@ bool SCC68070::IsRunning() const
 void SCC68070::SetEmulationSpeed(const double speed)
 {
     speedDelay = cycleDelay / speed;
+}
+
+void SCC68070::SetOnDisassemblerCallback(std::function<void(const Instruction&)> callback)
+{
+    std::lock_guard<std::mutex> lock(onDisassemblerMutex);
+    OnDisassembler = callback;
+}
+
+void SCC68070::SetOnUARTOutCallback(std::function<void(uint8_t)> callback)
+{
+    std::lock_guard<std::mutex> lock(onUARTOutMutex);
+    OnUARTOut = callback;
 }
 
 /** \brief Start emulation.
@@ -97,7 +107,7 @@ void SCC68070::Reset()
 {
     loop = false;
     stop = false;
-    LOG(fprintf(out, "RESET\n"); fprintf(instructions, "RESET\n");)
+    LOG(fprintf(out, "RESET\n");)
     cycleCount = totalCycleCount = 146;
 
     lastAddress = 0;
@@ -308,6 +318,20 @@ std::vector<CPUInternalRegister> SCC68070::GetInternalRegisters() const
     return v;
 }
 
+void SCC68070::OnDisassemblerHelper(const Instruction& inst)
+{
+    std::lock_guard<std::mutex> lock(onDisassemblerMutex);
+    if(OnDisassembler)
+        OnDisassembler(inst);
+}
+
+void SCC68070::OnUARTOutHelper(uint8_t byte)
+{
+    std::lock_guard<std::mutex> lock(onUARTOutMutex);
+    if(OnUARTOut)
+        OnUARTOut(byte);
+}
+
 uint16_t SCC68070::GetNextWord(const uint8_t flags)
 {
     uint16_t opcode = GetWord(PC, flags);
@@ -329,12 +353,16 @@ void SCC68070::ResetOperation()
 
 void SCC68070::DumpCPURegisters()
 {
-#ifdef DEBUG
+    if(!OnDisassembler)
+        return;
+
     const std::map<std::string, uint32_t>& regs = GetCPURegisters();
     for(const std::pair<std::string, uint32_t> reg : regs)
-        fprintf(instructions, "%s: 0x%08X\n", reg.first.c_str(), reg.second);
-    fprintf(instructions, "\n");
-#endif // DEBUG
+    {
+        char s[30];
+        snprintf(s, 30, "%s: 0x%08X", reg.first.c_str(), reg.second);
+        OnDisassemblerHelper({currentPC, "", s});
+    }
 }
 
 bool SCC68070::GetS() const
