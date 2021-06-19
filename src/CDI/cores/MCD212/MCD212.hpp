@@ -114,7 +114,7 @@ private:
     std::vector<uint8_t> cursorPlane;
     std::vector<uint8_t> backgroundPlane;
 
-    std::vector<uint32_t> controlRegisters; // TODO: figure out why changing it to std::array creates crashes on slave access
+    std::array<uint32_t, 0x80> controlRegisters;
     std::array<uint32_t, 256> CLUT;
     std::array<uint16_t, 16>  cursorPatterns;
 

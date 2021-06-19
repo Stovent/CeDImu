@@ -43,7 +43,6 @@ class IKAT : public ISlave
     void ProcessCommandC(uint8_t data);
     void ProcessCommandD(uint8_t data);
 
-    std::vector<uint8_t> commands[4];
     std::array<uint8_t, 4>::const_iterator responsesIterator[4];
     std::array<uint8_t, 4>::const_iterator responsesEnd[4];
 

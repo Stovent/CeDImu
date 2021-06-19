@@ -176,9 +176,8 @@ void MCD212::DrawLineBackground()
 
 void MCD212::DrawLineCursor()
 {
-    // TODO: check if Y position starts at 0 or 1 (assuming 0 in this code)
     const uint16_t yPosition = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
-    if(lineNumber < yPosition || lineNumber > yPosition + 16)
+    if(lineNumber < yPosition || lineNumber >= yPosition + 16)
         return;
 
     const uint8_t yAddress = lineNumber - yPosition;

@@ -14,8 +14,7 @@ MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool P
     planeA(PLANE_ARGB_SIZE, 0),
     planeB(PLANE_ARGB_SIZE, 0),
     cursorPlane(CURSOR_ARGB_SIZE, 0),
-    backgroundPlane(PLANE_ARGB_SIZE, 0),
-    controlRegisters(0x80, 0)
+    backgroundPlane(PLANE_ARGB_SIZE, 0)
 {
     stopOnNextFrame = false;
     memorySwapCount = 0;
