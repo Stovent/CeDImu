@@ -12,9 +12,6 @@ void SCC66470::ExecuteVideoLine()
     {
         UNSET_DA_BIT()
 
-        if(OnFrameCompleted)
-            OnFrameCompleted();
-
         lineNumber = 0;
         totalFrameCount++;
         if(stopOnNextFrame)
@@ -22,5 +19,9 @@ void SCC66470::ExecuteVideoLine()
             board.cpu.Stop(false);
             stopOnNextFrame = false;
         }
+
+        std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
+        if(OnFrameCompleted)
+            OnFrameCompleted();
     }
 }

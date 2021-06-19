@@ -40,6 +40,7 @@ void MCD212::StopOnNextFrame(const bool stop)
 
 void MCD212::SetOnFrameCompletedCallback(std::function<void()> callback)
 {
+    std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
     OnFrameCompleted = callback;
 }
 

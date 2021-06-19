@@ -6,6 +6,7 @@ class SCC66470;
 #include "../VDSC.hpp"
 
 #include <cstdio>
+#include <mutex>
 
 enum SCC66470Registers
 {
@@ -31,23 +32,6 @@ enum SCC66470Registers
 
 class SCC66470 : public VDSC
 {
-    std::vector<uint8_t> memory;
-    uint8_t memorySwapCount;
-    uint16_t lineNumber; // starts at 0
-
-    std::array<uint16_t, 0x20> internalRegisters;
-    uint8_t registerCSR;
-    uint16_t registerB;
-
-    bool stopOnNextFrame;
-    const bool isMaster;
-    std::function<void()> OnFrameCompleted;
-
-    FILE* out_dram;
-
-    void MemorySwap();
-    uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
-
 public:
     explicit SCC66470(Board& board, const bool ismaster, const void* bios, const uint32_t size);
     virtual ~SCC66470();
@@ -82,6 +66,25 @@ public:
     virtual Plane GetPlaneB() const override;
     virtual Plane GetBackground() const override;
     virtual Plane GetCursor() const override;
+
+private:
+    std::vector<uint8_t> memory;
+    uint8_t memorySwapCount;
+    uint16_t lineNumber; // starts at 0
+
+    std::array<uint16_t, 0x20> internalRegisters;
+    uint8_t registerCSR;
+    uint16_t registerB;
+
+    bool stopOnNextFrame;
+    const bool isMaster;
+    std::mutex onFrameCompletedMutex;
+    std::function<void()> OnFrameCompleted;
+
+    FILE* out_dram;
+
+    void MemorySwap();
+    uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
 
     // Internal Register
     uint16_t GetCSRWRegister() const;

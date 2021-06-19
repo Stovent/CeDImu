@@ -45,6 +45,7 @@ void SCC66470::WriteToBIOSArea(const void* s, unsigned int size, unsigned int po
 
 void SCC66470::SetOnFrameCompletedCallback(std::function<void()> callback)
 {
+    std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
     OnFrameCompleted = callback;
 }
 

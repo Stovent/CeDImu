@@ -7,6 +7,7 @@ class MCD212;
 
 #include <array>
 #include <cstdio>
+#include <mutex>
 #include <vector>
 
 enum MCD212Registers
@@ -127,6 +128,7 @@ private:
     uint16_t verticalLines; // starts at 0.
     FILE* out_dram;
     FILE* out_display;
+    std::mutex onFrameCompletedMutex;
     std::function<void()> OnFrameCompleted;
 
     void DrawLinePlaneA();
