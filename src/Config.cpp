@@ -9,7 +9,7 @@ std::string systemBIOS;
 std::string ROMDirectory;
 
 // Emulation
-bool NVRAMUseCurrentTime;
+std::string initialTime; // empty for current time, 0 for previous time, non-0 for any time.
 bool PAL;
 bool skipBIOS;
 
@@ -39,8 +39,8 @@ bool loadConfig()
                 systemBIOS = value;
             else if(key == "ROMDirectory")
                 ROMDirectory = value;
-            else if(key == "NVRAMUseCurrentTime")
-                NVRAMUseCurrentTime = stoi(value);
+            else if(key == "initialTime")
+                initialTime = value;
             else if(key == "PAL")
                 PAL = stoi(value);
             else if(key == "skipBIOS")
@@ -67,7 +67,7 @@ bool saveConfig()
     out << "ROMDirectory=" << ROMDirectory << std::endl;
 
     out << "[Emulation]" << std::endl;
-    out << "NVRAMUseCurrentTime=" << NVRAMUseCurrentTime << std::endl;
+    out << "initialTime=" << initialTime << std::endl;
     out << "PAL=" << PAL << std::endl;
     out << "skipBIOS=" << skipBIOS << std::endl;
 
@@ -81,7 +81,7 @@ void loadDefaultConfig()
 {
     systemBIOS = "";
     ROMDirectory = "";
-    NVRAMUseCurrentTime = false;
+    initialTime = "599616000";
     PAL = false;
     skipBIOS = false;
 }

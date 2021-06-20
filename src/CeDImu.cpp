@@ -61,6 +61,11 @@ bool CeDImu::InitializeCores()
     biosSize = fread(bios, 1, biosSize, f);
     fclose(f);
 
+    CDIConfig config = {
+        .PAL = Config::PAL,
+        .initialTime = Config::initialTime.size() ? stoi(Config::initialTime) : time(nullptr),
+    };
+    cdi.config = config;
     cdi.LoadBoard(bios, biosSize, Boards::AutoDetect);
     delete[] bios;
 

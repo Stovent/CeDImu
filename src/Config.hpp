@@ -10,7 +10,7 @@ extern std::string systemBIOS;
 extern std::string ROMDirectory;
 
 // Emulation
-extern bool NVRAMUseCurrentTime;
+extern std::string initialTime;
 extern bool PAL;
 extern bool skipBIOS;
 

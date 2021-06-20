@@ -8,6 +8,7 @@
 #include <wx/msgdlg.h>
 #include <wx/notebook.h>
 #include <wx/sizer.h>
+#include <wx/stattext.h>
 
 SettingsFrame::SettingsFrame(MainFrame* parent) :
     wxFrame(parent, wxID_ANY, "Settings"),
@@ -58,8 +59,18 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     wxSizer* emulationStaticSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "Emulation");
     wxCheckBox* palCheckBox = new wxCheckBox(generalPage, wxID_ANY, "PAL");
     palCheckBox->SetValue(Config::PAL);
+    wxTextCtrl* initialTime = new wxTextCtrl(generalPage, wxID_ANY);
+    initialTime->SetValue(Config::initialTime);
+    wxStaticText* initialTimeLabel = new wxStaticText(generalPage, wxID_ANY, "Initial time (Unix timestamp)");
+    wxStaticText* explainationText = new wxStaticText(generalPage, wxID_ANY, "empty for current time, 0 for previous time, non-0 for any time.");
+
+    wxSizer* initialTimeRowSizer = new wxBoxSizer(wxHORIZONTAL);
+    initialTimeRowSizer->Add(initialTime);
+    initialTimeRowSizer->Add(initialTimeLabel);
 
     emulationStaticSizer->Add(palCheckBox);
+    emulationStaticSizer->Add(initialTimeRowSizer);
+    emulationStaticSizer->Add(explainationText);
 
 
     generalSizerGeneral->Add(generalStaticSizer, wxSizerFlags().Proportion(1));
@@ -70,15 +81,16 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
 
     notebook->AddPage(generalPage, "General");
 
-    // Controls page
+    // TODO: Controls page
 
 
     wxPanel* buttonsPanel = new wxPanel(settingsPanel);
     wxButton* saveButton = new wxButton(buttonsPanel, wxID_ANY, "Save");
-    saveButton->Bind(wxEVT_BUTTON, [this, biosPath, romPath, palCheckBox] (wxEvent&) {
+    saveButton->Bind(wxEVT_BUTTON, [this, biosPath, romPath, palCheckBox, initialTime] (wxEvent&) {
         Config::systemBIOS = biosPath->GetValue();
         Config::ROMDirectory = romPath->GetValue();
         Config::PAL = palCheckBox->GetValue();
+        Config::initialTime = initialTime->GetValue();
         if(Config::saveConfig())
             this->Close();
         else
