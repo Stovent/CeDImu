@@ -7,6 +7,7 @@ class MainFrame;
 class CeDImu;
 #include "CPUViewer.hpp"
 #include "RAMSearchFrame.hpp"
+#include "SettingsFrame.hpp"
 class VDSCViewer;
 
 #include <wx/frame.h>
@@ -23,6 +24,7 @@ public:
     MainFrame(CeDImu& appp, const wxString& title, const wxPoint& pos, const wxSize& size);
     CPUViewer* cpuViewer;
     RAMSearchFrame* ramSearchFrame;
+    SettingsFrame* settingsFrame;
     VDSCViewer* vdscViewer;
 
     void Pause();

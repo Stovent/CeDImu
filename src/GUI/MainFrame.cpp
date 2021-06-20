@@ -38,6 +38,7 @@ MainFrame::MainFrame(CeDImu& appp, const wxString& title, const wxPoint& pos, co
     gamePanel = new GamePanel(this, appp);
     cpuViewer = nullptr;
     ramSearchFrame = nullptr;
+    settingsFrame = nullptr;
     vdscViewer = nullptr;
     oldFrameCount = 0;
     oldCycleCount = 0;
@@ -64,8 +65,8 @@ void MainFrame::CreateMenuBar()
     pauseItem->Check();
     emulation->Append(IDMainFrameOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
     emulation->AppendSeparator();
-    emulation->Append(IDMainFrameOnReset, "Reset\tCtrl+Maj+R");
-    emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+Maj+B");
+    emulation->Append(IDMainFrameOnReset, "Reset\tCtrl+Shift+R");
+    emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+Shift+B");
     emulation->Append(IDMainFrameOnResizeView, "Resize view");
 
     wxMenu* cdi = new wxMenu;
@@ -81,7 +82,7 @@ void MainFrame::CreateMenuBar()
     tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+R");
 
     wxMenu* config = new wxMenu;
-    config->Append(IDMainFrameOnSettings, "Settings");
+    config->Append(IDMainFrameOnSettings, "Settings\tCtrl+Shift+S");
 
     wxMenu* help = new wxMenu;
     help->Append(IDMainFrameOnAbout, "About");
@@ -311,79 +312,9 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
 
 void MainFrame::OnSettings(wxCommandEvent& event)
 {
-    wxFrame*    settingsFrame = new wxFrame(this, wxID_ANY, "Settings", GetPosition() + wxPoint(30, 30), wxDefaultSize);
-    wxPanel*    settingsPanel = new wxPanel(settingsFrame);
-    wxNotebook* notebook      = new wxNotebook(settingsPanel, wxID_ANY);
-#ifdef _WIN32
-    char separator = '\\';
-#else
-    char separator = '/';
-#endif // _WIN32
-    // General
-    wxPanel* generalPage = new wxPanel(notebook);
-    wxSizer* generalSizer = new wxBoxSizer(wxVERTICAL);
-    wxSizer* systemSizer = new wxBoxSizer(wxHORIZONTAL);
-
-    wxTextCtrl* systemText = new wxTextCtrl(generalPage, wxID_ANY, Config::systemBIOS);
-    wxButton* selectSystem = new wxButton(generalPage, wxID_ANY, "Select system BIOS");
-    selectSystem->Bind(wxEVT_BUTTON, [settingsFrame, systemText, separator] (wxEvent& event) {
-               wxFileDialog openFileDialog(settingsFrame, "Load system BIOS", wxString(Config::systemBIOS).BeforeLast(separator), "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-               if(openFileDialog.ShowModal() == wxID_CANCEL)
-                   return;
-
-                systemText->SetValue(openFileDialog.GetPath());
-    });
-    systemSizer->Add(systemText, 1, wxALIGN_RIGHT, 5);
-    systemSizer->Add(selectSystem, 1, wxALIGN_RIGHT, 5);
-
-    generalSizer->Add(systemSizer);
-    generalPage->SetSizer(generalSizer);
-    notebook->AddPage(generalPage, "General");
-
-    // Emulation
-    wxPanel* emulationPage = new wxPanel(notebook);
-    wxBoxSizer* emulationSizer = new wxBoxSizer(wxVERTICAL);
-
-    wxCheckBox* skipBIOS = new wxCheckBox(emulationPage, wxID_ANY, "skip BIOS");
-    skipBIOS->SetValue(Config::skipBIOS);
-
-    wxCheckBox* NVRAMUseCurrentTime = new wxCheckBox(emulationPage, wxID_ANY, "NVRAM use current time");
-    NVRAMUseCurrentTime->SetValue(Config::NVRAMUseCurrentTime);
-
-    wxCheckBox* PAL = new wxCheckBox(emulationPage, wxID_ANY, "PAL mode");
-    PAL->SetValue(Config::PAL);
-
-    emulationSizer->Add(skipBIOS);
-    emulationSizer->Add(NVRAMUseCurrentTime);
-    emulationSizer->Add(PAL);
-    emulationPage->SetSizer(emulationSizer);
-    notebook->AddPage(emulationPage, "Emulation");
-
-
-    wxBoxSizer* saveCancelPanel = new wxBoxSizer(wxHORIZONTAL);
-    wxButton* save = new wxButton(settingsPanel, wxID_ANY, "Save");
-    save->Bind(wxEVT_BUTTON, [settingsFrame, systemText, skipBIOS, NVRAMUseCurrentTime, PAL] (wxEvent& event) {
-        Config::skipBIOS = skipBIOS->GetValue();
-        Config::PAL = PAL->GetValue();
-        Config::NVRAMUseCurrentTime = NVRAMUseCurrentTime->GetValue();
-        Config::systemBIOS = systemText->GetValue();
-        Config::saveConfig();
-        settingsFrame->Destroy();
-    });
-    saveCancelPanel->Add(save, 1, wxALIGN_RIGHT, 5);
-
-    wxButton* cancel = new wxButton(settingsPanel, wxID_ANY, "Cancel");
-    cancel->Bind(wxEVT_BUTTON, [settingsFrame] (wxEvent& event) {
-        settingsFrame->Destroy();
-    });
-    saveCancelPanel->Add(cancel, 1, wxALIGN_RIGHT, 5);
-
-
-    wxBoxSizer* boxSizer = new wxBoxSizer(wxVERTICAL);
-    boxSizer->Add(notebook, 1, wxEXPAND);
-    boxSizer->Add(saveCancelPanel, 0, wxALIGN_RIGHT);
-
-    settingsPanel->SetSizer(boxSizer);
+    if(settingsFrame != nullptr)
+        return;
+    settingsFrame = new SettingsFrame(this);
     settingsFrame->Show();
 }
 
