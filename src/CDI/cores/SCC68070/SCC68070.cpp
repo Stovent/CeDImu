@@ -14,11 +14,15 @@ SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
     board(baord),
     cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
     timerDelay(cycleDelay * 96),
+    internal{0},
+    D{0}, A_{0},
     ILUT(std::make_unique<ILUTFunctionPointer[]>(UINT16_MAX + 1)),
     DLUT(std::make_unique<DLUTFunctionPointer[]>(UINT16_MAX + 1))
 {
-    isRunning = false;
+    loop = stop = isRunning = false;
     speedDelay = cycleDelay;
+    timerCounter = cycleCount = totalCycleCount = 0;
+    currentPC = currentOpcode = lastAddress = PC = SR = USP = SSP = 0;
 
     OPEN_LOG(out, "SCC68070.txt")
 
@@ -101,28 +105,17 @@ void SCC68070::Stop(const bool wait)
             executionThread.join();
 }
 
-/** \brief Reset the CPU to its initial state.
+/** \brief Resets the CPU (as if the RESET and HALT pins are driven LOW).
  */
 void SCC68070::Reset()
 {
-    loop = false;
-    stop = false;
     LOG(fprintf(out, "RESET\n");)
-    cycleCount = totalCycleCount = 146;
 
-    lastAddress = 0;
-    currentOpcode = 0;
-    currentPC = 0;
-    std::fill(internal.begin(), internal.end(), 0);
-
-    for(uint8_t i = 0; i < 8; i++)
-    {
-        D[i] = 0;
-        A_[i] = 0;
-    }
-    board.Reset(false);
-    ResetOperation();
-    SET_TX_READY()
+    while(exceptions.size()) // clear it
+        exceptions.pop();
+    exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top
+    SR |= 0x0700;
+    RESET_INTERNAL()
 }
 
 /** \brief Trigger interrupt processing.
@@ -346,9 +339,8 @@ uint16_t SCC68070::PeekNextWord()
 
 void SCC68070::ResetOperation()
 {
-    while(exceptions.size()) // clear it
-        exceptions.pop();
-    exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top
+    RESET_INTERNAL()
+    board.Reset(false);
 }
 
 void SCC68070::DumpCPURegisters()

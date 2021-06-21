@@ -330,9 +330,7 @@ public:
 private:
     Board& board;
     std::thread executionThread;
-    bool loop;
-    bool stop;
-    bool isRunning;
+    FILE* out;
 
     std::mutex onDisassemblerMutex;
     std::mutex onUARTOutMutex;
@@ -340,28 +338,24 @@ private:
     std::function<void(const Instruction&)> OnDisassembler;
     std::function<void(uint8_t)> OnUARTOut;
     std::deque<uint8_t> uartIn;
-    std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
+
+    bool loop;
+    bool stop;
+    bool isRunning;
 
     void OnDisassemblerHelper(const Instruction&);
     void OnUARTOutHelper(uint8_t byte);
+    void DumpCPURegisters();
 
-    FILE* out;
-
-    std::array<uint8_t, SCC68070Peripherals::Size> internal;
-
-    uint16_t currentOpcode;
-    uint32_t lastAddress;
-    uint32_t cycleCount;
-    const double cycleDelay; // Time between two clock cycles in nanoseconds
-    const double timerDelay;
     double speedDelay; // used for emulation speed.
+    const double cycleDelay; // Time between two clock cycles in nanoseconds
+    uint32_t cycleCount;
+    const double timerDelay;
     double timerCounter; // Counts the nanosconds when incrementing the timer.
 
-    void Interpreter();
-    uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
-    uint16_t PeekNextWord();
-    void ResetOperation();
-    void DumpCPURegisters();
+    std::array<uint8_t, SCC68070Peripherals::Size> internal;
+    uint16_t currentOpcode;
+    uint32_t lastAddress;
 
     // Registers
     uint32_t D[8];
@@ -390,6 +384,9 @@ private:
     void SetXC(const bool XC = 1); // Set both X and C at the same time
     void SetVC(const bool VC = 1); // Set both V and C at the same time
     uint8_t GetIPM() const; // Interrupt Priority Mask
+
+    // Exceptions
+    std::priority_queue<SCC68070Exception, std::vector<SCC68070Exception>, std::greater<SCC68070Exception>> exceptions;
 
     void Interrupt(const uint8_t vector, const uint8_t priority);
     uint16_t Exception(const uint8_t vectorNumber);
@@ -429,6 +426,9 @@ private:
     void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger);
     void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger);
     void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger);
+
+    uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
+    uint16_t PeekNextWord();
 
     // Peripherals
     uint8_t GetPeripheral(uint32_t addr);
@@ -473,6 +473,8 @@ private:
     std::string DisassembleConditionalCode(const uint8_t cc) const;
 
     // Instruction Set
+    void Interpreter();
+    void ResetOperation();
     typedef uint16_t    (SCC68070::*ILUTFunctionPointer)();
     typedef std::string (SCC68070::*DLUTFunctionPointer)(const uint32_t) const;
     void GenerateInstructionSet();
@@ -657,6 +659,8 @@ private:
 #define   SET_RX_READY() internal[USR] |= 0x01;
 #define UNSET_TX_READY() internal[USR] &= ~0x04;
 #define UNSET_RX_READY() internal[USR] &= ~0x01;
+
+#define RESET_INTERNAL() internal = {0}; SET_TX_READY()
 
 #define SR_UPPER_MASK (0xA700)
 

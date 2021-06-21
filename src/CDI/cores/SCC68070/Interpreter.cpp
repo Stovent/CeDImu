@@ -12,7 +12,7 @@ void SCC68070::Interpreter()
 
     do
     {
-        uint16_t executionCycles = 0;
+        size_t executionCycles = 0;
 
         if(exceptions.size())
         {
@@ -29,7 +29,7 @@ void SCC68070::Interpreter()
 
         if(stop)
         {
-            executionCycles = 25;
+            executionCycles += 25;
         }
         else
         {

@@ -20,7 +20,7 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
         SR = 0x2700;
         USP = 0;
         stop = false;
-		return 0;
+		return 43;
     }
 
     if(vectorNumber == Trace || (vectorNumber >= SpuriousInterrupt && vectorNumber <= Level7ExternalInterruptAutovector) || \
@@ -28,6 +28,9 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
     {
         stop = false;
     }
+    else
+        if(stop)
+            return 0;
 
     if(vectorNumber == BusError || vectorNumber == AddressError) // TODO: implement long Stack format
     {
@@ -2166,7 +2169,7 @@ uint16_t SCC68070::RESET()
         return 0;
     }
 
-    board.Reset(false);
+    ResetOperation();
     return 154;
 }
 
