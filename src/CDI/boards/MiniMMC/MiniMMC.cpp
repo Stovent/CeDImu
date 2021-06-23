@@ -47,11 +47,6 @@ void MiniMMC::WriteToBIOSArea(const void* s, unsigned int size, unsigned int pos
     masterVDSC.WriteToBIOSArea(s, size, position);
 }
 
-void MiniMMC::StopOnNextFrame(const bool stop)
-{
-    masterVDSC.StopOnNextFrame(stop);
-}
-
 uint32_t MiniMMC::GetTotalFrameCount()
 {
     return masterVDSC.totalFrameCount;

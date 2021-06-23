@@ -90,12 +90,6 @@ void MCD212::ExecuteVideoLine()
         lineNumber = 0;
         verticalLines = 0;
 
-        if(stopOnNextFrame)
-        {
-            board.cpu.Stop(false);
-            stopOnNextFrame = false;
-        }
-
         std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
         if(OnFrameCompleted)
             OnFrameCompleted();

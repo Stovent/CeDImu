@@ -10,12 +10,14 @@ class CeDImu;
 
 #include <wx/app.h>
 
-#include <thread>
+#include <atomic>
 
 class CeDImu : public wxApp
 {
 public:
+    std::atomic<bool> stopOnNextFrame;
     CDI cdi;
+
     std::string biosName;
     uint16_t cpuSpeed;
 

@@ -305,14 +305,14 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    explicit SCC68070(Board& baord, const uint32_t clockFrequency);
+    SCC68070(Board& baord, const uint32_t clockFrequency);
     ~SCC68070();
 
     bool IsRunning() const;
     void SetEmulationSpeed(const double speed);
 
-    void SetOnUARTOutCallback(std::function<void(uint8_t)> callback);
-    void SetOnDisassemblerCallback(std::function<void(const Instruction&)> callback);
+    void SetOnUARTOutCallback(const std::function<void(uint8_t)>& callback);
+    void SetOnDisassemblerCallback(const std::function<void(const Instruction&)>& callback);
 
     void Run(const bool loop = true);
     void Stop(const bool wait = true);

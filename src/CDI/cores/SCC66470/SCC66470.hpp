@@ -57,7 +57,6 @@ public:
     }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
-    virtual void StopOnNextFrame(const bool stop = true) override;
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
     virtual std::vector<VDSCRegister> GetControlRegisters() const override;
@@ -76,7 +75,6 @@ private:
     uint8_t registerCSR;
     uint16_t registerB;
 
-    bool stopOnNextFrame;
     const bool isMaster;
     std::mutex onFrameCompletedMutex;
     std::function<void()> OnFrameCompleted;

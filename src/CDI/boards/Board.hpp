@@ -59,7 +59,6 @@ public:
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;
-    virtual void StopOnNextFrame(const bool stop = true) = 0;
 
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;

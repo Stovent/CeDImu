@@ -27,6 +27,7 @@ bool CeDImu::OnInit()
 {
     Config::loadConfig();
     cpuSpeed = 8;
+    stopOnNextFrame.store(false);
 
     uartOut.open("uart_out", std::ios::out | std::ios::binary);
     logInstructions.open("instructions.txt");
@@ -76,7 +77,15 @@ bool CeDImu::InitializeCores()
 #endif // _WIN32
 
     cdi.board->SetOnFrameCompletedCallback([=] () -> void {
+        if(this->stopOnNextFrame.load())
+        {
+            this->stopOnNextFrame.store(false);
+            cdi.board->cpu.Stop(false);
+            mainFrame->pauseItem->Check();
+        }
+
         mainFrame->gamePanel->RefreshScreen();
+
         if(mainFrame->cpuViewer)
             mainFrame->cpuViewer->flushInstructions = true;
     });

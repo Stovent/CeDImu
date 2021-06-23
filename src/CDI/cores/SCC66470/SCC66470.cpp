@@ -13,7 +13,6 @@ SCC66470::SCC66470(Board& board, const bool ismaster, const void* bios, const ui
     std::fill(internalRegisters.begin(), internalRegisters.end(), 0);
 
     memorySwapCount = 0;
-    stopOnNextFrame = false;
 
     OPEN_LOG(out_dram, isMaster ? "SCC66470_master_DRAM.txt" : "SCC66470_slave_DRAM.txt")
 }
@@ -47,11 +46,6 @@ void SCC66470::SetOnFrameCompletedCallback(std::function<void()> callback)
 {
     std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
     OnFrameCompleted = callback;
-}
-
-void SCC66470::StopOnNextFrame(const bool stop)
-{
-    stopOnNextFrame = stop;
 }
 
 RAMBank SCC66470::GetRAMBank1() const

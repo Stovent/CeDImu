@@ -14,11 +14,6 @@ void SCC66470::ExecuteVideoLine()
 
         lineNumber = 0;
         totalFrameCount++;
-        if(stopOnNextFrame)
-        {
-            board.cpu.Stop(false);
-            stopOnNextFrame = false;
-        }
 
         std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
         if(OnFrameCompleted)

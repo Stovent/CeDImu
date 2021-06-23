@@ -91,7 +91,6 @@ public:
     }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
-    virtual void StopOnNextFrame(const bool stop = true) override;
 
     virtual void ExecuteVideoLine() override;
 
@@ -123,7 +122,6 @@ private:
     uint8_t registerCSR1R;
     uint8_t registerCSR2R;
 
-    bool stopOnNextFrame;
     uint16_t lineNumber; // starts at 0
     uint16_t verticalLines; // starts at 0.
     FILE* out_dram;

@@ -33,7 +33,7 @@ SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
  */
 SCC68070::~SCC68070()
 {
-    Stop(false);
+    Stop(true);
     CLOSE_LOG(out)
 }
 
@@ -59,13 +59,13 @@ void SCC68070::SetEmulationSpeed(const double speed)
     speedDelay = cycleDelay / speed;
 }
 
-void SCC68070::SetOnDisassemblerCallback(std::function<void(const Instruction&)> callback)
+void SCC68070::SetOnDisassemblerCallback(const std::function<void(const Instruction&)>& callback)
 {
     std::lock_guard<std::mutex> lock(onDisassemblerMutex);
     OnDisassembler = callback;
 }
 
-void SCC68070::SetOnUARTOutCallback(std::function<void(uint8_t)> callback)
+void SCC68070::SetOnUARTOutCallback(const std::function<void(uint8_t)>& callback)
 {
     std::lock_guard<std::mutex> lock(onUARTOutMutex);
     OnUARTOut = callback;
@@ -95,14 +95,20 @@ void SCC68070::Run(const bool loop)
 
 /** \brief Stop emulation.
  *
- * \param wait If true, will wait for the thread to join. If false, simply stop emulation.
+ * \param wait If true, will wait for the thread to join. If false, detach the thread while it stops.
+ *
+ * If this is invoked during a callback, false must be sent to prevent any dead lock.
  */
 void SCC68070::Stop(const bool wait)
 {
     loop = false;
-    if(wait)
-        if(executionThread.joinable())
+    if(executionThread.joinable())
+    {
+        if(wait)
             executionThread.join();
+        else
+            executionThread.detach();
+    }
 }
 
 /** \brief Resets the CPU (as if the RESET and HALT pins are driven LOW).

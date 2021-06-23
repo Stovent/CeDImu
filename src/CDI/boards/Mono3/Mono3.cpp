@@ -43,11 +43,6 @@ void Mono3::WriteToBIOSArea(const void* s, unsigned int size, unsigned int posit
     mcd212.WriteToBIOSArea(s, size, position);
 }
 
-void Mono3::StopOnNextFrame(const bool stop)
-{
-    mcd212.StopOnNextFrame(stop);
-}
-
 uint32_t Mono3::GetTotalFrameCount()
 {
     return mcd212.totalFrameCount;

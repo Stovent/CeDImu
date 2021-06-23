@@ -75,7 +75,6 @@ public:
     virtual inline uint32_t GetLineDisplayTime() const { return 0; }
 
     virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
-    virtual void StopOnNextFrame(const bool stop = true) = 0;
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() const = 0;

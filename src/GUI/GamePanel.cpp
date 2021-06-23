@@ -58,7 +58,7 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     case 'Z':
         if(!app.cdi.board)
             break;
-        app.cdi.board->StopOnNextFrame();
+        app.stopOnNextFrame.store(true);
         if(!app.cdi.board->cpu.IsRunning())
             app.StartGameThread();
         break;

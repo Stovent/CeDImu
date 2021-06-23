@@ -16,7 +16,6 @@ MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool P
     cursorPlane(CURSOR_ARGB_SIZE, 0),
     backgroundPlane(PLANE_ARGB_SIZE, 0)
 {
-    stopOnNextFrame = false;
     memorySwapCount = 0;
 
     std::fill(internalRegisters.begin(), internalRegisters.end(), 0);
@@ -31,11 +30,6 @@ MCD212::~MCD212()
 {
     CLOSE_LOG(out_dram)
     CLOSE_LOG(out_display)
-}
-
-void MCD212::StopOnNextFrame(const bool stop)
-{
-    stopOnNextFrame = stop;
 }
 
 void MCD212::SetOnFrameCompletedCallback(std::function<void()> callback)
