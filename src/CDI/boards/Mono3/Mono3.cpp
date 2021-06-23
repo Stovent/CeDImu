@@ -2,9 +2,9 @@
 #include "../../common/utils.hpp"
 #include "../../HLE/IKAT/IKAT.hpp"
 
-Mono3::Mono3(const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf) :
-    Board("Mono-III", conf),
-    mcd212(*this, vdscBios, vdscSize, conf.PAL)
+Mono3::Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf) :
+    Board(cdi, "Mono-III", conf),
+    mcd212(cdi, vdscBios, vdscSize, conf.PAL)
 {
     slave = std::make_unique<HLE::IKAT>(cpu, conf.PAL);
     OPEN_LOG(out, "Mono3.txt")
@@ -46,11 +46,6 @@ void Mono3::WriteToBIOSArea(const void* s, unsigned int size, unsigned int posit
 uint32_t Mono3::GetTotalFrameCount()
 {
     return mcd212.totalFrameCount;
-}
-
-void Mono3::SetOnFrameCompletedCallback(std::function<void()> callback)
-{
-    mcd212.SetOnFrameCompletedCallback(callback);
 }
 
 const OS9::BIOS& Mono3::GetBIOS() const

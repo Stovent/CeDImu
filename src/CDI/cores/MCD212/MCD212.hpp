@@ -68,7 +68,7 @@ class MCD212 : public VDSC
 {
 public:
     MCD212() = delete;
-    explicit MCD212(Board& board, const void* bios, const uint32_t size, const bool PAL);
+    explicit MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL);
     virtual ~MCD212();
 
     virtual void Reset() override;
@@ -89,8 +89,6 @@ public:
     {
         return isPAL || !GetCF() ? 64000 : 63560;
     }
-
-    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
 
     virtual void ExecuteVideoLine() override;
 
@@ -126,8 +124,6 @@ private:
     uint16_t verticalLines; // starts at 0.
     FILE* out_dram;
     FILE* out_display;
-    std::mutex onFrameCompletedMutex;
-    std::function<void()> OnFrameCompleted;
 
     void DrawLinePlaneA();
     void DrawLinePlaneB();

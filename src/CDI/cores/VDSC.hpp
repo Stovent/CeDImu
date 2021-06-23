@@ -3,7 +3,7 @@
 
 class VDSC;
 
-class Board;
+class CDI;
 #include "../common/flags.hpp"
 #include "../OS9/BIOS.hpp"
 
@@ -45,7 +45,7 @@ struct RAMBank
 class VDSC
 {
 public:
-    Board& board;
+    CDI& cdi;
     OS9::BIOS BIOS;
     uint32_t totalFrameCount;
     std::vector<std::string> ICA1;
@@ -54,7 +54,7 @@ public:
     std::vector<std::string> DCA2;
 
     VDSC() = delete;
-    VDSC(Board& baord, const void* bios, const uint32_t size, const uint32_t base) : board(baord), BIOS(bios, size, base), totalFrameCount(0) {}
+    VDSC(CDI& idc, const void* bios, const uint32_t size, const uint32_t base) : cdi(idc), BIOS(bios, size, base), totalFrameCount(0) {}
     virtual ~VDSC() {}
 
     virtual void Reset() = 0;
@@ -73,8 +73,6 @@ public:
 
     virtual void ExecuteVideoLine() = 0;
     virtual inline uint32_t GetLineDisplayTime() const { return 0; }
-
-    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() const = 0;

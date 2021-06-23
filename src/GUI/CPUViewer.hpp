@@ -22,12 +22,12 @@ public:
     bool flushInstructions;
     std::vector<Instruction> instructions;
 
-    CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size);
+    CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSize& size);
     ~CPUViewer();
 
     wxAuiManager auiManager;
 
-    SCC68070& cpu;
+    CDI& cdi;
     MainFrame* mainFrame;
     wxTimer renderTimer;
 

@@ -1,5 +1,5 @@
 #include "SCC68070.hpp"
-#include "../../boards/Board.hpp"
+#include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
 bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs)
@@ -15,8 +15,8 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
 
     if(vectorNumber == ResetSSPPC)
     {
-        SSP = board.GetLong(0, Trigger);
-        PC = board.GetLong(4, Trigger);
+        SSP = cdi.board->GetLong(0, Trigger);
+        PC = cdi.board->GetLong(4, Trigger);
         SR = 0x2700;
         USP = 0;
         stop = false;

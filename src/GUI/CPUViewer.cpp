@@ -9,10 +9,10 @@ wxBEGIN_EVENT_TABLE(CPUViewer, wxFrame)
     EVT_PAINT(CPUViewer::PaintEvent)
 wxEND_EVENT_TABLE()
 
-CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, const wxSize& size) :
+CPUViewer::CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSize& size) :
     wxFrame(parent, wxID_ANY, "SCC68070 viewer", pos, size),
     auiManager(this),
-    cpu(core),
+    cdi(idc),
     renderTimer(this, IDCPUViewerTimer)
 {
     mainFrame = parent;
@@ -86,7 +86,7 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
     disCol.SetWidth(120);
     internalRegisters->InsertColumn(3, disCol);
 
-    std::vector<CPUInternalRegister> iregs = cpu.GetInternalRegisters();
+    std::vector<CPUInternalRegister> iregs = cdi.board->cpu.GetInternalRegisters();
     long i = 0;
     for(const CPUInternalRegister& reg : iregs)
     {
@@ -105,15 +105,15 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
     uart->Bind(wxEVT_KEY_DOWN, [this] (wxKeyEvent& event) {
         const int key = event.GetKeyCode();
         if(key < 128)
-            this->cpu.SendUARTIn(key);
+            this->cdi.board->cpu.SendUARTIn(key);
     });
 
-    cpu.SetOnUARTOutCallback([this] (uint8_t byte) -> void {
+    cdi.callbacks.SetOnUARTOut([this] (uint8_t byte) -> void {
         this->mainFrame->app.uartOut.put((char)byte);
         this->uart->AppendText((char)byte);
     });
 
-    cpu.SetOnDisassemblerCallback([this] (const Instruction& inst) {
+    cdi.callbacks.SetOnDisassembler([this] (const Instruction& inst) {
         if(this->flushInstructions)
         {
             for(const Instruction& inst : this->instructions)
@@ -130,8 +130,8 @@ CPUViewer::CPUViewer(SCC68070& core, MainFrame* parent, const wxPoint& pos, cons
 
 CPUViewer::~CPUViewer()
 {
-    cpu.SetOnDisassemblerCallback(nullptr);
-    cpu.SetOnUARTOutCallback(nullptr);
+    cdi.callbacks.SetOnDisassembler(nullptr);
+    cdi.callbacks.SetOnUARTOut(nullptr);
     mainFrame->cpuViewer = nullptr;
     renderTimer.Stop();
     auiManager.UnInit();
@@ -149,7 +149,7 @@ void CPUViewer::RefreshLoop(wxTimerEvent& event)
 
 void CPUViewer::PaintEvent()
 {
-    std::map<std::string, uint32_t> regs = cpu.GetCPURegisters();
+    std::map<std::string, uint32_t> regs = cdi.board->cpu.GetCPURegisters();
     for(uint8_t i = 0; i < 8; i++)
     {
         d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(regs["D" + std::to_string(i)]));
@@ -163,7 +163,7 @@ void CPUViewer::PaintEvent()
     disassembler->SetItemCount(instructions.size());
     disassembler->Refresh();
 
-    std::vector<CPUInternalRegister> iregs = cpu.GetInternalRegisters();
+    std::vector<CPUInternalRegister> iregs = cdi.board->cpu.GetInternalRegisters();
     long i = 0;
     for(const CPUInternalRegister& reg : iregs)
     {

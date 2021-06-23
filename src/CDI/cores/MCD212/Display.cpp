@@ -1,5 +1,5 @@
 #include "MCD212.hpp"
-#include "../../boards/Board.hpp"
+#include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 #include "../../common/Video.hpp"
 
@@ -90,9 +90,7 @@ void MCD212::ExecuteVideoLine()
         lineNumber = 0;
         verticalLines = 0;
 
-        std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
-        if(OnFrameCompleted)
-            OnFrameCompleted();
+        cdi.callbacks.OnFrameCompleted();
     }
 }
 

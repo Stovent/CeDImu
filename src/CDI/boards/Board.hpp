@@ -4,6 +4,7 @@
 class Board;
 
 #include "../CDIConfig.hpp"
+class CDI;
 #include "../common/flags.hpp"
 #include "../cores/ISlave.hpp"
 #include "../cores/VDSC.hpp"
@@ -21,7 +22,7 @@ public:
     std::unique_ptr<ISlave> slave;
     M48T08 timekeeper;
 
-    Board(const std::string& name, const CDIConfig& conf) : name(name), cpu(*this, conf.PAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY), timekeeper(conf.initialTime) {}
+    Board(CDI& cdi, const std::string& name, const CDIConfig& conf) : name(name), cpu(cdi, conf.PAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY), timekeeper(conf.initialTime) {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
 
@@ -61,7 +62,6 @@ public:
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;
 
     virtual uint32_t GetTotalFrameCount() = 0;
-    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
 
     virtual std::vector<std::string> GetICA1() = 0;

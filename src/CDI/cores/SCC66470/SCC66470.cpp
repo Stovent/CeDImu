@@ -5,8 +5,8 @@
 #include <cstdio>
 #include <cstring>
 
-SCC66470::SCC66470(Board& board, const bool ismaster, const void* bios, const uint32_t size) :
-    VDSC(board, bios, size, 0x180000),
+SCC66470::SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32_t size) :
+    VDSC(idc, bios, size, 0x180000),
     memory(0x100000, 0),
     isMaster(ismaster)
 {
@@ -40,12 +40,6 @@ void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int po
 void SCC66470::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
 {
     PutDataInMemory(s, size, position + 0x180000);
-}
-
-void SCC66470::SetOnFrameCompletedCallback(std::function<void()> callback)
-{
-    std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
-    OnFrameCompleted = callback;
 }
 
 RAMBank SCC66470::GetRAMBank1() const

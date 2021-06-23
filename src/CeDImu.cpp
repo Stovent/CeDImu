@@ -76,7 +76,7 @@ bool CeDImu::InitializeCores()
     biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('/')+1);
 #endif // _WIN32
 
-    cdi.board->SetOnFrameCompletedCallback([=] () -> void {
+    cdi.callbacks.SetOnFrameCompleted([=] () -> void {
         if(this->stopOnNextFrame.load())
         {
             this->stopOnNextFrame.store(false);

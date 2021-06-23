@@ -16,7 +16,7 @@ class MiniMMC : public Board
     FILE* out;
 
 public:
-    MiniMMC(const void* bios, const uint32_t size, const CDIConfig& conf);
+    MiniMMC(CDI& cdi, const void* bios, const uint32_t size, const CDIConfig& conf);
     virtual ~MiniMMC();
     virtual void Reset(const bool resetCPU) override;
 
@@ -39,7 +39,6 @@ public:
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
 
     virtual uint32_t GetTotalFrameCount() override;
-    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
     virtual const OS9::BIOS& GetBIOS() const override;
 
     virtual std::vector<std::string> GetICA1() override;

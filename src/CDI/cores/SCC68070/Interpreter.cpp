@@ -1,5 +1,5 @@
 #include "SCC68070.hpp"
-#include "../../boards/Board.hpp"
+#include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
 #include <algorithm>
@@ -18,10 +18,10 @@ void SCC68070::Interpreter()
         {
             const SCC68070Exception exception = exceptions.top();
             exceptions.pop();
-            if(OnDisassembler)
+            if(cdi.callbacks.HasOnDisassembler())
             {
                 const std::string str = "Exception vector " + std::to_string(exception.vector) + ": " + DisassembleException(exception);
-                OnDisassemblerHelper({0, "", str});
+                cdi.callbacks.OnDisassembler({0, "", str});
             }
 //            DumpCPURegisters();
             executionCycles += Exception(exception.vector);
@@ -36,10 +36,10 @@ void SCC68070::Interpreter()
             try {
                 currentPC = PC;
                 currentOpcode = GetNextWord(Trigger);
-                if(OnDisassembler)
+                if(cdi.callbacks.HasOnDisassembler())
                 {
-                    const Instruction inst = {currentPC, board.GetBIOS().GetModuleNameAt(currentPC - board.GetBIOS().base), (this->*DLUT[currentOpcode])(currentPC)};
-                    OnDisassemblerHelper(inst);
+                    const Instruction inst = {currentPC, cdi.board->GetBIOS().GetModuleNameAt(currentPC - cdi.board->GetBIOS().base), (this->*DLUT[currentOpcode])(currentPC)};
+                    cdi.callbacks.OnDisassembler(inst);
                 }
                 executionCycles += (this->*ILUT[currentOpcode])();
             }
@@ -53,13 +53,13 @@ void SCC68070::Interpreter()
 
         const double ns = executionCycles * cycleDelay;
         IncrementTimer(ns);
-        board.slave->IncrementTime(ns);
-        board.timekeeper.IncrementClock(ns);
+        cdi.board->slave->IncrementTime(ns);
+        cdi.board->timekeeper.IncrementClock(ns);
 
-        const uint32_t lineDisplayTime = board.GetLineDisplayTime();
+        const uint32_t lineDisplayTime = cdi.board->GetLineDisplayTime();
         if(cycleCount * cycleDelay >= lineDisplayTime)
         {
-            board.ExecuteVideoLine();
+            cdi.board->ExecuteVideoLine();
             cycleCount -= lineDisplayTime / cycleDelay;
         }
 

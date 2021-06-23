@@ -1,5 +1,5 @@
 #include "SCC68070.hpp"
-#include "../../boards/Board.hpp"
+#include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
 uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
@@ -114,7 +114,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
-    const uint8_t data = board.GetByte(addr, flags);
+    const uint8_t data = cdi.board->GetByte(addr, flags);
     LOG(if(flags & Log) { fprintf(out, "%X\tGet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
     return data;
 }
@@ -131,7 +131,7 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
         return data;
     }
 
-    const uint16_t data = board.GetWord(addr, flags);
+    const uint16_t data = cdi.board->GetWord(addr, flags);
     LOG(if(flags & Log) { fprintf(out, "%X\tGet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
     return data;
 }
@@ -152,7 +152,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
         return;
     }
 
-    board.SetByte(addr, data, flags);
+    cdi.board->SetByte(addr, data, flags);
     LOG(if(flags & Log) { fprintf(out, "%X\tSet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
     return;
 }
@@ -170,7 +170,7 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
         return;
     }
 
-    board.SetWord(addr, data, flags);
+    cdi.board->SetWord(addr, data, flags);
     LOG(if(flags & Log) { fprintf(out, "%X\tSet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
     return;
 }

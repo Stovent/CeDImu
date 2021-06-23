@@ -1,10 +1,10 @@
 #include "MiniMMC.hpp"
 #include "../../common/utils.hpp"
 
-MiniMMC::MiniMMC(const void* bios, const uint32_t size, const CDIConfig& conf) :
-    Board("Mini-MMC", conf),
-    masterVDSC(*this, true, bios, size),
-    slaveVDSC(*this, false, "\0", 2)
+MiniMMC::MiniMMC(CDI& cdi, const void* bios, const uint32_t size, const CDIConfig& conf) :
+    Board(cdi, "Mini-MMC", conf),
+    masterVDSC(cdi, true, bios, size),
+    slaveVDSC(cdi, false, "\0", 2)
 {
     OPEN_LOG(out, "MiniMMC.txt")
     Reset(true);
@@ -50,12 +50,6 @@ void MiniMMC::WriteToBIOSArea(const void* s, unsigned int size, unsigned int pos
 uint32_t MiniMMC::GetTotalFrameCount()
 {
     return masterVDSC.totalFrameCount;
-}
-
-void MiniMMC::SetOnFrameCompletedCallback(std::function<void()> callback)
-{
-    masterVDSC.SetOnFrameCompletedCallback(callback);
-    slaveVDSC.SetOnFrameCompletedCallback(callback);
 }
 
 const OS9::BIOS& MiniMMC::GetBIOS() const

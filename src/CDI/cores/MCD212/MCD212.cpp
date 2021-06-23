@@ -1,13 +1,13 @@
 #include "MCD212.hpp"
-#include "../../boards/Board.hpp"
+#include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 #include "../../common/Video.hpp"
 
 #include <algorithm>
 #include <cstring>
 
-MCD212::MCD212(Board& board, const void* bios, const uint32_t size, const bool PAL) :
-    VDSC(board, bios, size, 0x400000),
+MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL) :
+    VDSC(idc, bios, size, 0x400000),
     isPAL(PAL),
     memory(0x280000, 0),
     screen(PLANE_RGB_SIZE, 0),
@@ -30,12 +30,6 @@ MCD212::~MCD212()
 {
     CLOSE_LOG(out_dram)
     CLOSE_LOG(out_display)
-}
-
-void MCD212::SetOnFrameCompletedCallback(std::function<void()> callback)
-{
-    std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
-    OnFrameCompleted = callback;
 }
 
 void MCD212::Reset()
@@ -113,7 +107,7 @@ void MCD212::ExecuteICA1()
         case 6: // INTERRUPT
             SetIT1();
             if(!GetDI1())
-                board.cpu.INT1();
+                cdi.board->cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -178,7 +172,7 @@ void MCD212::ExecuteDCA1()
         case 6: // INTERRUPT
             SetIT1();
             if(!GetDI1())
-                board.cpu.INT1();
+                cdi.board->cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -245,7 +239,7 @@ void MCD212::ExecuteICA2()
         case 6: // INTERRUPT
             SetIT2();
             if(!GetDI2())
-                board.cpu.INT1();
+                cdi.board->cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -303,7 +297,7 @@ void MCD212::ExecuteDCA2()
         case 6: // INTERRUPT
             SetIT2();
             if(!GetDI2())
-                board.cpu.INT1();
+                cdi.board->cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS

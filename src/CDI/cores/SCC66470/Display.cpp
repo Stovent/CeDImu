@@ -1,5 +1,5 @@
 #include "SCC66470.hpp"
-#include "../../boards/Board.hpp"
+#include "../../CDI.hpp"
 
 #define   SET_DA_BIT() registerCSR |= 0x80;
 #define UNSET_DA_BIT() registerCSR &= 0x67;
@@ -15,8 +15,6 @@ void SCC66470::ExecuteVideoLine()
         lineNumber = 0;
         totalFrameCount++;
 
-        std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
-        if(OnFrameCompleted)
-            OnFrameCompleted();
+        cdi.callbacks.OnFrameCompleted();
     }
 }

@@ -33,7 +33,7 @@ enum SCC66470Registers
 class SCC66470 : public VDSC
 {
 public:
-    explicit SCC66470(Board& board, const bool ismaster, const void* bios, const uint32_t size);
+    explicit SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32_t size);
     virtual ~SCC66470();
 
     virtual void Reset() override;
@@ -56,8 +56,6 @@ public:
         return 41000;
     }
 
-    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
-
     virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
     virtual std::vector<VDSCRegister> GetControlRegisters() const override;
     virtual Plane GetScreen() const override;
@@ -76,8 +74,6 @@ private:
     uint16_t registerB;
 
     const bool isMaster;
-    std::mutex onFrameCompletedMutex;
-    std::function<void()> OnFrameCompleted;
 
     FILE* out_dram;
 

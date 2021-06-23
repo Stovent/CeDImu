@@ -1,5 +1,5 @@
 #include "SCC68070.hpp"
-#include "../../boards/Board.hpp"
+#include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
 #include <cstring>
@@ -10,8 +10,8 @@
  * \param baord The board used to access memory.
  * \param clockFrequency The frequency of the CPU.
  */
-SCC68070::SCC68070(Board& baord, const uint32_t clockFrequency) :
-    board(baord),
+SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
+    cdi(idc),
     cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
     timerDelay(cycleDelay * 96),
     internal{0},
@@ -57,18 +57,6 @@ bool SCC68070::IsRunning() const
 void SCC68070::SetEmulationSpeed(const double speed)
 {
     speedDelay = cycleDelay / speed;
-}
-
-void SCC68070::SetOnDisassemblerCallback(const std::function<void(const Instruction&)>& callback)
-{
-    std::lock_guard<std::mutex> lock(onDisassemblerMutex);
-    OnDisassembler = callback;
-}
-
-void SCC68070::SetOnUARTOutCallback(const std::function<void(uint8_t)>& callback)
-{
-    std::lock_guard<std::mutex> lock(onUARTOutMutex);
-    OnUARTOut = callback;
 }
 
 /** \brief Start emulation.
@@ -317,20 +305,6 @@ std::vector<CPUInternalRegister> SCC68070::GetInternalRegisters() const
     return v;
 }
 
-void SCC68070::OnDisassemblerHelper(const Instruction& inst)
-{
-    std::lock_guard<std::mutex> lock(onDisassemblerMutex);
-    if(OnDisassembler)
-        OnDisassembler(inst);
-}
-
-void SCC68070::OnUARTOutHelper(uint8_t byte)
-{
-    std::lock_guard<std::mutex> lock(onUARTOutMutex);
-    if(OnUARTOut)
-        OnUARTOut(byte);
-}
-
 uint16_t SCC68070::GetNextWord(const uint8_t flags)
 {
     uint16_t opcode = GetWord(PC, flags);
@@ -346,12 +320,12 @@ uint16_t SCC68070::PeekNextWord()
 void SCC68070::ResetOperation()
 {
     RESET_INTERNAL()
-    board.Reset(false);
+    cdi.board->Reset(false);
 }
 
 void SCC68070::DumpCPURegisters()
 {
-    if(!OnDisassembler)
+    if(!cdi.callbacks.HasOnDisassembler())
         return;
 
     const std::map<std::string, uint32_t>& regs = GetCPURegisters();
@@ -359,7 +333,7 @@ void SCC68070::DumpCPURegisters()
     {
         char s[30];
         snprintf(s, 30, "%s: 0x%08X", reg.first.c_str(), reg.second);
-        OnDisassemblerHelper({currentPC, "", s});
+        cdi.callbacks.OnDisassembler({currentPC, "", s});
     }
 }
 

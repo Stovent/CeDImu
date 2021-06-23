@@ -12,7 +12,7 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& appp) : wxPanel(parent), app(app
 
 GamePanel::~GamePanel()
 {
-    app.cdi.board->SetOnFrameCompletedCallback(nullptr);
+    app.cdi.callbacks.SetOnFrameCompleted(nullptr);
 }
 
 void GamePanel::RefreshLoop(wxPaintEvent& event)

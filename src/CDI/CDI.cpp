@@ -10,7 +10,7 @@ constexpr CDIConfig defaultConfig = {
 /** \brief Create a new empty CD-i context.
  * \param conf The configuration of the player.
  */
-CDI::CDI(const CDIConfig& conf) : config(conf)
+CDI::CDI(const CDIConfig& conf, const Callbacks& calls) : config(conf), callbacks(calls)
 {
 }
 
@@ -59,11 +59,11 @@ bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, Boards boardD
     switch(brd)
     {
     case Boards::MiniMMC:
-        board = std::make_unique<MiniMMC>(vdscBios, vdscSize, config);
+        board = std::make_unique<MiniMMC>(*this, vdscBios, vdscSize, config);
         break;
 
     case Boards::Mono3:
-        board = std::make_unique<Mono3>(vdscBios, vdscSize, config);
+        board = std::make_unique<Mono3>(*this, vdscBios, vdscSize, config);
         break;
 
     default:

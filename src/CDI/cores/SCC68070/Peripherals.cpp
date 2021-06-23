@@ -1,5 +1,5 @@
 #include "SCC68070.hpp"
-#include "../../boards/Board.hpp"
+#include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
 uint8_t SCC68070::GetPeripheral(uint32_t addr)
@@ -23,8 +23,8 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr)
             internal[URHR] = 0;
 
         lock.unlock();
-        if(OnDisassembler)
-            OnDisassemblerHelper({currentPC, "", "URHR: 0x" + toHex(internal[URHR])}); // this or data ?
+        if(cdi.callbacks.HasOnDisassembler())
+            cdi.callbacks.OnDisassembler({currentPC, "", "URHR: 0x" + toHex(internal[URHR])}); // this or data ?
     }
 
     return internal[addr];
@@ -60,10 +60,10 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
 
     case UTHR:
         internal[USR] |= 0x08; // set TXEMT bit
-        OnUARTOutHelper(data);
+        cdi.callbacks.OnUARTOut(data);
         internal[UTHR] = data;
-        if(OnDisassembler)
-            OnDisassemblerHelper({currentPC, "", "UTHR: 0x" + toHex(internal[UTHR])});
+        if(cdi.callbacks.HasOnDisassembler())
+            cdi.callbacks.OnDisassembler({currentPC, "", "UTHR: 0x" + toHex(internal[UTHR])});
         break;
 
     case TSR:

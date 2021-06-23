@@ -15,7 +15,7 @@ class Mono3 : public Board
     FILE* out;
 
 public:
-    Mono3(const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf);
+    Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf);
     virtual ~Mono3();
     virtual void Reset(const bool resetCPU) override;
 
@@ -38,7 +38,6 @@ public:
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
 
     virtual uint32_t GetTotalFrameCount() override;
-    virtual void SetOnFrameCompletedCallback(std::function<void()> callback) override;
     virtual const OS9::BIOS& GetBIOS() const override;
 
     virtual std::vector<std::string> GetICA1() override;

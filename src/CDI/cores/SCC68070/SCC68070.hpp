@@ -1,7 +1,7 @@
 #ifndef SCC68070_HPP
 #define SCC68070_HPP
 
-class Board;
+class CDI;
 #include "../../common/flags.hpp"
 
 #include <array>
@@ -305,14 +305,11 @@ public:
     SCC68070() = delete;
     SCC68070(SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
-    SCC68070(Board& baord, const uint32_t clockFrequency);
+    SCC68070(CDI& idc, const uint32_t clockFrequency);
     ~SCC68070();
 
     bool IsRunning() const;
     void SetEmulationSpeed(const double speed);
-
-    void SetOnUARTOutCallback(const std::function<void(uint8_t)>& callback);
-    void SetOnDisassemblerCallback(const std::function<void(const Instruction&)>& callback);
 
     void Run(const bool loop = true);
     void Stop(const bool wait = true);
@@ -328,23 +325,17 @@ public:
     std::vector<CPUInternalRegister> GetInternalRegisters() const;
 
 private:
-    Board& board;
+    CDI& cdi;
     std::thread executionThread;
     FILE* out;
 
-    std::mutex onDisassemblerMutex;
-    std::mutex onUARTOutMutex;
     std::mutex uartInMutex;
-    std::function<void(const Instruction&)> OnDisassembler;
-    std::function<void(uint8_t)> OnUARTOut;
     std::deque<uint8_t> uartIn;
 
     bool loop;
     bool stop;
     bool isRunning;
 
-    void OnDisassemblerHelper(const Instruction&);
-    void OnUARTOutHelper(uint8_t byte);
     void DumpCPURegisters();
 
     double speedDelay; // used for emulation speed.
