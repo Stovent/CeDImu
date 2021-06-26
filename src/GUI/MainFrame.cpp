@@ -247,8 +247,7 @@ void MainFrame::OnReset(wxCommandEvent& event)
 
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
-    if(app.cdi.board)
-        app.InitializeCores();
+    app.InitializeCores();
 }
 
 void MainFrame::OnResizeView(wxCommandEvent& event)

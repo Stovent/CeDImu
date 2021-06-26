@@ -113,7 +113,7 @@ CPUViewer::CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSi
         this->uart->AppendText((char)byte);
     });
 
-    cdi.callbacks.SetOnDisassembler([this] (const Instruction& inst) {
+    cdi.callbacks.SetOnLogDisassembler([this] (const Instruction& inst) {
         if(this->flushInstructions)
         {
             for(const Instruction& inst : this->instructions)
@@ -130,7 +130,7 @@ CPUViewer::CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSi
 
 CPUViewer::~CPUViewer()
 {
-    cdi.callbacks.SetOnDisassembler(nullptr);
+    cdi.callbacks.SetOnLogDisassembler(nullptr);
     cdi.callbacks.SetOnUARTOut(nullptr);
     mainFrame->cpuViewer = nullptr;
     renderTimer.Stop();

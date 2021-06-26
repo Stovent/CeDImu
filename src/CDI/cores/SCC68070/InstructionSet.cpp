@@ -20,7 +20,7 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
         SR = 0x2700;
         USP = 0;
         stop = false;
-		return 43;
+        return 43;
     }
 
     if(vectorNumber == Trace || (vectorNumber >= SpuriousInterrupt && vectorNumber <= Level7ExternalInterruptAutovector) || \

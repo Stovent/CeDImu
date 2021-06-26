@@ -239,7 +239,7 @@ void MCD212::ExecuteICA2()
         case 6: // INTERRUPT
             SetIT2();
             if(!GetDI2())
-                cdi.board->cpu.INT1();
+                cdi.board->cpu.INT2();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -297,7 +297,7 @@ void MCD212::ExecuteDCA2()
         case 6: // INTERRUPT
             SetIT2();
             if(!GetDI2())
-                cdi.board->cpu.INT1();
+                cdi.board->cpu.INT2();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS

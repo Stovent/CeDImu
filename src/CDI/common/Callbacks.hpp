@@ -11,8 +11,8 @@
 */
 class Callbacks
 {
-    std::mutex onDisassemblerMutex;
-    std::function<void(const Instruction&)> onDisassemblerCallback;
+    std::mutex onLogDisassemblerMutex;
+    std::function<void(const Instruction&)> onLogDisassemblerCallback;
 
     std::mutex onUARTOutMutex;
     std::function<void(uint8_t)> onUARTOutCallback;
@@ -24,32 +24,32 @@ public:
     explicit Callbacks(const std::function<void(const Instruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
                        const std::function<void()>& frameCompleted = nullptr) :
-       onDisassemblerCallback(disassembler),
+       onLogDisassemblerCallback(disassembler),
        onUARTOutCallback(uartOut),
        onFrameCompletedCallback(frameCompleted)
    {}
 
    Callbacks(const Callbacks& other) :
-       onDisassemblerCallback(other.onDisassemblerCallback),
+       onLogDisassemblerCallback(other.onLogDisassemblerCallback),
        onUARTOutCallback(other.onUARTOutCallback),
        onFrameCompletedCallback(other.onFrameCompletedCallback)
    {}
 
-    bool HasOnDisassembler()
+    bool HasOnLogDisassembler()
     {
-        std::lock_guard<std::mutex> lock(onDisassemblerMutex);
-        return (bool)onDisassemblerCallback;
+        std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
+        return (bool)onLogDisassemblerCallback;
     }
-    void SetOnDisassembler(const std::function<void(const Instruction&)>& callback)
+    void SetOnLogDisassembler(const std::function<void(const Instruction&)>& callback)
     {
-        std::lock_guard<std::mutex> lock(onDisassemblerMutex);
-        onDisassemblerCallback = callback;
+        std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
+        onLogDisassemblerCallback = callback;
     }
-    void OnDisassembler(const Instruction& arg)
+    void OnLogDisassembler(const Instruction& arg)
     {
-        std::lock_guard<std::mutex> lock(onDisassemblerMutex);
-        if(onDisassemblerCallback)
-            onDisassemblerCallback(arg);
+        std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
+        if(onLogDisassemblerCallback)
+            onLogDisassemblerCallback(arg);
     }
 
     void SetOnUARTOut(const std::function<void(uint8_t)>& callback)

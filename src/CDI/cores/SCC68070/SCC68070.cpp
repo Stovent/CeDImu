@@ -325,7 +325,7 @@ void SCC68070::ResetOperation()
 
 void SCC68070::DumpCPURegisters()
 {
-    if(!cdi.callbacks.HasOnDisassembler())
+    if(!cdi.callbacks.HasOnLogDisassembler())
         return;
 
     const std::map<std::string, uint32_t>& regs = GetCPURegisters();
@@ -333,7 +333,7 @@ void SCC68070::DumpCPURegisters()
     {
         char s[30];
         snprintf(s, 30, "%s: 0x%08X", reg.first.c_str(), reg.second);
-        cdi.callbacks.OnDisassembler({currentPC, "", s});
+        cdi.callbacks.OnLogDisassembler({currentPC, "", s});
     }
 }
 
