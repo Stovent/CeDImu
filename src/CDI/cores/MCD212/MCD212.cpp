@@ -77,7 +77,8 @@ void MCD212::ExecuteICA1()
         const uint32_t ica = GetLong(addr);
 
         LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tICA1 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, ica);)
-        ICA1.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
+        if(cdi.callbacks.HasOnLogICADCA())
+            cdi.callbacks.OnLogICADCA(ica1, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
         addr += 4;
 
         switch(ica >> 28)
@@ -143,7 +144,8 @@ void MCD212::ExecuteDCA1()
         const uint32_t dca = GetLong(addr);
 
         LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tDCA1 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, dca);)
-        DCA1.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
+        if(cdi.callbacks.HasOnLogICADCA())
+            cdi.callbacks.OnLogICADCA(dca1, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
         {
@@ -209,7 +211,8 @@ void MCD212::ExecuteICA2()
         const uint32_t ica = GetLong(addr);
 
         LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tICA2 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, ica);)
-        ICA2.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
+        if(cdi.callbacks.HasOnLogICADCA())
+            cdi.callbacks.OnLogICADCA(ica2, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
         addr += 4;
 
         switch(ica >> 28)
@@ -268,7 +271,8 @@ void MCD212::ExecuteDCA2()
         const uint32_t dca = GetLong(addr);
 
         LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tDCA2 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, dca);)
-        DCA2.push_back("Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
+        if(cdi.callbacks.HasOnLogICADCA())
+            cdi.callbacks.OnLogICADCA(dca2, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
         {

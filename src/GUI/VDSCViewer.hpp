@@ -1,23 +1,29 @@
 #ifndef VDSCVIEWER_HPP
 #define VDSCVIEWER_HPP
 
-class VDSCViewer;
-
-class Board;
+class CDI;
 class MainFrame;
+#include "GenericList.hpp"
 
 #include <wx/frame.h>
 #include <wx/listctrl.h>
 #include <wx/notebook.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
-#include <wx/textctrl.h>
 #include <wx/timer.h>
+
+#include <mutex>
+#include <vector>
 
 class VDSCViewer : public wxFrame
 {
+    std::vector<std::string> ICA1;
+    std::vector<std::string> DCA1;
+    std::vector<std::string> ICA2;
+    std::vector<std::string> DCA2;
+
     MainFrame* mainFrame;
-    Board& board;
+    CDI& cdi;
     wxTimer timer;
     wxNotebook* notebook;
     wxListCtrl* internalList;
@@ -26,13 +32,19 @@ class VDSCViewer : public wxFrame
     wxPanel* planeBPanel;
     wxPanel* cursorPanel;
     wxPanel* backgroundPanel;
-    wxTextCtrl* ica1Text;
-    wxTextCtrl* dca1Text;
-    wxTextCtrl* ica2Text;
-    wxTextCtrl* dca2Text;
+    GenericList* ica1List;
+    GenericList* dca1List;
+    GenericList* ica2List;
+    GenericList* dca2List;
 
 public:
-    VDSCViewer(MainFrame* parent, Board& baord);
+    std::mutex caMutex;
+    bool flushICA1;
+    bool flushDCA1;
+    bool flushICA2;
+    bool flushDCA2;
+
+    VDSCViewer(MainFrame* parent, CDI& idc);
     ~VDSCViewer();
 
     void RefreshLoop(wxTimerEvent& event);

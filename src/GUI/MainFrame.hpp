@@ -8,7 +8,7 @@ class CeDImu;
 #include "CPUViewer.hpp"
 #include "RAMSearchFrame.hpp"
 #include "SettingsFrame.hpp"
-class VDSCViewer;
+#include "VDSCViewer.hpp"
 
 #include <wx/frame.h>
 #include <wx/menuitem.h>

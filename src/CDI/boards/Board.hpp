@@ -64,18 +64,13 @@ public:
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
 
-    virtual std::vector<std::string> GetICA1() = 0;
-    virtual std::vector<std::string> GetDCA1() = 0;
-    virtual std::vector<std::string> GetICA2() = 0;
-    virtual std::vector<std::string> GetDCA2() = 0;
-
     virtual std::vector<VDSCRegister> GetInternalRegisters() = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() = 0;
-    virtual Plane GetScreen() = 0;
-    virtual Plane GetPlaneA() = 0;
-    virtual Plane GetPlaneB() = 0;
-    virtual Plane GetBackground() = 0;
-    virtual Plane GetCursor() = 0;
+    virtual const Plane& GetScreen() = 0;
+    virtual const Plane& GetPlaneA() = 0;
+    virtual const Plane& GetPlaneB() = 0;
+    virtual const Plane& GetBackground() = 0;
+    virtual const Plane& GetCursor() = 0;
 };
 
 #endif // BOARD_HPP

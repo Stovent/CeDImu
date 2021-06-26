@@ -73,46 +73,6 @@ std::vector<VDSCRegister> MiniMMC::GetControlRegisters()
     return masterRegs;
 }
 
-std::vector<std::string> MiniMMC::GetICA1()
-{
-    std::vector<std::string> ca;
-    ca.push_back("Master:");
-    ca.insert(ca.end(), masterVDSC.ICA1.begin(), masterVDSC.ICA1.end());
-    ca.push_back("Slave:");
-    ca.insert(ca.end(), slaveVDSC.ICA1.begin(), slaveVDSC.ICA1.end());
-    return ca;
-}
-
-std::vector<std::string> MiniMMC::GetDCA1()
-{
-    std::vector<std::string> ca;
-    ca.push_back("Master:");
-    ca.insert(ca.end(), masterVDSC.DCA1.begin(), masterVDSC.DCA1.end());
-    ca.push_back("Slave:");
-    ca.insert(ca.end(), slaveVDSC.DCA1.begin(), slaveVDSC.DCA1.end());
-    return ca;
-}
-
-std::vector<std::string> MiniMMC::GetICA2()
-{
-    std::vector<std::string> ca;
-    ca.push_back("Master:");
-    ca.insert(ca.end(), masterVDSC.ICA2.begin(), masterVDSC.ICA2.end());
-    ca.push_back("Slave:");
-    ca.insert(ca.end(), slaveVDSC.ICA2.begin(), slaveVDSC.ICA2.end());
-    return ca;
-}
-
-std::vector<std::string> MiniMMC::GetDCA2()
-{
-    std::vector<std::string> ca;
-    ca.push_back("Master:");
-    ca.insert(ca.end(), masterVDSC.DCA2.begin(), masterVDSC.DCA2.end());
-    ca.push_back("Slave:");
-    ca.insert(ca.end(), slaveVDSC.DCA2.begin(), slaveVDSC.DCA2.end());
-    return ca;
-}
-
 uint32_t MiniMMC::GetRAMSize() const
 {
     return 0x100000;
@@ -128,27 +88,27 @@ RAMBank MiniMMC::GetRAMBank2() const
     return slaveVDSC.GetRAMBank2();
 }
 
-Plane MiniMMC::GetScreen()
+const Plane& MiniMMC::GetScreen()
 {
     return masterVDSC.GetScreen();
 }
 
-Plane MiniMMC::GetPlaneA()
+const Plane& MiniMMC::GetPlaneA()
 {
     return masterVDSC.GetPlaneA();
 }
 
-Plane MiniMMC::GetPlaneB()
+const Plane& MiniMMC::GetPlaneB()
 {
     return masterVDSC.GetPlaneB();
 }
 
-Plane MiniMMC::GetBackground()
+const Plane& MiniMMC::GetBackground()
 {
     return masterVDSC.GetBackground();
 }
 
-Plane MiniMMC::GetCursor()
+const Plane& MiniMMC::GetCursor()
 {
     return masterVDSC.GetCursor();
 }

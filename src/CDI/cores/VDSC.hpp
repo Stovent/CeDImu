@@ -38,6 +38,14 @@ struct Plane : public std::vector<uint8_t>
     explicit Plane(const size_t sz = 0, uint16_t w = 0, uint16_t h = 0) : std::vector<uint8_t>(sz, 0), width(w), height(h) {}
 };
 
+enum ControlArea
+{
+    ica1,
+    dca1,
+    ica2,
+    dca2,
+};
+
 struct RAMBank
 {
     const uint8_t* data;
@@ -51,10 +59,6 @@ public:
     CDI& cdi;
     OS9::BIOS BIOS;
     uint32_t totalFrameCount;
-    std::vector<std::string> ICA1;
-    std::vector<std::string> DCA1;
-    std::vector<std::string> ICA2;
-    std::vector<std::string> DCA2;
 
     VDSC() = delete;
     VDSC(CDI& idc, const void* bios, const uint32_t size, const uint32_t base) : cdi(idc), BIOS(bios, size, base), totalFrameCount(0) {}

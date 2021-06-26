@@ -18,13 +18,11 @@ void MCD212::ExecuteVideoLine()
         {
             if(GetIC1())
             {
-                ICA1.clear();
                 ExecuteICA1();
             }
 
             if(GetIC2())
             {
-                ICA2.clear();
                 ExecuteICA2();
             }
         }
@@ -56,13 +54,11 @@ void MCD212::ExecuteVideoLine()
 
     if(GetIC1() && GetDC1())
     {
-        DCA1.clear();
         ExecuteDCA1();
     }
 
     if(GetIC2() && GetDC2())
     {
-        DCA2.clear();
         ExecuteDCA2();
     }
 

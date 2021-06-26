@@ -88,6 +88,14 @@ bool CeDImu::InitializeCores()
 
         if(mainFrame->cpuViewer)
             mainFrame->cpuViewer->flushInstructions = true;
+
+        if(mainFrame->vdscViewer)
+        {
+            mainFrame->vdscViewer->flushICA1 = true;
+            mainFrame->vdscViewer->flushDCA1 = true;
+            mainFrame->vdscViewer->flushICA2 = true;
+            mainFrame->vdscViewer->flushDCA2 = true;
+        }
     });
 
     cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);

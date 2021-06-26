@@ -53,26 +53,6 @@ const OS9::BIOS& Mono3::GetBIOS() const
     return mcd212.BIOS;
 }
 
-std::vector<std::string> Mono3::GetICA1()
-{
-    return mcd212.ICA1;
-}
-
-std::vector<std::string> Mono3::GetDCA1()
-{
-    return mcd212.DCA1;
-}
-
-std::vector<std::string> Mono3::GetICA2()
-{
-    return mcd212.ICA2;
-}
-
-std::vector<std::string> Mono3::GetDCA2()
-{
-    return mcd212.DCA2;
-}
-
 std::vector<VDSCRegister> Mono3::GetInternalRegisters()
 {
     return mcd212.GetInternalRegisters();
@@ -98,27 +78,27 @@ RAMBank Mono3::GetRAMBank2() const
     return mcd212.GetRAMBank2();
 }
 
-Plane Mono3::GetScreen()
+const Plane& Mono3::GetScreen()
 {
     return mcd212.GetScreen();
 }
 
-Plane Mono3::GetPlaneA()
+const Plane& Mono3::GetPlaneA()
 {
     return mcd212.GetPlaneA();
 }
 
-Plane Mono3::GetPlaneB()
+const Plane& Mono3::GetPlaneB()
 {
     return mcd212.GetPlaneB();
 }
 
-Plane Mono3::GetBackground()
+const Plane& Mono3::GetBackground()
 {
     return mcd212.GetBackground();
 }
 
-Plane Mono3::GetCursor()
+const Plane& Mono3::GetCursor()
 {
     return mcd212.GetCursor();
 }

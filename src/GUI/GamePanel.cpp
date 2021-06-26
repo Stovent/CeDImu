@@ -3,6 +3,7 @@
 wxBEGIN_EVENT_TABLE(GamePanel, wxPanel)
     EVT_KEY_DOWN(GamePanel::OnKeyDown)
     EVT_KEY_UP(GamePanel::OnKeyUp)
+    EVT_PAINT(GamePanel::RefreshLoop)
 wxEND_EVENT_TABLE()
 
 GamePanel::GamePanel(MainFrame* parent, CeDImu& appp) : wxPanel(parent), app(appp)

@@ -297,7 +297,7 @@ void MainFrame::OnVDSCViewer(wxCommandEvent& event)
 {
     if(vdscViewer != nullptr || !app.cdi.board)
         return;
-    vdscViewer = new VDSCViewer(this, *app.cdi.board);
+    vdscViewer = new VDSCViewer(this, app.cdi);
     vdscViewer->Show();
 }
 

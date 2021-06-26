@@ -41,18 +41,13 @@ public:
     virtual uint32_t GetTotalFrameCount() override;
     virtual const OS9::BIOS& GetBIOS() const override;
 
-    virtual std::vector<std::string> GetICA1() override;
-    virtual std::vector<std::string> GetDCA1() override;
-    virtual std::vector<std::string> GetICA2() override;
-    virtual std::vector<std::string> GetDCA2() override;
-
     virtual std::vector<VDSCRegister> GetInternalRegisters() override;
     virtual std::vector<VDSCRegister> GetControlRegisters() override;
-    virtual Plane GetScreen() override;
-    virtual Plane GetPlaneA() override;
-    virtual Plane GetPlaneB() override;
-    virtual Plane GetBackground() override;
-    virtual Plane GetCursor() override;
+    virtual const Plane& GetScreen() override;
+    virtual const Plane& GetPlaneA() override;
+    virtual const Plane& GetPlaneB() override;
+    virtual const Plane& GetBackground() override;
+    virtual const Plane& GetCursor() override;
 };
 
 #endif // MINIMMC_HPP

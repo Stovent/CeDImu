@@ -20,19 +20,25 @@ class Callbacks
     std::mutex onFrameCompletedMutex;
     std::function<void()> onFrameCompletedCallback;
 
+    std::mutex onLogICADCAMutex;
+    std::function<void(ControlArea, const std::string&)> onLogICADCACallback;
+
 public:
     explicit Callbacks(const std::function<void(const Instruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
-                       const std::function<void()>& frameCompleted = nullptr) :
+                       const std::function<void()>& frameCompleted = nullptr,
+                       const std::function<void(ControlArea, const std::string&)>& icadca = nullptr) :
        onLogDisassemblerCallback(disassembler),
        onUARTOutCallback(uartOut),
-       onFrameCompletedCallback(frameCompleted)
+       onFrameCompletedCallback(frameCompleted),
+       onLogICADCACallback(icadca)
    {}
 
    Callbacks(const Callbacks& other) :
        onLogDisassemblerCallback(other.onLogDisassemblerCallback),
        onUARTOutCallback(other.onUARTOutCallback),
-       onFrameCompletedCallback(other.onFrameCompletedCallback)
+       onFrameCompletedCallback(other.onFrameCompletedCallback),
+       onLogICADCACallback(other.onLogICADCACallback)
    {}
 
     bool HasOnLogDisassembler()
@@ -74,6 +80,23 @@ public:
         std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
         if(onFrameCompletedCallback)
             onFrameCompletedCallback();
+    }
+
+    bool HasOnLogICADCA()
+    {
+        std::lock_guard<std::mutex> lock(onLogICADCAMutex);
+        return (bool)onLogICADCACallback;
+    }
+    void SetOnLogICADCA(const std::function<void(ControlArea, const std::string&)>& callback)
+    {
+        std::lock_guard<std::mutex> lock(onLogICADCAMutex);
+        onLogICADCACallback = callback;
+    }
+    void OnLogICADCA(ControlArea area, const std::string& inst)
+    {
+        std::lock_guard<std::mutex> lock(onLogICADCAMutex);
+        if(onLogICADCACallback)
+            onLogICADCACallback(area, inst);
     }
 };
 

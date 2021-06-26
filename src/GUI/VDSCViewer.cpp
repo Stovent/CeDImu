@@ -1,7 +1,7 @@
 #include "VDSCViewer.hpp"
 #include "enums.hpp"
 #include "MainFrame.hpp"
-#include "../CDI/boards/Board.hpp"
+#include "../CDI/CDI.hpp"
 #include "../CDI/common/utils.hpp"
 #include "../CDI/common/Video.hpp"
 #include "../CDI/cores/VDSC.hpp"
@@ -16,7 +16,7 @@ wxBEGIN_EVENT_TABLE(VDSCViewer, wxFrame)
     EVT_TIMER(IDVDSCViewerTimer, VDSCViewer::RefreshLoop)
 wxEND_EVENT_TABLE()
 
-VDSCViewer::VDSCViewer(MainFrame* parent, Board& baord) : wxFrame(parent, wxID_ANY, "VDSC Viewer"), board(baord), timer(this, IDVDSCViewerTimer)
+VDSCViewer::VDSCViewer(MainFrame* parent, CDI& idc) : wxFrame(parent, wxID_ANY, "VDSC Viewer"), cdi(idc), timer(this, IDVDSCViewerTimer)
 {
     mainFrame = parent;
 
@@ -78,7 +78,7 @@ VDSCViewer::VDSCViewer(MainFrame* parent, Board& baord) : wxFrame(parent, wxID_A
 
         registersPage->SetSizer(listsSizer);
 
-        std::vector<VDSCRegister> iregs = board.GetInternalRegisters();
+        std::vector<VDSCRegister> iregs = cdi.board->GetInternalRegisters();
         long i = 0;
         for(const VDSCRegister& reg : iregs)
         {
@@ -88,7 +88,7 @@ VDSCViewer::VDSCViewer(MainFrame* parent, Board& baord) : wxFrame(parent, wxID_A
             internalList->SetItem(itemIndex, 3, reg.disassembledValue);
         }
 
-        std::vector<VDSCRegister> cregs = board.GetControlRegisters();
+        std::vector<VDSCRegister> cregs = cdi.board->GetControlRegisters();
         i = 0;
         for(const VDSCRegister& reg : cregs)
         {
@@ -103,20 +103,27 @@ VDSCViewer::VDSCViewer(MainFrame* parent, Board& baord) : wxFrame(parent, wxID_A
     // ICA/DCA
     wxNotebookPage* icadcaPage = new wxNotebookPage(notebook, wxID_ANY);
     {
-        ica1Text = new wxTextCtrl(icadcaPage, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
-        dca1Text = new wxTextCtrl(icadcaPage, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
-        ica2Text = new wxTextCtrl(icadcaPage, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
-        dca2Text = new wxTextCtrl(icadcaPage, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+        const std::function<void(wxListCtrl*)> builder = [=] (wxListCtrl* self) {
+            wxListItem col;
+            col.SetId(0);
+            col.SetText("Instruction");
+            col.SetWidth(400);
+            self->InsertColumn(0, col);
+        };
+        ica1List = new GenericList(icadcaPage, builder, [=] (unsigned long item, long) -> std::string { std::lock_guard<std::mutex> lock(this->caMutex); if(item >= this->ICA1.size()) return ""; return this->ICA1[item]; });
+        dca1List = new GenericList(icadcaPage, builder, [=] (unsigned long item, long) -> std::string { std::lock_guard<std::mutex> lock(this->caMutex); if(item >= this->DCA1.size()) return ""; return this->DCA1[item]; });
+        ica2List = new GenericList(icadcaPage, builder, [=] (unsigned long item, long) -> std::string { std::lock_guard<std::mutex> lock(this->caMutex); if(item >= this->ICA2.size()) return ""; return this->ICA2[item]; });
+        dca2List = new GenericList(icadcaPage, builder, [=] (unsigned long item, long) -> std::string { std::lock_guard<std::mutex> lock(this->caMutex); if(item >= this->DCA2.size()) return ""; return this->DCA2[item]; });
 
         wxStaticBoxSizer* ica1Sizer = new wxStaticBoxSizer(wxHORIZONTAL, icadcaPage, "ICA 1");
         wxStaticBoxSizer* dca1Sizer = new wxStaticBoxSizer(wxHORIZONTAL, icadcaPage, "DCA 1");
         wxStaticBoxSizer* ica2Sizer = new wxStaticBoxSizer(wxHORIZONTAL, icadcaPage, "ICA 2");
         wxStaticBoxSizer* dca2Sizer = new wxStaticBoxSizer(wxHORIZONTAL, icadcaPage, "DCA 2");
 
-        ica1Sizer->Add(ica1Text, 1, wxEXPAND);
-        dca1Sizer->Add(dca1Text, 1, wxEXPAND);
-        ica2Sizer->Add(ica2Text, 1, wxEXPAND);
-        dca2Sizer->Add(dca2Text, 1, wxEXPAND);
+        ica1Sizer->Add(ica1List, 1, wxEXPAND);
+        dca1Sizer->Add(dca1List, 1, wxEXPAND);
+        ica2Sizer->Add(ica2List, 1, wxEXPAND);
+        dca2Sizer->Add(dca2List, 1, wxEXPAND);
 
         wxBoxSizer* topSizer = new wxBoxSizer(wxHORIZONTAL);
         topSizer->Add(ica1Sizer, 1, wxEXPAND);
@@ -174,11 +181,54 @@ VDSCViewer::VDSCViewer(MainFrame* parent, Board& baord) : wxFrame(parent, wxID_A
 
     notebookPanel->SetSizer(notebookSizer);
 
+    cdi.callbacks.SetOnLogICADCA([=] (ControlArea area, const std::string& str) {
+        std::lock_guard<std::mutex> lock(this->caMutex);
+        switch(area)
+        {
+        case ica1:
+            if(this->flushICA1)
+            {
+                this->flushICA1 = false;
+                this->ICA1.clear();
+            }
+            this->ICA1.push_back(str);
+            break;
+
+        case dca1:
+            if(this->flushDCA1)
+            {
+                this->flushDCA1 = false;
+                this->DCA1.clear();
+            }
+            this->DCA1.push_back(str);
+            break;
+
+        case ica2:
+            if(this->flushICA2)
+            {
+                this->flushICA2 = false;
+                this->ICA2.clear();
+            }
+            this->ICA2.push_back(str);
+            break;
+
+        case dca2:
+            if(this->flushDCA2)
+            {
+                this->flushDCA2 = false;
+                this->DCA2.clear();
+            }
+            this->DCA2.push_back(str);
+            break;
+        }
+    });
+
     timer.Start(16);
 }
 
 VDSCViewer::~VDSCViewer()
 {
+    cdi.callbacks.SetOnLogICADCA(nullptr);
     mainFrame->vdscViewer = nullptr;
 }
 
@@ -187,7 +237,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
     const int selectedPage = notebook->GetSelection();
     if(selectedPage == 0) // Registers
     {
-        std::vector<VDSCRegister> iregs = board.GetInternalRegisters();
+        std::vector<VDSCRegister> iregs = cdi.board->GetInternalRegisters();
         long i = 0;
         for(const VDSCRegister& reg : iregs)
         {
@@ -195,7 +245,7 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
             internalList->SetItem(i++, 3, reg.disassembledValue);
         }
 
-        std::vector<VDSCRegister> cregs = board.GetControlRegisters();
+        std::vector<VDSCRegister> cregs = cdi.board->GetControlRegisters();
         i = 0;
         for(const VDSCRegister& reg : cregs)
         {
@@ -204,29 +254,15 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
     }
     else if(selectedPage == 1) // ICA/DCA
     {
-        std::stringstream ica1;
-        std::ostream_iterator<std::string> ssica1(ica1, "\n");
-        std::vector<std::string> vica1 = board.GetICA1();
-        std::copy(vica1.begin(), vica1.end(), ssica1);
-        ica1Text->SetValue(ica1.str());
-
-        std::stringstream dca1;
-        std::ostream_iterator<std::string> ssdca1(dca1, "\n");
-        std::vector<std::string> vdca1 = board.GetDCA1();
-        std::copy(vdca1.begin(), vdca1.end(), ssdca1);
-        dca1Text->SetValue(dca1.str());
-
-        std::stringstream ica2;
-        std::ostream_iterator<std::string> ssica2(ica2, "\n");
-        std::vector<std::string> vica2 = board.GetICA2();
-        std::copy(vica2.begin(), vica2.end(), ssica2);
-        ica2Text->SetValue(ica2.str());
-
-        std::stringstream dca2;
-        std::ostream_iterator<std::string> ssdca2(dca2, "\n");
-        std::vector<std::string> vdca2 = board.GetDCA2();
-        std::copy(vdca2.begin(), vdca2.end(), ssdca2);
-        dca2Text->SetValue(dca2.str());
+        std::lock_guard<std::mutex> lock(caMutex);
+        ica1List->SetItemCount(ICA1.size());
+        ica1List->Refresh();
+        dca1List->SetItemCount(DCA1.size());
+        dca1List->Refresh();
+        ica2List->SetItemCount(ICA2.size());
+        ica2List->Refresh();
+        dca2List->SetItemCount(DCA2.size());
+        dca2List->Refresh();
     }
     else if(selectedPage == 2) // Planes
     {
@@ -235,10 +271,10 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
         wxClientDC dcBackground(backgroundPanel);
         wxClientDC dcCursor(cursorPanel);
 
-        const Plane& a = board.GetPlaneA();
-        const Plane& b = board.GetPlaneB();
-        const Plane& bg = board.GetBackground();
-        const Plane& c = board.GetCursor();
+        const Plane& a = cdi.board->GetPlaneA();
+        const Plane& b = cdi.board->GetPlaneB();
+        const Plane& bg = cdi.board->GetBackground();
+        const Plane& c = cdi.board->GetCursor();
 
         if(a.width && a.height)
         {
