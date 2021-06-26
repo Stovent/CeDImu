@@ -28,11 +28,14 @@ struct VDSCRegister
     std::string disassembledValue;
 };
 
-struct Plane
+/** \struct Plane
+ * \brief Represent a video plane.
+ */
+struct Plane : public std::vector<uint8_t>
 {
-    const uint8_t* pixels;
-    uint16_t width;
-    uint16_t height;
+    uint16_t width; /**< Width of the plane. */
+    uint16_t height; /**< Height of the plane. */
+    explicit Plane(const size_t sz = 0, uint16_t w = 0, uint16_t h = 0) : std::vector<uint8_t>(sz, 0), width(w), height(h) {}
 };
 
 struct RAMBank
@@ -76,11 +79,11 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() const = 0;
-    virtual Plane GetScreen() const = 0;
-    virtual Plane GetPlaneA() const = 0;
-    virtual Plane GetPlaneB() const = 0;
-    virtual Plane GetBackground() const = 0;
-    virtual Plane GetCursor() const = 0;
+    virtual const Plane& GetScreen() const = 0;
+    virtual const Plane& GetPlaneA() const = 0;
+    virtual const Plane& GetPlaneB() const = 0;
+    virtual const Plane& GetBackground() const = 0;
+    virtual const Plane& GetCursor() const = 0;
 };
 
 #endif // VDSC_HPP

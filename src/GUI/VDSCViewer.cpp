@@ -235,47 +235,47 @@ void VDSCViewer::RefreshLoop(wxTimerEvent& event)
         wxClientDC dcBackground(backgroundPanel);
         wxClientDC dcCursor(cursorPanel);
 
-        Plane a = board.GetPlaneA();
-        Plane b = board.GetPlaneB();
-        Plane bg = board.GetBackground();
-        Plane c = board.GetCursor();
+        const Plane& a = board.GetPlaneA();
+        const Plane& b = board.GetPlaneB();
+        const Plane& bg = board.GetBackground();
+        const Plane& c = board.GetCursor();
 
-        if(a.pixels != nullptr)
+        if(a.width && a.height)
         {
             wxImage planeA(a.width, a.height);
             if(!planeA.HasAlpha())
                 planeA.InitAlpha();
-            Video::splitARGB(a.pixels, a.width * a.height * 4, planeA.GetAlpha(), planeA.GetData());
+            Video::splitARGB(a.data(), a.width * a.height * 4, planeA.GetAlpha(), planeA.GetData());
             if(planeA.IsOk())
                 dcA.DrawBitmap(wxBitmap(planeA.Scale(planeAPanel->GetClientSize().x, planeAPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
         }
 
-        if(b.pixels != nullptr)
+        if(b.width && b.height)
         {
             wxImage planeB(b.width, b.height);
             if(!planeB.HasAlpha())
                 planeB.InitAlpha();
-            Video::splitARGB(b.pixels, b.width * b.height * 4, planeB.GetAlpha(), planeB.GetData());
+            Video::splitARGB(b.data(), b.width * b.height * 4, planeB.GetAlpha(), planeB.GetData());
             if(planeB.IsOk())
                 dcB.DrawBitmap(wxBitmap(planeB.Scale(planeBPanel->GetClientSize().x, planeBPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
         }
 
-        if(bg.pixels != nullptr)
+        if(bg.width && bg.height)
         {
             wxImage background(bg.width, bg.height);
             if(!background.HasAlpha())
                 background.InitAlpha();
-            Video::splitARGB(bg.pixels, bg.width * bg.height * 4, background.GetAlpha(), background.GetData());
+            Video::splitARGB(bg.data(), bg.width * bg.height * 4, background.GetAlpha(), background.GetData());
             if(background.IsOk())
                 dcBackground.DrawBitmap(wxBitmap(background.Scale(backgroundPanel->GetClientSize().x, backgroundPanel->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
         }
 
-        if(c.pixels != nullptr)
+        if(c.width && c.height)
         {
             wxImage cursor(c.width, c.height);
             if(!cursor.HasAlpha())
                 cursor.InitAlpha();
-            Video::splitARGB(c.pixels, c.width *c.height * 4, cursor.GetAlpha(), cursor.GetData());
+            Video::splitARGB(c.data(), c.width *c.height * 4, cursor.GetAlpha(), cursor.GetData());
             if(cursor.IsOk())
                 dcCursor.DrawBitmap(wxBitmap(cursor), 0, 0);
         }

@@ -33,6 +33,13 @@ void MCD212::ExecuteVideoLine()
 
     SET_DA_BIT()
 
+    if(lineNumber == 0)
+    {
+        screen.width = backgroundPlane.width = planeA.width = GetHorizontalResolution1();
+        planeB.width = GetHorizontalResolution2();
+        screen.height = backgroundPlane.height = planeB.height = planeA.height = GetVerticalResolution();
+    }
+
     if(GetSM() && !isEven(lineNumber)) // not even because my line count starts at 0.
         UNSET_PA_BIT()
     else
@@ -64,24 +71,24 @@ void MCD212::ExecuteVideoLine()
     {
         if(GetDE())
         {
-            Video::splitARGB(backgroundPlane.data(), GetHorizontalResolution1() * GetVerticalResolution() * 4, nullptr, screen.data());
+            Video::splitARGB(backgroundPlane.data(), backgroundPlane.width * backgroundPlane.height * 4, nullptr, screen.data());
 
             if(controlRegisters[PlaneOrder] & 1)
             {
-                Video::paste(screen.data(), GetHorizontalResolution1(), GetVerticalResolution(), planeA.data(), GetHorizontalResolution1(), GetVerticalResolution());
-                Video::paste(screen.data(), GetHorizontalResolution1(), GetVerticalResolution(), planeB.data(), GetHorizontalResolution2(), GetVerticalResolution());
+                Video::paste(screen.data(), screen.width, screen.height, planeA.data(), planeA.width, planeA.height);
+                Video::paste(screen.data(), screen.width, screen.height, planeB.data(), planeB.width, planeB.height);
             }
             else
             {
-                Video::paste(screen.data(), GetHorizontalResolution1(), GetVerticalResolution(), planeB.data(), GetHorizontalResolution2(), GetVerticalResolution());
-                Video::paste(screen.data(), GetHorizontalResolution1(), GetVerticalResolution(), planeA.data(), GetHorizontalResolution1(), GetVerticalResolution());
+                Video::paste(screen.data(), screen.width, screen.height, planeB.data(), planeB.width, planeB.height);
+                Video::paste(screen.data(), screen.width, screen.height, planeA.data(), planeA.width, planeA.height);
             }
 
             if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
             {
                 const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // TODO: address is in double resolution mode
                 const uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
-                Video::paste(screen.data(), GetHorizontalResolution1(), GetVerticalResolution(), cursorPlane.data(), CURSOR_WIDTH, CURSOR_HEIGHT, x, y);
+                Video::paste(screen.data(), screen.width, screen.height, cursorPlane.data(), CURSOR_WIDTH, CURSOR_HEIGHT, x, y);
             }
         }
 
@@ -100,19 +107,18 @@ void MCD212::DrawLinePlaneA()
     if(controlRegisters[ImageCodingMethod] & 0x00000F) // plane on
     {
         const uint8_t fileType = GetFT12_1();
-        const uint16_t hRes = GetHorizontalResolution1();
         if(fileType <= 1)
         {
             const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
-            bytes = Video::decodeBitmapLine(&planeA[lineNumber * hRes * 4], hRes, nullptr, &memory[GetVSR1()], codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data(), controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
+            bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], planeA.width, nullptr, &memory[GetVSR1()], codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data(), controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
 
             if(codingMethod == CLUT4 || codingMethod == CLUT7 || codingMethod == CLUT77 || codingMethod == CLUT8)
-                HandleCLUTTransparency(&planeA[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
+                HandleCLUTTransparency(&planeA[lineNumber * planeA.width * 4], planeA.width, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
         }
         else if(fileType == 2)
         {
-            bytes = Video::decodeRunLengthLine(&planeA[lineNumber * hRes * 4], hRes, &memory[GetVSR1()], CLUT.data(), GetCM1());
-            HandleCLUTTransparency(&planeA[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
+            bytes = Video::decodeRunLengthLine(&planeA[lineNumber * planeA.width * 4], planeA.width, &memory[GetVSR1()], CLUT.data(), GetCM1());
+            HandleCLUTTransparency(&planeA[lineNumber * planeA.width * 4], planeA.width, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
         }
         else
         {
@@ -128,19 +134,18 @@ void MCD212::DrawLinePlaneB()
     if(controlRegisters[ImageCodingMethod] & 0x000F00) // plane on
     {
         const uint8_t fileType = GetFT12_2();
-        const uint16_t hRes = GetHorizontalResolution2();
         if(fileType <= 1)
         {
             const uint8_t codingMethod = controlRegisters[ImageCodingMethod] >> 8 & 0x00000F;
-            bytes = Video::decodeBitmapLine(&planeB[lineNumber * hRes * 4], hRes, &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
+            bytes = Video::decodeBitmapLine(&planeB[lineNumber * planeB.width * 4], planeB.width, &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
 
             if(codingMethod == CLUT4 || codingMethod == CLUT7)
-                HandleCLUTTransparency(&planeB[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
+                HandleCLUTTransparency(&planeB[lineNumber * planeB.width * 4], planeB.width, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
         }
         else if(fileType == 2)
         {
-            bytes = Video::decodeRunLengthLine(&planeB[lineNumber * hRes * 4], hRes, &memory[GetVSR2()], &CLUT[128], GetCM2());
-            HandleCLUTTransparency(&planeB[lineNumber * hRes * 4], hRes, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
+            bytes = Video::decodeRunLengthLine(&planeB[lineNumber * planeB.width * 4], planeB.width, &memory[GetVSR2()], &CLUT[128], GetCM2());
+            HandleCLUTTransparency(&planeB[lineNumber * planeB.width * 4], planeB.width, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
         }
         else
         {
@@ -152,13 +157,13 @@ void MCD212::DrawLinePlaneB()
 
 void MCD212::DrawLineBackground()
 {
-    uint8_t* pixels  = &backgroundPlane[GetHorizontalResolution1() * lineNumber * 4];
+    uint8_t* pixels  = &backgroundPlane[backgroundPlane.width * lineNumber * 4];
     const uint8_t A = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
     const uint8_t R = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
     const uint8_t G = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
     const uint8_t B = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
 
-    for(uint16_t i = 0, j = 0; i < GetHorizontalResolution1(); i++)
+    for(uint16_t i = 0, j = 0; i < backgroundPlane.width; i++)
     {
         pixels[j++] = A;
         pixels[j++] = R;
@@ -226,13 +231,12 @@ void MCD212::HandleCLUTTransparency(uint8_t* pixels, const uint16_t width, const
 void MCD212::DecodeMosaicLineA() // TODO
 {
     const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
-    const uint16_t width = GetHorizontalResolution1();
     uint8_t* data = &memory[GetVSR1()];
-    uint8_t* pixels = &planeA[lineNumber * width * 4];
+    uint8_t* pixels = &planeA[lineNumber * planeA.width * 4];
     uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
 
-    for(uint16_t x = 0; x < width;)
+    for(uint16_t x = 0; x < planeA.width;)
     {
         if(codingMethod == DYUV)
         {
@@ -266,14 +270,13 @@ void MCD212::DecodeMosaicLineA() // TODO
 void MCD212::DecodeMosaicLineB() // TODO
 {
     const uint8_t codingMethod = (controlRegisters[ImageCodingMethod] & 0x000F00) >> 8;
-    const uint16_t width = GetHorizontalResolution2();
     uint8_t* dataA = &memory[GetVSR1()];
     uint8_t* dataB = &memory[GetVSR2()];
-    uint8_t* pixels = &planeB[lineNumber * width * 4];
+    uint8_t* pixels = &planeB[lineNumber * planeB.width * 4];
     uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
 
-    for(uint16_t x = 0; x < width;)
+    for(uint16_t x = 0; x < planeB.width;)
     {
         if(codingMethod == DYUV)
         {

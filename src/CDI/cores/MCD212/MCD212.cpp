@@ -10,11 +10,11 @@ MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL) 
     VDSC(idc, bios, size, 0x400000),
     isPAL(PAL),
     memory(0x280000, 0),
-    screen(PLANE_RGB_SIZE, 0),
-    planeA(PLANE_ARGB_SIZE, 0),
-    planeB(PLANE_ARGB_SIZE, 0),
-    cursorPlane(CURSOR_ARGB_SIZE, 0),
-    backgroundPlane(PLANE_ARGB_SIZE, 0)
+    screen(PLANE_RGB_SIZE),
+    planeA(PLANE_ARGB_SIZE),
+    planeB(PLANE_ARGB_SIZE),
+    cursorPlane(CURSOR_ARGB_SIZE, 16, 16),
+    backgroundPlane(PLANE_ARGB_SIZE)
 {
     memorySwapCount = 0;
 
@@ -329,27 +329,27 @@ RAMBank MCD212::GetRAMBank2() const
     return {&memory[0x200000], 0x200000, 0x80000};
 }
 
-Plane MCD212::GetScreen() const
+const Plane& MCD212::GetScreen() const
 {
-    return {screen.data(), GetHorizontalResolution1(), GetVerticalResolution()};
+    return screen;
 }
 
-Plane MCD212::GetPlaneA() const
+const Plane& MCD212::GetPlaneA() const
 {
-    return {planeA.data(), GetHorizontalResolution1(), GetVerticalResolution()};
+    return planeA;
 }
 
-Plane MCD212::GetPlaneB() const
+const Plane& MCD212::GetPlaneB() const
 {
-    return {planeB.data(), GetHorizontalResolution2(), GetVerticalResolution()};
+    return planeB;
 }
 
-Plane MCD212::GetBackground() const
+const Plane& MCD212::GetBackground() const
 {
-    return {backgroundPlane.data(), GetHorizontalResolution1(), GetVerticalResolution()};
+    return backgroundPlane;
 }
 
-Plane MCD212::GetCursor() const
+const Plane& MCD212::GetCursor() const
 {
-    return {cursorPlane.data(), 16, 16};
+    return cursorPlane;
 }

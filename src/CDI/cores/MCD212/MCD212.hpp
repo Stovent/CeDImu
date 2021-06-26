@@ -94,11 +94,11 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
     virtual std::vector<VDSCRegister> GetControlRegisters() const override;
-    virtual Plane GetScreen() const override;
-    virtual Plane GetPlaneA() const override;
-    virtual Plane GetPlaneB() const override;
-    virtual Plane GetBackground() const override;
-    virtual Plane GetCursor() const override;
+    virtual const Plane& GetScreen() const override;
+    virtual const Plane& GetPlaneA() const override;
+    virtual const Plane& GetPlaneB() const override;
+    virtual const Plane& GetBackground() const override;
+    virtual const Plane& GetCursor() const override;
 
 private:
     const bool isPAL;
@@ -106,11 +106,11 @@ private:
 
     std::vector<uint8_t> memory;
 
-    std::vector<uint8_t> screen;
-    std::vector<uint8_t> planeA;
-    std::vector<uint8_t> planeB;
-    std::vector<uint8_t> cursorPlane;
-    std::vector<uint8_t> backgroundPlane;
+    Plane screen;
+    Plane planeA;
+    Plane planeB;
+    Plane cursorPlane;
+    Plane backgroundPlane;
 
     std::array<uint32_t, 0x80> controlRegisters;
     std::array<uint32_t, 256> CLUT;

@@ -52,29 +52,29 @@ RAMBank SCC66470::GetRAMBank2() const
     return {&memory[0x80000], 0x80000, 0x80000};
 }
 
-Plane SCC66470::GetScreen() const
+const Plane& SCC66470::GetScreen() const
 {
-    return {nullptr, 0, 0};
+    return screen;
 }
 
-Plane SCC66470::GetPlaneA() const
+const Plane& SCC66470::GetPlaneA() const
 {
-    return {nullptr, 0, 0};
+    return planeA;
 }
 
-Plane SCC66470::GetPlaneB() const
+const Plane& SCC66470::GetPlaneB() const
 {
-    return {nullptr, 0, 0};
+    return planeB;
 }
 
-Plane SCC66470::GetBackground() const
+const Plane& SCC66470::GetBackground() const
 {
-    return {nullptr, 0, 0};
+    return backgroundPlane;
 }
 
-Plane SCC66470::GetCursor() const
+const Plane& SCC66470::GetCursor() const
 {
-    return {nullptr, 0, 0};
+    return cursorPlane;
 }
 
 #undef   SET_DA_BIT

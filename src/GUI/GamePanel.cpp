@@ -17,12 +17,12 @@ GamePanel::~GamePanel()
 
 void GamePanel::RefreshLoop(wxPaintEvent& event)
 {
-    Plane p = app.cdi.board->GetScreen();
-    if(p.pixels == nullptr)
+    const Plane& p = app.cdi.board->GetScreen();
+    if(p.width == 0 || p.height == 0)
         return;
 
     wxImage screen(p.width, p.height);
-    memcpy(screen.GetData(), p.pixels, p.width * p.height * 3);
+    memcpy(screen.GetData(), p.data(), p.width * p.height * 3);
 
     wxPaintDC dc(this);
     dc.Clear();
@@ -33,14 +33,14 @@ void GamePanel::RefreshLoop(wxPaintEvent& event)
 
 void GamePanel::RefreshScreen()
 {
-    Plane p = app.cdi.board->GetScreen();
-    if(p.pixels == nullptr)
+    const Plane& p = app.cdi.board->GetScreen();
+    if(p.width == 0 || p.height == 0)
         return;
 
     frameWidth = p.width;
     frameHeight = p.height;
     wxImage screen(p.width, p.height);
-    memcpy(screen.GetData(), p.pixels, p.width * p.height * 3);
+    memcpy(screen.GetData(), p.data(), p.width * p.height * 3);
 
     wxClientDC dc(this);
     dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);

@@ -58,11 +58,11 @@ public:
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
     virtual std::vector<VDSCRegister> GetControlRegisters() const override;
-    virtual Plane GetScreen() const override;
-    virtual Plane GetPlaneA() const override;
-    virtual Plane GetPlaneB() const override;
-    virtual Plane GetBackground() const override;
-    virtual Plane GetCursor() const override;
+    virtual const Plane& GetScreen() const override;
+    virtual const Plane& GetPlaneA() const override;
+    virtual const Plane& GetPlaneB() const override;
+    virtual const Plane& GetBackground() const override;
+    virtual const Plane& GetCursor() const override;
 
 private:
     std::vector<uint8_t> memory;
@@ -76,6 +76,12 @@ private:
     const bool isMaster;
 
     FILE* out_dram;
+
+    Plane screen;
+    Plane planeA;
+    Plane planeB;
+    Plane cursorPlane;
+    Plane backgroundPlane;
 
     void MemorySwap();
     uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
