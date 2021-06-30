@@ -14,7 +14,7 @@ void MCD212::ExecuteVideoLine()
 {
     if(++verticalLines <= GetVerticalRetraceLines())
     {
-        if(verticalLines == 1) // TODO: how to do this on every vertical line?
+        if(verticalLines == 1 && GetDE()) // TODO: how to do this on every vertical line?
         {
             if(GetIC1())
             {
@@ -50,16 +50,16 @@ void MCD212::ExecuteVideoLine()
         DrawLineBackground();
         if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
             DrawLineCursor();
-    }
 
-    if(GetIC1() && GetDC1())
-    {
-        ExecuteDCA1();
-    }
+        if(GetIC1() && GetDC1())
+        {
+            ExecuteDCA1();
+        }
 
-    if(GetIC2() && GetDC2())
-    {
-        ExecuteDCA2();
+        if(GetIC2() && GetDC2())
+        {
+            ExecuteDCA2();
+        }
     }
 
     lineNumber++;

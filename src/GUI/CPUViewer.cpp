@@ -1,5 +1,6 @@
 #include "CPUViewer.hpp"
 #include "enums.hpp"
+#include "MainFrame.hpp"
 #include "../CDI/common/utils.hpp"
 
 #include <wx/dcclient.h>
@@ -7,6 +8,7 @@
 wxBEGIN_EVENT_TABLE(CPUViewer, wxFrame)
     EVT_TIMER(IDCPUViewerTimer, CPUViewer::RefreshLoop)
     EVT_PAINT(CPUViewer::PaintEvent)
+    EVT_CLOSE(CPUViewer::OnClose)
 wxEND_EVENT_TABLE()
 
 CPUViewer::CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSize& size) :
@@ -41,6 +43,7 @@ CPUViewer::CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSi
         frame->InsertColumn(2, instructionCol);
 
     }, [this] (long item, long column) -> std::string {
+        std::lock_guard<std::mutex> lock(this->instructionsMutex);
         if(column == 0)
             return toHex(this->instructions[item].address);
         if(column == 1)
@@ -114,10 +117,11 @@ CPUViewer::CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSi
     });
 
     cdi.callbacks.SetOnLogDisassembler([this] (const Instruction& inst) {
+        std::lock_guard<std::mutex> lock(this->instructionsMutex);
         if(this->flushInstructions)
         {
-            for(const Instruction& inst : this->instructions)
-                this->mainFrame->app.logInstructions << std::hex << inst.address << "\t(" << inst.biosLocation << ")\t" << inst.instruction << std::endl;
+            LOG(for(const Instruction& inst : this->instructions) \
+                this->mainFrame->app.logInstructions << std::hex << inst.address << "\t(" << inst.biosLocation << ")\t" << inst.instruction << std::endl;)
 
             this->instructions.clear();
             this->flushInstructions = false;
@@ -130,11 +134,15 @@ CPUViewer::CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSi
 
 CPUViewer::~CPUViewer()
 {
+    auiManager.UnInit();
+}
+
+void CPUViewer::OnClose(wxCloseEvent& event)
+{
     cdi.callbacks.SetOnLogDisassembler(nullptr);
     cdi.callbacks.SetOnUARTOut(nullptr);
     mainFrame->cpuViewer = nullptr;
     renderTimer.Stop();
-    auiManager.UnInit();
 }
 
 void CPUViewer::PaintEvent(wxPaintEvent& event)

@@ -142,6 +142,7 @@ void MCD212::ExecuteDCA1()
     {
         const uint32_t addr = GetDCP1();
         const uint32_t dca = GetLong(addr);
+        SetDCP1(addr + 4);
 
         LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tDCA1 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, dca);)
         if(cdi.callbacks.HasOnLogICADCA())
@@ -156,7 +157,7 @@ void MCD212::ExecuteDCA1()
             break;
 
         case 2: // RELOAD DCP
-            SetDCP1((dca & 0x003FFFFC) - 4);
+            SetDCP1(dca & 0x003FFFFC);
             break;
 
         case 3: // RELOAD DCP AND STOP
@@ -199,7 +200,6 @@ void MCD212::ExecuteDCA1()
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
             }
         }
-        SetDCP1(addr + 4);
     }
 }
 
@@ -269,6 +269,7 @@ void MCD212::ExecuteDCA2()
     {
         const uint32_t addr = GetDCP2();
         const uint32_t dca = GetLong(addr);
+        SetDCP2(addr + 4);
 
         LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tDCA2 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, dca);)
         if(cdi.callbacks.HasOnLogICADCA())
@@ -283,7 +284,7 @@ void MCD212::ExecuteDCA2()
             break;
 
         case 2: // RELOAD DCP
-            SetDCP2((dca & 0x003FFFFC) - 4);
+            SetDCP2(dca & 0x003FFFFC);
             break;
 
         case 3: // RELOAD DCP AND STOP
@@ -319,7 +320,6 @@ void MCD212::ExecuteDCA2()
             else
                 controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
         }
-        SetDCP2(addr + 4);
     }
 }
 
