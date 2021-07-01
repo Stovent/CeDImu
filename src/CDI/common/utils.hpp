@@ -150,14 +150,4 @@ inline const void* subarrayOfArray(const void* container, size_t containerSize, 
 #define GET_ARRAY16(array, index) ((uint16_t)array[(index)] << 8 | array[(index)+1])
 #define GET_ARRAY32(array, index) ((uint32_t)array[(index)] << 24 | array[(index)+1] << 16 | array[(index)+2] << 8 | array[(index)+3])
 
-#ifdef DEBUG
-#define OPEN_LOG(stream, name)  stream = fopen(name, "w");
-#define LOG(content) content;
-#define CLOSE_LOG(stream) fclose(stream);
-#else
-#define OPEN_LOG(stream, name)
-#define LOG(content)
-#define CLOSE_LOG(stream)
-#endif // DEBUG
-
 #endif // UTILS_HPP

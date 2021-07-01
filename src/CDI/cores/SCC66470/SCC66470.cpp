@@ -1,6 +1,6 @@
 #include "SCC66470.hpp"
 #include "../../boards/Board.hpp"
-#include "../../common/utils.hpp"
+#include "../../common/Callbacks.hpp"
 
 #include <cstdio>
 #include <cstring>

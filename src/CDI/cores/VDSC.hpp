@@ -4,7 +4,7 @@
 class VDSC;
 
 class CDI;
-#include "../common/flags.hpp"
+#include "../common/enums.hpp"
 #include "../OS9/BIOS.hpp"
 
 #include <string>

@@ -1,7 +1,7 @@
 #ifndef ISLAVE_HPP
 #define ISLAVE_HPP
 
-#include "SCC68070/SCC68070.hpp"
+class CDI;
 #include "../devices/PointingDevice.hpp"
 #include "../devices/ManeuveringDevice.hpp"
 
@@ -10,11 +10,12 @@
 class ISlave
 {
 public:
-    SCC68070& cpu;
+    CDI& cdi;
     std::unique_ptr<PointingDevice> pointingDevice;
+    const uint32_t busBase;
 
     ISlave() = delete;
-    explicit ISlave(SCC68070& scc68070) : cpu(scc68070), pointingDevice(new ManeuveringDevice(*this)) {}
+    explicit ISlave(CDI& idc, uint32_t busbase) : cdi(idc), pointingDevice(new ManeuveringDevice(*this)), busBase(busbase) {}
     virtual ~ISlave() {}
 
     virtual void UpdatePointerState() = 0;

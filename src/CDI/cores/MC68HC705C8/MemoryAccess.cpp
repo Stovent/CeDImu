@@ -1,5 +1,5 @@
 #include "MC68HC705C8.hpp"
-#include "../../common/utils.hpp"
+#include "../../common/Callbacks.hpp"
 
 uint8_t MC68HC705C8::GetByte(const uint16_t addr)
 {

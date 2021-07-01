@@ -5,7 +5,7 @@ class Board;
 
 #include "../CDIConfig.hpp"
 class CDI;
-#include "../common/flags.hpp"
+#include "../common/enums.hpp"
 #include "../cores/ISlave.hpp"
 #include "../cores/VDSC.hpp"
 #include "../cores/M48T08/M48T08.hpp"

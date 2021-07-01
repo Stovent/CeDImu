@@ -1,12 +1,12 @@
 #include "Mono3.hpp"
-#include "../../common/utils.hpp"
+#include "../../common/Callbacks.hpp"
 #include "../../HLE/IKAT/IKAT.hpp"
 
 Mono3::Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf) :
     Board(cdi, "Mono-III", conf),
     mcd212(cdi, vdscBios, vdscSize, conf.PAL)
 {
-    slave = std::make_unique<HLE::IKAT>(cpu, conf.PAL);
+    slave = std::make_unique<HLE::IKAT>(cdi, conf.PAL, 0x310000);
     OPEN_LOG(out, "Mono3.txt")
     Reset(true);
 }

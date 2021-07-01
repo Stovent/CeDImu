@@ -1,4 +1,5 @@
 #include "Mono3.hpp"
+#include "../../common/Callbacks.hpp"
 #include "../../common/utils.hpp"
 
 uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)

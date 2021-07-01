@@ -1,5 +1,5 @@
 #include "MiniMMC.hpp"
-#include "../../common/utils.hpp"
+#include "../../common/Callbacks.hpp"
 
 MiniMMC::MiniMMC(CDI& cdi, const void* bios, const uint32_t size, const CDIConfig& conf) :
     Board(cdi, "Mini-MMC", conf),

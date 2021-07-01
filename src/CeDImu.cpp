@@ -98,6 +98,10 @@ bool CeDImu::InitializeCores()
         }
     });
 
+    cdi.callbacks.SetOnLogMemoryAccess([=] (const LogMemoryAccess& arg) {
+        printf("[%s] %s %s at 0x%X : %d\n", arg.location.c_str(), arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
+    });
+
     cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
     return true;
 }

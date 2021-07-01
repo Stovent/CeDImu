@@ -1,4 +1,5 @@
 #include "IKAT.hpp"
+#include "../../CDI.hpp"
 
 namespace HLE
 {
@@ -7,7 +8,7 @@ namespace HLE
 #define UNSET_WRIDLE(var) var &= 0x10;
 #define SET_RDWRIDLE(var) var = 0x11;
 
-IKAT::IKAT(SCC68070& cpu, const bool PAL) : ISlave(cpu)
+IKAT::IKAT(CDI& idc, const bool PAL, uint32_t busbase) : ISlave(idc, busbase)
 {
     responseCF6[2] = PAL + 1;
 
@@ -21,14 +22,14 @@ void IKAT::UpdatePointerState()
     responsesIterator[PB] = responseB4X.begin();
     registers[ISR] |= 0x08;
     if(registers[ICR] & 0x08)
-        cpu.IN2();
+        cdi.board->cpu.IN2();
 }
 
 void IKAT::IncrementTime(const size_t ns)
 {
     pointingDevice->IncrementTime(ns);
 }
-
+// .ensure visible pour generic lists
 uint8_t IKAT::GetByte(const uint8_t addr)
 {
     if(addr >= PASR && addr <= PDSR)
@@ -39,6 +40,8 @@ uint8_t IKAT::GetByte(const uint8_t addr)
             else
                 SET_RDWRIDLE(registers[PASR + i])
 
+        if(cdi.callbacks.HasOnLogMemoryAccess()) \
+                cdi.callbacks.OnLogMemoryAccess({"Slave", "Get", "Byte", busBase + (addr << 1) + 1, registers[addr]});
         return registers[addr];
     }
 
@@ -48,12 +51,16 @@ uint8_t IKAT::GetByte(const uint8_t addr)
         registers[PARD + reg] = *responsesIterator[reg]++;
     }
 
+    if(cdi.callbacks.HasOnLogMemoryAccess()) \
+            cdi.callbacks.OnLogMemoryAccess({"Slave", "Get", "Byte", busBase + (addr << 1) + 1, registers[addr]});
     return registers[addr];
 }
 
 void IKAT::SetByte(const uint8_t addr, const uint8_t data)
 {
     registers[addr] = data;
+    if(cdi.callbacks.HasOnLogMemoryAccess()) \
+            cdi.callbacks.OnLogMemoryAccess({"Slave", "Set", "Byte", busBase + (addr << 1) + 1, data});
 
     switch(addr)
     {

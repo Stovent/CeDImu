@@ -1,10 +1,22 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
+#include "enums.hpp"
 #include "../cores/SCC68070/SCC68070.hpp"
+#include "../cores/VDSC.hpp"
 
 #include <functional>
 #include <mutex>
+
+#ifdef DEBUG
+#define OPEN_LOG(stream, name)  stream = fopen(name, "w");
+#define LOG(content) content;
+#define CLOSE_LOG(stream) fclose(stream);
+#else
+#define OPEN_LOG(stream, name)
+#define LOG(content)
+#define CLOSE_LOG(stream)
+#endif // DEBUG
 
 /** \class Callbacks
  * \brief Class containing the callback functions provided by the user.
@@ -23,22 +35,28 @@ class Callbacks
     std::mutex onLogICADCAMutex;
     std::function<void(ControlArea, const std::string&)> onLogICADCACallback;
 
+    std::mutex onLogMemoryAccessMutex;
+    std::function<void(const LogMemoryAccess&)> onLogMemoryAccessCallback;
+
 public:
     explicit Callbacks(const std::function<void(const Instruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
                        const std::function<void()>& frameCompleted = nullptr,
-                       const std::function<void(ControlArea, const std::string&)>& icadca = nullptr) :
+                       const std::function<void(ControlArea, const std::string&)>& icadca = nullptr,
+                       const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr) :
        onLogDisassemblerCallback(disassembler),
        onUARTOutCallback(uartOut),
        onFrameCompletedCallback(frameCompleted),
-       onLogICADCACallback(icadca)
+       onLogICADCACallback(icadca),
+       onLogMemoryAccessCallback(memoryAccess)
    {}
 
    Callbacks(const Callbacks& other) :
        onLogDisassemblerCallback(other.onLogDisassemblerCallback),
        onUARTOutCallback(other.onUARTOutCallback),
        onFrameCompletedCallback(other.onFrameCompletedCallback),
-       onLogICADCACallback(other.onLogICADCACallback)
+       onLogICADCACallback(other.onLogICADCACallback),
+       onLogMemoryAccessCallback(other.onLogMemoryAccessCallback)
    {}
 
     bool HasOnLogDisassembler()
@@ -97,6 +115,23 @@ public:
         std::lock_guard<std::mutex> lock(onLogICADCAMutex);
         if(onLogICADCACallback)
             onLogICADCACallback(area, inst);
+    }
+
+    bool HasOnLogMemoryAccess()
+    {
+        std::lock_guard<std::mutex> lock(onLogMemoryAccessMutex);
+        return (bool)onLogMemoryAccessCallback;
+    }
+    void SetOnLogMemoryAccess(const std::function<void(const LogMemoryAccess&)>& callback)
+    {
+        std::lock_guard<std::mutex> lock(onLogMemoryAccessMutex);
+        onLogMemoryAccessCallback = callback;
+    }
+    void OnLogMemoryAccess(const LogMemoryAccess& arg)
+    {
+        std::lock_guard<std::mutex> lock(onLogMemoryAccessMutex);
+        if(onLogMemoryAccessCallback)
+            onLogMemoryAccessCallback(arg);
     }
 };
 

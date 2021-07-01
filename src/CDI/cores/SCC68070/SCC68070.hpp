@@ -2,7 +2,7 @@
 #define SCC68070_HPP
 
 class CDI;
-#include "../../common/flags.hpp"
+#include "../../common/enums.hpp"
 
 #include <array>
 #include <cstdint>

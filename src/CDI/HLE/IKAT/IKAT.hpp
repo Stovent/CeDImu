@@ -58,7 +58,7 @@ class IKAT : public ISlave
 
 public:
     IKAT() = delete;
-    IKAT(SCC68070& cpu, const bool PAL);
+    IKAT(CDI& idc, const bool PAL, uint32_t busbase);
 
     virtual void UpdatePointerState() override;
     virtual void IncrementTime(const size_t ns) override;
