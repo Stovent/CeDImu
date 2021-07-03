@@ -6,7 +6,6 @@ class CDI;
 
 #include <array>
 #include <cstdint>
-#include <cstdio>
 #include <functional>
 #include <map>
 #include <memory>
@@ -327,7 +326,6 @@ public:
 private:
     CDI& cdi;
     std::thread executionThread;
-    FILE* out;
 
     std::mutex uartInMutex;
     std::deque<uint8_t> uartIn;

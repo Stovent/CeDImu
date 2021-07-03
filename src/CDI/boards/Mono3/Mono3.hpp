@@ -6,13 +6,9 @@ class Mono3;
 #include "../Board.hpp"
 #include "../../cores/MCD212/MCD212.hpp"
 
-#include <cstdio>
-#include <fstream>
-
 class Mono3 : public Board
 {
     MCD212 mcd212;
-    FILE* out;
 
 public:
     Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf);

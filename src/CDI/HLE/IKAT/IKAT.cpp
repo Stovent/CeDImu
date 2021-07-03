@@ -29,7 +29,7 @@ void IKAT::IncrementTime(const size_t ns)
 {
     pointingDevice->IncrementTime(ns);
 }
-// .ensure visible pour generic lists
+
 uint8_t IKAT::GetByte(const uint8_t addr)
 {
     if(addr >= PASR && addr <= PDSR)
@@ -40,8 +40,8 @@ uint8_t IKAT::GetByte(const uint8_t addr)
             else
                 SET_RDWRIDLE(registers[PASR + i])
 
-        if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"Slave", "Get", "Byte", busBase + (addr << 1) + 1, registers[addr]});
+        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+                cdi.callbacks.OnLogMemoryAccess({"Slave", "Get", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
         return registers[addr];
     }
 
@@ -51,16 +51,16 @@ uint8_t IKAT::GetByte(const uint8_t addr)
         registers[PARD + reg] = *responsesIterator[reg]++;
     }
 
-    if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({"Slave", "Get", "Byte", busBase + (addr << 1) + 1, registers[addr]});
+    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+            cdi.callbacks.OnLogMemoryAccess({"Slave", "Get", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
     return registers[addr];
 }
 
 void IKAT::SetByte(const uint8_t addr, const uint8_t data)
 {
     registers[addr] = data;
-    if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({"Slave", "Set", "Byte", busBase + (addr << 1) + 1, data});
+    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+            cdi.callbacks.OnLogMemoryAccess({"Slave", "Set", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, data});)
 
     switch(addr)
     {

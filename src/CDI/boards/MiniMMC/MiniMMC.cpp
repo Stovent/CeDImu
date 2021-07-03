@@ -6,13 +6,11 @@ MiniMMC::MiniMMC(CDI& cdi, const void* bios, const uint32_t size, const CDIConfi
     masterVDSC(cdi, true, bios, size),
     slaveVDSC(cdi, false, "\0", 2)
 {
-    OPEN_LOG(out, "MiniMMC.txt")
     Reset(true);
 }
 
 MiniMMC::~MiniMMC()
 {
-    CLOSE_LOG(out)
 }
 
 void MiniMMC::Reset(const bool resetCPU)

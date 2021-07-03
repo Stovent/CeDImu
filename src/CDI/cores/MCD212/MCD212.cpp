@@ -9,27 +9,22 @@
 MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL) :
     VDSC(idc, bios, size, 0x400000),
     isPAL(PAL),
+    memorySwapCount(0),
     memory(0x280000, 0),
     screen(PLANE_RGB_SIZE),
     planeA(PLANE_ARGB_SIZE),
     planeB(PLANE_ARGB_SIZE),
     cursorPlane(CURSOR_ARGB_SIZE, 16, 16),
-    backgroundPlane(PLANE_ARGB_SIZE)
+    backgroundPlane(PLANE_ARGB_SIZE),
+    controlRegisters{0},
+    CLUT{0},
+    cursorPatterns{0},
+    internalRegisters{0}
 {
-    memorySwapCount = 0;
-
-    std::fill(internalRegisters.begin(), internalRegisters.end(), 0);
-    std::fill(CLUT.begin(), CLUT.end(), 0);
-    std::fill(cursorPatterns.begin(), cursorPatterns.end(), 0);
-
-    OPEN_LOG(out_dram, "MCD212_DRAM.txt")
-    OPEN_LOG(out_display, "MCD212.txt")
 }
 
 MCD212::~MCD212()
 {
-    CLOSE_LOG(out_dram)
-    CLOSE_LOG(out_display)
 }
 
 void MCD212::Reset()
@@ -76,7 +71,6 @@ void MCD212::ExecuteICA1()
     {
         const uint32_t ica = GetLong(addr);
 
-        LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tICA1 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, ica);)
         if(cdi.callbacks.HasOnLogICADCA())
             cdi.callbacks.OnLogICADCA(ica1, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
         addr += 4;
@@ -144,7 +138,6 @@ void MCD212::ExecuteDCA1()
         const uint32_t dca = GetLong(addr);
         SetDCP1(addr + 4);
 
-        LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tDCA1 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, dca);)
         if(cdi.callbacks.HasOnLogICADCA())
             cdi.callbacks.OnLogICADCA(dca1, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
@@ -210,7 +203,6 @@ void MCD212::ExecuteICA2()
     {
         const uint32_t ica = GetLong(addr);
 
-        LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tICA2 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, ica);)
         if(cdi.callbacks.HasOnLogICADCA())
             cdi.callbacks.OnLogICADCA(ica2, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
         addr += 4;
@@ -253,7 +245,7 @@ void MCD212::ExecuteICA2()
             if(ica < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                LOG(if(bank > 1) { fprintf(out_display, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
+                LOG(if(bank > 1) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
                 const uint8_t index = (uint8_t)(ica >> 24) - 0x80;
                 CLUT[bank + index] = ica & 0x00FFFFFF;
             }
@@ -271,7 +263,6 @@ void MCD212::ExecuteDCA2()
         const uint32_t dca = GetLong(addr);
         SetDCP2(addr + 4);
 
-        LOG(fprintf(out_display, "%6X\tFrame: %6d\tLine: %3d\tDCA2 instruction: 0x%08X\n", addr, totalFrameCount, lineNumber, dca);)
         if(cdi.callbacks.HasOnLogICADCA())
             cdi.callbacks.OnLogICADCA(dca2, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
@@ -313,7 +304,7 @@ void MCD212::ExecuteDCA2()
             if(dca < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                LOG(if(bank > 1) { fprintf(out_display, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
+                LOG(if(bank > 1) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
                 const uint8_t index = (uint8_t)(dca >> 24) - 0x80;
                 CLUT[bank + index] = dca & 0x00FFFFFF;
             }

@@ -11,6 +11,7 @@ class CeDImu;
 #include <wx/app.h>
 
 #include <atomic>
+#include <cstdio>
 
 class CeDImu : public wxApp
 {
@@ -23,6 +24,7 @@ public:
 
     std::ofstream uartOut;
     std::ofstream logInstructions;
+    FILE* logMemoryAccess;
 
     MainFrame* mainFrame;
 

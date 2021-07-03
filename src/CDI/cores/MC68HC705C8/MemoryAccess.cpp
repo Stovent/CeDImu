@@ -7,7 +7,7 @@ uint8_t MC68HC705C8::GetByte(const uint16_t addr)
     if(addr < SLAVE_MEMORY_SIZE)
         return memory[addr];
 
-    LOG(fprintf(instructions, "%X\tGet byte OUT OF RANGE at 0x%X\n", currentPC, addr))
+    LOG(fprintf(instructions, "%X\tGet byte OUT OF RANGE at 0x%X\n", currentPC, addr);)
     return 0;
 }
 

@@ -24,8 +24,6 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
     timerCounter = cycleCount = totalCycleCount = 0;
     currentPC = currentOpcode = lastAddress = PC = SR = USP = SSP = 0;
 
-    OPEN_LOG(out, "SCC68070.txt")
-
     GenerateInstructionSet();
 }
 
@@ -34,7 +32,6 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
 SCC68070::~SCC68070()
 {
     Stop(true);
-    CLOSE_LOG(out)
 }
 
 /** \brief Check if the CPU is running.
@@ -103,8 +100,6 @@ void SCC68070::Stop(const bool wait)
  */
 void SCC68070::Reset()
 {
-    LOG(fprintf(out, "RESET\n");)
-
     while(exceptions.size()) // clear it
         exceptions.pop();
     exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top

@@ -6,14 +6,10 @@ class MiniMMC;
 #include "../Board.hpp"
 #include "../../cores/SCC66470/SCC66470.hpp"
 
-#include <cstdio>
-#include <fstream>
-
 class MiniMMC : public Board
 {
     SCC66470 masterVDSC;
     SCC66470 slaveVDSC;
-    FILE* out;
 
 public:
     MiniMMC(CDI& cdi, const void* bios, const uint32_t size, const CDIConfig& conf);

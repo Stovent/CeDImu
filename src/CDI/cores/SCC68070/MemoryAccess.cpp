@@ -110,12 +110,12 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
     if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last && GetS())
     {
         const uint8_t data = GetPeripheral(addr);
-        LOG(if(flags & Log) { fprintf(out, "%X\tGet peripheral at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
+        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+                cdi.callbacks.OnLogMemoryAccess({"CPU", "Get", "Byte", currentPC, addr, data});)
         return data;
     }
 
     const uint8_t data = cdi.board->GetByte(addr, flags);
-    LOG(if(flags & Log) { fprintf(out, "%X\tGet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
     return data;
 }
 
@@ -127,20 +127,18 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
     if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last && GetS())
     {
         const uint16_t data = (uint16_t)GetPeripheral(addr) << 8 | GetPeripheral(addr + 1);
-        LOG(if(flags & Log) { fprintf(out, "%X\tGet peripheral at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
+        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+                cdi.callbacks.OnLogMemoryAccess({"CPU", "Get", "Word", currentPC, addr, data});)
         return data;
     }
 
     const uint16_t data = cdi.board->GetWord(addr, flags);
-    LOG(if(flags & Log) { fprintf(out, "%X\tGet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
     return data;
 }
 
 uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    const uint32_t data = (uint32_t)GetWord(addr, flags) << 16 | GetWord(addr + 2, flags);
-    LOG(if(flags & Log) { fprintf(out, "%X\tGet long at 0x%X: %d %d 0x%X\n", currentPC, addr, (int32_t)data, data, data); })
-    return data;
+    return (uint32_t)GetWord(addr, flags) << 16 | GetWord(addr + 2, flags);
 }
 
 void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
@@ -148,12 +146,12 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
     if(addr >= SCC68070Peripherals::Base && addr < SCC68070Peripherals::Last && GetS())
     {
         SetPeripheral(addr, data);
-        LOG(if(flags & Log) { fprintf(out, "%X\tSet peripheral at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
+        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+                cdi.callbacks.OnLogMemoryAccess({"CPU", "Set", "Byte", currentPC, addr, data});)
         return;
     }
 
     cdi.board->SetByte(addr, data, flags);
-    LOG(if(flags & Log) { fprintf(out, "%X\tSet byte at 0x%X: %d %d 0x%X\n", currentPC, addr, (int8_t)data, data, data); })
     return;
 }
 
@@ -166,12 +164,12 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
     {
         SetPeripheral(addr, data >> 8);
         SetPeripheral(addr + 1, data);
-        LOG(if(flags & Log) { fprintf(out, "%X\tSet peripheral at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
+        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+                cdi.callbacks.OnLogMemoryAccess({"CPU", "Set", "Word", currentPC, addr, data});)
         return;
     }
 
     cdi.board->SetWord(addr, data, flags);
-    LOG(if(flags & Log) { fprintf(out, "%X\tSet word at 0x%X: %d %d 0x%X\n", currentPC, addr, (int16_t)data, data, data); })
     return;
 }
 
@@ -179,5 +177,4 @@ void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t f
 {
     SetWord(addr, data >> 16, flags);
     SetWord(addr + 2, data, flags);
-    LOG(if(flags & Log) { fprintf(out, "%X\tSet long at 0x%X: %d %d 0x%X\n", currentPC, addr, (int32_t)data, data, data); })
 }

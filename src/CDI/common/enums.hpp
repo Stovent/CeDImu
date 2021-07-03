@@ -15,9 +15,10 @@ enum BusFlags : uint8_t
  */
 struct LogMemoryAccess
 {
-    std::string location; /**< CPU, RAM, VDSC, Slave, etc. */
+    std::string location; /**< CPU, RAM, VDSC, Slave, RTC, etc. */
     std::string direction; /**< Get or Set. */
-    std::string size; /**< Byte or Word. */
+    std::string size; /**< Byte, Word or Long. */
+    uint32_t pc; /**< Program Counter when the access occured. */
     uint32_t address; /**< The bus address. */
     uint32_t data; /**< The data. */
 };

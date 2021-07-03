@@ -8,15 +8,15 @@
 #include <functional>
 #include <mutex>
 
-#ifdef DEBUG
+#ifdef ENABLE_LOG
 #define OPEN_LOG(stream, name)  stream = fopen(name, "w");
-#define LOG(content) content;
+#define LOG(content) content
 #define CLOSE_LOG(stream) fclose(stream);
 #else
 #define OPEN_LOG(stream, name)
 #define LOG(content)
 #define CLOSE_LOG(stream)
-#endif // DEBUG
+#endif // ENABLE_LOG
 
 /** \class Callbacks
  * \brief Class containing the callback functions provided by the user.

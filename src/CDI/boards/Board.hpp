@@ -17,12 +17,13 @@ class Board
 {
 public:
     const std::string name;
+    CDI& cdi;
 
     SCC68070 cpu;
     std::unique_ptr<ISlave> slave;
     M48T08 timekeeper;
 
-    Board(CDI& cdi, const std::string& name, const CDIConfig& conf) : name(name), cpu(cdi, conf.PAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY), timekeeper(conf.initialTime) {}
+    Board(CDI& idc, const std::string& name, const CDIConfig& conf) : name(name), cdi(idc), cpu(idc, conf.PAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY), timekeeper(conf.initialTime) {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
 

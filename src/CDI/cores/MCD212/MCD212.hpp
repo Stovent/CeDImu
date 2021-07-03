@@ -6,7 +6,6 @@ class MCD212;
 #include "../VDSC.hpp"
 
 #include <array>
-#include <cstdio>
 #include <mutex>
 #include <vector>
 
@@ -122,8 +121,6 @@ private:
 
     uint16_t lineNumber; // starts at 0
     uint16_t verticalLines; // starts at 0.
-    FILE* out_dram;
-    FILE* out_display;
 
     void DrawLinePlaneA();
     void DrawLinePlaneB();

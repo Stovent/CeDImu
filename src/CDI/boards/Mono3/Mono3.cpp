@@ -7,13 +7,11 @@ Mono3::Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const CDIC
     mcd212(cdi, vdscBios, vdscSize, conf.PAL)
 {
     slave = std::make_unique<HLE::IKAT>(cdi, conf.PAL, 0x310000);
-    OPEN_LOG(out, "Mono3.txt")
     Reset(true);
 }
 
 Mono3::~Mono3()
 {
-    CLOSE_LOG(out)
 }
 
 void Mono3::Reset(const bool resetCPU)

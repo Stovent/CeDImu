@@ -31,6 +31,7 @@ bool CeDImu::OnInit()
 
     uartOut.open("uart_out", std::ios::out | std::ios::binary);
     logInstructions.open("instructions.txt");
+    logMemoryAccess = fopen("memory_access.txt", "w");
 
     mainFrame = new MainFrame(*this, "CeDImu", wxPoint(50, 50), wxSize(420, 310));
     mainFrame->Show(true);
@@ -43,6 +44,9 @@ int CeDImu::OnExit()
 {
     StopGameThread();
     Config::saveConfig();
+    uartOut.close();
+    logInstructions.close();
+    fclose(logMemoryAccess);
     return 0;
 }
 
@@ -99,7 +103,7 @@ bool CeDImu::InitializeCores()
     });
 
     cdi.callbacks.SetOnLogMemoryAccess([=] (const LogMemoryAccess& arg) {
-        printf("[%s] %s %s at 0x%X : %d\n", arg.location.c_str(), arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
+        fprintf(logMemoryAccess, "[%5s] (0x%06X) %s %s at 0x%X : %d\n", arg.location.c_str(), arg.pc, arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
     });
 
     cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
