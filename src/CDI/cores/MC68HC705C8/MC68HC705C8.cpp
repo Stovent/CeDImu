@@ -8,7 +8,6 @@ MC68HC705C8::MC68HC705C8(const void* bios, uint16_t size)
     memory = new uint8_t[SLAVE_MEMORY_SIZE];
     currentOpcode = 0;
     currentPC = 0;
-    OPEN_LOG(instructions, "slave_instructions.txt")
 
     if(size > SLAVE_MEMORY_SIZE)
         size = SLAVE_MEMORY_SIZE;
@@ -19,7 +18,6 @@ MC68HC705C8::MC68HC705C8(const void* bios, uint16_t size)
 
 MC68HC705C8::~MC68HC705C8()
 {
-    CLOSE_LOG(instructions)
     delete[] memory;
 }
 

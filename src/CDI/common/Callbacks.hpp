@@ -8,13 +8,9 @@
 #include <mutex>
 
 #ifdef ENABLE_LOG
-#define OPEN_LOG(stream, name)  stream = fopen(name, "w");
 #define LOG(content) content
-#define CLOSE_LOG(stream) fclose(stream);
 #else
-#define OPEN_LOG(stream, name)
 #define LOG(content)
-#define CLOSE_LOG(stream)
 #endif // ENABLE_LOG
 
 /** \struct LogMemoryAccess

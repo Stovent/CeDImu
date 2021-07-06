@@ -11,8 +11,6 @@
 #include <wx/notebook.h>
 #include <wx/sizer.h>
 
-#include <cstdio>
-
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnOpenROM, MainFrame::OnOpenROM)
     EVT_MENU(IDMainFrameOnCloseROM, MainFrame::OnCloseROM)
@@ -248,6 +246,7 @@ void MainFrame::OnReset(wxCommandEvent& event)
 void MainFrame::OnRebootCore(wxCommandEvent& event)
 {
     app.InitializeCores();
+    pauseItem->Check();
 }
 
 void MainFrame::OnResizeView(wxCommandEvent& event)

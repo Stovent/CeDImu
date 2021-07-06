@@ -48,9 +48,6 @@ add_library(cdi ${LIBRARY_TYPE}
     common/Video.cpp
     cores/DS1216/DS1216.cpp
     cores/M48T08/M48T08.cpp
-    cores/MC68HC705C8/Interpreter.cpp
-    cores/MC68HC705C8/MC68HC705C8.cpp
-    cores/MC68HC705C8/MemoryAccess.cpp
     cores/MCD212/Display.cpp
     cores/MCD212/DRAMInterface.cpp
     cores/MCD212/MCD212.cpp

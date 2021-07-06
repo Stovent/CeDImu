@@ -5,7 +5,6 @@ class SCC66470;
 
 #include "../VDSC.hpp"
 
-#include <cstdio>
 #include <mutex>
 
 enum SCC66470Registers
@@ -74,8 +73,6 @@ private:
     uint16_t registerB;
 
     const bool isMaster;
-
-    FILE* out_dram;
 
     Plane screen;
     Plane planeA;

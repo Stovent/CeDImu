@@ -52,7 +52,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(fprintf(instructions, "%X\tBRSET0 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRSET0 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -67,7 +67,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(fprintf(instructions, "%X\tBRCLR0 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRCLR0 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -82,7 +82,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(fprintf(instructions, "%X\tBRSET1 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRSET1 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -97,7 +97,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(fprintf(instructions, "%X\tBRCLR1 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRCLR1 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -112,7 +112,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(fprintf(instructions, "%X\tBRSET2 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRSET2 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -127,7 +127,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(fprintf(instructions, "%X\tBRCLR2 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRCLR2 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -142,7 +142,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(fprintf(instructions, "%X\tBRSET3 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRSET3 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -157,7 +157,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(fprintf(instructions, "%X\tBRCLR3 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRCLR3 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -172,7 +172,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(fprintf(instructions, "%X\tBRSET4 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRSET4 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -187,7 +187,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(fprintf(instructions, "%X\tBRCLR4 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRCLR4 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -202,7 +202,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(fprintf(instructions, "%X\tBRSET5 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRSET5 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -217,7 +217,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(fprintf(instructions, "%X\tBRCLR5 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRCLR5 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -232,7 +232,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(fprintf(instructions, "%X\tBRSET6 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRSET6 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -247,7 +247,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(fprintf(instructions, "%X\tBRCLR6 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRCLR6 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -262,7 +262,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         }
         else
             CCR[C] = false;
-        LOG(fprintf(instructions, "%X\tBRSET7 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRSET7 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -277,7 +277,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
             PC += offset;
             CCR[C] = false;
         }
-        LOG(fprintf(instructions, "%X\tBRCLR7 0x%X, %d\n", currentPC, addr, offset);)
+//        LOG(fprintf(instructions, "%X\tBRCLR7 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
     }
 
@@ -286,7 +286,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) | 0x01);
-        LOG(fprintf(instructions, "%X\tBSET0 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBSET0 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -294,7 +294,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) & 0xFE);
-        LOG(fprintf(instructions, "%X\tBCLR0 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBCLR0 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -302,7 +302,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) | 0x02);
-        LOG(fprintf(instructions, "%X\tBSET1 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBSET1 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -310,7 +310,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) & 0xFD);
-        LOG(fprintf(instructions, "%X\tBCLR1 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBCLR1 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -318,7 +318,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) | 0x04);
-        LOG(fprintf(instructions, "%X\tBSET2 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBSET2 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -326,7 +326,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) & 0xFB);
-        LOG(fprintf(instructions, "%X\tBCLR2 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBCLR2 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -334,7 +334,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) | 0x08);
-        LOG(fprintf(instructions, "%X\tBSET3 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBSET3 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -342,7 +342,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) & 0xF7);
-        LOG(fprintf(instructions, "%X\tBCLR3 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBCLR3 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -350,7 +350,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) | 0x10);
-        LOG(fprintf(instructions, "%X\tBSET4 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBSET4 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -358,7 +358,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) & 0xEF);
-        LOG(fprintf(instructions, "%X\tBCLR4 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBCLR4 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -366,7 +366,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) | 0x20);
-        LOG(fprintf(instructions, "%X\tBSET5 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBSET5 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -374,7 +374,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) & 0xDF);
-        LOG(fprintf(instructions, "%X\tBCLR5 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBCLR5 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -382,7 +382,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) | 0x40);
-        LOG(fprintf(instructions, "%X\tBSET6 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBSET6 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -390,7 +390,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) & 0xBF);
-        LOG(fprintf(instructions, "%X\tBCLR6 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBCLR6 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -398,7 +398,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) | 0x80);
-        LOG(fprintf(instructions, "%X\tBSET7 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBSET7 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -406,7 +406,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         SetByte(addr, GetByte(addr) & 0x7F);
-        LOG(fprintf(instructions, "%X\tBCLR7 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBCLR7 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -415,13 +415,13 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const int8_t offset = GetNextByte();
         PC += offset;
-        LOG(fprintf(instructions, "%X\tBRA %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBRA %d\n", currentPC, offset);)
         return 3;
     }
 
     BRN_REL:
     {
-        LOG(fprintf(instructions, "%X\tBRN %d\n", currentPC, signExtend<int8_t, int16_t>(GetNextByte()));)
+//        LOG(fprintf(instructions, "%X\tBRN %d\n", currentPC, signExtend<int8_t, int16_t>(GetNextByte()));)
         return 3;
     }
 
@@ -430,7 +430,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(!CCR[C] && !CCR[Z])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBHI %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBHI %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -439,7 +439,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(CCR[C] || CCR[Z])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBLS %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBLS %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -448,7 +448,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(!CCR[C])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBCC %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBCC %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -457,7 +457,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(CCR[C])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBLO/BCS %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBLO/BCS %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -466,7 +466,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(!CCR[Z])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBNE %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBNE %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -475,7 +475,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(CCR[Z])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBEQ %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBEQ %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -484,7 +484,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(!CCR[H])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBHCC %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBHCC %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -493,7 +493,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(CCR[H])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBHCS %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBHCS %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -502,7 +502,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(!CCR[N])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBPL %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBPL %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -511,7 +511,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(CCR[N])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBMI %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBMI %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -520,7 +520,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(!CCR[I])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBMC %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBMC %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -529,7 +529,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(CCR[I])
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBMS %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBMS %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -538,7 +538,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(!irqPin)
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBIL %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBIL %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -547,7 +547,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const int8_t offset = GetNextByte();
         if(irqPin)
             PC += offset;
-        LOG(fprintf(instructions, "%X\tBIH %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBIH %d\n", currentPC, offset);)
         return 3;
     }
 
@@ -560,7 +560,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = data == 0;
         CCR[C] = data != 0;
         SetByte(addr, data);
-        LOG(fprintf(instructions, "%X\tNEG 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tNEG 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -571,7 +571,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         CCR[C] = true;
-        LOG(fprintf(instructions, "%X\tCOM 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tCOM 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -585,7 +585,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = false;
         CCR[Z] = data == 0;
         SetByte(addr, data);
-        LOG(fprintf(instructions, "%X\tLSR 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tLSR 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -600,7 +600,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(addr, data);
-        LOG(fprintf(instructions, "%X\tROR 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tROR 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -615,7 +615,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(addr, data);
-        LOG(fprintf(instructions, "%X\tASR 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tASR 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -628,7 +628,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80);
         CCR[Z] = data == 0;
         SetByte(addr, data);
-        LOG(fprintf(instructions, "%X\tASL/LSL 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tASL/LSL 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -643,7 +643,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(addr, data);
-        LOG(fprintf(instructions, "%X\tROL 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tROL 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -654,7 +654,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(addr, data);
-        LOG(fprintf(instructions, "%X\tDEC 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tDEC 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -665,7 +665,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(addr, data);
-        LOG(fprintf(instructions, "%X\tINC 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tINC 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -675,7 +675,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetByte(addr);
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
-        LOG(fprintf(instructions, "%X\tTST 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tTST 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -685,7 +685,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = false;
         CCR[Z] = true;
         SetByte(addr, 0);
-        LOG(fprintf(instructions, "%X\tCLR 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tCLR 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -696,7 +696,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
         CCR[C] = A != 0;
-        LOG(fprintf(instructions, "%X\tNEGA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tNEGA\n", currentPC);)
         return 3;
     }
 
@@ -707,7 +707,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A = result & 0xFF;
         CCR[H] = 0;
         CCR[C] = 0;
-        LOG(fprintf(instructions, "%X\tMUL\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tMUL\n", currentPC);)
         return 1;
     }
 
@@ -717,7 +717,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
         CCR[C] = true;
-        LOG(fprintf(instructions, "%X\tCOMA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCOMA\n", currentPC);)
         return 3;
     }
 
@@ -728,7 +728,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= 0x7F;
         CCR[N] = false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tLSRA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tLSRA\n", currentPC);)
         return 3;
     }
 
@@ -740,7 +740,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= bit;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tRORA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tRORA\n", currentPC);)
         return 3;
     }
 
@@ -752,7 +752,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= bit;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tASRA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tASRA\n", currentPC);)
         return 3;
     }
 
@@ -762,7 +762,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A <<= 1;
         CCR[N] = (A & 0x80);
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tASLA/LSLA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tASLA/LSLA\n", currentPC);)
         return 3;
     }
 
@@ -774,7 +774,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= bit;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tROLA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tROLA\n", currentPC);)
         return 3;
     }
 
@@ -783,7 +783,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A--;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tDECA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tDECA\n", currentPC);)
         return 3;
     }
 
@@ -792,7 +792,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A++;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tINCA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tINCA\n", currentPC);)
         return 3;
     }
 
@@ -800,7 +800,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tTSTA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tTSTA\n", currentPC);)
         return 3;
     }
 
@@ -809,7 +809,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = false;
         CCR[Z] = true;
         A = 0;
-        LOG(fprintf(instructions, "%X\tCLRA\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCLRA\n", currentPC);)
         return 3;
     }
 
@@ -820,7 +820,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
         CCR[C] = X != 0;
-        LOG(fprintf(instructions, "%X\tNEGX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tNEGX\n", currentPC);)
         return 3;
     }
 
@@ -830,7 +830,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
         CCR[C] = true;
-        LOG(fprintf(instructions, "%X\tCOMX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCOMX\n", currentPC);)
         return 3;
     }
 
@@ -841,7 +841,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X &= 0x7F;
         CCR[N] = false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tLSRX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tLSRX\n", currentPC);)
         return 3;
     }
 
@@ -853,7 +853,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X |= bit;
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tRORX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tRORX\n", currentPC);)
         return 3;
     }
 
@@ -865,7 +865,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X |= bit;
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tASRX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tASRX\n", currentPC);)
         return 3;
     }
 
@@ -875,7 +875,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X <<= 1;
         CCR[N] = (X & 0x80);
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tASLX/LSLX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tASLX/LSLX\n", currentPC);)
         return 3;
     }
 
@@ -887,7 +887,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X |= bit;
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tROLX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tROLX\n", currentPC);)
         return 3;
     }
 
@@ -896,7 +896,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X--;
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tDECX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tDECX\n", currentPC);)
         return 3;
     }
 
@@ -905,7 +905,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X++;
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tINCX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tINCX\n", currentPC);)
         return 3;
     }
 
@@ -913,7 +913,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tTSTX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tTSTX\n", currentPC);)
         return 3;
     }
 
@@ -922,7 +922,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = false;
         CCR[Z] = true;
         X = 0;
-        LOG(fprintf(instructions, "%X\tCLRX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCLRX\n", currentPC);)
         return 3;
     }
 
@@ -935,7 +935,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = data == 0;
         CCR[C] = data != 0;
         SetByte(X + offset, data);
-        LOG(fprintf(instructions, "%X\tNEG 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tNEG 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -946,7 +946,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         CCR[C] = true;
-        LOG(fprintf(instructions, "%X\tCOM 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tCOM 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -960,7 +960,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = false;
         CCR[Z] = data == 0;
         SetByte(X + offset, data);
-        LOG(fprintf(instructions, "%X\tLSR 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tLSR 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -975,7 +975,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X + offset, data);
-        LOG(fprintf(instructions, "%X\tROR 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tROR 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -990,7 +990,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X + offset, data);
-        LOG(fprintf(instructions, "%X\tASR 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tASR 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -1003,7 +1003,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80);
         CCR[Z] = data == 0;
         SetByte(X + offset, data);
-        LOG(fprintf(instructions, "%X\tASL/LSL 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tASL/LSL 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -1018,7 +1018,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X + offset, data);
-        LOG(fprintf(instructions, "%X\tROL 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tROL 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -1029,7 +1029,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X + offset, data);
-        LOG(fprintf(instructions, "%X\tDEC 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tDEC 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -1040,7 +1040,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X + offset, data);
-        LOG(fprintf(instructions, "%X\tINC 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tINC 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -1050,7 +1050,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetByte(X + offset);
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
-        LOG(fprintf(instructions, "%X\tTST 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tTST 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1060,7 +1060,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = false;
         CCR[Z] = true;
         SetByte(X + offset, 0);
-        LOG(fprintf(instructions, "%X\tCLR 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tCLR 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -1072,7 +1072,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = data == 0;
         CCR[C] = data != 0;
         SetByte(X, data);
-        LOG(fprintf(instructions, "%X\tNEG X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tNEG X\n", currentPC);)
         return 5;
     }
 
@@ -1082,7 +1082,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         CCR[C] = true;
-        LOG(fprintf(instructions, "%X\tCOM X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCOM X\n", currentPC);)
         return 5;
     }
 
@@ -1095,7 +1095,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = false;
         CCR[Z] = data == 0;
         SetByte(X, data);
-        LOG(fprintf(instructions, "%X\tLSR X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tLSR X\n", currentPC);)
         return 5;
     }
 
@@ -1109,7 +1109,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X, data);
-        LOG(fprintf(instructions, "%X\tROR X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tROR X\n", currentPC);)
         return 5;
     }
 
@@ -1123,7 +1123,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X, data);
-        LOG(fprintf(instructions, "%X\tASR X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tASR X\n", currentPC);)
         return 5;
     }
 
@@ -1135,7 +1135,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80);
         CCR[Z] = data == 0;
         SetByte(X, data);
-        LOG(fprintf(instructions, "%X\tASL/LSL X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tASL/LSL X\n", currentPC);)
         return 5;
     }
 
@@ -1149,7 +1149,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X, data);
-        LOG(fprintf(instructions, "%X\tROL X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tROL X\n", currentPC);)
         return 5;
     }
 
@@ -1159,7 +1159,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X, data);
-        LOG(fprintf(instructions, "%X\tDEC X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tDEC X\n", currentPC);)
         return 5;
     }
 
@@ -1169,7 +1169,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
         SetByte(X, data);
-        LOG(fprintf(instructions, "%X\tINC X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tINC X\n", currentPC);)
         return 5;
     }
 
@@ -1178,7 +1178,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t data = GetByte(X);
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
-        LOG(fprintf(instructions, "%X\tTST X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tTST X\n", currentPC);)
         return 4;
     }
 
@@ -1187,7 +1187,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = false;
         CCR[Z] = true;
         SetByte(X, 0);
-        LOG(fprintf(instructions, "%X\tCLR X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCLR X\n", currentPC);)
         return 5;
     }
 
@@ -1199,7 +1199,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X = PopByte();
         PC = PopByte() << 8;
         PC |= PopByte();
-        LOG(fprintf(instructions, "%X\tRTI\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tRTI\n", currentPC);)
         return 9;
     }
 
@@ -1207,7 +1207,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         PC = PopByte() << 8;
         PC |= PopByte();
-        LOG(fprintf(instructions, "%X\tRTS\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tRTS\n", currentPC);)
         return 6;
     }
 
@@ -1221,7 +1221,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[I] = true;
         PC = GetByte(0x1FFC) << 8;
         PC |= GetByte(0x1FFD);
-        LOG(fprintf(instructions, "%X\tSWI\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tSWI\n", currentPC);)
         return 1 ? 0 : 0;
     }
 
@@ -1230,7 +1230,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         waitStop = true;
         pendingCycles = 2;
         CCR[I] = false;
-        LOG(fprintf(instructions, "%X\tSTOP\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tSTOP\n", currentPC);)
         return 2;
     }
 
@@ -1239,48 +1239,48 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         waitStop = true;
         pendingCycles = 2;
         CCR[I] = false;
-        LOG(fprintf(instructions, "%X\tWAIT\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tWAIT\n", currentPC);)
         return 2;
     }
 
     // 0x9X
     TAX_INH:
         X = A;
-        LOG(fprintf(instructions, "%X\tTAX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tTAX\n", currentPC);)
         return 2;
 
     CLC_INH:
         CCR[C] = 0;
-        LOG(fprintf(instructions, "%X\tCLC\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCLC\n", currentPC);)
         return 2;
 
     SEC_INH:
         CCR[C] = 1;
-        LOG(fprintf(instructions, "%X\tSEC\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tSEC\n", currentPC);)
         return 2;
 
     CLI_INH:
         CCR[I] = 0;
-        LOG(fprintf(instructions, "%X\tCLI\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCLI\n", currentPC);)
         return 2;
 
     SEI_INH:
         CCR[I] = 1;
-        LOG(fprintf(instructions, "%X\tSEI\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tSEI\n", currentPC);)
         return 2;
 
     RSP_INH:
         SP = 0xFF;
-        LOG(fprintf(instructions, "%X\tRSP\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tRSP\n", currentPC);)
         return 2;
 
     NOP_INH:
-        LOG(fprintf(instructions, "%X\tNOP\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tNOP\n", currentPC);)
         return 2;
 
     TXA_INH:
         A = X;
-        LOG(fprintf(instructions, "%X\tTAX\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tTAX\n", currentPC);)
         return 2;
 
     // 0xAX
@@ -1292,7 +1292,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSUB #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tSUB #0x%X\n", currentPC, data);)
         return 2;
     }
 
@@ -1303,7 +1303,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCMP #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tCMP #0x%X\n", currentPC, data);)
         return 2;
     }
 
@@ -1315,7 +1315,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSBC #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tSBC #0x%X\n", currentPC, data);)
         return 2;
     }
 
@@ -1326,7 +1326,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCPX #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tCPX #0x%X\n", currentPC, data);)
         return 2;
     }
 
@@ -1336,14 +1336,14 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tAND #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tAND #0x%X\n", currentPC, data);)
         return 2;
     }
 
     BIT_IMM:
     {
         uint8_t data = GetNextByte();
-        LOG(fprintf(instructions, "%X\tBIT #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tBIT #0x%X\n", currentPC, data);)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -1355,7 +1355,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A = GetNextByte();
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tLDA #0x%X\n", currentPC, A);)
+//        LOG(fprintf(instructions, "%X\tLDA #0x%X\n", currentPC, A);)
         return 2;
     }
 
@@ -1365,7 +1365,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tEOR #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tEOR #0x%X\n", currentPC, data);)
         return 2;
     }
 
@@ -1377,7 +1377,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (result & 0xFF00) ? true : false;
-        LOG(fprintf(instructions, "%X\tADC #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tADC #0x%X\n", currentPC, data);)
         A = result & 0x00FF;
         return 2;
     }
@@ -1388,7 +1388,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tORA #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tORA #0x%X\n", currentPC, data);)
         return 2;
     }
 
@@ -1400,7 +1400,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (result & 0xFF00) ? true : false;
-        LOG(fprintf(instructions, "%X\tADD #0x%X\n", currentPC, data);)
+//        LOG(fprintf(instructions, "%X\tADD #0x%X\n", currentPC, data);)
         A = result & 0x00FF;
         return 2;
     }
@@ -1411,7 +1411,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC += offset;
-        LOG(fprintf(instructions, "%X\tBSR %d\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBSR %d\n", currentPC, offset);)
         return 6;
     }
 
@@ -1420,7 +1420,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X = GetNextByte();
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tLDX #0x%X\n", currentPC, X);)
+//        LOG(fprintf(instructions, "%X\tLDX #0x%X\n", currentPC, X);)
         return 2;
     }
 
@@ -1434,7 +1434,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSUB 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tSUB 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1446,7 +1446,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCMP 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tCMP 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1459,7 +1459,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSBC 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tSBC 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1471,7 +1471,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCPX 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tCPX 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1482,7 +1482,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tAND 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tAND 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1490,7 +1490,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         uint8_t data = GetByte(addr);
-        LOG(fprintf(instructions, "%X\tBIT 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBIT 0x%X\n", currentPC, addr);)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -1503,7 +1503,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A = GetByte(addr);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tLDA 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tLDA 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1513,7 +1513,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(addr, A);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tSTA 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tSTA 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1524,7 +1524,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tEOR 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tEOR 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1537,7 +1537,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADC 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tADC 0x%X\n", currentPC, addr);)
         A = result & 0x00FF;
         return 3;
     }
@@ -1549,7 +1549,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tORA 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tORA 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1562,7 +1562,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADD 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tADD 0x%X\n", currentPC, addr);)
         A = result & 0x00FF;
         return 3;
     }
@@ -1571,7 +1571,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t addr = GetNextByte();
         PC = addr;
-        LOG(fprintf(instructions, "%X\tJMP 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tJMP 0x%X\n", currentPC, addr);)
         return 2;
     }
 
@@ -1581,7 +1581,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC = addr;
-        LOG(fprintf(instructions, "%X\tJSR 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tJSR 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -1591,7 +1591,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X = GetByte(addr);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tLDX 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tLDX 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1601,7 +1601,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(addr, X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tSTX 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tSTX 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1615,7 +1615,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSUB 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tSUB 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1627,7 +1627,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCMP 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tCMP 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1640,7 +1640,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSBC 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tSBC 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1652,7 +1652,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCPX 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tCPX 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1663,7 +1663,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tAND 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tAND 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1671,7 +1671,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint16_t addr = GetNextByte() << 8 | GetNextByte();
         uint8_t data = GetByte(addr);
-        LOG(fprintf(instructions, "%X\tBIT 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tBIT 0x%X\n", currentPC, addr);)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -1684,7 +1684,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A = GetByte(addr);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tLDA 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tLDA 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1694,7 +1694,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(addr, A);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tSTA 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tSTA 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -1705,7 +1705,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tEOR 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tEOR 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1718,7 +1718,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADC 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tADC 0x%X\n", currentPC, addr);)
         A = result & 0x00FF;
         return 4;
     }
@@ -1730,7 +1730,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tORA 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tORA 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1743,7 +1743,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADD 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tADD 0x%X\n", currentPC, addr);)
         A = result & 0x00FF;
         return 4;
     }
@@ -1752,7 +1752,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint16_t addr = GetNextByte() << 8 | GetNextByte();
         PC = addr;
-        LOG(fprintf(instructions, "%X\tJMP 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tJMP 0x%X\n", currentPC, addr);)
         return 3;
     }
 
@@ -1762,7 +1762,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC = addr;
-        LOG(fprintf(instructions, "%X\tJSR 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tJSR 0x%X\n", currentPC, addr);)
         return 6;
     }
 
@@ -1772,7 +1772,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         X = GetByte(addr);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tLDX 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tLDX 0x%X\n", currentPC, addr);)
         return 4;
     }
 
@@ -1782,7 +1782,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(addr, X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tSTX 0x%X\n", currentPC, addr);)
+//        LOG(fprintf(instructions, "%X\tSTX 0x%X\n", currentPC, addr);)
         return 5;
     }
 
@@ -1796,7 +1796,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSUB 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tSUB 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1808,7 +1808,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCMP 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tCMP 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1821,7 +1821,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSBC 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tSBC 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1833,7 +1833,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCPX 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tCPX 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1844,7 +1844,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tAND 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tAND 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1852,7 +1852,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint16_t offset = GetNextByte() << 8 | GetNextByte();
         uint8_t data = GetByte(X + offset);
-        LOG(fprintf(instructions, "%X\tBIT 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBIT 0x%X, X\n", currentPC, offset);)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -1865,7 +1865,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t A = GetByte(X + offset);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tLDA 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tLDA 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1875,7 +1875,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X + offset, A);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tSTA 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tSTA 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -1886,7 +1886,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tEOR 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tEOR 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1899,7 +1899,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADC 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tADC 0x%X, X\n", currentPC, offset);)
         A = result & 0x00FF;
         return 5;
     }
@@ -1911,7 +1911,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tORA 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tORA 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -1924,7 +1924,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADD 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tADD 0x%X, X\n", currentPC, offset);)
         A = result & 0x00FF;
         return 5;
     }
@@ -1933,7 +1933,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint16_t offset = GetNextByte() << 8 | GetNextByte();
         PC = X + offset;
-        LOG(fprintf(instructions, "%X\tJMP 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tJMP 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -1943,14 +1943,14 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC = X + offset;
-        LOG(fprintf(instructions, "%X\tJSR 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tJSR 0x%X, X\n", currentPC, offset);)
         return 7;
     }
 
     LDX_IX2:
     {
         const uint16_t offset = GetNextByte() << 8 | GetNextByte();
-        LOG(fprintf(instructions, "%X\tLDX 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tLDX 0x%X, X\n", currentPC, offset);)
         X = GetByte(X + offset);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
@@ -1963,7 +1963,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X + offset, X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tSTX 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tSTX 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
@@ -1977,7 +1977,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSUB 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tSUB 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -1989,7 +1989,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCMP 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tCMP 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -2002,7 +2002,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSBC 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tSBC 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -2014,7 +2014,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCPX 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tCPX 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -2025,7 +2025,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tAND 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tAND 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -2033,7 +2033,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t offset = GetNextByte();
         uint8_t data = GetByte(X + offset);
-        LOG(fprintf(instructions, "%X\tBIT 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tBIT 0x%X, X\n", currentPC, offset);)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -2046,7 +2046,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         const uint8_t A = GetByte(X + offset);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tLDA 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tLDA 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -2056,7 +2056,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X + offset, A);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tSTA 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tSTA 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -2067,7 +2067,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tEOR 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tEOR 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -2080,7 +2080,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADC 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tADC 0x%X, X\n", currentPC, offset);)
         A = result & 0x00FF;
         return 4;
     }
@@ -2092,7 +2092,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tORA 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tORA 0x%X, X\n", currentPC, offset);)
         return 4;
     }
 
@@ -2105,7 +2105,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADD 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tADD 0x%X, X\n", currentPC, offset);)
         A = result & 0x00FF;
         return 4;
     }
@@ -2114,7 +2114,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     {
         const uint8_t offset = GetNextByte();
         PC = X + offset;
-        LOG(fprintf(instructions, "%X\tJMP 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tJMP 0x%X, X\n", currentPC, offset);)
         return 3;
     }
 
@@ -2124,14 +2124,14 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC = X + offset;
-        LOG(fprintf(instructions, "%X\tJSR 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tJSR 0x%X, X\n", currentPC, offset);)
         return 6;
     }
 
     LDX_IX1:
     {
         const uint8_t offset = GetNextByte();
-        LOG(fprintf(instructions, "%X\tLDX 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tLDX 0x%X, X\n", currentPC, offset);)
         X = GetByte(X + offset);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
@@ -2144,7 +2144,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X + offset, X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tSTX 0x%X, X\n", currentPC, offset);)
+//        LOG(fprintf(instructions, "%X\tSTX 0x%X, X\n", currentPC, offset);)
         return 5;
     }
 
@@ -2157,7 +2157,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSUB X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tSUB X\n", currentPC);)
         return 3;
     }
 
@@ -2168,7 +2168,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCMP X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCMP X\n", currentPC);)
         return 3;
     }
 
@@ -2180,7 +2180,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[Z] = result == 0;
         CCR[C] = (!(A&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(A&0x80) && (result & 0x0080));
         A = result & 0x00FF;
-        LOG(fprintf(instructions, "%X\tSBC X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tSBC X\n", currentPC);)
         return 3;
     }
 
@@ -2191,7 +2191,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = (!(X&0x80) && (data & 0x80)) || ((data&0x80) && (result & 0x0080)) || (!(X&0x80) && (result & 0x0080));
-        LOG(fprintf(instructions, "%X\tCPX X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tCPX X\n", currentPC);)
         return 3;
     }
 
@@ -2201,14 +2201,14 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A &= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tAND X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tAND X\n", currentPC);)
         return 3;
     }
 
     BIT_IX:
     {
         uint8_t data = GetByte(X);
-        LOG(fprintf(instructions, "%X\tBIT X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tBIT X\n", currentPC);)
         data &= A;
         CCR[N] = (data & 0x80) ? true : false;
         CCR[Z] = data == 0;
@@ -2220,7 +2220,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A = GetByte(X);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tLDA X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tLDA X\n", currentPC);)
         return 3;
     }
 
@@ -2229,7 +2229,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X, A);
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tSTA X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tSTA X\n", currentPC);)
         return 4;
     }
 
@@ -2239,7 +2239,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A ^= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tEOR X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tEOR X\n", currentPC);)
         return 3;
     }
 
@@ -2251,7 +2251,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADC X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tADC X\n", currentPC);)
         A = result & 0x00FF;
         return 3;
     }
@@ -2262,7 +2262,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         A |= data;
         CCR[N] = (A & 0x80) ? true : false;
         CCR[Z] = A == 0;
-        LOG(fprintf(instructions, "%X\tORA X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tORA X\n", currentPC);)
         return 3;
     }
 
@@ -2274,7 +2274,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         CCR[N] = (result & 0x0080) ? true : false;
         CCR[Z] = result == 0;
         CCR[C] = ((A&0x80) && (data & 0x80)) || ((data&0x80) && !(result & 0x0080)) || ((A&0x80) && !(result & 0x0080));
-        LOG(fprintf(instructions, "%X\tADD X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tADD X\n", currentPC);)
         A = result & 0x00FF;
         return 3;
     }
@@ -2282,7 +2282,7 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
     JMP_IX:
     {
         PC = X;
-        LOG(fprintf(instructions, "%X\tJMP X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tJMP X\n", currentPC);)
         return 2;
     }
 
@@ -2291,13 +2291,13 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         PushByte(PC & 0x00FF);
         PushByte(PC >> 8);
         PC = X;
-        LOG(fprintf(instructions, "%X\tJSR X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tJSR X\n", currentPC);)
         return 5;
     }
 
     LDX_IX:
     {
-        LOG(fprintf(instructions, "%X\tLDX X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tLDX X\n", currentPC);)
         X = GetByte(X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
@@ -2309,11 +2309,11 @@ uint8_t MC68HC705C8::IndirectThreadedCode()
         SetByte(X, X);
         CCR[N] = (X & 0x80) ? true : false;
         CCR[Z] = X == 0;
-        LOG(fprintf(instructions, "%X\tSTX X\n", currentPC);)
+//        LOG(fprintf(instructions, "%X\tSTX X\n", currentPC);)
         return 4;
     }
 
     unknown:
-        LOG(fprintf(instructions, "%X\tUnknwon instruction: 0x%X\n", currentPC, currentOpcode);)
+//        LOG(fprintf(instructions, "%X\tUnknwon instruction: 0x%X\n", currentPC, currentOpcode);)
     return 0;
 }

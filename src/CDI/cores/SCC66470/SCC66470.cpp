@@ -2,7 +2,6 @@
 #include "../../boards/Board.hpp"
 #include "../../common/Callbacks.hpp"
 
-#include <cstdio>
 #include <cstring>
 
 SCC66470::SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32_t size) :
@@ -13,13 +12,10 @@ SCC66470::SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32
     std::fill(internalRegisters.begin(), internalRegisters.end(), 0);
 
     memorySwapCount = 0;
-
-    OPEN_LOG(out_dram, isMaster ? "SCC66470_master_DRAM.txt" : "SCC66470_slave_DRAM.txt")
 }
 
 SCC66470::~SCC66470()
 {
-    CLOSE_LOG(out_dram)
 }
 
 void SCC66470::Reset()
