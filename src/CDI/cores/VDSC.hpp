@@ -20,6 +20,14 @@ class CDI;
 #define PLANE_ARGB_SIZE  (PLANE_MAX_WIDTH * PLANE_MAX_HEIGHT * 4)
 #define CURSOR_ARGB_SIZE (CURSOR_WIDTH * CURSOR_HEIGHT * 4)
 
+enum ControlArea
+{
+    ica1,
+    dca1,
+    ica2,
+    dca2,
+};
+
 struct VDSCRegister
 {
     std::string name;
@@ -36,14 +44,6 @@ struct Plane : public std::vector<uint8_t>
     uint16_t width; /**< Width of the plane. */
     uint16_t height; /**< Height of the plane. */
     explicit Plane(const size_t sz = 0, uint16_t w = 0, uint16_t h = 0) : std::vector<uint8_t>(sz, 0), width(w), height(h) {}
-};
-
-enum ControlArea
-{
-    ica1,
-    dca1,
-    ica2,
-    dca2,
 };
 
 struct RAMBank

@@ -15,7 +15,7 @@
  */
 M48T08::M48T08(CDI& idc, std::time_t initialTime) : IRTC(idc)
 {
-    internalClock.nsec = 0;
+    internalClock.nsec = 0.0;
     std::ifstream in("sram.bin", std::ios::in | std::ios::binary);
     if(in)
     {
@@ -61,16 +61,16 @@ M48T08::~M48T08()
  *
  * Increment only occurs if the READ or WRITE bit are not set.
  */
-void M48T08::IncrementClock(const size_t ns)
+void M48T08::IncrementClock(const double ns)
 {
     if(sram[Control] & 0xC0)
         return;
 
     internalClock.nsec += ns;
-    while(internalClock.nsec >= 1'000'000'000)
+    while(internalClock.nsec >= 1'000'000'000.0)
     {
         internalClock.sec++;
-        internalClock.nsec -= 1'000'000'000;
+        internalClock.nsec -= 1'000'000'000.0;
     }
 }
 
@@ -101,7 +101,7 @@ void M48T08::SRAMToClock()
     gmt.tm_year = PBCDToByte(sram[Year]); gmt.tm_year += (gmt.tm_year >= 70 ? 0 : 100);
     gmt.tm_isdst = 0;
     internalClock.sec = std::mktime(&gmt);
-    internalClock.nsec = 0;
+    internalClock.nsec = 0.0;
 }
 
 /** \brief Get a byte in SRAM.

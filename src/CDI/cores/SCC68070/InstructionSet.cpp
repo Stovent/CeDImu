@@ -2,11 +2,6 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
-bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs)
-{
-    return lhs.group > rhs.group;
-}
-
 uint16_t SCC68070::Exception(const uint8_t vectorNumber)
 {
     uint16_t calcTime = 0;

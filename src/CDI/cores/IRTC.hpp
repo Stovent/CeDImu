@@ -1,9 +1,16 @@
 #ifndef CDI_CORES_IRTC_HPP
 #define CDI_CORES_IRTC_HPP
 
-#include <cstdint>
-
 class CDI;
+
+#include <cstdint>
+#include <ctime>
+
+struct Clock
+{
+    std::time_t sec;
+    double nsec;
+};
 
 class IRTC
 {
@@ -12,7 +19,7 @@ public:
 
     IRTC(CDI& idc) : cdi(idc) {}
 
-    virtual void IncrementClock(const size_t ns) = 0;
+    virtual void IncrementClock(const double ns) = 0;
 
     virtual uint8_t GetByte(const uint16_t addr) const = 0;
     virtual void SetByte(const uint16_t addr, const uint8_t data) = 0;

@@ -14,7 +14,7 @@ public:
     DS1216() = delete;
     DS1216(CDI& idc);
 
-    void IncrementClock(const size_t ns) override;
+    void IncrementClock(const double ns) override;
 
     uint8_t GetByte(const uint16_t addr) const override;
     void SetByte(const uint16_t addr, const uint8_t data) override;

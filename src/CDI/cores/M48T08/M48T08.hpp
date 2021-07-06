@@ -19,12 +19,6 @@ enum M48T08Registers
     Year,
 };
 
-struct Clock
-{
-    std::time_t sec;
-    uint32_t nsec;
-};
-
 class M48T08 : public IRTC
 {
     Clock internalClock;
@@ -39,7 +33,7 @@ public:
     explicit M48T08(CDI& idc, std::time_t initialTime = 0);
     ~M48T08();
 
-    void IncrementClock(const size_t ns) override;
+    void IncrementClock(const double ns) override;
 
     uint8_t GetByte(const uint16_t addr) const override;
     void SetByte(const uint16_t addr, const uint8_t data) override;

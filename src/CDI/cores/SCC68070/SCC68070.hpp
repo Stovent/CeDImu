@@ -274,9 +274,12 @@ struct SCC68070Exception
     SCC68070Exception(const SCC68070Exception&) = default;
     SCC68070Exception(const uint8_t vec, const int8_t grp) : vector(vec), group(grp), data(0) {}
     SCC68070Exception(const uint8_t vec, const int8_t grp, const uint16_t d) : vector(vec), group(grp), data(d) {}
-};
 
-bool operator>(const SCC68070Exception& lhs, const SCC68070Exception& rhs);
+    bool operator>(const SCC68070Exception& other) const
+    {
+        return this->group > other.group;
+    }
+};
 
 struct CPUInternalRegister
 {

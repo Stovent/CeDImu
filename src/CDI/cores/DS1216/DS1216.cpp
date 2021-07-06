@@ -7,7 +7,7 @@ DS1216::DS1216(CDI& idc) :
 {
 }
 
-void DS1216::IncrementClock(const size_t ns)
+void DS1216::IncrementClock(const double ns)
 {
 }
 

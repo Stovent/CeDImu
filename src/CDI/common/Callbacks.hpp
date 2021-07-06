@@ -1,7 +1,6 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#include "enums.hpp"
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "../cores/VDSC.hpp"
 
@@ -17,6 +16,18 @@
 #define LOG(content)
 #define CLOSE_LOG(stream)
 #endif // ENABLE_LOG
+
+/** \struct LogMemoryAccess
+ */
+struct LogMemoryAccess
+{
+    std::string location; /**< CPU, RAM, VDSC, Slave, RTC, etc. */
+    std::string direction; /**< Get or Set. */
+    std::string size; /**< Byte, Word or Long. */
+    uint32_t pc; /**< Program Counter when the access occured. */
+    uint32_t address; /**< The bus address. */
+    uint32_t data; /**< The data. */
+};
 
 /** \class Callbacks
  * \brief Class containing the callback functions provided by the user.
