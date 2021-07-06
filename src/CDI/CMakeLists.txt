@@ -46,6 +46,7 @@ add_library(cdi ${LIBRARY_TYPE}
     common/Audio.cpp
     common/filesystem.cpp
     common/Video.cpp
+    cores/DS1216/DS1216.cpp
     cores/M48T08/M48T08.cpp
     cores/MC68HC705C8/Interpreter.cpp
     cores/MC68HC705C8/MC68HC705C8.cpp

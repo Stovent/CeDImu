@@ -1,14 +1,12 @@
 #ifndef BOARD_HPP
 #define BOARD_HPP
 
-class Board;
-
-#include "../CDIConfig.hpp"
 class CDI;
+#include "../CDIConfig.hpp"
 #include "../common/enums.hpp"
+#include "../cores/IRTC.hpp"
 #include "../cores/ISlave.hpp"
 #include "../cores/VDSC.hpp"
-#include "../cores/M48T08/M48T08.hpp"
 #include "../cores/SCC68070/SCC68070.hpp"
 
 #include <memory>
@@ -21,9 +19,9 @@ public:
 
     SCC68070 cpu;
     std::unique_ptr<ISlave> slave;
-    M48T08 timekeeper;
+    std::unique_ptr<IRTC> timekeeper;
 
-    Board(CDI& idc, const std::string& name, const CDIConfig& conf) : name(name), cdi(idc), cpu(idc, conf.PAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY), timekeeper(conf.initialTime) {}
+    Board(CDI& idc, const std::string& name, const CDIConfig& conf) : name(name), cdi(idc), cpu(idc, conf.PAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY) {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
 

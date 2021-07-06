@@ -1,11 +1,13 @@
 #include "MiniMMC.hpp"
 #include "../../common/Callbacks.hpp"
+#include "../../cores/M48T08/M48T08.hpp"
 
 MiniMMC::MiniMMC(CDI& cdi, const void* bios, const uint32_t size, const CDIConfig& conf) :
     Board(cdi, "Mini-MMC", conf),
     masterVDSC(cdi, true, bios, size),
     slaveVDSC(cdi, false, "\0", 2)
 {
+    timekeeper = std::make_unique<M48T08>(cdi, conf.initialTime);
     Reset(true);
 }
 

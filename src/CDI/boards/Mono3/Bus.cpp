@@ -20,12 +20,9 @@ uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
         return slave->GetByte((addr - 0x310000) >> 1);
     }
 
-    if(addr >= 0x320000 && addr < 0x324000 && isEven(addr))
+    if(addr >= 0x320000 && addr < nvramMaxAddress && isEven(addr))
     {
-        const uint8_t data = timekeeper.GetByte((addr - 0x320000) >> 1);
-        LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"RTC", "Get", "Byte", cpu.currentPC, addr, data}); })
-        return data;
+        return timekeeper->GetByte((addr - 0x320000) >> 1);
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
@@ -50,12 +47,9 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
         return slave->GetByte((addr - 0x310000) >> 1);
     }
 
-    if(addr >= 0x320000 && addr < 0x324000)
+    if(addr >= 0x320000 && addr < nvramMaxAddress)
     {
-        const uint8_t data = timekeeper.GetByte((addr - 0x320000) >> 1);
-        LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"RTC", "Get", "Word", cpu.currentPC, addr, data}); })
-        return (uint16_t)data << 8;
+        return (uint16_t)timekeeper->GetByte((addr - 0x320000) >> 1) << 8;
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
@@ -87,11 +81,9 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
         return;
     }
 
-    if(addr >= 0x320000 && addr < 0x324000 && isEven(addr))
+    if(addr >= 0x320000 && addr < nvramMaxAddress && isEven(addr))
     {
-        timekeeper.SetByte((addr - 0x320000) >> 1, data);
-        LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"RTC", "Set", "Byte", cpu.currentPC, addr, data}); })
+        timekeeper->SetByte((addr - 0x320000) >> 1, data);
         return;
     }
 
@@ -119,12 +111,9 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
         return;
     }
 
-    if(addr >= 0x320000 && addr < 0x324000)
+    if(addr >= 0x320000 && addr < nvramMaxAddress)
     {
-        const uint8_t d = data >> 8;
-        timekeeper.SetByte((addr - 0x320000) >> 1, d);
-        LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"RTC", "Set", "Word", cpu.currentPC, addr, d}); })
+        timekeeper->SetByte((addr - 0x320000) >> 1, data >> 8);
         return;
     }
 

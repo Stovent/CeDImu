@@ -22,7 +22,7 @@ uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
 
     if(addr >= 0x3F8000 && addr < 0x3FC000 && isEven(addr))
     {
-        const uint8_t data = timekeeper.GetByte((addr - 0x3F8000) >> 1);
+        const uint8_t data = timekeeper->GetByte((addr - 0x3F8000) >> 1);
         LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
                 cdi.callbacks.OnLogMemoryAccess({"RTC", "Get", "Byte", cpu.currentPC, addr, data}); })
         return data;
@@ -52,7 +52,7 @@ uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr >= 0x3F8000 && addr < 0x3FC000)
     {
-        const uint8_t data = timekeeper.GetByte((addr - 0x3F8000) >> 1);
+        const uint8_t data = timekeeper->GetByte((addr - 0x3F8000) >> 1);
         LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
                 cdi.callbacks.OnLogMemoryAccess({"RTC", "Get", "Word", cpu.currentPC, addr, data}); })
         return (uint16_t)data << 8;
@@ -90,7 +90,7 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
 
     if(addr >= 0x3F8000 && addr < 0x3FC000 && isEven(addr))
     {
-        timekeeper.SetByte((addr - 0x3F8000) >> 1, data);
+        timekeeper->SetByte((addr - 0x3F8000) >> 1, data);
         LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
                 cdi.callbacks.OnLogMemoryAccess({"RTC", "Set", "Byte", cpu.currentPC, addr, data}); })
         return;
@@ -124,7 +124,7 @@ void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fl
     if(addr >= 0x3F8000 && addr < 0x3FC000)
     {
         const uint8_t d = data >> 8;
-        timekeeper.SetByte((addr - 0x3F8000) >> 1, d);
+        timekeeper->SetByte((addr - 0x3F8000) >> 1, d);
         LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
                 cdi.callbacks.OnLogMemoryAccess({"RTC", "Set", "Word", cpu.currentPC, addr, d}); })
         return;

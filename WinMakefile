@@ -18,7 +18,7 @@ bin/obj/SCC68070.o bin/obj/Interpreter.o bin/obj/ConditionalTests.o bin/obj/Disa
 bin/obj/SCC66470.o bin/obj/SCC66470Display.o bin/obj/SCC66470DRAMInterface.o bin/obj/SCC66470Registers.o \
 bin/obj/MCD212.o bin/obj/MCD212Display.o bin/obj/MCD212Registers.o bin/obj/MCD212DRAMInterface.o \
 bin/obj/MC68HC705C8.o bin/obj/MC68HC705C8_Interpreter.o bin/obj/MC68HC705C8_MemoryAccess.o \
-bin/obj/M48T08.o \
+bin/obj/M48T08.o bin/obj/DS1216.o \
 bin/obj/CDI.o bin/obj/CDIDisc.o bin/obj/CDIDirectory.o bin/obj/CDIFile.o bin/obj/Export.o \
 bin/obj/Mono3.o bin/obj/Mono3Bus.o bin/obj/MiniMMC.o bin/obj/MiniMMCBus.o \
 bin/obj/ManeuveringDevice.o bin/obj/PointingDevice.o \
@@ -40,6 +40,7 @@ CeDImu :
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/common/Audio.cpp -o bin/obj/Audio.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/common/Video.cpp -o bin/obj/Video.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/common/filesystem.cpp -o bin/obj/filesystem.o
+	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/DS1216/DS1216.cpp -o bin/obj/DS1216.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MC68HC705C8/MC68HC705C8.cpp -o bin/obj/MC68HC705C8.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MC68HC705C8/Interpreter.cpp -o bin/obj/MC68HC705C8_Interpreter.o
 	$(CXX) $(CXXFLAGS) -I$(wxIPath) -I$(wxIMSWU) $(defines) -c src/CDI/cores/MC68HC705C8/MemoryAccess.cpp -o bin/obj/MC68HC705C8_MemoryAccess.o

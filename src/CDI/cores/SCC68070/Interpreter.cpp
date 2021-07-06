@@ -54,7 +54,7 @@ void SCC68070::Interpreter()
         const double ns = executionCycles * cycleDelay;
         IncrementTimer(ns);
         cdi.board->slave->IncrementTime(ns);
-        cdi.board->timekeeper.IncrementClock(ns);
+        cdi.board->timekeeper->IncrementClock(ns);
 
         const uint32_t lineDisplayTime = cdi.board->GetLineDisplayTime();
         if(cycleCount * cycleDelay >= lineDisplayTime)

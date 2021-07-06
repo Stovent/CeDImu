@@ -1,6 +1,8 @@
 #ifndef M48T08_HPP
 #define M48T08_HPP
 
+#include "../IRTC.hpp"
+
 #include <array>
 #include <cstdint>
 #include <ctime>
@@ -23,7 +25,7 @@ struct Clock
     uint32_t nsec;
 };
 
-class M48T08
+class M48T08 : public IRTC
 {
     Clock internalClock;
     std::array<uint8_t, 0x2000> sram;
@@ -34,13 +36,13 @@ class M48T08
 public:
     static constexpr std::time_t defaultTime = 599616000; // 1989/01/01 00:00:00
 
-    explicit M48T08(std::time_t initialTime = 0);
+    explicit M48T08(CDI& idc, std::time_t initialTime = 0);
     ~M48T08();
 
-    void IncrementClock(const size_t ns);
+    void IncrementClock(const size_t ns) override;
 
-    uint8_t GetByte(const uint16_t addr) const;
-    void SetByte(const uint16_t addr, const uint8_t data);
+    uint8_t GetByte(const uint16_t addr) const override;
+    void SetByte(const uint16_t addr, const uint8_t data) override;
 };
 
 #endif // M48T08_HPP

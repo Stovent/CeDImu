@@ -1,10 +1,12 @@
 #include "CDI.hpp"
 #include "boards/MiniMMC/MiniMMC.hpp"
 #include "boards/Mono3/Mono3.hpp"
+#include "cores/M48T08/M48T08.hpp"
 
 constexpr CDIConfig defaultConfig = {
     .PAL = true,
     .initialTime = M48T08::defaultTime,
+    .has32KBNVRAM = false,
 };
 
 /** \brief Create a new empty CD-i context.

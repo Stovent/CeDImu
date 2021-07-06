@@ -1,4 +1,6 @@
 #include "M48T08.hpp"
+#include "../../CDI.hpp"
+#include "../../common/Callbacks.hpp"
 #include "../../common/utils.hpp"
 
 #include <cstring>
@@ -11,7 +13,7 @@
  * If existing, loads its initial state from a file named "sram.bin".
  * If \p initialTime is 0, then time will continue from the time stored in sram.bin.
  */
-M48T08::M48T08(std::time_t initialTime)
+M48T08::M48T08(CDI& idc, std::time_t initialTime) : IRTC(idc)
 {
     internalClock.nsec = 0;
     std::ifstream in("sram.bin", std::ios::in | std::ios::binary);
@@ -111,6 +113,8 @@ void M48T08::SRAMToClock()
  */
 uint8_t M48T08::GetByte(const uint16_t addr) const
 {
+    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+            cdi.callbacks.OnLogMemoryAccess({"RTC", "Get", "Byte", cdi.board->cpu.currentPC, addr, sram[addr]});)
     return sram[addr];
 }
 
@@ -124,6 +128,8 @@ uint8_t M48T08::GetByte(const uint16_t addr) const
  */
 void M48T08::SetByte(const uint16_t addr, const uint8_t data)
 {
+    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
+            cdi.callbacks.OnLogMemoryAccess({"RTC", "Set", "Byte", cdi.board->cpu.currentPC, addr, data});)
     if(addr == Control)
     {
         if(data & 0x40 && !(sram[Control] & 0x40))

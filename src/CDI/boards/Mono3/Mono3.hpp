@@ -9,6 +9,7 @@ class Mono3;
 class Mono3 : public Board
 {
     MCD212 mcd212;
+    const uint32_t nvramMaxAddress;
 
 public:
     Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf);
