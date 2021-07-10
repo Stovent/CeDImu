@@ -245,7 +245,7 @@ void MCD212::ExecuteICA2()
             if(ica < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                LOG(if(bank > 1) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
+                LOG(if(bank < 2) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
                 const uint8_t index = (uint8_t)(ica >> 24) - 0x80;
                 CLUT[bank + index] = ica & 0x00FFFFFF;
             }
@@ -304,7 +304,7 @@ void MCD212::ExecuteDCA2()
             if(dca < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                LOG(if(bank > 1) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
+                LOG(if(bank < 2) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
                 const uint8_t index = (uint8_t)(dca >> 24) - 0x80;
                 CLUT[bank + index] = dca & 0x00FFFFFF;
             }
