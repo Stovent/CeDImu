@@ -1,5 +1,5 @@
 #include "MCD212.hpp"
-#include "../../cdi.hpp"
+#include "../../CDI.hpp"
 #include "../../common/Callbacks.hpp"
 #include "../../common/utils.hpp"
 

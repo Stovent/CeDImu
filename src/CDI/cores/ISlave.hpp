@@ -15,7 +15,7 @@ public:
     const uint32_t busBase;
 
     ISlave() = delete;
-    explicit ISlave(CDI& idc, uint32_t busbase) : cdi(idc), pointingDevice(new ManeuveringDevice(*this)), busBase(busbase) {}
+    ISlave(CDI& idc, uint32_t busbase) : cdi(idc), pointingDevice(std::make_unique<ManeuveringDevice>(*this)), busBase(busbase) {}
     virtual ~ISlave() {}
 
     virtual void UpdatePointerState() = 0;
