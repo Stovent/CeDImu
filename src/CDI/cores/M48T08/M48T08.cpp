@@ -63,7 +63,7 @@ M48T08::~M48T08()
  */
 void M48T08::IncrementClock(const double ns)
 {
-    if(sram[Control] & 0xC0)
+    if(sram[Seconds] & 0x80)
         return;
 
     internalClock.nsec += ns;
@@ -71,6 +71,7 @@ void M48T08::IncrementClock(const double ns)
     {
         internalClock.sec++;
         internalClock.nsec -= 1'000'000'000.0;
+        ClockToSRAM();
     }
 }
 
@@ -78,6 +79,9 @@ void M48T08::IncrementClock(const double ns)
  */
 void M48T08::ClockToSRAM()
 {
+    if(sram[Control] & 0xC0)
+        return;
+
     const std::tm* gmt = std::gmtime(&internalClock.sec);
     sram[Seconds] = byteToPBCD(gmt->tm_sec) | (sram[Seconds] & 0x80);
     sram[Minutes] = byteToPBCD(gmt->tm_min);
