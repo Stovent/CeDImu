@@ -59,7 +59,7 @@ M48T08::~M48T08()
  *
  * \param ns The number of nanoseconds to increment the clock by.
  *
- * Increment only occurs if the READ or WRITE bit are not set.
+ * Increment only occurs if the STOP bit is not set.
  */
 void M48T08::IncrementClock(const double ns)
 {

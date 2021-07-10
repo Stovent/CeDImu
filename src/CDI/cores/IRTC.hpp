@@ -18,6 +18,7 @@ public:
     CDI& cdi;
 
     IRTC(CDI& idc) : cdi(idc) {}
+    virtual ~IRTC() {}
 
     virtual void IncrementClock(const double ns) = 0;
 
