@@ -69,6 +69,7 @@ DVC support will be added when CeDImu will have a good compatibility with the ba
 - [ ] Slave (Mini-MMC, Mono-1, 2)
 - [ ] IKAT (Mono-3, 4)
 - [x] M48T08
+- [x] DS1216
 
 ### Boards
 

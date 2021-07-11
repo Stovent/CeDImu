@@ -7,18 +7,6 @@
 #include <cstdint>
 #include <ctime>
 
-enum M48T08Registers
-{
-    Control = 0x1FF8,
-    Seconds,
-    Minutes,
-    Hours,
-    Day,
-    Date,
-    Month,
-    Year,
-};
-
 class M48T08 : public IRTC
 {
     Clock internalClock;
@@ -28,14 +16,13 @@ class M48T08 : public IRTC
     void SRAMToClock();
 
 public:
-    static constexpr std::time_t defaultTime = 599616000; // 1989/01/01 00:00:00
-
+    M48T08() = delete;
     explicit M48T08(CDI& idc, std::time_t initialTime = 0);
     ~M48T08();
 
     void IncrementClock(const double ns) override;
 
-    uint8_t GetByte(const uint16_t addr) const override;
+    uint8_t GetByte(const uint16_t addr) override;
     void SetByte(const uint16_t addr, const uint8_t data) override;
 };
 

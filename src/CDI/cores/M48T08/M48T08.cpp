@@ -6,6 +6,18 @@
 #include <cstring>
 #include <fstream>
 
+enum M48T08Registers
+{
+    Control = 0x1FF8,
+    Seconds,
+    Minutes,
+    Hours,
+    Day,
+    Date,
+    Month,
+    Year,
+};
+
 /** \brief Construct a new timekeeper.
  *
  * \param initialTime The timestamp to be used as the initial time.
@@ -55,26 +67,6 @@ M48T08::~M48T08()
     out.close();
 }
 
-/** \brief Increment the internal clock.
- *
- * \param ns The number of nanoseconds to increment the clock by.
- *
- * Increment only occurs if the STOP bit is not set.
- */
-void M48T08::IncrementClock(const double ns)
-{
-    if(sram[Seconds] & 0x80)
-        return;
-
-    internalClock.nsec += ns;
-    while(internalClock.nsec >= 1'000'000'000.0)
-    {
-        internalClock.sec++;
-        internalClock.nsec -= 1'000'000'000.0;
-        ClockToSRAM();
-    }
-}
-
 /** \brief Move the internal clock to SRAM.
  */
 void M48T08::ClockToSRAM()
@@ -101,11 +93,31 @@ void M48T08::SRAMToClock()
     gmt.tm_min  = PBCDToByte(sram[Minutes]);
     gmt.tm_hour = PBCDToByte(sram[Hours]);
     gmt.tm_mday = PBCDToByte(sram[Date]);
-    gmt.tm_mon  = PBCDToByte(sram[Month] - 1);
+    gmt.tm_mon  = PBCDToByte(sram[Month]) - 1;
     gmt.tm_year = PBCDToByte(sram[Year]); gmt.tm_year += (gmt.tm_year >= 70 ? 0 : 100);
     gmt.tm_isdst = 0;
     internalClock.sec = std::mktime(&gmt);
     internalClock.nsec = 0.0;
+}
+
+/** \brief Increment the internal clock.
+ *
+ * \param ns The number of nanoseconds to increment the clock by.
+ *
+ * Increment only occurs if the STOP bit is not set.
+ */
+void M48T08::IncrementClock(const double ns)
+{
+    if(sram[Seconds] & 0x80) // STOP bit
+        return;
+
+    internalClock.nsec += ns;
+    while(internalClock.nsec >= 1'000'000'000.0)
+    {
+        internalClock.sec++;
+        internalClock.nsec -= 1'000'000'000.0;
+        ClockToSRAM();
+    }
 }
 
 /** \brief Get a byte in SRAM.
@@ -115,7 +127,7 @@ void M48T08::SRAMToClock()
  *
  * In order to read the clock, the READ bit must be set in the control register using SetByte(0x1FF8).
  */
-uint8_t M48T08::GetByte(const uint16_t addr) const
+uint8_t M48T08::GetByte(const uint16_t addr)
 {
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
             cdi.callbacks.OnLogMemoryAccess({"RTC", "Get", "Byte", cdi.board->cpu.currentPC, addr, sram[addr]});)
