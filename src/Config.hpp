@@ -1,6 +1,8 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+#include "CDI/CDI.hpp"
+
 #include <string>
 
 namespace Config
@@ -8,6 +10,8 @@ namespace Config
 // General
 extern std::string systemBIOS;
 extern std::string ROMDirectory;
+extern Boards boardType;
+extern bool has32KBNVRAM;
 
 // Emulation
 extern std::string initialTime;

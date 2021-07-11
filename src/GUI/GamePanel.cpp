@@ -18,6 +18,9 @@ GamePanel::~GamePanel()
 
 void GamePanel::RefreshLoop(wxPaintEvent& event)
 {
+    if(!app.cdi.board)
+        return;
+
     const Plane& p = app.cdi.board->GetScreen();
     if(p.width == 0 || p.height == 0)
         return;

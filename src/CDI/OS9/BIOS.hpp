@@ -49,6 +49,8 @@ public:
     const uint32_t base; /**< Base address of the BIOS in the memory map. */
     const uint32_t size; /**< Size of the BIOS in bytes. */
 
+    std::vector<ModuleHeader> modules; /**< OS9 modules inside the BIOS. */
+
     BIOS() = delete;
     BIOS(const void* bios, const uint32_t sz, const uint32_t bs);
     ~BIOS();
@@ -65,8 +67,6 @@ public:
 
 private:
     const std::vector<uint8_t> memory;
-
-    std::vector<ModuleHeader> modules;
 
     void LoadModules();
 };

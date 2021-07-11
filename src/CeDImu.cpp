@@ -69,10 +69,17 @@ bool CeDImu::InitializeCores()
     CDIConfig config = {
         .PAL = Config::PAL,
         .initialTime = Config::initialTime.size() ? stoi(Config::initialTime) : time(nullptr),
+        .has32KBNVRAM = Config::has32KBNVRAM,
     };
     cdi.config = config;
-    cdi.LoadBoard(bios, biosSize, Boards::AutoDetect);
+    cdi.LoadBoard(bios, biosSize, Config::boardType);
     delete[] bios;
+
+    if(!cdi.board)
+    {
+        wxMessageBox("Failed to load board");
+        return false;
+    }
 
 #ifdef _WIN32
     biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('\\')+1);
