@@ -55,9 +55,9 @@ public:
     BIOS(const void* bios, const uint32_t sz, const uint32_t bs);
     ~BIOS();
 
-    /** \brief Returns a const reference to the byte at \p offset.
+    /** \brief Returns the byte at \p offset.
         \param offset The location of the byte in the BIOS area. */
-    inline const uint8_t& operator[](const uint32_t offset) const { return memory[offset]; }
+    inline uint8_t operator[](const uint32_t offset) const { return memory[offset]; }
 
     /** \brief Returns a pointer to the location \p pos.
         \param pos The location of the desired  pointer in the BIOS area. */

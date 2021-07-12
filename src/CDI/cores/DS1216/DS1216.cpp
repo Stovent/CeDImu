@@ -16,17 +16,57 @@ enum DS1216Clock
     Year,
 };
 
-constexpr std::array<bool, 64> matchPattern =
+static constexpr std::array<bool, 64> matchPattern =
 {0,1,0,1,1,1,0,0, 1,0,1,0,0,0,1,1, 0,0,1,1,1,0,1,0, 1,1,0,0,0,1,0,1, 0,1,0,1,1,1,0,0, 1,0,1,0,0,0,1,1, 0,0,1,1,1,0,1,0, 1,1,0,0,0,1,0,1};
 
-DS1216::DS1216(CDI& idc) :
+/** \brief Constructs a new timekeeper.
+ * \param idc A reference to the CDI context.
+ * \param initialTime The timestamp to be used as the initial time.
+ * \param state The initial state of the SRAM, or nullptr for empty SRAM. Must be 32776 bytes long.
+ *
+ * If \p initialTime is 0, then time will continue from the time stored in the initial state at the 8 last bytes.
+ * If \p initialTime is 0 and \p state is a nullptr, then initial time will be IRTC::defaultTime.
+ */
+DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state) :
     IRTC(idc),
-    internalClock{599616000, 0.0},
+    internalClock{initialTime, 0.0},
     clock{0},
-    sram{0xFF},
     patternCount(-1),
     pattern(64)
 {
+    if(state)
+    {
+        std::copy(state, &state[0x8000], sram.begin());
+        std::copy(&state[0x8000], &state[0x8008], clock.begin());
+        if(initialTime)
+            ClockToSRAM();
+        else
+            SRAMToClock();
+    }
+    else
+    {
+        sram.fill(0xFF);
+        clock.fill(0);
+
+        if(initialTime == 0)
+            initialTime = IRTC::defaultTime;
+
+        internalClock.sec = initialTime;
+        ClockToSRAM();
+    }
+}
+
+/** \brief Destroys the timekeeper.
+ * Calls the \p OnSaveNVRAM callback.
+ */
+DS1216::~DS1216()
+{
+    ClockToSRAM();
+    uint8_t nv[0x8008];
+    memcpy(nv, sram.data(), sram.size());
+    memcpy(&nv[0x8000], clock.data(), 8);
+
+    cdi.callbacks.OnSaveNVRAM(nv, 0x8008);
 }
 
 /** \brief Move the internal clock to SRAM.

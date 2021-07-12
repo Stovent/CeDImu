@@ -18,36 +18,32 @@ enum M48T08Registers
     Year,
 };
 
-/** \brief Construct a new timekeeper.
- *
+/** \brief Construct a new M48T08 timekeeper.
+ * \param idc A reference to the CDI context.
  * \param initialTime The timestamp to be used as the initial time.
+ * \param state The initial state of the SRAM, or nullptr for empty SRAM. Must be 8192 bytes long.
  *
- * If existing, loads its initial state from a file named "sram.bin".
- * If \p initialTime is 0, then time will continue from the time stored in sram.bin.
+ * If \p initialTime is 0, then time will continue from the time stored in the initial state at the 8 last bytes.
  */
-M48T08::M48T08(CDI& idc, std::time_t initialTime) : IRTC(idc)
+M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state) :
+    IRTC(idc),
+    internalClock{initialTime, 0.0}
 {
-    internalClock.nsec = 0.0;
-    std::ifstream in("sram.bin", std::ios::in | std::ios::binary);
-    if(in)
+    if(state)
     {
-        in.read((char*)sram.data(), 0x2000);
-        in.close();
-
+        std::copy(state, &state[sram.size()], sram.begin());
         if(initialTime)
-        {
-            internalClock.sec = initialTime;
             ClockToSRAM();
-        }
         else
             SRAMToClock();
     }
     else
     {
-        memset(sram.data(), 0xFF, 0x1FF8);
-        memset(&sram[0x1FF8], 0, 8);
+        sram.fill(0xFF);
+        std::fill(&sram[0x1FF8], sram.end(), 0);
+
         if(initialTime == 0)
-            initialTime = M48T08::defaultTime;
+            initialTime = IRTC::defaultTime;
 
         internalClock.sec = initialTime;
         ClockToSRAM();
@@ -57,14 +53,12 @@ M48T08::M48T08(CDI& idc, std::time_t initialTime) : IRTC(idc)
 
 /** \brief Destroy the timekeeper.
  *
- * It writes its content in a file named "sram.bin".
+ * Calls the \p OnSaveNVRAM callback.
  */
 M48T08::~M48T08()
 {
     ClockToSRAM();
-    std::ofstream out("sram.bin", std::ios::out | std::ios::binary);
-    out.write((char*)sram.data(), 8192);
-    out.close();
+    cdi.callbacks.OnSaveNVRAM(sram.data(), sram.size());
 }
 
 /** \brief Move the internal clock to SRAM.

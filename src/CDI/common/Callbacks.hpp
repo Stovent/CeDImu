@@ -39,6 +39,9 @@ class Callbacks
     std::mutex onFrameCompletedMutex;
     std::function<void()> onFrameCompletedCallback;
 
+    std::mutex onSaveNVRAMMutex;
+    std::function<void(const void* data, size_t size)> onSaveNVRAMCallback;
+
     std::mutex onLogICADCAMutex;
     std::function<void(ControlArea, const std::string&)> onLogICADCACallback;
 
@@ -105,6 +108,18 @@ public:
         std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
         if(onFrameCompletedCallback)
             onFrameCompletedCallback();
+    }
+
+    void SetOnSaveNVRAM(const std::function<void(const void*, size_t)>& callback)
+    {
+        std::lock_guard<std::mutex> lock(onSaveNVRAMMutex);
+        onSaveNVRAMCallback = callback;
+    }
+    void OnSaveNVRAM(const void* data, size_t size)
+    {
+        std::lock_guard<std::mutex> lock(onSaveNVRAMMutex);
+        if(onSaveNVRAMCallback)
+            onSaveNVRAMCallback(data, size);
     }
 
     bool HasOnLogICADCA()

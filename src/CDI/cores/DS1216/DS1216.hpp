@@ -23,7 +23,8 @@ class DS1216 : public IRTC
 
 public:
     DS1216() = delete;
-    DS1216(CDI& idc);
+    explicit DS1216(CDI& idc, std::time_t initialTime = 0, const uint8_t* state = nullptr);
+    ~DS1216();
 
     void IncrementClock(const double ns) override;
 

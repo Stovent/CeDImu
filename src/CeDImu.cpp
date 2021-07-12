@@ -113,6 +113,12 @@ bool CeDImu::InitializeCores()
         fprintf(logMemoryAccess, "[%5s] (0x%06X) %s %s at 0x%X : %d\n", arg.location.c_str(), arg.pc, arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
     });
 
+    cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {
+        std::ofstream out("sram.bin", std::ios::out | std::ios::binary);
+        out.write((char*)data, size);
+        out.close();
+    });
+
     cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
     return true;
 }

@@ -17,7 +17,7 @@ class M48T08 : public IRTC
 
 public:
     M48T08() = delete;
-    explicit M48T08(CDI& idc, std::time_t initialTime = 0);
+    explicit M48T08(CDI& idc, std::time_t initialTime = 0, const uint8_t* state = nullptr);
     ~M48T08();
 
     void IncrementClock(const double ns) override;
