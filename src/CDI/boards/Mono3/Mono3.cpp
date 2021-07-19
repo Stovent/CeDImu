@@ -4,16 +4,16 @@
 #include "../../cores/DS1216/DS1216.hpp"
 #include "../../cores/M48T08/M48T08.hpp"
 
-Mono3::Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf) :
+Mono3::Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void* nvram, const CDIConfig& conf) :
     Board(cdi, "Mono-III", conf),
     mcd212(cdi, vdscBios, vdscSize, conf.PAL),
     nvramMaxAddress(conf.has32KBNVRAM ? 0x330000 : 0x324000)
 {
     slave = std::make_unique<HLE::IKAT>(cdi, conf.PAL, 0x310000);
     if(conf.has32KBNVRAM)
-        timekeeper = std::make_unique<DS1216>(cdi);
+        timekeeper = std::make_unique<DS1216>(cdi, conf.initialTime, (uint8_t*)nvram);
     else
-        timekeeper = std::make_unique<M48T08>(cdi, conf.initialTime);
+        timekeeper = std::make_unique<M48T08>(cdi, conf.initialTime, (uint8_t*)nvram);
     Reset(true);
 }
 

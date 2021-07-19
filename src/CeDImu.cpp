@@ -52,6 +52,12 @@ int CeDImu::OnExit()
 
 bool CeDImu::InitializeCores()
 {
+#ifdef _WIN32
+    biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('\\')+1);
+#else
+    biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('/')+1);
+#endif // _WIN32
+
     FILE* f = fopen(Config::systemBIOS.c_str(), "rb");
     if(!f)
     {
@@ -66,13 +72,25 @@ bool CeDImu::InitializeCores()
     biosSize = fread(bios, 1, biosSize, f);
     fclose(f);
 
+    void* nvram = nullptr;
+    std::ifstream nvr("sram_" + biosName + ".bin", std::ios::in | std::ios::binary);
+    if(nvr)
+    {
+        nvr.seekg(0, std::ios::end);
+        size_t size = nvr.tellg();
+        nvr.seekg(0, std::ios::beg);
+        nvram = new uint8_t[size];
+        nvr.read((char*)nvram, size);
+        nvr.close();
+    }
+
     CDIConfig config = {
         .PAL = Config::PAL,
         .initialTime = Config::initialTime.size() ? stoi(Config::initialTime) : time(nullptr),
         .has32KBNVRAM = Config::has32KBNVRAM,
     };
     cdi.config = config;
-    cdi.LoadBoard(bios, biosSize, Config::boardType);
+    cdi.LoadBoard(bios, biosSize, nvram, Config::boardType);
     delete[] bios;
 
     if(!cdi.board)
@@ -80,12 +98,6 @@ bool CeDImu::InitializeCores()
         wxMessageBox("Failed to load board");
         return false;
     }
-
-#ifdef _WIN32
-    biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('\\')+1);
-#else
-    biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('/')+1);
-#endif // _WIN32
 
     cdi.callbacks.SetOnFrameCompleted([=] () -> void {
         if(this->stopOnNextFrame.load())
@@ -110,11 +122,12 @@ bool CeDImu::InitializeCores()
     });
 
     cdi.callbacks.SetOnLogMemoryAccess([=] (const LogMemoryAccess& arg) {
-        fprintf(logMemoryAccess, "[%5s] (0x%06X) %s %s at 0x%X : %d\n", arg.location.c_str(), arg.pc, arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
+        if(arg.location.compare("RTC") == 0)
+           fprintf(logMemoryAccess, "[%5s] (0x%06X) %s %s at 0x%X : %d\n", arg.location.c_str(), arg.pc, arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
     });
 
     cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {
-        std::ofstream out("sram.bin", std::ios::out | std::ios::binary);
+        std::ofstream out("sram_" + biosName + ".bin", std::ios::out | std::ios::binary);
         out.write((char*)data, size);
         out.close();
     });

@@ -20,9 +20,9 @@ CDI::CDI(const CDIConfig& conf, const Callbacks& calls) : config(conf), callback
  * See description of CDI::LoadBoard.
  * On failure, CDI::board is a nullptr. On success CDI::board is a valid pointer.
  */
-CDI::CDI(const void* vdscBios, const uint32_t vdscSize, Boards brd, const CDIConfig& conf) : config(conf)
+CDI::CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf) : config(conf)
 {
-    LoadBoard(vdscBios, vdscSize, brd);
+    LoadBoard(vdscBios, vdscSize, nvram, brd);
 }
 
 CDI::~CDI()
@@ -40,7 +40,7 @@ CDI::~CDI()
  * If \p boardDetect is Boards::AutoDetect, then the board type will be guessed from the BIOS data.
  * It may not be accurate so always privilege providing yourself the board type.
  */
-bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, Boards boardDetect)
+bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect)
 {
     Boards brd;
     if(boardDetect == Boards::AutoDetect)
@@ -60,7 +60,7 @@ bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, Boards boardD
     case Boards::Mono3:
     case Boards::Mono4:
     case Boards::Roboco:
-        board = std::make_unique<Mono3>(*this, vdscBios, vdscSize, config);
+        board = std::make_unique<Mono3>(*this, vdscBios, vdscSize, (uint8_t*)nvram, config);
         break;
 
     default:

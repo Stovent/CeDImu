@@ -12,7 +12,7 @@ class Mono3 : public Board
     const uint32_t nvramMaxAddress;
 
 public:
-    Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const CDIConfig& conf);
+    Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void* nvram, const CDIConfig& conf);
     virtual ~Mono3();
     virtual void Reset(const bool resetCPU) override;
 
