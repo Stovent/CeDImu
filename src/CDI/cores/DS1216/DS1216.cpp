@@ -3,6 +3,7 @@
 #include "../../common/utils.hpp"
 
 #include <algorithm>
+#include <cstring>
 
 enum DS1216Clock
 {
