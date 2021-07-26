@@ -22,14 +22,12 @@ uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
 
     if(addr >= 0x3F8000 && addr < 0x3FC000 && isEven(addr))
     {
-        const uint8_t data = timekeeper->GetByte((addr - 0x3F8000) >> 1);
-        LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"RTC", "Get", "Byte", cpu.currentPC, addr, data}); })
-        return data;
+        return timekeeper->GetByte((addr - 0x3F8000) >> 1);
+
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({"OUT OF RANGE", "Get", "Byte", cpu.currentPC, addr, 0}); })
+            cdi.callbacks.OnLogMemoryAccess({OutOfRange, "Get", "Byte", cpu.currentPC, addr, 0}); })
     throw SCC68070Exception(BusError, 0);
 }
 
@@ -52,14 +50,11 @@ uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr >= 0x3F8000 && addr < 0x3FC000)
     {
-        const uint8_t data = timekeeper->GetByte((addr - 0x3F8000) >> 1);
-        LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"RTC", "Get", "Word", cpu.currentPC, addr, data}); })
-        return (uint16_t)data << 8;
+        return (uint16_t)timekeeper->GetByte((addr - 0x3F8000) >> 1) << 8;
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({"OUT OF RANGE", "Get", "Word", cpu.currentPC, addr, 0}); })
+            cdi.callbacks.OnLogMemoryAccess({OutOfRange, "Get", "Word", cpu.currentPC, addr, 0}); })
     throw SCC68070Exception(BusError, 0);
 }
 
@@ -91,13 +86,11 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
     if(addr >= 0x3F8000 && addr < 0x3FC000 && isEven(addr))
     {
         timekeeper->SetByte((addr - 0x3F8000) >> 1, data);
-        LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"RTC", "Set", "Byte", cpu.currentPC, addr, data}); })
         return;
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({"OUT OF RANGE", "Set", "Byte", cpu.currentPC, addr, data}); })
+            cdi.callbacks.OnLogMemoryAccess({OutOfRange, "Set", "Byte", cpu.currentPC, addr, data}); })
     throw SCC68070Exception(BusError, 0);
 }
 
@@ -125,13 +118,11 @@ void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fl
     {
         const uint8_t d = data >> 8;
         timekeeper->SetByte((addr - 0x3F8000) >> 1, d);
-        LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"RTC", "Set", "Word", cpu.currentPC, addr, d}); })
         return;
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({"OUT OF RANGE", "Set", "Word", cpu.currentPC, addr, data}); })
+            cdi.callbacks.OnLogMemoryAccess({OutOfRange, "Set", "Word", cpu.currentPC, addr, data}); })
     throw SCC68070Exception(BusError, 0);
 }
 

@@ -122,8 +122,8 @@ bool CeDImu::InitializeCores()
     });
 
     cdi.callbacks.SetOnLogMemoryAccess([=] (const LogMemoryAccess& arg) {
-        if(arg.location.compare("RTC") == 0)
-           fprintf(logMemoryAccess, "[%5s] (0x%06X) %s %s at 0x%X : %d\n", arg.location.c_str(), arg.pc, arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
+        if(arg.location == RTC)
+           fprintf(logMemoryAccess, "[%5s] (0x%06X) %s %s at 0x%X : %d\n", memoryAccessLocationToString(arg.location), arg.pc, arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
     });
 
     cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {

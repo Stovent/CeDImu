@@ -13,11 +13,22 @@
 #define LOG(content)
 #endif // ENABLE_LOG
 
+enum MemoryAccessLocation
+{
+    CPU,
+    BIOS,
+    RAM,
+    VDSC,
+    Slave,
+    RTC,
+    OutOfRange,
+};
+
 /** \struct LogMemoryAccess
  */
 struct LogMemoryAccess
 {
-    std::string location; /**< CPU, RAM, VDSC, Slave, RTC, etc. */
+    MemoryAccessLocation location; /**< CPU, BIOS, RAM, VDSC, Slave, RTC, etc. */
     std::string direction; /**< Get or Set. */
     std::string size; /**< Byte, Word or Long. */
     uint32_t pc; /**< Program Counter when the access occured. */
@@ -156,5 +167,20 @@ public:
             onLogMemoryAccessCallback(arg);
     }
 };
+
+inline const char* memoryAccessLocationToString(const MemoryAccessLocation loc)
+{
+    switch(loc)
+    {
+    case CPU:   return "CPU";
+    case BIOS:  return "BIOS";
+    case RAM:   return "RAM";
+    case VDSC:  return "VDSC";
+    case Slave: return "Slave";
+    case RTC:   return "RTC";
+    case OutOfRange: return "OUT OF RANGE";
+    default:    return "Unknown location";
+    }
+}
 
 #endif // LOGGER_HPP

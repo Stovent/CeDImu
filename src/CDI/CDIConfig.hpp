@@ -7,7 +7,7 @@
 
 /** \struct CDIConfig
  * \brief Configuration of a CDI player.
-*/
+ */
 struct CDIConfig
 {
     bool PAL; /**< true for PAL, false for NTSC. */

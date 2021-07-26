@@ -41,7 +41,7 @@ uint8_t IKAT::GetByte(const uint8_t addr)
                 SET_RDWRIDLE(registers[PASR + i])
 
         LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({"Slave", "Get", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
+                cdi.callbacks.OnLogMemoryAccess({Slave, "Get", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
         return registers[addr];
     }
 
@@ -52,7 +52,7 @@ uint8_t IKAT::GetByte(const uint8_t addr)
     }
 
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({"Slave", "Get", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
+            cdi.callbacks.OnLogMemoryAccess({Slave, "Get", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
     return registers[addr];
 }
 
@@ -60,7 +60,7 @@ void IKAT::SetByte(const uint8_t addr, const uint8_t data)
 {
     registers[addr] = data;
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({"Slave", "Set", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, data});)
+            cdi.callbacks.OnLogMemoryAccess({Slave, "Set", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, data});)
 
     switch(addr)
     {
