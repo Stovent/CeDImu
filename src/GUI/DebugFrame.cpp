@@ -13,7 +13,7 @@ wxBEGIN_EVENT_TABLE(DebugFrame, wxFrame)
 wxEND_EVENT_TABLE()
 
 DebugFrame::DebugFrame(MainFrame* main, CDI& idc) :
-    wxFrame(main, wxID_ANY, "Debug"),
+    wxFrame(main, wxID_ANY, "Debug", wxDefaultPosition, wxSize(450, 500)),
     cdi(idc),
     mainFrame(main),
     refreshTimer(this),
@@ -43,14 +43,14 @@ DebugFrame::DebugFrame(MainFrame* main, CDI& idc) :
         direction.SetWidth(60);
         frame->InsertColumn(2, direction);
 
-        wxListItem size;
-        size.SetText("Size");
-        size.SetWidth(60);
-        frame->InsertColumn(3, size);
+        wxListItem type;
+        type.SetText("Type");
+        type.SetWidth(60);
+        frame->InsertColumn(3, type);
 
         wxListItem address;
         address.SetText("Address");
-        address.SetWidth(60);
+        address.SetWidth(65);
         frame->InsertColumn(4, address);
 
         wxListItem value;
@@ -58,9 +58,12 @@ DebugFrame::DebugFrame(MainFrame* main, CDI& idc) :
         value.SetWidth(60);
         frame->InsertColumn(5, value);
 
-        frame->SetItemCount(1000);
+        wxListItem valueHex;
+        valueHex.SetText("Value Hex");
+        valueHex.SetWidth(65);
+        frame->InsertColumn(6, valueHex);
     }, [=] (long item, long column) -> std::string {
-//        this->memoryAccess->SetItemCount(this->memoryAccessLogs.size());
+        std::lock_guard<std::mutex> lock(this->memoryAccessLogsMutex);
         if(item >= (long)memoryAccessLogs.size())
             return "";
 
@@ -74,11 +77,13 @@ DebugFrame::DebugFrame(MainFrame* main, CDI& idc) :
         case 2:
             return log.direction;
         case 3:
-            return log.size;
+            return log.type;
         case 4:
             return toHex(log.address);
         case 5:
             return std::to_string(log.data);
+        case 6:
+            return toHex(log.data);
         default:
             return "";
         }
@@ -110,18 +115,20 @@ DebugFrame::DebugFrame(MainFrame* main, CDI& idc) :
            (arg.location == RTC   && this->logRTC->GetValue())
            )
         {
+            std::unique_lock<std::mutex> lock(this->memoryAccessLogsMutex);
             this->memoryAccessLogs.push_back(arg);
+            lock.unlock();
             mainFrame->app.logMemoryAccess << \
                 '[' << std::setw(5) << std::setfill(' ') << memoryAccessLocationToString(arg.location) << "] (0x" << \
                 std::hex << std::setw(6) << std::setfill('0') << arg.pc << ") " << \
                 arg.direction << " " << \
-                arg.size << " at 0x" << \
+                arg.type << " at 0x" << \
                 arg.address << " : " << \
                 std::dec << arg.data << std::endl;
         }
     });
 
-    refreshTimer.Start(500);
+    refreshTimer.Start(200);
 }
 
 DebugFrame::~DebugFrame()
@@ -133,6 +140,8 @@ DebugFrame::~DebugFrame()
 
 void DebugFrame::OnTimer(wxTimerEvent&)
 {
+    std::unique_lock<std::mutex> lock(this->memoryAccessLogsMutex);
     memoryAccess->SetItemCount(memoryAccessLogs.size());
+    lock.unlock();
     memoryAccess->Update();
 }

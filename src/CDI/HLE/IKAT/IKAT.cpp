@@ -1,6 +1,29 @@
 #include "IKAT.hpp"
 #include "../../CDI.hpp"
 
+static std::string getPortName(uint8_t index)
+{
+    std::string port;
+    if(index < 12)
+    {
+        port = 'A' + index % 4;
+        if(index < 4)
+            port += " write";
+        else if(index < 8)
+            port += " read";
+        else
+            port += " status";
+    }
+    else if(index == 12)
+        port = "ISR";
+    else if(index == 13)
+        port = "ICR";
+    else if(index == 14)
+        port = "YCR";
+
+    return port;
+}
+
 namespace HLE
 {
 
@@ -41,7 +64,7 @@ uint8_t IKAT::GetByte(const uint8_t addr)
                 SET_RDWRIDLE(registers[PASR + i])
 
         LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({Slave, "Get", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
+                cdi.callbacks.OnLogMemoryAccess({Slave, "Get", getPortName(addr), cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
         return registers[addr];
     }
 
@@ -52,7 +75,7 @@ uint8_t IKAT::GetByte(const uint8_t addr)
     }
 
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({Slave, "Get", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
+            cdi.callbacks.OnLogMemoryAccess({Slave, "Get", getPortName(addr), cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
     return registers[addr];
 }
 
@@ -60,7 +83,7 @@ void IKAT::SetByte(const uint8_t addr, const uint8_t data)
 {
     registers[addr] = data;
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({Slave, "Set", "Byte", cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, data});)
+            cdi.callbacks.OnLogMemoryAccess({Slave, "Set", getPortName(addr), cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, data});)
 
     switch(addr)
     {

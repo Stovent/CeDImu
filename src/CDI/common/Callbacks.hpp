@@ -30,7 +30,7 @@ struct LogMemoryAccess
 {
     MemoryAccessLocation location; /**< CPU, BIOS, RAM, VDSC, Slave, RTC, etc. */
     std::string direction; /**< Get or Set. */
-    std::string size; /**< Byte, Word or Long. */
+    std::string type; /**< Byte, Word, register name, etc. */
     uint32_t pc; /**< Program Counter when the access occured. */
     uint32_t address; /**< The bus address. */
     uint32_t data; /**< The data. */
