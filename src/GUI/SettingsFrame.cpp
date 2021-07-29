@@ -7,11 +7,12 @@
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 #include <wx/notebook.h>
+#include <wx/radiobut.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 
 SettingsFrame::SettingsFrame(MainFrame* parent) :
-    wxFrame(parent, wxID_ANY, "Settings"),
+    wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(450, 280)),
     mainFrame(parent)
 {
 #ifdef _WIN32
@@ -28,10 +29,22 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     wxSizer* generalSizerGeneral = new wxBoxSizer(wxHORIZONTAL);
     wxSizer* generalSizerEmulation = new wxBoxSizer(wxHORIZONTAL);
 
-    // General
-    wxSizer* generalStaticSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "General");
-    wxSizer* generalRow1 = new wxBoxSizer(wxHORIZONTAL);
-    wxSizer* generalRow2 = new wxBoxSizer(wxHORIZONTAL);
+    // BIOS and ROM
+    wxSizer* generalStaticSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "BIOS / ROM");
+    wxSizer* generalRowBiosType = new wxBoxSizer(wxHORIZONTAL);
+    wxSizer* generalRowBios = new wxBoxSizer(wxHORIZONTAL);
+    wxSizer* generalRowRom = new wxBoxSizer(wxHORIZONTAL);
+
+    wxRadioButton* radioAuto = new wxRadioButton(generalPage, wxID_ANY, "Auto detect");
+    radioAuto->SetValue(Config::boardType == Boards::AutoDetect);
+    wxRadioButton* radioMiniMMC = new wxRadioButton(generalPage, wxID_ANY, "Mini-MMC");
+    radioMiniMMC->SetValue(Config::boardType == Boards::MiniMMC);
+    wxRadioButton* radioMono3 = new wxRadioButton(generalPage, wxID_ANY, "Mono-3");
+    radioMono3->SetValue(Config::boardType == Boards::Mono3);
+    wxRadioButton* radioMono4 = new wxRadioButton(generalPage, wxID_ANY, "Mono-4");
+    radioMono4->SetValue(Config::boardType == Boards::Mono4);
+    wxCheckBox* checkHas32KBNVRAM = new wxCheckBox(generalPage, wxID_ANY, "32KB NVRAM");
+    checkHas32KBNVRAM->SetValue(Config::has32KBNVRAM);
 
     wxTextCtrl* biosPath = new wxTextCtrl(generalPage, wxID_ANY, Config::systemBIOS);
     wxButton* biosButton = new wxButton(generalPage, wxID_ANY, "Select system BIOS");
@@ -48,12 +61,18 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
             romPath->SetValue(dirDialog.GetPath());
     });
 
-    generalRow1->Add(biosPath, wxSizerFlags().Proportion(1));
-    generalRow1->Add(biosButton);
-    generalRow2->Add(romPath, wxSizerFlags().Proportion(1));
-    generalRow2->Add(romButton);
-    generalStaticSizer->Add(generalRow1, wxSizerFlags().Expand());
-    generalStaticSizer->Add(generalRow2, wxSizerFlags().Expand());
+    generalRowBiosType->Add(radioAuto);
+    generalRowBiosType->Add(radioMiniMMC);
+    generalRowBiosType->Add(radioMono3);
+    generalRowBiosType->Add(radioMono4);
+    generalRowBios->Add(biosPath, wxSizerFlags().Proportion(1));
+    generalRowBios->Add(biosButton);
+    generalRowRom->Add(romPath, wxSizerFlags().Proportion(1));
+    generalRowRom->Add(romButton);
+    generalStaticSizer->Add(generalRowBiosType, wxSizerFlags().Expand());
+    generalStaticSizer->Add(checkHas32KBNVRAM, wxSizerFlags().Expand());
+    generalStaticSizer->Add(generalRowBios, wxSizerFlags().Expand());
+    generalStaticSizer->Add(generalRowRom, wxSizerFlags().Expand());
 
     // Emulation
     wxSizer* emulationStaticSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "Emulation");
@@ -86,7 +105,12 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
 
     wxPanel* buttonsPanel = new wxPanel(settingsPanel);
     wxButton* saveButton = new wxButton(buttonsPanel, wxID_ANY, "Save");
-    saveButton->Bind(wxEVT_BUTTON, [this, biosPath, romPath, palCheckBox, initialTime] (wxEvent&) {
+    saveButton->Bind(wxEVT_BUTTON, [this, radioMiniMMC, radioMono3, radioMono4, radioAuto, checkHas32KBNVRAM, biosPath, romPath, palCheckBox, initialTime] (wxEvent&) {
+        if(radioMiniMMC->GetValue()) Config::boardType = Boards::MiniMMC;
+        else if(radioMono3->GetValue()) Config::boardType = Boards::Mono3;
+        else if(radioMono4->GetValue()) Config::boardType = Boards::Mono4;
+        else Config::boardType = Boards::AutoDetect;
+        Config::has32KBNVRAM = checkHas32KBNVRAM->GetValue();
         Config::systemBIOS = biosPath->GetValue();
         Config::ROMDirectory = romPath->GetValue();
         Config::PAL = palCheckBox->GetValue();
