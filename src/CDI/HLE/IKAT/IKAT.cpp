@@ -58,7 +58,7 @@ uint8_t IKAT::GetByte(const uint8_t addr)
     if(addr >= PASR && addr <= PDSR)
     {
         for(int i = PA; i <= PD; i++)
-            if(responsesIterator[i] != responsesEnd[i])
+            if(responsesIterator[i] != responsesEnd[i] && i != PB && i != PD)
                 UNSET_RDIDLE(registers[PASR + i])
             else
                 SET_RDWRIDLE(registers[PASR + i])

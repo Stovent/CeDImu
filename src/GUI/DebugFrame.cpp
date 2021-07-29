@@ -123,8 +123,8 @@ DebugFrame::DebugFrame(MainFrame* main, CDI& idc) :
                 std::hex << std::setw(6) << std::setfill('0') << arg.pc << ") " << \
                 arg.direction << " " << \
                 arg.type << " at 0x" << \
-                arg.address << " : " << \
-                std::dec << arg.data << std::endl;
+                arg.address << " : 0x" << \
+                arg.data << " " << std::dec << arg.data << std::endl;
         }
     });
 

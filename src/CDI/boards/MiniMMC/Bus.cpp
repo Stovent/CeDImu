@@ -15,10 +15,10 @@ uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
         return slaveVDSC.GetByte(addr, flags);
     }
 
-    if(addr >= 0x200000 && addr < 0x200008 && !isEven(addr))
-    {
-        return 0; // TODO: slave->GetByte((addr - 0x200000) >> 1);
-    }
+//    if(addr >= 0x200000 && addr < 0x200008 && !isEven(addr))
+//    {
+//        return 0; // TODO: slave->GetByte((addr - 0x200000) >> 1);
+//    }
 
     if(addr >= 0x3F8000 && addr < 0x3FC000 && isEven(addr))
     {
@@ -43,10 +43,10 @@ uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
         return slaveVDSC.GetWord(addr, flags);
     }
 
-    if(addr >= 0x200000 && addr < 0x200008)
-    {
-        return 0; // TODO: slave->GetByte((addr - 0x200000) >> 1);
-    }
+//    if(addr >= 0x200000 && addr < 0x200008)
+//    {
+//        return 0; // TODO: slave->GetByte((addr - 0x200000) >> 1);
+//    }
 
     if(addr >= 0x3F8000 && addr < 0x3FC000)
     {
@@ -77,11 +77,11 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
         return;
     }
 
-    if(addr >= 0x200000 && addr < 0x200008 && !isEven(addr))
-    {
-        // slave->SetByte((addr - 0x200000) >> 1, data);
-        return;
-    }
+//    if(addr >= 0x200000 && addr < 0x200008 && !isEven(addr))
+//    {
+//        // slave->SetByte((addr - 0x200000) >> 1, data);
+//        return;
+//    }
 
     if(addr >= 0x3F8000 && addr < 0x3FC000 && isEven(addr))
     {
@@ -108,11 +108,11 @@ void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fl
         return;
     }
 
-    if(addr >= 0x200000 && addr < 0x200008)
-    {
-        // slave->SetByte((addr - 0x200000) >> 1, d);
-        return;
-    }
+//    if(addr >= 0x200000 && addr < 0x200008)
+//    {
+//        // slave->SetByte((addr - 0x200000) >> 1, d);
+//        return;
+//    }
 
     if(addr >= 0x3F8000 && addr < 0x3FC000)
     {
