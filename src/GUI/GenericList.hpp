@@ -7,7 +7,7 @@
 
 class GenericList : public wxListCtrl
 {
-    std::function<std::string(long item, long column)> OnGetItem;
+    std::function<std::string(long, long)> OnGetItem;
 
 public:
     GenericList(wxWindow* parent, std::function<void(wxListCtrl*)> builder, std::function<std::string(long, long)> getter) :

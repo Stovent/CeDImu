@@ -183,41 +183,30 @@ VDSCViewer::VDSCViewer(MainFrame* parent, CDI& idc) : wxFrame(parent, wxID_ANY, 
 
     cdi.callbacks.SetOnLogICADCA([=] (ControlArea area, const std::string& str) {
         std::lock_guard<std::mutex> lock(this->caMutex);
+        if(this->flushICADCA)
+        {
+            this->flushICADCA = false;
+            this->ICA1.clear();
+            this->DCA1.clear();
+            this->ICA2.clear();
+            this->DCA2.clear();
+        }
+
         switch(area)
         {
         case ica1:
-            if(this->flushICA1)
-            {
-                this->flushICA1 = false;
-                this->ICA1.clear();
-            }
             this->ICA1.push_back(str);
             break;
 
         case dca1:
-            if(this->flushDCA1)
-            {
-                this->flushDCA1 = false;
-                this->DCA1.clear();
-            }
             this->DCA1.push_back(str);
             break;
 
         case ica2:
-            if(this->flushICA2)
-            {
-                this->flushICA2 = false;
-                this->ICA2.clear();
-            }
             this->ICA2.push_back(str);
             break;
 
         case dca2:
-            if(this->flushDCA2)
-            {
-                this->flushDCA2 = false;
-                this->DCA2.clear();
-            }
             this->DCA2.push_back(str);
             break;
         }

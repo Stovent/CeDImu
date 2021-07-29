@@ -18,6 +18,7 @@ enum
     IDMainFrameOnVDSCViewer,
     IDMainFrameOnCPUViewer,
     IDMainFrameOnRAMSearch,
+    IDMainFrameOnDebug,
     IDMainFrameOnSettings,
     IDMainFrameOnAbout,
 

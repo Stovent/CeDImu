@@ -31,7 +31,7 @@ bool CeDImu::OnInit()
 
     uartOut.open("uart_out", std::ios::out | std::ios::binary);
     logInstructions.open("instructions.txt");
-    logMemoryAccess = fopen("memory_access.txt", "w");
+    logMemoryAccess.open("memory_access.txt");
 
     mainFrame = new MainFrame(*this, "CeDImu", wxPoint(50, 50), wxSize(420, 310));
     mainFrame->Show(true);
@@ -46,7 +46,7 @@ int CeDImu::OnExit()
     Config::saveConfig();
     uartOut.close();
     logInstructions.close();
-    fclose(logMemoryAccess);
+    logMemoryAccess.close();
     return 0;
 }
 
@@ -114,16 +114,8 @@ bool CeDImu::InitializeCores()
 
         if(mainFrame->vdscViewer)
         {
-            mainFrame->vdscViewer->flushICA1 = true;
-            mainFrame->vdscViewer->flushDCA1 = true;
-            mainFrame->vdscViewer->flushICA2 = true;
-            mainFrame->vdscViewer->flushDCA2 = true;
+            mainFrame->vdscViewer->flushICADCA = true;
         }
-    });
-
-    cdi.callbacks.SetOnLogMemoryAccess([=] (const LogMemoryAccess& arg) {
-        if(arg.location == RTC)
-           fprintf(logMemoryAccess, "[%5s] (0x%06X) %s %s at 0x%X : %d\n", memoryAccessLocationToString(arg.location), arg.pc, arg.direction.c_str(), arg.size.c_str(), arg.address, arg.data);
     });
 
     cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {

@@ -39,10 +39,7 @@ class VDSCViewer : public wxFrame
 
 public:
     std::mutex caMutex;
-    bool flushICA1;
-    bool flushDCA1;
-    bool flushICA2;
-    bool flushDCA2;
+    bool flushICADCA;
 
     VDSCViewer(MainFrame* parent, CDI& idc);
     ~VDSCViewer();

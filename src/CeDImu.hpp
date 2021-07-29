@@ -24,7 +24,7 @@ public:
 
     std::ofstream uartOut;
     std::ofstream logInstructions;
-    FILE* logMemoryAccess;
+    std::ofstream logMemoryAccess;
 
     MainFrame* mainFrame;
 

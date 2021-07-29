@@ -26,6 +26,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnCPUViewer,   MainFrame::OnCPUViewer)
     EVT_MENU(IDMainFrameOnVDSCViewer,  MainFrame::OnVDSCViewer)
     EVT_MENU(IDMainFrameOnRAMSearch,   MainFrame::OnRAMSearch)
+    EVT_MENU(IDMainFrameOnDebug, MainFrame::OnDebug)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
     EVT_MENU(IDMainFrameOnAbout, MainFrame::OnAbout)
     EVT_TIMER(wxID_ANY, MainFrame::RefreshStatusBar)
@@ -78,6 +79,7 @@ void MainFrame::CreateMenuBar()
     tools->Append(IDMainFrameOnCPUViewer, "CPU Viewer\tCtrl+C");
     tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer\tCtrl+V");
     tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+R");
+    tools->Append(IDMainFrameOnDebug, "Debug");
 
     wxMenu* config = new wxMenu;
     config->Append(IDMainFrameOnSettings, "Settings\tCtrl+Shift+S");
@@ -306,6 +308,14 @@ void MainFrame::OnRAMSearch(wxCommandEvent& event)
         return;
     ramSearchFrame = new RAMSearchFrame(*app.cdi.board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
     ramSearchFrame->Show();
+}
+
+void MainFrame::OnDebug(wxCommandEvent& event)
+{
+    if(debugFrame != nullptr || !app.cdi.board)
+        return;
+    debugFrame = new DebugFrame(this, app.cdi);
+    debugFrame->Show();
 }
 
 void MainFrame::OnSettings(wxCommandEvent& event)
