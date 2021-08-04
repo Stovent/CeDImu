@@ -129,7 +129,7 @@ static inline uint8_t add(const T src, const T dst, T* result, const VT min, con
     if(res == 0)
         cc |= 0b00100;
     if(vres < min || vres > max)
-        cc |= 0x00010;
+        cc |= 0b00010;
     if((UVT)vres > umax)
         cc |= 0b10001;
 
@@ -943,7 +943,7 @@ static inline uint8_t cmp(const T src, const T dst, const VT min, const VT max)
     if(res == 0)
         cc |= 0b00100;
     if(vres < min || vres > max)
-        cc |= 0x00010;
+        cc |= 0b00010;
     if((UT)src > (UT)dst)
         cc |= 0b00001;
 
@@ -2471,7 +2471,7 @@ static inline uint8_t sub(const T src, const T dst, T* result, const VT min, con
     if(res == 0)
         cc |= 0b00100;
     if(vres < min || vres > max)
-        cc |= 0x00010;
+        cc |= 0b00010;
     if((UT)src > (UT)dst)
         cc |= 0b10001;
 

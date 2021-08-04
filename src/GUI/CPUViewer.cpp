@@ -143,6 +143,7 @@ void CPUViewer::OnClose(wxCloseEvent& event)
     cdi.callbacks.SetOnUARTOut(nullptr);
     mainFrame->cpuViewer = nullptr;
     renderTimer.Stop();
+    Destroy();
 }
 
 void CPUViewer::PaintEvent(wxPaintEvent& event)

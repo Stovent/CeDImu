@@ -7,7 +7,6 @@
 
 #include <iomanip>
 
-
 wxBEGIN_EVENT_TABLE(DebugFrame, wxFrame)
     EVT_TIMER(wxID_ANY, DebugFrame::OnTimer)
 wxEND_EVENT_TABLE()
