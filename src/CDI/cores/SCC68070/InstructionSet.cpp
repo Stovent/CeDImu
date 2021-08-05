@@ -117,9 +117,10 @@ uint16_t SCC68070::ABCD()
     return calcTime;
 }
 
-template<typename T, typename VT, typename UVT>
+template<typename T, typename UT, typename VT, typename UVT>
 static inline uint8_t add(const T src, const T dst, T* result, const VT min, const VT max, const UVT umax)
 {
+    const UVT uvres = signExtend<UT, UVT>(src) + signExtend<UT, UVT>(dst);
     const VT vres = (VT)src + (VT)dst;
     const T res = vres;
 
@@ -130,7 +131,7 @@ static inline uint8_t add(const T src, const T dst, T* result, const VT min, con
         cc |= 0b00100;
     if(vres < min || vres > max)
         cc |= 0b00010;
-    if((UVT)vres > umax)
+    if(uvres > umax)
         cc |= 0b10001;
 
     *result = res;
@@ -154,7 +155,7 @@ uint16_t SCC68070::ADD()
         int8_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int8_t, int16_t, uint16_t>(src, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
+        SR |= add<int8_t, uint8_t, int16_t, uint16_t>(src, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
 
         if(opmode)
         {
@@ -174,7 +175,7 @@ uint16_t SCC68070::ADD()
         int16_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int16_t, int32_t, uint32_t>(src, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
+        SR |= add<int16_t, uint16_t, int32_t, uint32_t>(src, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
 
         if(opmode)
         {
@@ -194,7 +195,7 @@ uint16_t SCC68070::ADD()
         int32_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int32_t, int64_t, uint64_t>(src, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
+        SR |= add<int32_t, uint32_t, int64_t, uint64_t>(src, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
 
         if(opmode)
         {
@@ -243,7 +244,7 @@ uint16_t SCC68070::ADDI()
         int8_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int8_t, int16_t, uint16_t>(data, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
+        SR |= add<int8_t, uint8_t, int16_t, uint16_t>(data, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
 
         if(eamode)
         {
@@ -263,7 +264,7 @@ uint16_t SCC68070::ADDI()
         int16_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int16_t, int32_t, uint32_t>(data, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
+        SR |= add<int16_t, uint16_t, int32_t, uint32_t>(data, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
 
         if(eamode)
         {
@@ -283,7 +284,7 @@ uint16_t SCC68070::ADDI()
         int32_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int32_t, int64_t, uint64_t>(data, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
+        SR |= add<int32_t, uint32_t, int64_t, uint64_t>(data, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
 
         if(eamode)
         {
@@ -320,7 +321,7 @@ uint16_t SCC68070::ADDQ()
         int8_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int8_t, int16_t, uint16_t>(data, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
+        SR |= add<int8_t, uint8_t, int16_t, uint16_t>(data, dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
 
         if(eamode)
         {
@@ -339,7 +340,7 @@ uint16_t SCC68070::ADDQ()
         int16_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int16_t, int32_t, uint32_t>(data, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
+        SR |= add<int16_t, uint16_t, int32_t, uint32_t>(data, dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
 
         if(eamode)
         {
@@ -358,7 +359,7 @@ uint16_t SCC68070::ADDQ()
         int32_t res;
 
         SR &= SR_UPPER_MASK;
-        SR |= add<int32_t, int64_t, uint64_t>(data, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
+        SR |= add<int32_t, uint32_t, int64_t, uint64_t>(data, dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
 
         if(eamode)
         {
@@ -388,7 +389,7 @@ uint16_t SCC68070::ADDX()
         const int8_t dst = rm ? GetByte(ARIWPr(rx, 1)) : D[rx];
         int8_t res;
 
-        const uint8_t cc = add<int8_t, int16_t, uint16_t>(src + GetX(), dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
+        const uint8_t cc = add<int8_t, uint8_t, int16_t, uint16_t>(src + GetX(), dst, &res, INT8_MIN, INT8_MAX, UINT8_MAX);
         SR &= SR_UPPER_MASK | 0b00100;
         SR |= cc & 0b11011;
         if(!(cc & 0b00100))
@@ -411,7 +412,7 @@ uint16_t SCC68070::ADDX()
         const int16_t dst = rm ? GetWord(ARIWPr(rx, 2)) : D[rx];
         int16_t res;
 
-        const uint8_t cc = add<int16_t, int32_t, uint32_t>(src + GetX(), dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
+        const uint8_t cc = add<int16_t, uint16_t, int32_t, uint32_t>(src + GetX(), dst, &res, INT16_MIN, INT16_MAX, UINT16_MAX);
         SR &= SR_UPPER_MASK | 0b00100;
         SR |= cc & 0b11011;
         if(!(cc & 0b00100))
@@ -434,7 +435,7 @@ uint16_t SCC68070::ADDX()
         const int32_t dst = rm ? GetLong(ARIWPr(rx, 4)) : D[rx];
         int32_t res;
 
-        const uint8_t cc = add<int32_t, int64_t, uint64_t>(src + GetX(), dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
+        const uint8_t cc = add<int32_t, uint32_t, int64_t, uint64_t>(src + GetX(), dst, &res, INT32_MIN, INT32_MAX, UINT32_MAX);
         SR &= SR_UPPER_MASK | 0b00100;
         SR |= cc & 0b11011;
         if(!(cc & 0b00100))
