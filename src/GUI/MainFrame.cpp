@@ -12,8 +12,8 @@
 #include <wx/sizer.h>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-    EVT_MENU(IDMainFrameOnOpenROM, MainFrame::OnOpenROM)
-    EVT_MENU(IDMainFrameOnCloseROM, MainFrame::OnCloseROM)
+    EVT_MENU(IDMainFrameOnOpenDisc, MainFrame::OnOpenDisc)
+    EVT_MENU(IDMainFrameOnCloseDisc, MainFrame::OnCloseDisc)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
     EVT_MENU(IDMainFrameOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
@@ -54,9 +54,9 @@ MainFrame::MainFrame(CeDImu& appp, const wxString& title, const wxPoint& pos, co
 void MainFrame::CreateMenuBar()
 {
     wxMenu* file = new wxMenu;
-    file->Append(IDMainFrameOnOpenROM, "Open ROM\tCtrl+O", "Choose the ROM to load");
+    file->Append(IDMainFrameOnOpenDisc, "Open disc\tCtrl+O", "Choose the disc to load");
     file->AppendSeparator();
-    file->Append(IDMainFrameOnCloseROM, "Close ROM\tCtrl+Maj+C", "Close the ROM currently playing");
+    file->Append(IDMainFrameOnCloseDisc, "Close disc\tCtrl+Maj+C", "Close the disc currently playing");
     file->Append(wxID_EXIT);
 
     wxMenu* emulation = new wxMenu;
@@ -131,25 +131,20 @@ void MainFrame::RefreshStatusBar(wxTimerEvent& event)
     RefreshTitle();
 }
 
-void MainFrame::OnOpenROM(wxCommandEvent& event)
+void MainFrame::OnOpenDisc(wxCommandEvent& event)
 {
     if(app.cdi.board == nullptr)
     {
         wxMessageBox("The BIOS has not been loaded yet.");
     }
 
-    wxFileDialog openFileDialog(this, "Open ROM", Config::ROMDirectory, "", "All files (*.*)|*.*|Binary files (*.bin)|*.bin|.CUE File (*.cue)|*.cue", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    wxFileDialog openFileDialog(this, "Open disc", Config::discDirectory, "", "Binary files (*.bin;*.iso)|*.bin;*.iso|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
 
-#ifdef _WIN32
-    Config::ROMDirectory = openFileDialog.GetPath().BeforeLast('\\');
-#else
-    Config::ROMDirectory = openFileDialog.GetPath().BeforeLast('/');
-#endif
     if(!app.cdi.disc.Open(openFileDialog.GetPath().ToStdString()))
     {
-        wxMessageBox("Could not open ROM!");
+        wxMessageBox("Could not open disc!");
         return;
     }
 
@@ -175,7 +170,7 @@ void MainFrame::OnOpenROM(wxCommandEvent& event)
             app.StartGameThread();
 }
 
-void MainFrame::OnCloseROM(wxCommandEvent& event)
+void MainFrame::OnCloseDisc(wxCommandEvent& event)
 {
     app.StopGameThread();
     app.cdi.disc.Close();
@@ -262,7 +257,7 @@ void MainFrame::OnExportFiles(wxCommandEvent& event)
     if(app.cdi.disc.IsOpen())
         app.cdi.disc.ExportFiles();
     else
-        wxMessageBox("No ROM loaded, no file to export");
+        wxMessageBox("No disc loaded, no file to export");
     SetStatusText("Files exported!");
 }
 
@@ -272,7 +267,7 @@ void MainFrame::OnExportAudio(wxCommandEvent& event)
     if(app.cdi.disc.IsOpen())
         app.cdi.disc.ExportAudio();
     else
-        wxMessageBox("No ROM loaded, no file to export");
+        wxMessageBox("No disc loaded, no file to export");
     SetStatusText("Audio exported!");
 }
 
@@ -282,7 +277,7 @@ void MainFrame::OnExportVideo(wxCommandEvent& event)
     if(app.cdi.disc.IsOpen())
         app.cdi.disc.ExportVideo();
     else
-        wxMessageBox("No ROM loaded, no file to export");
+        wxMessageBox("No disc loaded, no file to export");
     SetStatusText("Video exported!");
 }
 

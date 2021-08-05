@@ -9,7 +9,7 @@ namespace Config
 {
 // General
 extern std::string systemBIOS;
-extern std::string ROMDirectory;
+extern std::string discDirectory;
 extern Boards boardType;
 extern bool has32KBNVRAM;
 

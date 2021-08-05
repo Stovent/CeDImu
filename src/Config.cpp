@@ -6,7 +6,7 @@ namespace Config
 {
 // General
 std::string systemBIOS;
-std::string ROMDirectory;
+std::string discDirectory;
 Boards boardType;
 bool has32KBNVRAM;
 
@@ -39,8 +39,8 @@ bool loadConfig()
             std::string key(line.substr(0, pos)), value(line.substr(pos+1));
             if(key == "systemBIOS")
                 systemBIOS = value;
-            else if(key == "ROMDirectory")
-                ROMDirectory = value;
+            else if(key == "discDirectory")
+                discDirectory = value;
             else if(key == "boardType")
                 boardType = Boards(stoi(value));
             else if(key == "has32KBNVRAM")
@@ -70,7 +70,7 @@ bool saveConfig()
 
     out << "[General]" << std::endl;
     out << "systemBIOS=" << systemBIOS << std::endl;
-    out << "ROMDirectory=" << ROMDirectory << std::endl;
+    out << "discDirectory=" << discDirectory << std::endl;
     out << "boardType=" << (int)boardType << std::endl;
     out << "has32KBNVRAM=" << has32KBNVRAM << std::endl;
 
@@ -88,7 +88,7 @@ bool saveConfig()
 void loadDefaultConfig()
 {
     systemBIOS = "";
-    ROMDirectory = "";
+    discDirectory = "";
     boardType = Boards::AutoDetect;
     has32KBNVRAM = false;
     initialTime = "599616000";

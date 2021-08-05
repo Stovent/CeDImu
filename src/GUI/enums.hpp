@@ -5,8 +5,8 @@
 
 enum
 {
-    IDMainFrameOnOpenROM = wxID_HIGHEST + 1,
-    IDMainFrameOnCloseROM,
+    IDMainFrameOnOpenDisc = wxID_HIGHEST + 1,
+    IDMainFrameOnCloseDisc,
     IDMainFrameOnPause,
     IDMainFrameOnExecuteXInstructions,
     IDMainFrameOnReset,

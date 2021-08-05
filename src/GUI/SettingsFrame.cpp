@@ -49,16 +49,16 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     wxTextCtrl* biosPath = new wxTextCtrl(generalPage, wxID_ANY, Config::systemBIOS);
     wxButton* biosButton = new wxButton(generalPage, wxID_ANY, "Select system BIOS");
     biosButton->Bind(wxEVT_BUTTON, [this, biosPath, separator] (wxEvent&) {
-        wxFileDialog openFileDialog(this, "Load system BIOS", wxString(Config::systemBIOS).BeforeLast(separator), "", "All files (*.*)|*.*|Binary files (*.bin,*.rom)|*.bin,*.rom", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        wxFileDialog openFileDialog(this, "Load system BIOS", wxString(Config::systemBIOS).BeforeLast(separator), "", "Binary files (*.bin;*.rom)|*.bin;*.rom|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if(openFileDialog.ShowModal() == wxID_OK)
             biosPath->SetValue(openFileDialog.GetPath());
     });
-    wxTextCtrl* romPath = new wxTextCtrl(generalPage, wxID_ANY, Config::ROMDirectory);
-    wxButton* romButton = new wxButton(generalPage, wxID_ANY, "Select ROMs directory");
-    romButton->Bind(wxEVT_BUTTON, [this, romPath] (wxEvent&) {
-        wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::ROMDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    wxTextCtrl* discPath = new wxTextCtrl(generalPage, wxID_ANY, Config::discDirectory);
+    wxButton* romButton = new wxButton(generalPage, wxID_ANY, "Select discs directory");
+    romButton->Bind(wxEVT_BUTTON, [this, discPath] (wxEvent&) {
+        wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
         if(dirDialog.ShowModal() == wxID_OK)
-            romPath->SetValue(dirDialog.GetPath());
+            discPath->SetValue(dirDialog.GetPath());
     });
 
     generalRowBiosType->Add(radioAuto);
@@ -67,7 +67,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     generalRowBiosType->Add(radioMono4);
     generalRowBios->Add(biosPath, wxSizerFlags().Proportion(1));
     generalRowBios->Add(biosButton);
-    generalRowRom->Add(romPath, wxSizerFlags().Proportion(1));
+    generalRowRom->Add(discPath, wxSizerFlags().Proportion(1));
     generalRowRom->Add(romButton);
     generalStaticSizer->Add(generalRowBiosType, wxSizerFlags().Expand());
     generalStaticSizer->Add(checkHas32KBNVRAM, wxSizerFlags().Expand());
@@ -105,14 +105,14 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
 
     wxPanel* buttonsPanel = new wxPanel(settingsPanel);
     wxButton* saveButton = new wxButton(buttonsPanel, wxID_ANY, "Save");
-    saveButton->Bind(wxEVT_BUTTON, [this, radioMiniMMC, radioMono3, radioMono4, radioAuto, checkHas32KBNVRAM, biosPath, romPath, palCheckBox, initialTime] (wxEvent&) {
+    saveButton->Bind(wxEVT_BUTTON, [this, radioMiniMMC, radioMono3, radioMono4, radioAuto, checkHas32KBNVRAM, biosPath, discPath, palCheckBox, initialTime] (wxEvent&) {
         if(radioMiniMMC->GetValue()) Config::boardType = Boards::MiniMMC;
         else if(radioMono3->GetValue()) Config::boardType = Boards::Mono3;
         else if(radioMono4->GetValue()) Config::boardType = Boards::Mono4;
         else Config::boardType = Boards::AutoDetect;
         Config::has32KBNVRAM = checkHas32KBNVRAM->GetValue();
         Config::systemBIOS = biosPath->GetValue();
-        Config::ROMDirectory = romPath->GetValue();
+        Config::discDirectory = discPath->GetValue();
         Config::PAL = palCheckBox->GetValue();
         Config::initialTime = initialTime->GetValue();
         if(Config::saveConfig())

@@ -80,8 +80,8 @@ class CDIDisc
 public:
     std::string mainModule;
     std::string gameName;
-    std::string romPath;
-    std::string gameFolder; // romPath + gameName + "/"
+    std::string dirPath;
+    std::string gameFolder; // dirPath + gameName + "/"
 
     CDIDisc() : disc(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
     CDIDisc(const CDIDisc&) = delete;

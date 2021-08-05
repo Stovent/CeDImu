@@ -39,8 +39,8 @@ private:
     uint64_t oldCycleCount;
 
     void CreateMenuBar();
-    void OnOpenROM(wxCommandEvent& event);
-    void OnCloseROM(wxCommandEvent& event);
+    void OnOpenDisc(wxCommandEvent& event);
+    void OnCloseDisc(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
 
     void OnPause(wxCommandEvent& event);
