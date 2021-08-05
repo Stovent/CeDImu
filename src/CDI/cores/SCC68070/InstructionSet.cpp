@@ -1882,60 +1882,63 @@ uint16_t SCC68070::NEGX()
 
     if(size == 0) // Byte
     {
-        const uint8_t data = -(int8_t)GetByte(eamode, eareg, calcTime) - GetX();
-        SetN(data & 0x80);
-        if(data != 0)
+        const uint8_t data = GetByte(eamode, eareg, calcTime);
+        const uint8_t res = -(int8_t)data - GetX();
+        SetN(res & 0x80);
+        if(res != 0)
             SetZ(0);
-        SetV(data == 0x80);
-        SetXC(data != 0);
+        SetV(data == 0x80 && !GetX());
+        SetXC(res != 0);
 
         if(eamode)
         {
-            SetByte(lastAddress, data);
+            SetByte(lastAddress, res);
             calcTime += 4;
         }
         else
         {
             D[eareg] &= 0xFFFFFF00;
-            D[eareg] |= data;
+            D[eareg] |= res;
         }
     }
     else if(size == 1) // Word
     {
-        const uint16_t data = -(int16_t)GetWord(eamode, eareg, calcTime) - GetX();
-        SetN(data & 0x8000);
-        if(data != 0)
+        const uint16_t data = GetWord(eamode, eareg, calcTime);
+        const uint16_t res = -(int16_t)data - GetX();
+        SetN(res & 0x8000);
+        if(res != 0)
             SetZ(0);
-        SetV(data == 0x8000);
-        SetXC(data != 0);
+        SetV(data == 0x8000 && !GetX());
+        SetXC(res != 0);
 
         if(eamode)
         {
-            SetWord(lastAddress, data);
+            SetWord(lastAddress, res);
             calcTime += 4;
         }
         else
         {
             D[eareg] &= 0xFFFF0000;
-            D[eareg] |= data;
+            D[eareg] |= res;
         }
     }
     else // Long
     {
-        const uint32_t data = -(int32_t)GetLong(eamode, eareg, calcTime) - GetX();
-        SetN(data & 0x80000000);
-        if(data != 0)
+        const uint32_t data = GetLong(eamode, eareg, calcTime);
+        const uint32_t res = -(int32_t)data - GetX();
+        SetN(res & 0x80000000);
+        if(res != 0)
             SetZ(0);
-        SetV(data == 0x80000000);
-        SetXC(data != 0);
+        SetV(data == 0x80000000 && !GetX());
+        SetXC(res != 0);
 
         if(eamode)
         {
-            SetLong(lastAddress, data);
+            SetLong(lastAddress, res);
             calcTime += 8;
         }
         else
-            D[eareg] = data;
+            D[eareg] = res;
     }
 
     return calcTime;
