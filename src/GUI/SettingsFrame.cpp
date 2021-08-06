@@ -12,7 +12,7 @@
 #include <wx/stattext.h>
 
 SettingsFrame::SettingsFrame(MainFrame* parent) :
-    wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(450, 300)),
+    wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(450, 315)),
     mainFrame(parent)
 {
 #ifdef _WIN32
@@ -35,7 +35,8 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     wxSizer* generalRowBios = new wxBoxSizer(wxHORIZONTAL);
     wxSizer* generalRowRom = new wxBoxSizer(wxHORIZONTAL);
 
-    wxStaticText* rebootMessageLabel = new wxStaticText(generalPage, wxID_ANY, "Hit \"Emulation -> Reboot Core\" after saving to effectively reload the BIOS");
+    wxStaticText* rebootMessageLabel = new wxStaticText(generalPage, wxID_ANY, "Hit \"Emulation -> Reboot Core\" after saving to effectively reload the BIOS.");
+    wxStaticText* readmeMessageLabel = new wxStaticText(generalPage, wxID_ANY, "See the README.md for the board configuration to use with your BIOS.");
 
     wxRadioButton* radioAuto = new wxRadioButton(generalPage, wxID_ANY, "Auto detect");
     radioAuto->SetValue(Config::boardType == Boards::AutoDetect);
@@ -97,6 +98,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     generalSizerGeneral->Add(biosDiscStaticSizer, wxSizerFlags().Proportion(1));
     generalSizerEmulation->Add(emulationStaticSizer, wxSizerFlags().Proportion(1));
     generalSizer->Add(rebootMessageLabel, wxSizerFlags().Expand());
+    generalSizer->Add(readmeMessageLabel, wxSizerFlags().Expand());
     generalSizer->Add(generalSizerGeneral, wxSizerFlags().Expand());
     generalSizer->Add(generalSizerEmulation, wxSizerFlags().Expand());
     generalPage->SetSizer(generalSizer);

@@ -95,7 +95,7 @@ bool CeDImu::InitializeCores()
 
     if(!cdi.board)
     {
-        wxMessageBox("Failed to load board");
+        wxMessageBox("Unsupported board. See README.md for the list of supported BIOSes with their settings.");
         return false;
     }
 

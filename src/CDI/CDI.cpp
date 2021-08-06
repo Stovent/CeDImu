@@ -53,9 +53,9 @@ bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* n
 
     switch(brd)
     {
-    case Boards::MiniMMC:
-        board = std::make_unique<MiniMMC>(*this, vdscBios, vdscSize, config);
-        break;
+//    case Boards::MiniMMC:
+//        board = std::make_unique<MiniMMC>(*this, vdscBios, vdscSize, config);
+//        break;
 
     case Boards::Mono3:
     case Boards::Mono4:
