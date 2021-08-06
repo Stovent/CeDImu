@@ -71,7 +71,7 @@ DiscTime CDIDisc::GetTime()
         header.minute,
         header.second,
         header.sector,
-        (header.minute * 60u * 75u) + (header.second * 75u) + header.sector, // 75 = sectors per second, 60 = seconds per minutes
+        (header.minute * 60u * 75u) + ((header.second - 2) * 75u) + header.sector, // 75 = sectors per second, 60 = seconds per minutes
         Tell(),
     };
 }

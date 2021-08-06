@@ -102,6 +102,7 @@ Compatible means it is capable of playing discs.
   - [x] Export files
   - [x] Export audio
   - [ ] Export video
+  - [x] Export raw video
 
   
 

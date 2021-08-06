@@ -99,6 +99,7 @@ public:
     bool ExportFiles();
     void ExportFileSystem();
     bool ExportVideo();
+    bool ExportRawVideo();
     void ExportSectorsInfo();
 };
 

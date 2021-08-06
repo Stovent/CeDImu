@@ -15,6 +15,7 @@ enum
     IDMainFrameOnExportFiles,
     IDMainFrameOnExportAudio,
     IDMainFrameOnExportVideo,
+    IDMainFrameOnExportRawVideo,
     IDMainFrameOnVDSCViewer,
     IDMainFrameOnCPUViewer,
     IDMainFrameOnRAMSearch,

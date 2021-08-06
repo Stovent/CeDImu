@@ -231,3 +231,26 @@ void CDIDirectory::ExportVideo(std::string basePath) const
         subdir.second.ExportVideo(basePath);
     }
 }
+
+/** \brief Export the raw video data from each file in the directory and its subdirectories recursively.
+ *
+ * \param  basePath The base directory where the files will be written.
+ */
+void CDIDirectory::ExportRawVideo(std::string basePath) const
+{
+    if(name != "/")
+        basePath += name + "/";
+
+    if(!createDirectories(basePath))
+        return;
+
+    for(std::pair<std::string, CDIFile> file : files)
+    {
+        file.second.ExportRawVideo(basePath);
+    }
+
+    for(std::pair<std::string, CDIDirectory> subdir : subdirectories)
+    {
+        subdir.second.ExportRawVideo(basePath);
+    }
+}

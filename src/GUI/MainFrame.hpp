@@ -52,6 +52,7 @@ private:
     void OnExportFiles(wxCommandEvent& event);
     void OnExportAudio(wxCommandEvent& event);
     void OnExportVideo(wxCommandEvent& event);
+    void OnExportRawVideo(wxCommandEvent& event);
 
     void OnCPUViewer(wxCommandEvent& event);
     void OnVDSCViewer(wxCommandEvent& event);

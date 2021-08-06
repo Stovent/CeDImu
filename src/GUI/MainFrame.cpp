@@ -23,6 +23,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
+    EVT_MENU(IDMainFrameOnExportRawVideo, MainFrame::OnExportRawVideo)
     EVT_MENU(IDMainFrameOnCPUViewer,   MainFrame::OnCPUViewer)
     EVT_MENU(IDMainFrameOnVDSCViewer,  MainFrame::OnVDSCViewer)
     EVT_MENU(IDMainFrameOnRAMSearch,   MainFrame::OnRAMSearch)
@@ -73,6 +74,7 @@ void MainFrame::CreateMenuBar()
     cdiexport->Append(IDMainFrameOnExportFiles, "Files");
     cdiexport->Append(IDMainFrameOnExportAudio, "Audio");
     cdiexport->Append(IDMainFrameOnExportVideo, "Video");
+    cdiexport->Append(IDMainFrameOnExportRawVideo, "Raw video");
     cdi->AppendSubMenu(cdiexport, "Export");
 
     wxMenu* tools = new wxMenu;
@@ -279,6 +281,16 @@ void MainFrame::OnExportVideo(wxCommandEvent& event)
     else
         wxMessageBox("No disc loaded, no file to export");
     SetStatusText("Video exported!");
+}
+
+void MainFrame::OnExportRawVideo(wxCommandEvent& event)
+{
+    SetStatusText("Exporting raw video...");
+    if(app.cdi.disc.IsOpen())
+        app.cdi.disc.ExportRawVideo();
+    else
+        wxMessageBox("No disc loaded, nothing to export");
+    SetStatusText("Raw video exported!");
 }
 
 void MainFrame::OnCPUViewer(wxCommandEvent& event)
