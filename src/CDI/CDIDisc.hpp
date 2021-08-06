@@ -60,7 +60,6 @@ class CDIDisc
     bool LoadFileSystem();
 
     void UpdateSectorInfo();
-    bool CreateSubfoldersFromROMDirectory(std::string path = "");
 
     uint32_t Tell();
     bool Seek(const uint32_t offset, std::ios::seekdir direction = std::ios::beg);
@@ -80,8 +79,6 @@ class CDIDisc
 public:
     std::string mainModule;
     std::string gameName;
-    std::string dirPath;
-    std::string gameFolder; // dirPath + gameName + "/"
 
     CDIDisc() : disc(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
     CDIDisc(const CDIDisc&) = delete;
@@ -95,12 +92,12 @@ public:
 
     CDIFile* GetFile(std::string path);
 
-    bool ExportAudio();
-    bool ExportFiles();
-    void ExportFileSystem();
-    bool ExportVideo();
-    bool ExportRawVideo();
-    void ExportSectorsInfo();
+    bool ExportAudio(const std::string& path);
+    bool ExportFiles(const std::string& path);
+    void ExportFileSystem(const std::string& path);
+    bool ExportVideo(const std::string& path);
+    bool ExportRawVideo(const std::string& path);
+    void ExportSectorsInfo(const std::string& path);
 };
 
 #endif // CDIDISC_HPP

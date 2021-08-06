@@ -7,27 +7,11 @@
 #include <iomanip>
 #include <sstream>
 
-/** \brief Create subdirectories inside the game directory.
- *
- * \param  path The directories to create, separated by '/'.
- * \return false if a directory could not be created, true otherwise.
- *
- * The game directory is the directory where the disc is located +
- * the game name inside the disc.
- * An empty string only creates the game directory only (romPath + gameName).
- * Example: if the game is Alien Gate, and the disc is in C:/ROMs/
- * then sending path = "files/CMDS/" will create C:/ROMs/Alien Gate/files/CMDS/
- */
-bool CDIDisc::CreateSubfoldersFromROMDirectory(std::string path)
-{
-    return createDirectories(gameFolder + path);
-}
-
 /** \brief Exports the audio data in the disc.
- *
+ * \param path The directory where to write the data.
  * \return false if no disc has been opened or if it could not create subfolders, true otherwise.
  */
-bool CDIDisc::ExportAudio()
+bool CDIDisc::ExportAudio(const std::string& path)
 {
     if(!IsOpen())
     {
@@ -35,14 +19,7 @@ bool CDIDisc::ExportAudio()
         return false;
     }
 
-    std::string currentPath = "audio/";
-    if(!CreateSubfoldersFromROMDirectory(currentPath))
-    {
-        wxMessageBox("Could not create subfolders " + currentPath);
-        return false;
-    }
-
-    currentPath = gameFolder + currentPath;
+    std::string currentPath = path + "/" + gameName + "/audio/";
 
     rootDirectory.ExportAudio(currentPath);
 
@@ -53,7 +30,7 @@ bool CDIDisc::ExportAudio()
  *
  * \return false if no disc has been opened or if it could not create subfolders, true otherwise.
  */
-bool CDIDisc::ExportFiles()
+bool CDIDisc::ExportFiles(const std::string& path)
 {
     if(!IsOpen())
     {
@@ -61,17 +38,10 @@ bool CDIDisc::ExportFiles()
         return false;
     }
 
-    ExportSectorsInfo();
-    ExportFileSystem();
+    ExportSectorsInfo(path);
+    ExportFileSystem(path);
 
-    std::string currentPath = "files/";
-    if(!CreateSubfoldersFromROMDirectory(currentPath))
-    {
-        wxMessageBox("Could not create subfolders " + gameFolder);
-        return false;
-    }
-
-    currentPath = gameFolder + currentPath;
+    std::string currentPath = path + "/" + gameName + "/files/";
 
     rootDirectory.ExportFiles(currentPath);
 
@@ -80,12 +50,13 @@ bool CDIDisc::ExportFiles()
 
 /** \brief Export the strucure of the disc's file system.
  */
-void CDIDisc::ExportFileSystem()
+void CDIDisc::ExportFileSystem(const std::string& path)
 {
-    if(!CreateSubfoldersFromROMDirectory())
-        wxMessageBox("Could not create subfolders " + gameFolder);
+    std::string dir = path + "/" + gameName + "/";
+    if(!createDirectories(dir))
+        wxMessageBox("Could not create subfolders " + dir);
 
-    std::ofstream out(gameFolder + "files_info.txt");
+    std::ofstream out(dir + "files_info.txt");
 
     out << rootDirectory.GetChildrenTree().str();
 
@@ -96,7 +67,7 @@ void CDIDisc::ExportFileSystem()
  *
  * \return false if no disc has been opened or if it could not create subfolders, true otherwise.
  */
-bool CDIDisc::ExportVideo()
+bool CDIDisc::ExportVideo(const std::string& path)
 {
     if(!IsOpen())
     {
@@ -104,14 +75,7 @@ bool CDIDisc::ExportVideo()
         return false;
     }
 
-    std::string currentPath = "video/";
-    if(!CreateSubfoldersFromROMDirectory(currentPath))
-    {
-        wxMessageBox("Could not create subfolders " + currentPath);
-        return false;
-    }
-
-    currentPath = gameFolder + currentPath;
+    std::string currentPath = path + "/" + gameName + "/video/";
 
     rootDirectory.ExportVideo(currentPath);
 
@@ -122,16 +86,12 @@ bool CDIDisc::ExportVideo()
  *
  * \return false if no disc has been opened or if it could not create subfolders, true otherwise.
  */
-bool CDIDisc::ExportRawVideo()
+bool CDIDisc::ExportRawVideo(const std::string& path)
 {
     if(!IsOpen())
         return false;
 
-    std::string currentPath = "rawvideo/";
-    if(!CreateSubfoldersFromROMDirectory(currentPath))
-        return false;
-
-    currentPath = gameFolder + currentPath;
+    std::string currentPath = path + "/" + gameName + "/rawvideo/";
 
     rootDirectory.ExportRawVideo(currentPath);
 
@@ -140,11 +100,12 @@ bool CDIDisc::ExportRawVideo()
 
 /** \brief Exports the structure of the sectors in the disc.
  */
-void CDIDisc::ExportSectorsInfo()
+void CDIDisc::ExportSectorsInfo(const std::string& path)
 {
-    if(!CreateSubfoldersFromROMDirectory())
+    std::string dir = path + "/" + gameName + "/";
+    if(!createDirectories(dir))
     {
-        wxMessageBox("Could not create subfolders " + gameFolder);
+        wxMessageBox("Could not create subfolders " + dir);
         return;
     }
 
@@ -152,7 +113,7 @@ void CDIDisc::ExportSectorsInfo()
     uint32_t LBN = 0;
     Seek(0);
 
-    std::ofstream out(gameFolder + "sectors.txt");
+    std::ofstream out(dir + "sectors.txt");
     out << "   LBN Min secs sect mode file channel  submode codingInfo" << std::endl;
 
     while(Good())

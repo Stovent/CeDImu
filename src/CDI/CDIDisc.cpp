@@ -16,14 +16,7 @@ bool CDIDisc::Open(const std::string& filename)
     if(!disc.is_open())
         return false;
 
-#ifdef _WIN32
-    dirPath = filename.substr(0, filename.rfind('\\')+1);
-#else
-    dirPath = filename.substr(0, filename.rfind('/')+1);
-#endif
-
     LoadFileSystem();
-    gameFolder = dirPath + gameName + "/";
     return true;
 }
 
@@ -44,8 +37,6 @@ void CDIDisc::Close()
     rootDirectory.Clear();
     mainModule = "";
     gameName = "";
-    dirPath = "";
-    gameFolder = "";
     memset(&header, 0, sizeof(header));
     memset(&subheader, 0, sizeof(subheader));
 }

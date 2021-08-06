@@ -88,7 +88,7 @@ static void writeRawVideo(std::vector<uint8_t>& data, const std::string& basenam
 
 /** \brief Exports the audio data of the file.
  *
- * \param  directoryPath Path to the directory where the files will be written.
+ * \param  directoryPath Path to the directory where the files will be written. Must end with a '/' (or '\' on Windows).
  *
  * Converts and writes the audio data from the disc to 16-bit PCM.
  * Each channel and logical records are exported individualy.
@@ -165,7 +165,7 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
 
 /** \brief Exports the content of the file (as stored in the disc).
  *
- * \param  directoryPath Path to the directory where the file will be written (must end with a '/').
+ * \param  directoryPath Path to the directory where the file will be written. Must end with a '/' (or '\' on Windows).
  */
 void CDIFile::ExportFile(const std::string& directoryPath)
 {
@@ -185,7 +185,7 @@ void CDIFile::ExportFile(const std::string& directoryPath)
 
 /** \brief Exports the video data of the file.
  *
- * \param  directoryPath Path to the directory where the files will be written.
+ * \param  directoryPath Path to the directory where the files will be written. Must end with a '/' (or '\' on Windows).
  *
  * Converts and writes the video data from the disc.
  * Each channel are exported individualy.
@@ -336,7 +336,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
 
 /** \brief Exports the raw video data of the file (unconverted).
  *
- * \param  directoryPath Path to the directory where the files will be written.
+ * \param  directoryPath Path to the directory where the files will be written. Must end with a '/' (or '\' on Windows).
  *
  * Only writes the raw video data from the file.
  * Each channel and logical records are exported individualy.

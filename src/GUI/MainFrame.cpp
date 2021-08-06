@@ -5,6 +5,7 @@
 
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
@@ -255,42 +256,74 @@ void MainFrame::OnResizeView(wxCommandEvent& event)
 
 void MainFrame::OnExportFiles(wxCommandEvent& event)
 {
-    SetStatusText("Exporting files...");
+    std::string dir;
+    wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    if(dirDialog.ShowModal() != wxID_OK)
+        return;
+
+    dir = dirDialog.GetPath();
     if(app.cdi.disc.IsOpen())
-        app.cdi.disc.ExportFiles();
+    {
+        SetStatusText("Exporting files...");
+        app.cdi.disc.ExportFiles(dir);
+        SetStatusText("Files exported!");
+    }
     else
         wxMessageBox("No disc loaded, no file to export");
-    SetStatusText("Files exported!");
 }
 
 void MainFrame::OnExportAudio(wxCommandEvent& event)
 {
-    SetStatusText("Exporting audio...");
+    std::string dir;
+    wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    if(dirDialog.ShowModal() != wxID_OK)
+        return;
+
+    dir = dirDialog.GetPath();
     if(app.cdi.disc.IsOpen())
-        app.cdi.disc.ExportAudio();
+    {
+        SetStatusText("Exporting audio...");
+        app.cdi.disc.ExportAudio(dir);
+        SetStatusText("Audio exported!");
+    }
     else
-        wxMessageBox("No disc loaded, no file to export");
-    SetStatusText("Audio exported!");
+        wxMessageBox("No disc loaded, no audio to export");
 }
 
 void MainFrame::OnExportVideo(wxCommandEvent& event)
 {
-    SetStatusText("Exporting video...");
+    std::string dir;
+    wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    if(dirDialog.ShowModal() != wxID_OK)
+        return;
+
+    dir = dirDialog.GetPath();
     if(app.cdi.disc.IsOpen())
-        app.cdi.disc.ExportVideo();
+    {
+        SetStatusText("Exporting video...");
+        app.cdi.disc.ExportVideo(dir);
+        SetStatusText("Video exported!");
+    }
     else
-        wxMessageBox("No disc loaded, no file to export");
-    SetStatusText("Video exported!");
+        wxMessageBox("No disc loaded, no video to export");
 }
 
 void MainFrame::OnExportRawVideo(wxCommandEvent& event)
 {
-    SetStatusText("Exporting raw video...");
+    std::string dir;
+    wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    if(dirDialog.ShowModal() != wxID_OK)
+        return;
+
+    dir = dirDialog.GetPath();
     if(app.cdi.disc.IsOpen())
-        app.cdi.disc.ExportRawVideo();
+    {
+        SetStatusText("Exporting raw video...");
+        app.cdi.disc.ExportRawVideo(dir);
+        SetStatusText("Raw video exported!");
+    }
     else
         wxMessageBox("No disc loaded, nothing to export");
-    SetStatusText("Raw video exported!");
 }
 
 void MainFrame::OnCPUViewer(wxCommandEvent& event)
