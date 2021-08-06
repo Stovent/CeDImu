@@ -17,6 +17,12 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-s -O3")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+option(ENABLE_LOG "Allows CeDImu to write in files the disassembly of the CPU and the memory accesses" OFF)
+
+if(ENABLE_LOG)
+    add_definitions(-DENABLE_LOG)
+endif()
+
 add_subdirectory(CDI)
 
 add_executable(CeDImu

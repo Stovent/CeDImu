@@ -18,6 +18,8 @@ CeDImu depends on wxWidgets 3.0.
 
 ``FILESYSTEM_EXPERIMENTAL``: if defined with ``USE_STD_FILESYSTEM``, will include ``<experimental/filesystem>``. Otherwise, will include ``<filesystem>`` (default).
 
+``ENABLE_LOG``: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback and CeDImu to write in files the disassembly of the CPU and the memory accesses (default: ``OFF``).
+
 ### CMake
 
 #### Variables
@@ -58,6 +60,27 @@ Use MinGW
 
 DVC support will be added when CeDImu will have a good compatibility with the base case system on several boards.
 
+### BIOSes
+
+Below are listed the known BIOSes that works in CeDImu along with their board settings. For more information, see [the ICDIA website](http://icdia.co.uk/players/comparison.html "icdia.co.uk").
+
+- CDI 210/40 (Mono-3, 8KB NVRAM)
+- CDI 470/00 (Mono-4, 8KB NVRAM)
+- CDI 470/20 (Mono-4, 8KB NVRAM)
+- CDI 490/00 (Mono-4, 32KB NVRAM)
+
+### Boards
+
+Compatible means it is capable of playing discs.
+
+- [ ] Mini-MMC
+
+  ​	Not working. SCC66470 and Timekeeper mapped.
+
+- [ ] Mono-3, Mono-4
+
+  BIOS boots to player shell. MCD212, Timekeeper (8KB and 32KB) and HLE IKAT mapped.
+
 ### Chips
 
 - [x] SCC68070
@@ -70,18 +93,6 @@ DVC support will be added when CeDImu will have a good compatibility with the ba
 - [ ] IKAT (Mono-3, 4)
 - [x] M48T08
 - [x] DS1216
-
-### Boards
-
-Compatible means it is capable of playing discs.
-
-- [ ] Mini-MMC
-
-  ​	Not working. SCC66470 and Timekeeper mapped.
-
-- [ ] Mono-3
-
-  BIOS boots to player shell. MCD212, Timekeeper and HLE IKAT mapped.
 
 ## Features
 
