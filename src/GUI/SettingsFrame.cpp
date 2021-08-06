@@ -12,7 +12,7 @@
 #include <wx/stattext.h>
 
 SettingsFrame::SettingsFrame(MainFrame* parent) :
-    wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(450, 280)),
+    wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(450, 300)),
     mainFrame(parent)
 {
 #ifdef _WIN32
@@ -30,10 +30,12 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     wxSizer* generalSizerEmulation = new wxBoxSizer(wxHORIZONTAL);
 
     // BIOS and ROM
-    wxSizer* generalStaticSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "BIOS / ROM");
+    wxSizer* biosDiscStaticSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "BIOS / Disc");
     wxSizer* generalRowBiosType = new wxBoxSizer(wxHORIZONTAL);
     wxSizer* generalRowBios = new wxBoxSizer(wxHORIZONTAL);
     wxSizer* generalRowRom = new wxBoxSizer(wxHORIZONTAL);
+
+    wxStaticText* rebootMessageLabel = new wxStaticText(generalPage, wxID_ANY, "Hit \"Emulation -> Reboot Core\" after saving to effectively reload the BIOS");
 
     wxRadioButton* radioAuto = new wxRadioButton(generalPage, wxID_ANY, "Auto detect");
     radioAuto->SetValue(Config::boardType == Boards::AutoDetect);
@@ -69,10 +71,10 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     generalRowBios->Add(biosButton);
     generalRowRom->Add(discPath, wxSizerFlags().Proportion(1));
     generalRowRom->Add(romButton);
-    generalStaticSizer->Add(generalRowBiosType, wxSizerFlags().Expand());
-    generalStaticSizer->Add(checkHas32KBNVRAM, wxSizerFlags().Expand());
-    generalStaticSizer->Add(generalRowBios, wxSizerFlags().Expand());
-    generalStaticSizer->Add(generalRowRom, wxSizerFlags().Expand());
+    biosDiscStaticSizer->Add(generalRowBiosType, wxSizerFlags().Expand());
+    biosDiscStaticSizer->Add(checkHas32KBNVRAM, wxSizerFlags().Expand());
+    biosDiscStaticSizer->Add(generalRowBios, wxSizerFlags().Expand());
+    biosDiscStaticSizer->Add(generalRowRom, wxSizerFlags().Expand());
 
     // Emulation
     wxSizer* emulationStaticSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "Emulation");
@@ -92,8 +94,9 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     emulationStaticSizer->Add(explainationText);
 
 
-    generalSizerGeneral->Add(generalStaticSizer, wxSizerFlags().Proportion(1));
+    generalSizerGeneral->Add(biosDiscStaticSizer, wxSizerFlags().Proportion(1));
     generalSizerEmulation->Add(emulationStaticSizer, wxSizerFlags().Proportion(1));
+    generalSizer->Add(rebootMessageLabel, wxSizerFlags().Expand());
     generalSizer->Add(generalSizerGeneral, wxSizerFlags().Expand());
     generalSizer->Add(generalSizerEmulation, wxSizerFlags().Expand());
     generalPage->SetSizer(generalSizer);
