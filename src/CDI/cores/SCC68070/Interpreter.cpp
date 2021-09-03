@@ -16,15 +16,16 @@ void SCC68070::Interpreter()
 
         if(exceptions.size())
         {
-            const SCC68070Exception exception = exceptions.top();
+            const SCC68070Exception ex = exceptions.top();
             exceptions.pop();
-            if(cdi.callbacks.HasOnLogDisassembler())
+            if(cdi.callbacks.HasOnLogException())
             {
-                const std::string str = "Exception vector " + std::to_string(exception.vector) + ": " + DisassembleException(exception);
-                cdi.callbacks.OnLogDisassembler({0, "", str});
+                const ExceptionType type = ex.vector == TRAPVInstruction || (ex.vector >= 32 && ex.vector < 48) ? ExceptionType::Exception : ExceptionType::Trap;
+                const uint32_t returnAddress = ex.vector == 32 || ex.vector == 47 || ex.vector == 45 ? PC + 2 : PC;
+                cdi.callbacks.OnLogException({type, returnAddress, ex.vector, DisassembleException(ex)});
             }
 //            DumpCPURegisters();
-            executionCycles += Exception(exception.vector);
+            executionCycles += Exception(ex.vector);
         }
 
         if(stop)

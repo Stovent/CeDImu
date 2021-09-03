@@ -2373,6 +2373,8 @@ uint16_t SCC68070::RTE()
         exceptions.push({FormatError, 2});
     }
 
+    cdi.callbacks.OnLogException({Rte, PC, 0, ""});
+
     SR = sr;
     return calcTime;
 }

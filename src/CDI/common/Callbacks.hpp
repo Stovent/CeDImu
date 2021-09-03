@@ -36,9 +36,26 @@ struct LogMemoryAccess
     uint32_t data; /**< The data. */
 };
 
+enum ExceptionType
+{
+    Exception,
+    Trap,
+    Rte,
+};
+
+/** \struct LogSCC68070Exception
+ */
+struct LogSCC68070Exception
+{
+    ExceptionType type; /**< Type of the exception. */
+    uint32_t returnAddress; /**< The program counter where the CPU will continue after a RTE, or the PC pull in a RTE. */
+    uint8_t vector; /**< The vector number. */
+    std::string disassembled; /** The disassembled value of the exception. */
+};
+
 /** \class Callbacks
  * \brief Class containing the callback functions provided by the user.
-*/
+ */
 class Callbacks
 {
     std::mutex onLogDisassemblerMutex;
@@ -59,17 +76,22 @@ class Callbacks
     std::mutex onLogMemoryAccessMutex;
     std::function<void(const LogMemoryAccess&)> onLogMemoryAccessCallback;
 
+    std::mutex onLogExceptionMutex;
+    std::function<void(const LogSCC68070Exception&)> onLogExceptionCallback;
+
 public:
     explicit Callbacks(const std::function<void(const Instruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
                        const std::function<void()>& frameCompleted = nullptr,
                        const std::function<void(ControlArea, const std::string&)>& icadca = nullptr,
-                       const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr) :
+                       const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr,
+                       const std::function<void(const LogSCC68070Exception&)>& logException = nullptr) :
        onLogDisassemblerCallback(disassembler),
        onUARTOutCallback(uartOut),
        onFrameCompletedCallback(frameCompleted),
        onLogICADCACallback(icadca),
-       onLogMemoryAccessCallback(memoryAccess)
+       onLogMemoryAccessCallback(memoryAccess),
+       onLogExceptionCallback(logException)
    {}
 
    Callbacks(const Callbacks& other) :
@@ -165,6 +187,23 @@ public:
         std::lock_guard<std::mutex> lock(onLogMemoryAccessMutex);
         if(onLogMemoryAccessCallback)
             onLogMemoryAccessCallback(arg);
+    }
+
+    bool HasOnLogException()
+    {
+        std::lock_guard<std::mutex> lock(onLogExceptionMutex);
+        return (bool)onLogExceptionCallback;
+    }
+    void SetOnLogException(const std::function<void(const LogSCC68070Exception&)>& callback)
+    {
+        std::lock_guard<std::mutex> lock(onLogExceptionMutex);
+        onLogExceptionCallback = callback;
+    }
+    void OnLogException(const LogSCC68070Exception& arg)
+    {
+        std::lock_guard<std::mutex> lock(onLogExceptionMutex);
+        if(onLogExceptionCallback)
+            onLogExceptionCallback(arg);
     }
 };
 
