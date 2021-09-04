@@ -89,4 +89,39 @@ std::string BIOS::GetModuleNameAt(const uint32_t offset) const
     return "";
 }
 
+/** \brief Get the board type associated with the BIOS.
+ * \return The board type, or Boards::Fail if the type could not be detected.
+ */
+Boards BIOS::GetBoardType() const
+{
+    const uint8_t id = memory[size - 4];
+    switch(id >> 4 & 0xF)
+    {
+    case 2: return Boards::MiniMMC;
+    case 3: return Boards::Mono1;
+    case 4: return Boards::Mono2;
+    case 5: return Boards::Roboco;
+    case 6: return Boards::Mono3;
+    case 7: return Boards::Mono4;
+    default: return Boards::Fail;
+    }
+}
+
+/** \brief Detect if the BIOS uses 8KB of NVRAM.
+ * \return true if it does, false if not.
+ */
+bool BIOS::Has8KBNVRAM() const
+{
+    for(const OS9::ModuleHeader& mod : modules)
+    {
+        if(mod.name == "nvr")
+        {
+            uint16_t size = (uint16_t)memory[mod.begin + 74] << 8 | memory[mod.begin + 75];
+            if(size == 0x1FF8) // 8KB
+                return true;
+        }
+    }
+    return false;
+}
+
 } // nampespace OS9

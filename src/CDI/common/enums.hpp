@@ -10,4 +10,16 @@ enum BusFlags : uint8_t
     Log     = 0b10,
 };
 
+enum class Boards
+{
+    AutoDetect,
+    MiniMMC,
+    Mono1,
+    Mono2,
+    Mono3,
+    Mono4,
+    Roboco,
+    Fail,
+};
+
 #endif // CDI_COMMON_ENUMS_HPP

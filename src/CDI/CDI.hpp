@@ -8,18 +8,6 @@
 
 #include <memory>
 
-enum class Boards
-{
-    AutoDetect,
-    MiniMMC,
-    Mono1,
-    Mono2,
-    Mono3,
-    Mono4,
-    Roboco,
-    Fail,
-};
-
 class CDI
 {
 public:
@@ -34,8 +22,6 @@ public:
     ~CDI();
 
     bool LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect);
-    Boards DetectBoard(const uint8_t* vdscBios, const uint32_t vdscSize) const;
-    bool Use32KBNVRAM(const uint8_t* vdscBios, const uint32_t vdscSize) const;
 };
 
 #endif // CDI_HPP

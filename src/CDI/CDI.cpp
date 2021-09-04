@@ -42,11 +42,13 @@ CDI::~CDI()
  */
 bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect)
 {
+    const OS9::BIOS bios(vdscBios, vdscSize, 0);
+
     Boards brd;
     if(boardDetect == Boards::AutoDetect)
     {
-        brd = DetectBoard((uint8_t*)vdscBios, vdscSize);
-        config.has32KBNVRAM = Use32KBNVRAM((uint8_t*)vdscBios, vdscSize);
+        brd = bios.GetBoardType();
+        config.has32KBNVRAM = !bios.Has8KBNVRAM();
     }
     else
         brd = boardDetect;
@@ -69,39 +71,4 @@ bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* n
     }
 
     return board != nullptr;
-}
-
-Boards CDI::DetectBoard(const uint8_t* vdscBios, const uint32_t vdscSize) const
-{
-    if(vdscSize == 523264)
-        return Boards::MiniMMC;
-
-    const uint8_t id = vdscBios[vdscSize - 4];
-    switch(id >> 4 & 0xF)
-    {
-    case 2: return Boards::MiniMMC;
-    case 3: return Boards::Mono1;
-    case 4: return Boards::Mono2;
-    case 5: return Boards::Roboco;
-    case 6: return Boards::Mono3;
-    case 7: return Boards::Mono4;
-    default: return Boards::Fail;
-    }
-}
-
-bool CDI::Use32KBNVRAM(const uint8_t* vdscBios, const uint32_t vdscSize) const
-{
-    OS9::BIOS bios(vdscBios, vdscSize, 0);
-
-    for(const OS9::ModuleHeader& mod : bios.modules)
-    {
-        if(mod.name == "nvr")
-        {
-            uint16_t size = (uint16_t)vdscBios[mod.begin + 74] << 8 | vdscBios[mod.begin + 75];
-            if(size == 0x1FF8) // 8KB
-                return false;
-            return true;
-        }
-    }
-    return false;
 }
