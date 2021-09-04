@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "../common/enums.hpp"
+
 namespace OS9
 {
 
@@ -64,6 +66,10 @@ public:
     inline const uint8_t* operator()(const uint32_t pos = 0) const { return &memory[pos]; }
 
     std::string GetModuleNameAt(const uint32_t offset) const;
+
+    Boards GetBoardType() const;
+
+    bool Has8KBNVRAM() const;
 
 private:
     const std::vector<uint8_t> memory;
