@@ -1,5 +1,5 @@
-#ifndef SETTINGSFRAME_HPP
-#define SETTINGSFRAME_HPP
+#ifndef GUI_SETTINGSFRAME_HPP
+#define GUI_SETTINGSFRAME_HPP
 
 class MainFrame;
 
@@ -8,10 +8,10 @@ class MainFrame;
 class SettingsFrame : public wxFrame
 {
 public:
-    MainFrame* mainFrame;
+    MainFrame* m_mainFrame;
 
     SettingsFrame(MainFrame* parent);
     ~SettingsFrame();
 };
 
-#endif // SETTINGSFRAME_HPP
+#endif // GUI_SETTINGSFRAME_HPP
