@@ -13,6 +13,8 @@ public:
 
     virtual bool OnInit() override;
     virtual int OnExit() override;
+
+    bool InitCDI();
 };
 
 #endif // CEDIMU_HPP

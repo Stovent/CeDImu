@@ -3,21 +3,27 @@
 
 #include <wx/frame.h>
 
+class CeDImu;
 class SettingsFrame;
 
 class MainFrame : public wxFrame
 {
 public:
+    CeDImu& m_cedimu;
     SettingsFrame* m_settingsFrame;
 
-    MainFrame();
+    MainFrame() = delete;
+    MainFrame(CeDImu& cedimu);
 
     void CreateMenuBar();
+
+    void OnReloadCore(wxCommandEvent&);
 
     void OnClose(wxCloseEvent&);
     void OnExit(wxCommandEvent&);
 
     void OnSettings(wxCommandEvent&);
+    void OnAbout(wxCommandEvent&);
 
     wxDECLARE_EVENT_TABLE();
 };
