@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 constexpr float cpuSpeeds[17] = {
     0.01,
@@ -34,6 +35,7 @@ bool CeDImu::OnInit()
 {
     Config::loadConfig();
     m_cpuSpeed = 8;
+    InitCDI();
 
     new MainFrame(*this);
 
@@ -42,7 +44,6 @@ bool CeDImu::OnInit()
 
 int CeDImu::OnExit()
 {
-    Config::saveConfig();
     return 0;
 }
 
@@ -52,7 +53,7 @@ bool CeDImu::InitCDI()
     if(!biosFile)
     {
         std::cerr << "Failed to open system BIOS '" << Config::systemBIOS << "'" << std::endl;
-        wxMessageBox("Failed to open system BIOS '" + Config::systemBIOS + "'");
+        wxMessageBox("Failed to open system BIOS '" + Config::systemBIOS + "'. Please check the BIOS path in the settings.");
         return false;
     }
 
@@ -60,22 +61,22 @@ bool CeDImu::InitCDI()
     size_t biosSize = biosFile.tellg();
     biosFile.seekg(0);
 
-    uint8_t* bios = new uint8_t[biosSize];
-    biosFile.read((char*)bios, biosSize);
+    std::unique_ptr<uint8_t[]> bios = std::make_unique<uint8_t[]>(biosSize);
+    biosFile.read((char*)bios.get(), biosSize);
 
-    uint8_t* nvram = nullptr;
-    std::filesystem::path filename = std::filesystem::path(Config::systemBIOS).filename();
-    std::ifstream nvramFile("nvram_" + filename.string() + ".bin");
-    if(nvram)
+    std::unique_ptr<uint8_t[]> nvram = nullptr;
+    std::string filename = std::filesystem::path(Config::systemBIOS).filename().string();
+    std::ifstream nvramFile("nvram_" + filename + ".bin");
+    if(nvramFile)
     {
         nvramFile.seekg(0, std::ios::end);
         size_t nvramSize = nvramFile.tellg();
         nvramFile.seekg(0);
-        nvram = new uint8_t[nvramSize];
-        nvramFile.read((char*)nvram, nvramSize);
+        nvram = std::make_unique<uint8_t[]>(nvramSize);
+        nvramFile.read((char*)nvram.get(), nvramSize);
     }
     else
-        std::cout << "Warning: no NVRAM file associated with the system BIOS found" << std::endl;
+        std::cout << "Warning: no NVRAM file associated with the system BIOS used" << std::endl;
 
     m_cdi.config.has32KBNVRAM = Config::has32KBNVRAM;
     m_cdi.config.PAL = Config::PAL;
@@ -84,5 +85,5 @@ bool CeDImu::InitCDI()
     else
         m_cdi.config.initialTime = stoi(Config::initialTime);
 
-    return m_cdi.LoadBoard(bios, biosSize, nvram, Config::boardType);
+    return m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), Config::boardType);
 }

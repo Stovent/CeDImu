@@ -29,14 +29,8 @@ add_executable(CeDImu
     CeDImu.cpp
     Config.cpp
     main.cpp
-    GUI/CPUViewer.cpp
-    GUI/DebugFrame.cpp
-    GUI/GamePanel.cpp
     GUI/MainFrame.cpp
-    GUI/RAMSearchFrame.cpp
-    GUI/RAMSearchList.cpp
     GUI/SettingsFrame.cpp
-    GUI/VDSCViewer.cpp
 )
 
 include(${wxWidgets_USE_FILE})
