@@ -20,7 +20,7 @@
 #define CREATE_CONTROL_BUTTON(k, label)     wxBoxSizer* key##k##Sizer = new wxBoxSizer(wxHORIZONTAL); \
     controlsSizer->Add(key##k##Sizer, wxSizerFlags().DoubleBorder()); \
     wxStaticText* key##k##Text = new wxStaticText(controlsPanel, wxID_ANY, label); \
-    key##k##Sizer->Add(key##k##Text, wxSizerFlags().Border(wxRIGHT, 20).CenterVertical()); \
+    key##k##Sizer->Add(key##k##Text, wxSizerFlags().Border(wxRIGHT, 20).Align(wxALIGN_CENTER_VERTICAL)); \
     wxButton* key##k##Button = new wxButton(controlsPanel, wxID_ANY, wxAcceleratorEntry(0, m_key##k).ToString(), wxDefaultPosition, wxSize(100, 25)); \
     key##k##Button->Bind(wxEVT_BUTTON, [this, key##k##Button] (wxEvent&) { \
         key##k##Button->SetLabel("Waiting for key..."); \
@@ -30,7 +30,7 @@
             key##k##Button->SetLabel(wxAcceleratorEntry(0, this->m_key##k).ToString()); \
         }); \
     }); \
-    key##k##Sizer->Add(key##k##Button, wxSizerFlags().CenterVertical());
+    key##k##Sizer->Add(key##k##Button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
 
 SettingsFrame::SettingsFrame(MainFrame* parent) :
     wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(500, 450)),
