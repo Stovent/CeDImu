@@ -1,5 +1,6 @@
 #include "MainFrame.hpp"
 #include "enums.hpp"
+#include "GamePanel.hpp"
 #include "SettingsFrame.hpp"
 #include "../CeDImu.hpp"
 
@@ -22,6 +23,7 @@ MainFrame::MainFrame(CeDImu& cedimu) :
 {
     CreateMenuBar();
     CreateStatusBar(1);
+    new GamePanel(this, m_cedimu);
 
     Show();
 }

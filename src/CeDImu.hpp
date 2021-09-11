@@ -5,9 +5,12 @@
 
 #include <wx/app.h>
 
+#include <mutex>
+
 class CeDImu : public wxApp
 {
 public:
+    std::mutex m_cdiMutex;
     CDI m_cdi;
     uint16_t m_cpuSpeed;
 

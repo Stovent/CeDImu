@@ -35,15 +35,20 @@ bool CeDImu::OnInit()
 {
     Config::loadConfig();
     m_cpuSpeed = 8;
-    InitCDI();
 
     new MainFrame(*this);
+
+    InitCDI();
+    if(m_cdi.board)
+        m_cdi.board->cpu.Run();
 
     return true;
 }
 
 int CeDImu::OnExit()
 {
+    if(m_cdi.board)
+        m_cdi.board->cpu.Stop(true);
     return 0;
 }
 
@@ -78,6 +83,7 @@ bool CeDImu::InitCDI()
     else
         std::cout << "Warning: no NVRAM file associated with the system BIOS used" << std::endl;
 
+    std::lock_guard<std::mutex> lock(m_cdiMutex);
     m_cdi.config.has32KBNVRAM = Config::has32KBNVRAM;
     m_cdi.config.PAL = Config::PAL;
     if(Config::initialTime.size() == 0)
