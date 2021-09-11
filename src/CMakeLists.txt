@@ -29,6 +29,7 @@ add_executable(CeDImu
     CeDImu.cpp
     Config.cpp
     main.cpp
+    GUI/GamePanel.cpp
     GUI/MainFrame.cpp
     GUI/SettingsFrame.cpp
 )
