@@ -22,6 +22,7 @@ public:
     ~CDI();
 
     bool LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect);
+    void UnloadBoard();
 };
 
 #endif // CDI_HPP
