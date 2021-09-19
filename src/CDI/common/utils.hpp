@@ -1,5 +1,5 @@
-#ifndef UTILS_HPP
-#define UTILS_HPP
+#ifndef CDI_COMMON_UTILS_HPP
+#define CDI_COMMON_UTILS_HPP
 
 #include <cstdint>
 #include <sstream>
@@ -150,4 +150,4 @@ inline const void* subarrayOfArray(const void* container, size_t containerSize, 
 #define GET_ARRAY16(array, index) ((uint16_t)array[(index)] << 8 | array[(index)+1])
 #define GET_ARRAY32(array, index) ((uint32_t)array[(index)] << 24 | array[(index)+1] << 16 | array[(index)+2] << 8 | array[(index)+3])
 
-#endif // UTILS_HPP
+#endif // CDI_COMMON_UTILS_HPP

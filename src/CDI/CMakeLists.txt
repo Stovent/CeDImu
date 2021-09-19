@@ -23,16 +23,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-option(USE_STD_FILESYSTEM "Use the C++17 filesystem functions" OFF)
-option(FILESYSTEM_EXPERIMENTAL "Include <experimental/filesystem> instead of <filesystem>" OFF)
 option(ENABLE_LOG "Allows the library to print some messages in the console and the use of OnLogMemoryAccess callback" OFF)
-
-if(USE_STD_FILESYSTEM)
-    add_definitions(-DUSE_STD_FILESYSTEM)
-    if(FILESYSTEM_EXPERIMENTAL)
-        add_definitions(-DFILESYSTEM_EXPERIMENTAL)
-    endif()
-endif()
 
 if(ENABLE_LOG)
     add_definitions(-DENABLE_LOG)

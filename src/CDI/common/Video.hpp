@@ -1,5 +1,5 @@
-#ifndef VIDEO_HPP
-#define VIDEO_HPP
+#ifndef CDI_COMMON_VIDEO_HPP
+#define CDI_COMMON_VIDEO_HPP
 
 #include <cstddef>
 #include <cstdint>
@@ -31,4 +31,4 @@ void paste(uint8_t* dst, const uint16_t dstWidth, const uint16_t dstHeight, cons
 
 } // namespace Video
 
-#endif // VIDEO_HPP
+#endif // CDI_COMMON_VIDEO_HPP

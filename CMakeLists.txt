@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
+project(useless)
+
 if(UNIX)
     set(CMAKE_GENERATOR "Unix Makefiles")
 endif()

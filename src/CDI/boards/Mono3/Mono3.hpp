@@ -1,5 +1,5 @@
-#ifndef MONO3_HPP
-#define MONO3_HPP
+#ifndef CDI_BOARDS_MONO3_MONO3_HPP
+#define CDI_BOARDS_MONO3_MONO3_HPP
 
 class Mono3;
 
@@ -46,4 +46,4 @@ public:
     virtual const Plane& GetCursor() override;
 };
 
-#endif // MONO3_HPP
+#endif // CDI_BOARDS_MONO3_MONO3_HPP

@@ -1,5 +1,5 @@
-#ifndef ISLAVE_HPP
-#define ISLAVE_HPP
+#ifndef CDI_CORES_ISLAVE_HPP
+#define CDI_CORES_ISLAVE_HPP
 
 class CDI;
 #include "../devices/PointingDevice.hpp"
@@ -25,4 +25,4 @@ public:
     virtual void SetByte(const uint8_t addr, const uint8_t data) = 0;
 };
 
-#endif // ISLAVE_HPP
+#endif // CDI_CORES_ISLAVE_HPP

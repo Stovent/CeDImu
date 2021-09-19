@@ -1,8 +1,8 @@
-#ifndef FILESYSTEM_HPP
-#define FILESYSTEM_HPP
+#ifndef CDI_COMMON_FILESYSTEM_HPP
+#define CDI_COMMON_FILESYSTEM_HPP
 
 #include <string>
 
 bool createDirectories(const std::string& path);
 
-#endif // FILESYSTEM_HPP
+#endif // CDI_COMMON_FILESYSTEM_HPP

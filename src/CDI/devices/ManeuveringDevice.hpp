@@ -1,5 +1,5 @@
-#ifndef MANEUVERING_HPP
-#define MANEUVERING_HPP
+#ifndef CDI_DEVICES_MANEUVERINGDEVICE_HPP
+#define CDI_DEVICES_MANEUVERINGDEVICE_HPP
 
 #include "PointingDevice.hpp"
 
@@ -24,4 +24,4 @@ public:
     virtual void IncrementTime(const size_t ns) override;
 };
 
-#endif // MANEUVERING_HPP
+#endif // CDI_DEVICES_MANEUVERINGDEVICE_HPP

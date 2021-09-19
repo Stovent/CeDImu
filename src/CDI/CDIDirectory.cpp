@@ -145,7 +145,7 @@ std::stringstream CDIDirectory::GetChildrenTree() const
     ss << "Dir: " << dirName << "/" << std::endl;
     ss << "LBN: " << LBN << std::endl;
 
-    for(const std::pair<std::string, CDIDirectory>& dir : subdirectories)
+    for(const std::pair<std::string, CDIDirectory> dir : subdirectories)
     {
         std::stringstream dirss = dir.second.GetChildrenTree();
         std::string line;
@@ -153,7 +153,7 @@ std::stringstream CDIDirectory::GetChildrenTree() const
             ss << "\t" << line << std::endl;
     }
 
-    for(const std::pair<std::string, CDIFile>& file : files)
+    for(const std::pair<std::string, CDIFile> file : files)
     {
         ss << "\tFile: " << file.second.name << std::endl;
         ss << "\tSize: " << file.second.size << std::endl;

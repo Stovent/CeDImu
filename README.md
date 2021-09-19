@@ -16,10 +16,6 @@ See the [user manual](https://github.com/Stovent/CeDImu/blob/master/MANUAL.md).
 ## How to build
 #### Build macros
 
-``USE_STD_FILESYSTEM``: if defined, will use the C++17 filesystem functions. Otherwise, will be using wxWidgets' functions (default).
-
-``FILESYSTEM_EXPERIMENTAL``: if defined with ``USE_STD_FILESYSTEM``, will include ``<experimental/filesystem>``. Otherwise, will include ``<filesystem>`` (default).
-
 ``ENABLE_LOG``: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback and CeDImu to write in files the disassembly of the CPU and the memory accesses (default: ``OFF``).
 
 ### CMake
