@@ -27,6 +27,7 @@ CDI::CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Board
 
 CDI::~CDI()
 {
+    UnloadBoard();
     disc.Close();
 }
 
@@ -42,6 +43,7 @@ CDI::~CDI()
  */
 bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect)
 {
+    UnloadBoard();
     const OS9::BIOS bios(vdscBios, vdscSize, 0);
 
     Boards brd;
@@ -71,4 +73,11 @@ bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* n
     }
 
     return board != nullptr;
+}
+
+void CDI::UnloadBoard()
+{
+    if(board)
+        board->cpu.Stop(true);
+    board.reset();
 }
