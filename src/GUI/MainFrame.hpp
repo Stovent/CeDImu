@@ -10,6 +10,7 @@ class MainFrame : public wxFrame
 {
 public:
     CeDImu& m_cedimu;
+    wxMenuItem* m_pauseMenuItem;
     SettingsFrame* m_settingsFrame;
 
     MainFrame() = delete;
@@ -17,6 +18,9 @@ public:
 
     void CreateMenuBar();
 
+    void OnPause(wxCommandEvent&);
+    void OnIncreaseSpeed(wxCommandEvent&);
+    void OnDecreaseSpeed(wxCommandEvent&);
     void OnReloadCore(wxCommandEvent&);
 
     void OnClose(wxCloseEvent&);

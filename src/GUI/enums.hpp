@@ -5,8 +5,11 @@
 
 enum
 {
-     IDMainFrameOnReloadCore = wxID_HIGHEST + 1,
-     IDMainFrameOnSettings,
+    IDMainFrameOnPause = wxID_HIGHEST + 1,
+    IDMainFrameOnIncreaseSpeed,
+    IDMainFrameOnDecreaseSpeed,
+    IDMainFrameOnReloadCore,
+    IDMainFrameOnSettings,
 };
 
 #endif // GUI_ENUMS_HPP

@@ -11,7 +11,7 @@
 #include <iostream>
 #include <memory>
 
-constexpr float cpuSpeeds[17] = {
+constexpr float CPU_SPEEDS[] = {
     0.01,
     0.03,
     0.06,
@@ -31,24 +31,24 @@ constexpr float cpuSpeeds[17] = {
     64,
 };
 
+static constexpr int DEFAULT_CPU_SPEED = 8;
+static constexpr int MAX_CPU_SPEED = sizeof CPU_SPEEDS / sizeof *CPU_SPEEDS - 1;
+
 bool CeDImu::OnInit()
 {
     Config::loadConfig();
-    m_cpuSpeed = 8;
+    m_cpuSpeed = DEFAULT_CPU_SPEED;
 
     new MainFrame(*this);
 
     InitCDI();
-    if(m_cdi.board)
-        m_cdi.board->cpu.Run();
 
     return true;
 }
 
 int CeDImu::OnExit()
 {
-    if(m_cdi.board)
-        m_cdi.board->cpu.Stop(true);
+    m_cdi.UnloadBoard();
     return 0;
 }
 
@@ -91,5 +91,44 @@ bool CeDImu::InitCDI()
     else
         m_cdi.config.initialTime = stoi(Config::initialTime);
 
-    return m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), Config::boardType);
+    m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), Config::boardType);
+    if(!m_cdi.board)
+        return false;
+
+    m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
+    return true;
+}
+
+void CeDImu::StartEmulation()
+{
+    std::lock_guard<std::mutex> lock(m_cdiMutex);
+    if(m_cdi.board)
+        m_cdi.board->cpu.Run(true);
+}
+
+void CeDImu::StopEmulation()
+{
+    std::lock_guard<std::mutex> lock(m_cdiMutex);
+    if(m_cdi.board)
+        m_cdi.board->cpu.Stop(true);
+}
+
+void CeDImu::IncreaseEmulationSpeed()
+{
+    if(m_cpuSpeed < MAX_CPU_SPEED)
+    {
+        std::lock_guard<std::mutex> lock(m_cdiMutex);
+        if(m_cdi.board)
+            m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[++m_cpuSpeed]);
+    }
+}
+
+void CeDImu::DecreaseEmulationSpeed()
+{
+    if(m_cpuSpeed > 0)
+    {
+        std::lock_guard<std::mutex> lock(m_cdiMutex);
+        if(m_cdi.board)
+            m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
+    }
 }
