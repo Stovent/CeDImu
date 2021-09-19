@@ -1,5 +1,5 @@
-#ifndef CDIFILE_HPP
-#define CDIFILE_HPP
+#ifndef CDI_CDIFILE_HPP
+#define CDI_CDIFILE_HPP
 
 class CDIDisc;
 
@@ -28,4 +28,4 @@ public:
     uint8_t* GetContent(uint32_t& size);
 };
 
-#endif // CDIFILE_HPP
+#endif // CDI_CDIFILE_HPP

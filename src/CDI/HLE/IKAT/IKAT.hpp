@@ -1,5 +1,5 @@
-#ifndef HLE_IKAT_HPP
-#define HLE_IKAT_HPP
+#ifndef CDI_HLE_IKAT_HPP
+#define CDI_HLE_IKAT_HPP
 
 #include "../../cores/ISlave.hpp"
 
@@ -69,4 +69,4 @@ public:
 
 } // namespace HLE
 
-#endif // HLE_IKAT_HPP
+#endif // CDI_HLE_IKAT_HPP

@@ -1,5 +1,5 @@
-#ifndef OS9_BIOS_HPP
-#define OS9_BIOS_HPP
+#ifndef CDI_OS9_BIOS_HPP
+#define CDI_OS9_BIOS_HPP
 
 #include <cstdint>
 #include <string>
@@ -79,4 +79,4 @@ private:
 
 } // nampespace OS9
 
-#endif // OS9_BIOS_HPP
+#endif // CDI_OS9_BIOS_HPP

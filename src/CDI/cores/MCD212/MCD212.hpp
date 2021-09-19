@@ -1,5 +1,5 @@
-#ifndef MCD212_HPP
-#define MCD212_HPP
+#ifndef CDI_CORES_MCD212_MCD212_HPP
+#define CDI_CORES_MCD212_MCD212_HPP
 
 class MCD212;
 
@@ -218,4 +218,4 @@ private:
     inline uint8_t  GetVerticalRetraceLines() const { return GetFD() ? 22 : (GetST() ? 72 : 32); }
 };
 
-#endif // MCD212_HPP
+#endif // CDI_CORES_MCD212_MCD212_HPP

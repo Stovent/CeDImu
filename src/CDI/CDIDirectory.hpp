@@ -1,5 +1,5 @@
-#ifndef CDIDIRECTORY_HPP
-#define CDIDIRECTORY_HPP
+#ifndef CDI_CDIDIRECTORY_HPP
+#define CDI_CDIDIRECTORY_HPP
 
 #include "CDIFile.hpp"
 class CDIDisc;
@@ -33,4 +33,4 @@ public:
     void ExportRawVideo(std::string basePath) const;
 };
 
-#endif // CDIDIRECTORY_HPP
+#endif // CDI_CDIDIRECTORY_HPP

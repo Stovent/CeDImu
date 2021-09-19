@@ -1,5 +1,5 @@
-#ifndef SCC66470_HPP
-#define SCC66470_HPP
+#ifndef CDI_CORES_SCC66470_SCC66470_HPP
+#define CDI_CORES_SCC66470_SCC66470_HPP
 
 class SCC66470;
 
@@ -111,4 +111,4 @@ private:
     inline uint16_t GetVerticalResolution() const { return GetFD() ? (GetSS() ? 240 : 210) : (GetSS() ? (GetST() ? 240 : 280) : (GetST() ? 210 : 250)); }
 };
 
-#endif // SCC66470_HPP
+#endif // CDI_CORES_SCC66470_SCC66470_HPP

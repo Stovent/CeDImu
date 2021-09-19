@@ -1,5 +1,5 @@
-#ifndef POINTINGDEVICE_HPP
-#define POINTINGDEVICE_HPP
+#ifndef CDI_DEVICES_POINTINGDEVICE_HPP
+#define CDI_DEVICES_POINTINGDEVICE_HPP
 
 class ISlave;
 
@@ -60,4 +60,4 @@ protected:
     void GeneratePointerMessage();
 };
 
-#endif // POINTINGDEVICE_HPP
+#endif // CDI_DEVICES_POINTINGDEVICE_HPP

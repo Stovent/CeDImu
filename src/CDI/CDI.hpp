@@ -1,5 +1,5 @@
-#ifndef CDI_HPP
-#define CDI_HPP
+#ifndef CDI_CDI_HPP
+#define CDI_CDI_HPP
 
 #include "CDIConfig.hpp"
 #include "CDIDisc.hpp"
@@ -25,4 +25,4 @@ public:
     void UnloadBoard();
 };
 
-#endif // CDI_HPP
+#endif // CDI_CDI_HPP

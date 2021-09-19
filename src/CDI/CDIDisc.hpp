@@ -1,5 +1,5 @@
-#ifndef CDIDISC_HPP
-#define CDIDISC_HPP
+#ifndef CDI_CDIDISC_HPP
+#define CDI_CDIDISC_HPP
 
 #include "CDIDirectory.hpp"
 #include "CDIFile.hpp"
@@ -100,4 +100,4 @@ public:
     void ExportSectorsInfo(const std::string& path);
 };
 
-#endif // CDIDISC_HPP
+#endif // CDI_CDIDISC_HPP

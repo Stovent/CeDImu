@@ -1,5 +1,5 @@
-#ifndef CDICONFIG_HPP
-#define CDICONFIG_HPP
+#ifndef CDI_CDICONFIG_HPP
+#define CDI_CDICONFIG_HPP
 
 #include "cores/IRTC.hpp"
 
@@ -21,4 +21,4 @@ constexpr CDIConfig defaultConfig = {
     .has32KBNVRAM = false,
 }; /**< Default configuration used by CDI if no one is provided. */
 
-#endif // CDICONFIG_HPP
+#endif // CDI_CDICONFIG_HPP

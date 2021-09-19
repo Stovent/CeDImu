@@ -1,5 +1,5 @@
-#ifndef BOARD_HPP
-#define BOARD_HPP
+#ifndef CDI_BOARDS_BOARD_HPP
+#define CDI_BOARDS_BOARD_HPP
 
 class CDI;
 #include "../CDIConfig.hpp"
@@ -72,4 +72,4 @@ public:
     virtual const Plane& GetCursor() = 0;
 };
 
-#endif // BOARD_HPP
+#endif // CDI_BOARDS_BOARD_HPP

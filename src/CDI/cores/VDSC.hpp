@@ -1,5 +1,5 @@
-#ifndef VDSC_HPP
-#define VDSC_HPP
+#ifndef CDI_CORES_VDSC_HPP
+#define CDI_CORES_VDSC_HPP
 
 class VDSC;
 
@@ -90,4 +90,4 @@ public:
     virtual const Plane& GetCursor() const = 0;
 };
 
-#endif // VDSC_HPP
+#endif // CDI_CORES_VDSC_HPP

@@ -1,5 +1,5 @@
-#ifndef MINIMMC_HPP
-#define MINIMMC_HPP
+#ifndef CDI_BOARDS_MINIMMC_MINIMMC_HPP
+#define CDI_BOARDS_MINIMMC_MINIMMC_HPP
 
 class MiniMMC;
 
@@ -46,4 +46,4 @@ public:
     virtual const Plane& GetCursor() override;
 };
 
-#endif // MINIMMC_HPP
+#endif // CDI_BOARDS_MINIMMC_MINIMMC_HPP

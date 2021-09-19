@@ -1,5 +1,5 @@
-#ifndef M48T08_HPP
-#define M48T08_HPP
+#ifndef CDI_CORES_M48T08_M48T08_HPP
+#define CDI_CORES_M48T08_M48T08_HPP
 
 #include "../IRTC.hpp"
 
@@ -26,4 +26,4 @@ public:
     void SetByte(const uint16_t addr, const uint8_t data) override;
 };
 
-#endif // M48T08_HPP
+#endif // CDI_CORES_M48T08_M48T08_HPP

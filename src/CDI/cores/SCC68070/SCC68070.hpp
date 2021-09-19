@@ -1,5 +1,5 @@
-#ifndef SCC68070_HPP
-#define SCC68070_HPP
+#ifndef CDI_CORES_SCC68070_SCC68070_HPP
+#define CDI_CORES_SCC68070_SCC68070_HPP
 
 class CDI;
 #include "../../common/enums.hpp"
@@ -697,4 +697,4 @@ private:
 #define ITIBW 4 // immediate
 #define ITIL 8
 
-#endif // SCC68070_HPP
+#endif // CDI_CORES_SCC68070_SCC68070_HPP

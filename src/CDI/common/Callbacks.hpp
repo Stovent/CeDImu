@@ -1,5 +1,5 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#ifndef CDI_COMMON_CALLBACKS_HPP
+#define CDI_COMMON_CALLBACKS_HPP
 
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "../cores/VDSC.hpp"
@@ -222,4 +222,4 @@ inline const char* memoryAccessLocationToString(const MemoryAccessLocation loc)
     }
 }
 
-#endif // LOGGER_HPP
+#endif // CDI_COMMON_CALLBACKS_HPP
