@@ -10,13 +10,9 @@ Experimental Philips CD-I emulator
 Note: the project is still in a very early development stage, please open issues only to address problems in the existing code.
 
 ## How to build
-CeDImu depends on wxWidgets 3.0.
+CeDImu depends on wxWidgets 3.0. It requires a C++ compiler that supports C++17 with its filesystem header.
 
 #### Build macros
-
-``USE_STD_FILESYSTEM``: if defined, will use the C++17 filesystem functions. Otherwise, will be using wxWidgets' functions (default).
-
-``FILESYSTEM_EXPERIMENTAL``: if defined with ``USE_STD_FILESYSTEM``, will include ``<experimental/filesystem>``. Otherwise, will include ``<filesystem>`` (default).
 
 ``ENABLE_LOG``: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback and CeDImu to write in files the disassembly of the CPU and the memory accesses (default: ``OFF``).
 

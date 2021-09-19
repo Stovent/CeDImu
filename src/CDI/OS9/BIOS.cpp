@@ -81,7 +81,7 @@ void BIOS::LoadModules()
  */
 std::string BIOS::GetModuleNameAt(const uint32_t offset) const
 {
-    for(const ModuleHeader header : modules)
+    for(const ModuleHeader& header : modules)
     {
         if(offset >= header.begin && offset < header.end)
             return header.name;
