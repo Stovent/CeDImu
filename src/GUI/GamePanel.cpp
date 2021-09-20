@@ -19,11 +19,7 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu) :
 {
     SetDoubleBuffered(true);
 
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiMutex);
-    m_cedimu.m_cdi.callbacks.SetOnFrameCompleted([this] () {
-        std::lock_guard<std::mutex> _(this->m_cedimu.m_cdiMutex);
-        const Plane& plane = this->m_cedimu.m_cdi.board->GetScreen();
-
+    m_cedimu.m_cdi.callbacks.SetOnFrameCompleted([this] (const Plane& plane) {
         std::lock_guard<std::mutex> __(this->m_screenMutex);
         if(this->m_screen.Create(plane.width, plane.height))
         {
@@ -35,7 +31,6 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu) :
 
 GamePanel::~GamePanel()
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiMutex);
     m_cedimu.m_cdi.callbacks.SetOnFrameCompleted(nullptr);
 }
 
@@ -45,9 +40,13 @@ void GamePanel::DrawScreen(wxDC& dc)
     std::lock_guard<std::mutex> lock(m_screenMutex);
     if(m_screen.IsOk())
     {
-        wxBitmap screen(m_screen.Scale(GetClientSize().x, GetClientSize().y, wxIMAGE_QUALITY_NEAREST));
-        if(screen.IsOk())
-            dc.DrawBitmap(screen, 0, 0);
+        const wxSize size = GetClientSize();
+        if(size.x > 0 && size.y > 0)
+        {
+            wxBitmap screen(m_screen.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST));
+            if(screen.IsOk())
+                dc.DrawBitmap(screen, 0, 0);
+        }
     }
 }
 
@@ -59,7 +58,7 @@ void GamePanel::OnPaintEvent(wxPaintEvent&)
 
 void GamePanel::OnKeyDown(wxKeyEvent& event)
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiMutex);
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
     int keyCode = event.GetKeyCode();
     if(keyCode == Config::keyUp)
     {
@@ -105,7 +104,7 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
 
 void GamePanel::OnKeyUp(wxKeyEvent& event)
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiMutex);
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
     int keyCode = event.GetKeyCode();
     if(keyCode == Config::keyUp)
     {
