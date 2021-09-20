@@ -65,7 +65,7 @@ class Callbacks
     std::function<void(uint8_t)> onUARTOutCallback;
 
     std::mutex onFrameCompletedMutex;
-    std::function<void()> onFrameCompletedCallback;
+    std::function<void(const Plane&)> onFrameCompletedCallback;
 
     std::mutex onSaveNVRAMMutex;
     std::function<void(const void* data, size_t size)> onSaveNVRAMCallback;
@@ -82,7 +82,7 @@ class Callbacks
 public:
     explicit Callbacks(const std::function<void(const Instruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
-                       const std::function<void()>& frameCompleted = nullptr,
+                       const std::function<void(const Plane&)>& frameCompleted = nullptr,
                        const std::function<void(ControlArea, const std::string&)>& icadca = nullptr,
                        const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr,
                        const std::function<void(const LogSCC68070Exception&)>& logException = nullptr) :
@@ -131,16 +131,16 @@ public:
             onUARTOutCallback(arg);
     }
 
-    void SetOnFrameCompleted(const std::function<void()>& callback)
+    void SetOnFrameCompleted(const std::function<void(const Plane&)>& callback)
     {
         std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
         onFrameCompletedCallback = callback;
     }
-    void OnFrameCompleted()
+    void OnFrameCompleted(const Plane& plane)
     {
         std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
         if(onFrameCompletedCallback)
-            onFrameCompletedCallback();
+            onFrameCompletedCallback(plane);
     }
 
     void SetOnSaveNVRAM(const std::function<void(const void*, size_t)>& callback)
