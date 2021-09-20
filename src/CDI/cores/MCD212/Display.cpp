@@ -93,7 +93,7 @@ void MCD212::ExecuteVideoLine()
         lineNumber = 0;
         verticalLines = 0;
 
-        cdi.callbacks.OnFrameCompleted();
+        cdi.callbacks.OnFrameCompleted(screen);
     }
 }
 

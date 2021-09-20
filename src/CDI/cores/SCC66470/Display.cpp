@@ -15,6 +15,6 @@ void SCC66470::ExecuteVideoLine()
         lineNumber = 0;
         totalFrameCount++;
 
-        cdi.callbacks.OnFrameCompleted();
+        cdi.callbacks.OnFrameCompleted(screen);
     }
 }

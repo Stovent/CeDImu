@@ -5,6 +5,7 @@ class CDI;
 #include "../../common/enums.hpp"
 
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -333,9 +334,9 @@ private:
     std::mutex uartInMutex;
     std::deque<uint8_t> uartIn;
 
-    bool loop;
+    std::atomic_bool loop;
     bool stop;
-    bool isRunning;
+    std::atomic_bool isRunning;
 
     void DumpCPURegisters();
 
