@@ -9,6 +9,7 @@
 #include <wx/msgdlg.h>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
+    EVT_TIMER(wxID_ANY, MainFrame::UpdateUI)
     EVT_CLOSE(MainFrame::OnClose)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
@@ -22,14 +23,18 @@ wxEND_EVENT_TABLE()
 MainFrame::MainFrame(CeDImu& cedimu) :
     wxFrame(NULL, wxID_ANY, "CeDImu", wxDefaultPosition, wxSize(400, 300)),
     m_cedimu(cedimu),
-    m_settingsFrame(nullptr)
+    m_updateTimer(this),
+    m_settingsFrame(nullptr),
+    m_oldCycleCount(0),
+    m_oldFrameCount(0)
 {
     CreateMenuBar();
-    CreateStatusBar(2);
-    SetStatusText(std::to_string(int(CPU_SPEEDS[m_cedimu.m_cpuSpeed] * 100)) + "%", 1);
+    CreateStatusBar(3);
+
     new GamePanel(this, m_cedimu);
 
     Show();
+    m_updateTimer.Start(1000);
 }
 
 void MainFrame::CreateMenuBar()
@@ -54,6 +59,31 @@ void MainFrame::CreateMenuBar()
     menuBar->Append(optionsMenu, "Options");
 
     SetMenuBar(menuBar);
+}
+
+void MainFrame::UpdateStatusBar()
+{
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+
+    uint64_t cycleRate = 0;
+    uint32_t frameRate = 0;
+    if(m_cedimu.m_cdi.board)
+    {
+        cycleRate = m_cedimu.m_cdi.board->cpu.totalCycleCount - m_oldCycleCount;
+        m_oldCycleCount = m_cedimu.m_cdi.board->cpu.totalCycleCount;
+
+        const uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
+        frameRate = fc - m_oldFrameCount;
+        m_oldFrameCount = fc;
+    }
+
+    SetStatusText(std::to_string(int(CPU_SPEEDS[m_cedimu.m_cpuSpeed] * 100)) + "% (" + std::to_string(cycleRate) + " Hz)", 1);
+    SetStatusText(std::to_string(m_oldFrameCount) + " / " + std::to_string(frameRate) + " FPS", 2);
+}
+
+void MainFrame::UpdateUI(wxTimerEvent&)
+{
+    UpdateStatusBar();
 }
 
 void MainFrame::OnExit(wxCommandEvent&)
@@ -81,13 +111,13 @@ void MainFrame::OnPause(wxCommandEvent&)
 void MainFrame::OnIncreaseSpeed(wxCommandEvent&)
 {
     m_cedimu.IncreaseEmulationSpeed();
-    SetStatusText(std::to_string(int(CPU_SPEEDS[m_cedimu.m_cpuSpeed] * 100)) + "%", 1);
+    UpdateStatusBar();
 }
 
 void MainFrame::OnDecreaseSpeed(wxCommandEvent&)
 {
     m_cedimu.DecreaseEmulationSpeed();
-    SetStatusText(std::to_string(int(CPU_SPEEDS[m_cedimu.m_cpuSpeed] * 100)) + "%", 1);
+    UpdateStatusBar();
 }
 
 void MainFrame::OnReloadCore(wxCommandEvent&)
