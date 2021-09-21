@@ -61,6 +61,12 @@ void MainFrame::CreateMenuBar()
     SetMenuBar(menuBar);
 }
 
+void MainFrame::UpdateTitle()
+{
+    const std::string bios = m_cedimu.m_biosName.size() ? m_cedimu.m_biosName + " | " : "";
+    SetTitle(bios + "CeDImu");
+}
+
 void MainFrame::UpdateStatusBar()
 {
     std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
@@ -83,6 +89,7 @@ void MainFrame::UpdateStatusBar()
 
 void MainFrame::UpdateUI(wxTimerEvent&)
 {
+    UpdateTitle();
     UpdateStatusBar();
 }
 

@@ -70,8 +70,8 @@ bool CeDImu::InitCDI()
     biosFile.read((char*)bios.get(), biosSize);
 
     std::unique_ptr<uint8_t[]> nvram = nullptr;
-    std::string filename = std::filesystem::path(Config::systemBIOS).filename().string();
-    std::ifstream nvramFile("nvram_" + filename + ".bin");
+    m_biosName = std::filesystem::path(Config::systemBIOS).filename().string();
+    std::ifstream nvramFile("nvram_" + m_biosName + ".bin");
     if(nvramFile)
     {
         nvramFile.seekg(0, std::ios::end);

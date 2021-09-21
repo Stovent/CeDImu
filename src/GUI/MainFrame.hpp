@@ -22,6 +22,7 @@ public:
     MainFrame(CeDImu& cedimu);
 
     void CreateMenuBar();
+    void UpdateTitle();
     void UpdateStatusBar();
     void UpdateUI(wxTimerEvent&);
 

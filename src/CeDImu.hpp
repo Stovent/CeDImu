@@ -16,6 +16,8 @@ public:
     CDI m_cdi;
     uint16_t m_cpuSpeed;
 
+    std::string m_biosName;
+
     virtual bool OnInit() override;
     virtual int OnExit() override;
 
