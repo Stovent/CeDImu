@@ -34,6 +34,21 @@ GamePanel::~GamePanel()
     m_cedimu.m_cdi.callbacks.SetOnFrameCompleted(nullptr);
 }
 
+void GamePanel::Reset()
+{
+    std::lock_guard<std::mutex> lock(m_screenMutex);
+    m_screen = wxImage(0, 0);
+    Refresh();
+}
+
+bool GamePanel::SaveScreenshot(const std::string& path)
+{
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::mutex> lock2(m_screenMutex);
+    uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
+    return m_screen.SaveFile(path + "/frame_" + std::to_string(fc) + ".bmp", wxBITMAP_TYPE_BMP);
+}
+
 void GamePanel::DrawScreen(wxDC& dc)
 {
     dc.Clear();

@@ -5,6 +5,7 @@
 #include <wx/timer.h>
 
 class CeDImu;
+class GamePanel;
 class SettingsFrame;
 
 class MainFrame : public wxFrame
@@ -13,6 +14,7 @@ public:
     CeDImu& m_cedimu;
     wxTimer m_updateTimer;
     wxMenuItem* m_pauseMenuItem;
+    GamePanel* m_gamePanel;
     SettingsFrame* m_settingsFrame;
 
     uint64_t m_oldCycleCount;
@@ -26,13 +28,14 @@ public:
     void UpdateStatusBar();
     void UpdateUI(wxTimerEvent&);
 
+    void OnClose(wxCloseEvent&);
+    void OnScreenshot(wxCommandEvent&);
+    void OnExit(wxCommandEvent&);
+
     void OnPause(wxCommandEvent&);
     void OnIncreaseSpeed(wxCommandEvent&);
     void OnDecreaseSpeed(wxCommandEvent&);
     void OnReloadCore(wxCommandEvent&);
-
-    void OnClose(wxCloseEvent&);
-    void OnExit(wxCommandEvent&);
 
     void OnSettings(wxCommandEvent&);
     void OnAbout(wxCommandEvent&);

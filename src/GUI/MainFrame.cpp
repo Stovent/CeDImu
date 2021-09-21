@@ -4,6 +4,7 @@
 #include "SettingsFrame.hpp"
 #include "../CeDImu.hpp"
 
+#include <wx/dirdlg.h>
 #include <wx/menu.h>
 #include <wx/menuitem.h>
 #include <wx/msgdlg.h>
@@ -11,6 +12,7 @@
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_TIMER(wxID_ANY, MainFrame::UpdateUI)
     EVT_CLOSE(MainFrame::OnClose)
+    EVT_MENU(IDMainFrameOnScreenshot, MainFrame::OnScreenshot)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
     EVT_MENU(IDMainFrameOnIncreaseSpeed, MainFrame::OnIncreaseSpeed)
@@ -31,7 +33,7 @@ MainFrame::MainFrame(CeDImu& cedimu) :
     CreateMenuBar();
     CreateStatusBar(3);
 
-    new GamePanel(this, m_cedimu);
+    m_gamePanel = new GamePanel(this, m_cedimu);
 
     Show();
     m_updateTimer.Start(1000);
@@ -42,6 +44,8 @@ void MainFrame::CreateMenuBar()
     wxMenuBar* menuBar = new wxMenuBar();
 
     wxMenu* fileMenu = new wxMenu();
+    fileMenu->Append(IDMainFrameOnScreenshot, "Take screenshot\tCtrl+Shift+S", "Save to file the current frame");
+    fileMenu->AppendSeparator();
     fileMenu->Append(wxID_EXIT, "Close", "Closes CeDImu");
     menuBar->Append(fileMenu, "File");
 
@@ -93,6 +97,14 @@ void MainFrame::UpdateUI(wxTimerEvent&)
     UpdateStatusBar();
 }
 
+void MainFrame::OnScreenshot(wxCommandEvent&)
+{
+    wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    if(dirDlg.ShowModal() == wxID_OK)
+        if(!m_gamePanel->SaveScreenshot(dirDlg.GetPath().ToStdString()))
+            wxMessageBox("Failed to save screenshot");
+}
+
 void MainFrame::OnExit(wxCommandEvent&)
 {
     Close();
@@ -131,6 +143,7 @@ void MainFrame::OnReloadCore(wxCommandEvent&)
 {
     if(m_cedimu.InitCDI())
     {
+        m_gamePanel->Reset();
         if(!m_pauseMenuItem->IsChecked())
             m_cedimu.StartEmulation();
         SetStatusText("Core reloaded");

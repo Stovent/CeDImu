@@ -22,6 +22,9 @@ public:
     GamePanel(MainFrame* parent, CeDImu& cedimu);
     ~GamePanel();
 
+    void Reset();
+    bool SaveScreenshot(const std::string& path);
+
     void DrawScreen(wxDC& dc);
     void OnPaintEvent(wxPaintEvent&);
 
