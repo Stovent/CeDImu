@@ -5,7 +5,9 @@
 
 enum
 {
-    IDMainFrameOnScreenshot = wxID_HIGHEST + 1,
+    IDMainFrameOnOpenDisc = wxID_HIGHEST + 1,
+    IDMainFrameOnCloseDisc,
+    IDMainFrameOnScreenshot,
     IDMainFrameOnPause,
     IDMainFrameOnIncreaseSpeed,
     IDMainFrameOnDecreaseSpeed,

@@ -3,8 +3,10 @@
 #include "GamePanel.hpp"
 #include "SettingsFrame.hpp"
 #include "../CeDImu.hpp"
+#include "../Config.hpp"
 
 #include <wx/dirdlg.h>
+#include <wx/filedlg.h>
 #include <wx/menu.h>
 #include <wx/menuitem.h>
 #include <wx/msgdlg.h>
@@ -12,6 +14,8 @@
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_TIMER(wxID_ANY, MainFrame::UpdateUI)
     EVT_CLOSE(MainFrame::OnClose)
+    EVT_MENU(IDMainFrameOnOpenDisc, MainFrame::OnOpenDisc)
+    EVT_MENU(IDMainFrameOnCloseDisc, MainFrame::OnCloseDisc)
     EVT_MENU(IDMainFrameOnScreenshot, MainFrame::OnScreenshot)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
@@ -44,6 +48,9 @@ void MainFrame::CreateMenuBar()
     wxMenuBar* menuBar = new wxMenuBar();
 
     wxMenu* fileMenu = new wxMenu();
+    fileMenu->Append(IDMainFrameOnOpenDisc, "Open disc\tCtrl+O");
+    fileMenu->Append(IDMainFrameOnCloseDisc, "Close disc\tCtrl+C");
+    fileMenu->AppendSeparator();
     fileMenu->Append(IDMainFrameOnScreenshot, "Take screenshot\tCtrl+Shift+S", "Save to file the current frame");
     fileMenu->AppendSeparator();
     fileMenu->Append(wxID_EXIT, "Close", "Closes CeDImu");
@@ -95,6 +102,19 @@ void MainFrame::UpdateUI(wxTimerEvent&)
 {
     UpdateTitle();
     UpdateStatusBar();
+}
+
+void MainFrame::OnOpenDisc(wxCommandEvent&)
+{
+    wxFileDialog fileDlg(this, wxFileSelectorPromptStr, Config::discDirectory, wxEmptyString, "Binary files (*.bin;*.iso)|*.bin;*.iso|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if(fileDlg.ShowModal() == wxID_OK)
+        if(!m_cedimu.m_cdi.disc.Open(fileDlg.GetPath().ToStdString()))
+            wxMessageBox("Failed to open disc");
+}
+
+void MainFrame::OnCloseDisc(wxCommandEvent&)
+{
+    m_cedimu.m_cdi.disc.Close();
 }
 
 void MainFrame::OnScreenshot(wxCommandEvent&)

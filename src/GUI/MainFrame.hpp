@@ -28,9 +28,11 @@ public:
     void UpdateStatusBar();
     void UpdateUI(wxTimerEvent&);
 
-    void OnClose(wxCloseEvent&);
+    void OnOpenDisc(wxCommandEvent&);
+    void OnCloseDisc(wxCommandEvent&);
     void OnScreenshot(wxCommandEvent&);
     void OnExit(wxCommandEvent&);
+    void OnClose(wxCloseEvent&);
 
     void OnPause(wxCommandEvent&);
     void OnIncreaseSpeed(wxCommandEvent&);
