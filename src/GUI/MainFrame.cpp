@@ -22,6 +22,10 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnIncreaseSpeed, MainFrame::OnIncreaseSpeed)
     EVT_MENU(IDMainFrameOnDecreaseSpeed, MainFrame::OnDecreaseSpeed)
     EVT_MENU(IDMainFrameOnReloadCore, MainFrame::OnReloadCore)
+    EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
+    EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
+    EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
+    EVT_MENU(IDMainFrameOnExportRawVideo, MainFrame::OnExportRawVideo)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
     EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
@@ -63,6 +67,13 @@ void MainFrame::CreateMenuBar()
     emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed", "Decrease the emulation speed");
     emulationMenu->Append(IDMainFrameOnReloadCore, "Reload core\tCtrl+R");
     menuBar->Append(emulationMenu, "Emulation");
+
+    wxMenu* cdiMenu = new wxMenu();
+    cdiMenu->Append(IDMainFrameOnExportAudio, "Export audio");
+    cdiMenu->Append(IDMainFrameOnExportFiles, "Export files");
+    cdiMenu->Append(IDMainFrameOnExportVideo, "Export video");
+    cdiMenu->Append(IDMainFrameOnExportRawVideo, "Export raw video");
+    menuBar->Append(cdiMenu, "CD-I");
 
     wxMenu* optionsMenu = new wxMenu();
     optionsMenu->Append(IDMainFrameOnSettings, "Settings", "Edit CeDImu's settings");
@@ -170,6 +181,62 @@ void MainFrame::OnReloadCore(wxCommandEvent&)
     }
     else
         SetStatusText("Failed to reload core");
+}
+
+void MainFrame::OnExportAudio(wxCommandEvent&)
+{
+    if(m_cedimu.m_cdi.disc.IsOpen())
+    {
+        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        if(dirDlg.ShowModal() == wxID_OK)
+            m_cedimu.m_cdi.disc.ExportAudio(dirDlg.GetPath().ToStdString());
+    }
+    else
+    {
+        wxMessageBox("No disc opened");
+    }
+}
+
+void MainFrame::OnExportFiles(wxCommandEvent&)
+{
+    if(m_cedimu.m_cdi.disc.IsOpen())
+    {
+        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        if(dirDlg.ShowModal() == wxID_OK)
+            m_cedimu.m_cdi.disc.ExportFiles(dirDlg.GetPath().ToStdString());
+    }
+    else
+    {
+        wxMessageBox("No disc opened");
+    }
+}
+
+void MainFrame::OnExportVideo(wxCommandEvent&)
+{
+    if(m_cedimu.m_cdi.disc.IsOpen())
+    {
+        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        if(dirDlg.ShowModal() == wxID_OK)
+            m_cedimu.m_cdi.disc.ExportVideo(dirDlg.GetPath().ToStdString());
+    }
+    else
+    {
+        wxMessageBox("No disc opened");
+    }
+}
+
+void MainFrame::OnExportRawVideo(wxCommandEvent&)
+{
+    if(m_cedimu.m_cdi.disc.IsOpen())
+    {
+        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        if(dirDlg.ShowModal() == wxID_OK)
+            m_cedimu.m_cdi.disc.ExportRawVideo(dirDlg.GetPath().ToStdString());
+    }
+    else
+    {
+        wxMessageBox("No disc opened");
+    }
 }
 
 void MainFrame::OnSettings(wxCommandEvent&)

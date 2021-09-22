@@ -12,6 +12,10 @@ enum
     IDMainFrameOnIncreaseSpeed,
     IDMainFrameOnDecreaseSpeed,
     IDMainFrameOnReloadCore,
+    IDMainFrameOnExportAudio,
+    IDMainFrameOnExportFiles,
+    IDMainFrameOnExportVideo,
+    IDMainFrameOnExportRawVideo,
     IDMainFrameOnSettings,
 };
 

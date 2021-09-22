@@ -39,6 +39,11 @@ public:
     void OnDecreaseSpeed(wxCommandEvent&);
     void OnReloadCore(wxCommandEvent&);
 
+    void OnExportAudio(wxCommandEvent&);
+    void OnExportFiles(wxCommandEvent&);
+    void OnExportVideo(wxCommandEvent&);
+    void OnExportRawVideo(wxCommandEvent&);
+
     void OnSettings(wxCommandEvent&);
     void OnAbout(wxCommandEvent&);
 
