@@ -3,6 +3,7 @@
 #include "GUI/MainFrame.hpp"
 #include "CDI/CDI.hpp"
 
+#include <wx/image.h>
 #include <wx/msgdlg.h>
 
 #include <ctime>
@@ -36,6 +37,7 @@ static constexpr int MAX_CPU_SPEED = sizeof CPU_SPEEDS / sizeof *CPU_SPEEDS - 1;
 
 bool CeDImu::OnInit()
 {
+    wxImage::AddHandler(new wxPNGHandler);
     Config::loadConfig();
     m_cpuSpeed = DEFAULT_CPU_SPEED;
 

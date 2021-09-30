@@ -2,6 +2,7 @@
 #include "enums.hpp"
 #include "GamePanel.hpp"
 #include "SettingsFrame.hpp"
+#include "VDSCViewer.hpp"
 #include "../CeDImu.hpp"
 #include "../Config.hpp"
 
@@ -26,6 +27,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
     EVT_MENU(IDMainFrameOnExportRawVideo, MainFrame::OnExportRawVideo)
+    EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
     EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
@@ -35,6 +37,7 @@ MainFrame::MainFrame(CeDImu& cedimu) :
     m_cedimu(cedimu),
     m_updateTimer(this),
     m_settingsFrame(nullptr),
+    m_vdscViewer(nullptr),
     m_oldCycleCount(0),
     m_oldFrameCount(0)
 {
@@ -75,6 +78,10 @@ void MainFrame::CreateMenuBar()
     cdiMenu->Append(IDMainFrameOnExportRawVideo, "Export raw video");
     menuBar->Append(cdiMenu, "CD-I");
 
+    wxMenu* toolsMenu = new wxMenu();
+    toolsMenu->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer");
+    menuBar->Append(toolsMenu, "Tools");
+
     wxMenu* optionsMenu = new wxMenu();
     optionsMenu->Append(IDMainFrameOnSettings, "Settings", "Edit CeDImu's settings");
     optionsMenu->Append(wxID_ABOUT, "About");
@@ -85,8 +92,9 @@ void MainFrame::CreateMenuBar()
 
 void MainFrame::UpdateTitle()
 {
+    const std::string disc = m_cedimu.m_cdi.disc.gameName.length() ? m_cedimu.m_cdi.disc.gameName + " | " : "";
     const std::string bios = m_cedimu.m_biosName.size() ? m_cedimu.m_biosName + " | " : "";
-    SetTitle(bios + "CeDImu");
+    SetTitle(disc + bios + "CeDImu");
 }
 
 void MainFrame::UpdateStatusBar()
@@ -151,6 +159,8 @@ void MainFrame::OnPause(wxCommandEvent&)
     if(m_pauseMenuItem->IsChecked())
     {
         m_cedimu.StopEmulation();
+        if(m_vdscViewer)
+            m_vdscViewer->m_updateLists = true;
     }
     else
     {
@@ -237,6 +247,12 @@ void MainFrame::OnExportRawVideo(wxCommandEvent&)
     {
         wxMessageBox("No disc opened");
     }
+}
+
+void MainFrame::OnVDSCViewer(wxCommandEvent&)
+{
+    if(m_vdscViewer == nullptr)
+        m_vdscViewer = new VDSCViewer(this, m_cedimu);
 }
 
 void MainFrame::OnSettings(wxCommandEvent&)

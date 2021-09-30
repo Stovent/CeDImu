@@ -7,6 +7,7 @@
 class CeDImu;
 class GamePanel;
 class SettingsFrame;
+class VDSCViewer;
 
 class MainFrame : public wxFrame
 {
@@ -14,8 +15,10 @@ public:
     CeDImu& m_cedimu;
     wxTimer m_updateTimer;
     wxMenuItem* m_pauseMenuItem;
+
     GamePanel* m_gamePanel;
     SettingsFrame* m_settingsFrame;
+    VDSCViewer* m_vdscViewer;
 
     uint64_t m_oldCycleCount;
     uint32_t m_oldFrameCount;
@@ -43,6 +46,8 @@ public:
     void OnExportFiles(wxCommandEvent&);
     void OnExportVideo(wxCommandEvent&);
     void OnExportRawVideo(wxCommandEvent&);
+
+    void OnVDSCViewer(wxCommandEvent&);
 
     void OnSettings(wxCommandEvent&);
     void OnAbout(wxCommandEvent&);

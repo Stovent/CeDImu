@@ -1,5 +1,6 @@
 #include "GamePanel.hpp"
 #include "MainFrame.hpp"
+#include "VDSCViewer.hpp"
 
 #include "../Config.hpp"
 
@@ -20,6 +21,9 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu) :
     SetDoubleBuffered(true);
 
     m_cedimu.m_cdi.callbacks.SetOnFrameCompleted([this] (const Plane& plane) {
+        if(m_mainFrame->m_vdscViewer)
+            m_mainFrame->m_vdscViewer->m_flushIcadca = true;
+
         std::lock_guard<std::mutex> __(this->m_screenMutex);
         if(this->m_screen.Create(plane.width, plane.height))
         {
@@ -44,9 +48,12 @@ void GamePanel::Reset()
 bool GamePanel::SaveScreenshot(const std::string& path)
 {
     std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    if(!m_cedimu.m_cdi.board)
+        return false;
+
     std::lock_guard<std::mutex> lock2(m_screenMutex);
     uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
-    return m_screen.SaveFile(path + "/frame_" + std::to_string(fc) + ".bmp", wxBITMAP_TYPE_BMP);
+    return m_screen.SaveFile(path + "/frame_" + std::to_string(fc) + ".png", wxBITMAP_TYPE_PNG);
 }
 
 void GamePanel::DrawScreen(wxDC& dc)
