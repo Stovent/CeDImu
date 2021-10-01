@@ -16,13 +16,20 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu) :
     wxPanel(parent),
     m_mainFrame(parent),
     m_cedimu(cedimu),
-    m_screen(0, 0)
+    m_screen(0, 0),
+    m_stopOnNextFrame(false)
 {
     SetDoubleBuffered(true);
 
     m_cedimu.m_cdi.callbacks.SetOnFrameCompleted([this] (const Plane& plane) {
         if(m_mainFrame->m_vdscViewer)
             m_mainFrame->m_vdscViewer->m_flushIcadca = true;
+
+        if(this->m_stopOnNextFrame)
+        {
+            this->m_cedimu.m_cdi.board->cpu.Stop(false);
+            this->m_mainFrame->m_pauseMenuItem->Check();
+        }
 
         std::lock_guard<std::mutex> __(this->m_screenMutex);
         if(this->m_screen.Create(plane.width, plane.height))

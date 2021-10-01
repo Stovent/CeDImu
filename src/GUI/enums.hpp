@@ -9,6 +9,8 @@ enum
     IDMainFrameOnCloseDisc,
     IDMainFrameOnScreenshot,
     IDMainFrameOnPause,
+    IDMainFrameOnSingleStep,
+    IDMainFrameOnFrameAdvance,
     IDMainFrameOnIncreaseSpeed,
     IDMainFrameOnDecreaseSpeed,
     IDMainFrameOnReloadCore,

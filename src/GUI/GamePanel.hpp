@@ -17,6 +17,7 @@ public:
     CeDImu& m_cedimu;
     std::mutex m_screenMutex;
     wxImage m_screen;
+    bool m_stopOnNextFrame;
 
     GamePanel() = delete;
     GamePanel(MainFrame* parent, CeDImu& cedimu);

@@ -9,7 +9,6 @@
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/menu.h>
-#include <wx/menuitem.h>
 #include <wx/msgdlg.h>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
@@ -20,6 +19,8 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnScreenshot, MainFrame::OnScreenshot)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
+    EVT_MENU(IDMainFrameOnSingleStep, MainFrame::OnSingleStep)
+    EVT_MENU(IDMainFrameOnFrameAdvance, MainFrame::OnFrameAdvance)
     EVT_MENU(IDMainFrameOnIncreaseSpeed, MainFrame::OnIncreaseSpeed)
     EVT_MENU(IDMainFrameOnDecreaseSpeed, MainFrame::OnDecreaseSpeed)
     EVT_MENU(IDMainFrameOnReloadCore, MainFrame::OnReloadCore)
@@ -66,6 +67,8 @@ void MainFrame::CreateMenuBar()
     wxMenu* emulationMenu = new wxMenu();
     m_pauseMenuItem = emulationMenu->AppendCheckItem(IDMainFrameOnPause, "Pause\tPause", "Pause or resume emulation");
     m_pauseMenuItem->Check();
+    emulationMenu->Append(IDMainFrameOnSingleStep, "Single step\tG", "Execute a single instruction");
+    emulationMenu->Append(IDMainFrameOnFrameAdvance, "Frame advance\tF", "Start emulation until the end of the next frame");
     emulationMenu->Append(IDMainFrameOnIncreaseSpeed, "Increase Speed", "Increase the emulation speed");
     emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed", "Decrease the emulation speed");
     emulationMenu->Append(IDMainFrameOnReloadCore, "Reload core\tCtrl+R");
@@ -164,7 +167,29 @@ void MainFrame::OnPause(wxCommandEvent&)
     }
     else
     {
+        m_gamePanel->m_stopOnNextFrame = false;
         m_cedimu.StartEmulation();
+    }
+}
+
+void MainFrame::OnSingleStep(wxCommandEvent&)
+{
+    if(m_pauseMenuItem->IsChecked())
+    {
+        std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->cpu.Run(false);
+    }
+}
+
+void MainFrame::OnFrameAdvance(wxCommandEvent&)
+{
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    if(m_cedimu.m_cdi.board)
+    {
+        m_gamePanel->m_stopOnNextFrame = true;
+        if(!m_cedimu.m_cdi.board->cpu.IsRunning())
+            m_cedimu.m_cdi.board->cpu.Run(true);
     }
 }
 

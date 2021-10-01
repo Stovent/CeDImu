@@ -2,6 +2,7 @@
 #define GUI_MAINFRAME_HPP
 
 #include <wx/frame.h>
+#include <wx/menuitem.h>
 #include <wx/timer.h>
 
 class CeDImu;
@@ -38,6 +39,8 @@ public:
     void OnClose(wxCloseEvent&);
 
     void OnPause(wxCommandEvent&);
+    void OnSingleStep(wxCommandEvent&);
+    void OnFrameAdvance(wxCommandEvent&);
     void OnIncreaseSpeed(wxCommandEvent&);
     void OnDecreaseSpeed(wxCommandEvent&);
     void OnReloadCore(wxCommandEvent&);
