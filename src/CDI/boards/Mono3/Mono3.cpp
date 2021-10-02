@@ -28,14 +28,10 @@ void Mono3::Reset(const bool resetCPU)
         cpu.Reset();
 }
 
-void Mono3::ExecuteVideoLine()
+void Mono3::IncrementTime(const double ns)
 {
-    mcd212.ExecuteVideoLine();
-}
-
-uint32_t Mono3::GetLineDisplayTime()
-{
-    return mcd212.GetLineDisplayTime();
+    Board::IncrementTime(ns);
+    mcd212.IncrementTime(ns);
 }
 
 void Mono3::PutDataInMemory(const void* s, unsigned int size, unsigned int position)

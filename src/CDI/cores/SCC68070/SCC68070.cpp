@@ -13,6 +13,7 @@
 SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
     cdi(idc),
     cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
+    speedDelay(cycleDelay),
     timerDelay(cycleDelay * 96),
     internal{0},
     D{0}, A_{0},
@@ -20,8 +21,7 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
     DLUT(std::make_unique<DLUTFunctionPointer[]>(UINT16_MAX + 1))
 {
     loop = stop = isRunning = false;
-    speedDelay = cycleDelay;
-    timerCounter = cycleCount = totalCycleCount = 0;
+    timerCounter = totalCycleCount = 0;
     currentPC = currentOpcode = lastAddress = PC = SR = USP = SSP = 0;
 
     GenerateInstructionSet();

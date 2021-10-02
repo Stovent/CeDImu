@@ -10,6 +10,7 @@ MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL) 
     VDSC(idc, bios, size, 0x400000),
     isPAL(PAL),
     memorySwapCount(0),
+    timeNs(0.0),
     memory(0x280000, 0),
     screen(PLANE_RGB_SIZE),
     planeA(PLANE_ARGB_SIZE),
@@ -46,7 +47,19 @@ void MCD212::Reset()
 
     verticalLines = 0;
     lineNumber = 0;
+    timeNs = 0.0;
     MemorySwap();
+}
+
+void MCD212::IncrementTime(const double ns)
+{
+    timeNs += ns;
+    const uint32_t lineDisplayTime = GetLineDisplayTime();
+    if(timeNs >= lineDisplayTime)
+    {
+        ExecuteVideoLine();
+        timeNs -= lineDisplayTime;
+    }
 }
 
 void MCD212::PutDataInMemory(const void* s, unsigned int size, unsigned int position)

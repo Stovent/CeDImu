@@ -340,9 +340,8 @@ private:
 
     void DumpCPURegisters();
 
-    double speedDelay; // used for emulation speed.
     const double cycleDelay; // Time between two clock cycles in nanoseconds
-    uint32_t cycleCount;
+    double speedDelay; // used for emulation speed.
     const double timerDelay;
     double timerCounter; // Counts the nanosconds when incrementing the timer.
 

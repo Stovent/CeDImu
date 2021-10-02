@@ -99,7 +99,7 @@ bool CeDImu::InitializeCores()
         return false;
     }
 
-    cdi.callbacks.SetOnFrameCompleted([=] () -> void {
+    cdi.callbacks.SetOnFrameCompleted([=] (const Plane&) -> void {
         if(this->stopOnNextFrame.load())
         {
             this->stopOnNextFrame.store(false);

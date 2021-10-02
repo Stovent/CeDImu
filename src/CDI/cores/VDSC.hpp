@@ -65,6 +65,7 @@ public:
     virtual ~VDSC() {}
 
     virtual void Reset() = 0;
+    virtual void IncrementTime(const double ns) = 0;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;
@@ -77,9 +78,6 @@ public:
 
     virtual RAMBank GetRAMBank1() const = 0;
     virtual RAMBank GetRAMBank2() const = 0;
-
-    virtual void ExecuteVideoLine() = 0;
-    virtual inline uint32_t GetLineDisplayTime() const { return 0; }
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const = 0;
     virtual std::vector<VDSCRegister> GetControlRegisters() const = 0;

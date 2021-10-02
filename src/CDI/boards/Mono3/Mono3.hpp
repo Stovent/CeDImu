@@ -15,6 +15,7 @@ public:
     Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void* nvram, const CDIConfig& conf);
     virtual ~Mono3();
     virtual void Reset(const bool resetCPU) override;
+    virtual void IncrementTime(const double ns) override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
@@ -27,9 +28,6 @@ public:
     virtual uint32_t GetRAMSize() const override;
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
-
-    virtual void ExecuteVideoLine() override;
-    virtual uint32_t GetLineDisplayTime() override;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;

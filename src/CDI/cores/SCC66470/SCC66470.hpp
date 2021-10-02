@@ -36,6 +36,7 @@ public:
     virtual ~SCC66470();
 
     virtual void Reset() override;
+    virtual void IncrementTime(const double ns) override;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
@@ -48,12 +49,6 @@ public:
 
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
-
-    virtual void ExecuteVideoLine() override;
-    virtual inline uint32_t GetLineDisplayTime() const override
-    {
-        return 41000;
-    }
 
     virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
     virtual std::vector<VDSCRegister> GetControlRegisters() const override;
@@ -83,6 +78,8 @@ private:
     void MemorySwap();
     uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
 
+    void ExecuteVideoLine();
+
     // Internal Register
     uint16_t GetCSRWRegister() const;
     uint16_t GetCSRRRegister() const;
@@ -109,6 +106,11 @@ private:
 
     inline uint16_t GetHorizontalResolution() const { return 0; }
     inline uint16_t GetVerticalResolution() const { return GetFD() ? (GetSS() ? 240 : 210) : (GetSS() ? (GetST() ? 240 : 280) : (GetST() ? 210 : 250)); }
+
+    inline uint32_t GetLineDisplayTime() const
+    {
+        return 41000;
+    }
 };
 
 #endif // CDI_CORES_SCC66470_SCC66470_HPP
