@@ -7,6 +7,7 @@
 
 class CeDImu;
 class CPUViewer;
+class DebugFrame;
 class GamePanel;
 class SettingsFrame;
 class VDSCViewer;
@@ -22,6 +23,7 @@ public:
     CPUViewer* m_cpuViewer;
     SettingsFrame* m_settingsFrame;
     VDSCViewer* m_vdscViewer;
+    DebugFrame* m_debugFrame;
 
     uint64_t m_oldCycleCount;
     uint32_t m_oldFrameCount;
@@ -54,6 +56,7 @@ public:
 
     void OnCPUViewer(wxCommandEvent&);
     void OnVDSCViewer(wxCommandEvent&);
+    void OnDebugFrame(wxCommandEvent&);
 
     void OnSettings(wxCommandEvent&);
     void OnAbout(wxCommandEvent&);

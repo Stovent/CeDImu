@@ -141,6 +141,7 @@ CPUViewer::~CPUViewer()
 {
     m_cedimu.m_cdi.callbacks.SetOnLogDisassembler(nullptr);
     m_cedimu.m_cdi.callbacks.SetOnUARTOut(nullptr);
+    m_auiManager.UnInit();
     m_mainFrame->m_cpuViewer = nullptr;
 }
 

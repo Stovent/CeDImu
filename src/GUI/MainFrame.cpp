@@ -1,6 +1,7 @@
 #include "MainFrame.hpp"
 #include "enums.hpp"
 #include "CPUViewer.hpp"
+#include "DebugFrame.hpp"
 #include "GamePanel.hpp"
 #include "SettingsFrame.hpp"
 #include "VDSCViewer.hpp"
@@ -31,6 +32,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnExportRawVideo, MainFrame::OnExportRawVideo)
     EVT_MENU(IDMainFrameOnCPUViewer, MainFrame::OnCPUViewer)
     EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
+    EVT_MENU(IDMainFrameOnDebugFrame, MainFrame::OnDebugFrame)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
     EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
@@ -86,6 +88,7 @@ void MainFrame::CreateMenuBar()
     wxMenu* toolsMenu = new wxMenu();
     toolsMenu->Append(IDMainFrameOnCPUViewer, "CPU Viewer");
     toolsMenu->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer");
+    toolsMenu->Append(IDMainFrameOnDebugFrame, "Debug");
     menuBar->Append(toolsMenu, "Tools");
 
     wxMenu* optionsMenu = new wxMenu();
@@ -287,6 +290,12 @@ void MainFrame::OnVDSCViewer(wxCommandEvent&)
 {
     if(m_vdscViewer == nullptr)
         m_vdscViewer = new VDSCViewer(this, m_cedimu);
+}
+
+void MainFrame::OnDebugFrame(wxCommandEvent&)
+{
+    if(m_debugFrame == nullptr)
+        m_debugFrame = new DebugFrame(this, m_cedimu);
 }
 
 void MainFrame::OnSettings(wxCommandEvent&)

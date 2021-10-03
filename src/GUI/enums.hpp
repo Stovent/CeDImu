@@ -20,6 +20,7 @@ enum
     IDMainFrameOnExportRawVideo,
     IDMainFrameOnCPUViewer,
     IDMainFrameOnVDSCViewer,
+    IDMainFrameOnDebugFrame,
     IDMainFrameOnSettings,
 };
 
