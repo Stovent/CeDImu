@@ -94,6 +94,12 @@ bool CeDImu::InitCDI()
     else
         m_cdi.config.initialTime = stoi(Config::initialTime);
 
+    m_cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {
+        std::ofstream out("nvram_" + m_biosName + ".bin", std::ios::out | std::ios::binary);
+        out.write((char*)data, size);
+        out.close();
+    });
+
     m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), Config::boardType);
     if(!m_cdi.board)
         return false;
