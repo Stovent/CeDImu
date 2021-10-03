@@ -99,7 +99,7 @@ void MainFrame::CreateMenuBar()
 void MainFrame::UpdateTitle()
 {
     const std::string disc = m_cedimu.m_cdi.disc.gameName.length() ? m_cedimu.m_cdi.disc.gameName + " | " : "";
-    const std::string bios = m_cedimu.m_biosName.size() ? m_cedimu.m_biosName + " | " : "";
+    const std::string bios = m_cedimu.m_cdi.board ? m_cedimu.m_cdi.board->name + " (" + m_cedimu.m_biosName + ") | " : "";
     SetTitle(disc + bios + "CeDImu");
 }
 
