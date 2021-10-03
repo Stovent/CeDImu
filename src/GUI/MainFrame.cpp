@@ -1,5 +1,6 @@
 #include "MainFrame.hpp"
 #include "enums.hpp"
+#include "CPUViewer.hpp"
 #include "GamePanel.hpp"
 #include "SettingsFrame.hpp"
 #include "VDSCViewer.hpp"
@@ -28,6 +29,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
     EVT_MENU(IDMainFrameOnExportRawVideo, MainFrame::OnExportRawVideo)
+    EVT_MENU(IDMainFrameOnCPUViewer, MainFrame::OnCPUViewer)
     EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
     EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
@@ -37,6 +39,8 @@ MainFrame::MainFrame(CeDImu& cedimu) :
     wxFrame(NULL, wxID_ANY, "CeDImu", wxDefaultPosition, wxSize(400, 300)),
     m_cedimu(cedimu),
     m_updateTimer(this),
+    m_gamePanel(new GamePanel(this, m_cedimu)),
+    m_cpuViewer(nullptr),
     m_settingsFrame(nullptr),
     m_vdscViewer(nullptr),
     m_oldCycleCount(0),
@@ -44,8 +48,6 @@ MainFrame::MainFrame(CeDImu& cedimu) :
 {
     CreateMenuBar();
     CreateStatusBar(3);
-
-    m_gamePanel = new GamePanel(this, m_cedimu);
 
     Show();
     m_updateTimer.Start(1000);
@@ -82,6 +84,7 @@ void MainFrame::CreateMenuBar()
     menuBar->Append(cdiMenu, "CD-I");
 
     wxMenu* toolsMenu = new wxMenu();
+    toolsMenu->Append(IDMainFrameOnCPUViewer, "CPU Viewer");
     toolsMenu->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer");
     menuBar->Append(toolsMenu, "Tools");
 
@@ -272,6 +275,12 @@ void MainFrame::OnExportRawVideo(wxCommandEvent&)
     {
         wxMessageBox("No disc opened");
     }
+}
+
+void MainFrame::OnCPUViewer(wxCommandEvent&)
+{
+    if(m_cpuViewer == nullptr)
+        m_cpuViewer = new CPUViewer(this, m_cedimu);
 }
 
 void MainFrame::OnVDSCViewer(wxCommandEvent&)

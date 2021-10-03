@@ -1,4 +1,5 @@
 #include "GamePanel.hpp"
+#include "CPUViewer.hpp"
 #include "MainFrame.hpp"
 #include "VDSCViewer.hpp"
 
@@ -22,6 +23,9 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu) :
     SetDoubleBuffered(true);
 
     m_cedimu.m_cdi.callbacks.SetOnFrameCompleted([this] (const Plane& plane) {
+        if(m_mainFrame->m_cpuViewer)
+            m_mainFrame->m_cpuViewer->m_flushInstructions = true;
+
         if(m_mainFrame->m_vdscViewer)
             m_mainFrame->m_vdscViewer->m_flushIcadca = true;
 

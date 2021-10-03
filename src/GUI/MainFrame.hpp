@@ -6,6 +6,7 @@
 #include <wx/timer.h>
 
 class CeDImu;
+class CPUViewer;
 class GamePanel;
 class SettingsFrame;
 class VDSCViewer;
@@ -18,6 +19,7 @@ public:
     wxMenuItem* m_pauseMenuItem;
 
     GamePanel* m_gamePanel;
+    CPUViewer* m_cpuViewer;
     SettingsFrame* m_settingsFrame;
     VDSCViewer* m_vdscViewer;
 
@@ -50,6 +52,7 @@ public:
     void OnExportVideo(wxCommandEvent&);
     void OnExportRawVideo(wxCommandEvent&);
 
+    void OnCPUViewer(wxCommandEvent&);
     void OnVDSCViewer(wxCommandEvent&);
 
     void OnSettings(wxCommandEvent&);

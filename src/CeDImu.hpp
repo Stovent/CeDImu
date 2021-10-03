@@ -5,6 +5,7 @@
 
 #include <wx/app.h>
 
+#include <fstream>
 #include <mutex>
 
 extern const float CPU_SPEEDS[];
@@ -17,6 +18,7 @@ public:
     uint16_t m_cpuSpeed;
 
     std::string m_biosName;
+    std::ofstream m_uartOut;
 
     virtual bool OnInit() override;
     virtual int OnExit() override;

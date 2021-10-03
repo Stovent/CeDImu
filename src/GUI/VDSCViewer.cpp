@@ -288,14 +288,13 @@ void VDSCViewer::UpdateNotebook(wxTimerEvent&)
     {
         if(!m_updateLists)
             return;
+        m_updateLists = false;
         UpdateIcadca();
     }
     else if(selectedPage == 2)
     {
         UpdatePanels();
     }
-
-    m_updateLists = false;
 }
 
 void VDSCViewer::UpdateRegisters()
@@ -312,6 +311,7 @@ void VDSCViewer::UpdateRegisters()
     long i = 0;
     if(iregs.size() != (size_t)m_internalRegistersList->GetItemCount())
     {
+        m_internalRegistersList->DeleteAllItems();
         for(const VDSCRegister& reg : iregs)
         {
             m_internalRegistersList->InsertItem(i++, reg.name);
@@ -332,6 +332,7 @@ void VDSCViewer::UpdateRegisters()
     i = 0;
     if(cregs.size() != (size_t)m_controlRegistersList->GetItemCount())
     {
+        m_controlRegistersList->DeleteAllItems();
         for(const VDSCRegister& reg : cregs)
         {
             m_controlRegistersList->InsertItem(i++, reg.name);

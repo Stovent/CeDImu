@@ -40,6 +40,7 @@ bool CeDImu::OnInit()
     wxImage::AddHandler(new wxPNGHandler);
     Config::loadConfig();
     m_cpuSpeed = DEFAULT_CPU_SPEED;
+    m_uartOut.open("uart_out", std::ios::out | std::ios::binary);
 
     new MainFrame(*this);
 
