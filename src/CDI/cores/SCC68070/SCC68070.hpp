@@ -240,7 +240,7 @@ enum SCC68070Peripherals : uint32_t
     BASE_ADDRESS = 0x80008046 - Base,
 };
 
-enum class CPURegisters : uint16_t
+enum class CPURegister
 {
     D0 = 0,
     D1,
@@ -265,6 +265,36 @@ enum class CPURegisters : uint16_t
     SSP,
     USP,
 };
+
+inline const char* CPURegisterToString(const CPURegister reg)
+{
+    switch(reg)
+    {
+    case CPURegister::D0: return "D0";
+    case CPURegister::D1: return "D1";
+    case CPURegister::D2: return "D2";
+    case CPURegister::D3: return "D3";
+    case CPURegister::D4: return "D4";
+    case CPURegister::D5: return "D5";
+    case CPURegister::D6: return "D6";
+    case CPURegister::D7: return "D7";
+
+    case CPURegister::A0: return "A0";
+    case CPURegister::A1: return "A1";
+    case CPURegister::A2: return "A2";
+    case CPURegister::A3: return "A3";
+    case CPURegister::A4: return "A4";
+    case CPURegister::A5: return "A5";
+    case CPURegister::A6: return "A6";
+    case CPURegister::A7: return "A7";
+
+    case CPURegister::PC: return "PC";
+    case CPURegister::SR: return "SR";
+    case CPURegister::USP: return "USP";
+    case CPURegister::SSP: return "SSP";
+    default: return "Unknown";
+    }
+}
 
 struct SCC68070Exception
 {
@@ -323,8 +353,8 @@ public:
     void IN2();
     void SendUARTIn(const uint8_t byte);
 
-    void SetRegister(CPURegisters reg, const uint32_t value);
-    std::map<std::string, uint32_t> GetCPURegisters() const;
+    void SetRegister(CPURegister reg, const uint32_t value);
+    std::map<CPURegister, uint32_t> GetCPURegisters() const;
     std::vector<CPUInternalRegister> GetInternalRegisters() const;
 
 private:

@@ -36,7 +36,7 @@ struct LogMemoryAccess
     uint32_t data; /**< The data. */
 };
 
-enum ExceptionType
+enum class ExceptionType
 {
     Exception,
     Trap,
