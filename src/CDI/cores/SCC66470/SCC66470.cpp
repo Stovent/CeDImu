@@ -23,6 +23,10 @@ void SCC66470::Reset()
     MemorySwap();
 }
 
+void SCC66470::IncrementTime(const double ns)
+{
+}
+
 void SCC66470::MemorySwap()
 {
     memorySwapCount = 0;

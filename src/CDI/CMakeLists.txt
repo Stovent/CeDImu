@@ -63,6 +63,7 @@ add_library(cdi ${LIBRARY_TYPE}
     devices/PointingDevice.cpp
     HLE/IKAT/IKAT.cpp
     OS9/BIOS.cpp
+    OS9/SystemCalls.cpp
 )
 
 include(${wxWidgets_USE_FILE})

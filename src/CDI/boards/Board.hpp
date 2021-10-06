@@ -24,6 +24,7 @@ public:
     Board(CDI& idc, const std::string& name, const CDIConfig& conf) : name(name), cdi(idc), cpu(idc, conf.PAL ? SCC68070_PAL_FREQUENCY : SCC68070_NTSC_FREQUENCY) {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
+    virtual void IncrementTime(const double ns) { slave->IncrementTime(ns); timekeeper->IncrementClock(ns); }
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) = 0;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) = 0;
@@ -53,9 +54,6 @@ public:
 
         return nullptr;
     }
-
-    virtual void ExecuteVideoLine() = 0;
-    virtual uint32_t GetLineDisplayTime() = 0;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;

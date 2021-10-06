@@ -10,6 +10,7 @@ MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL) 
     VDSC(idc, bios, size, 0x400000),
     isPAL(PAL),
     memorySwapCount(0),
+    timeNs(0.0),
     memory(0x280000, 0),
     screen(PLANE_RGB_SIZE),
     planeA(PLANE_ARGB_SIZE),
@@ -46,7 +47,19 @@ void MCD212::Reset()
 
     verticalLines = 0;
     lineNumber = 0;
+    timeNs = 0.0;
     MemorySwap();
+}
+
+void MCD212::IncrementTime(const double ns)
+{
+    timeNs += ns;
+    const uint32_t lineDisplayTime = GetLineDisplayTime();
+    if(timeNs >= lineDisplayTime)
+    {
+        ExecuteVideoLine();
+        timeNs -= lineDisplayTime;
+    }
 }
 
 void MCD212::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
@@ -72,7 +85,7 @@ void MCD212::ExecuteICA1()
         const uint32_t ica = GetLong(addr);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ica1, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
+            cdi.callbacks.OnLogICADCA(ica1, "Frame " + std::to_string(totalFrameCount + 1) + " : 0x" + toHex(ica));
         addr += 4;
 
         switch(ica >> 28)
@@ -139,7 +152,7 @@ void MCD212::ExecuteDCA1()
         SetDCP1(addr + 4);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(dca1, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
+            cdi.callbacks.OnLogICADCA(dca1, "Frame " + std::to_string(totalFrameCount + 1) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
         {
@@ -204,7 +217,7 @@ void MCD212::ExecuteICA2()
         const uint32_t ica = GetLong(addr);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ica2, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(ica));
+            cdi.callbacks.OnLogICADCA(ica2, "Frame " + std::to_string(totalFrameCount + 1) + " : 0x" + toHex(ica));
         addr += 4;
 
         switch(ica >> 28)
@@ -264,7 +277,7 @@ void MCD212::ExecuteDCA2()
         SetDCP2(addr + 4);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(dca2, "Frame " + std::to_string(totalFrameCount) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
+            cdi.callbacks.OnLogICADCA(dca2, "Frame " + std::to_string(totalFrameCount + 1) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
         {

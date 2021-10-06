@@ -71,6 +71,7 @@ public:
     virtual ~MCD212();
 
     virtual void Reset() override;
+    virtual void IncrementTime(const double ns) override;
 
     virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
     virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
@@ -84,13 +85,6 @@ public:
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
 
-    virtual inline uint32_t GetLineDisplayTime() const override // as nano seconds
-    {
-        return isPAL || !GetCF() ? 64000 : 63560;
-    }
-
-    virtual void ExecuteVideoLine() override;
-
     virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
     virtual std::vector<VDSCRegister> GetControlRegisters() const override;
     virtual const Plane& GetScreen() const override;
@@ -102,6 +96,7 @@ public:
 private:
     const bool isPAL;
     uint8_t memorySwapCount;
+    double timeNs; // time counter in nano seconds.
 
     std::vector<uint8_t> memory;
 
@@ -122,6 +117,7 @@ private:
     uint16_t lineNumber; // starts at 0
     uint16_t verticalLines; // starts at 0.
 
+    void ExecuteVideoLine();
     void DrawLinePlaneA();
     void DrawLinePlaneB();
     void DrawLineCursor();
@@ -216,6 +212,11 @@ private:
 
     inline uint16_t GetTotalVerticalLines() const { return GetFD() ? 262 : 312; } // Table 5.6
     inline uint8_t  GetVerticalRetraceLines() const { return GetFD() ? 22 : (GetST() ? 72 : 32); }
+
+    inline uint32_t GetLineDisplayTime() const // as nano seconds
+    {
+        return isPAL || !GetCF() ? 64000 : 63560;
+    }
 };
 
 #endif // CDI_CORES_MCD212_MCD212_HPP

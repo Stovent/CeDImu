@@ -13,6 +13,7 @@
 SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
     cdi(idc),
     cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
+    speedDelay(cycleDelay),
     timerDelay(cycleDelay * 96),
     internal{0},
     D{0}, A_{0},
@@ -20,8 +21,7 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
     DLUT(std::make_unique<DLUTFunctionPointer[]>(UINT16_MAX + 1))
 {
     loop = stop = isRunning = false;
-    speedDelay = cycleDelay;
-    timerCounter = cycleCount = totalCycleCount = 0;
+    timerCounter = totalCycleCount = 0;
     currentPC = currentOpcode = lastAddress = PC = SR = USP = SSP = 0;
 
     GenerateInstructionSet();
@@ -157,33 +157,33 @@ void SCC68070::SendUARTIn(const uint8_t byte)
  * \param reg The register to set.
  * \param value The value to set the register to.
  */
-void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
+void SCC68070::SetRegister(CPURegister reg, const uint32_t value)
 {
     switch(reg)
     {
-    case CPURegisters::D0: D[0] = value; break;
-    case CPURegisters::D1: D[1] = value; break;
-    case CPURegisters::D2: D[2] = value; break;
-    case CPURegisters::D3: D[3] = value; break;
-    case CPURegisters::D4: D[4] = value; break;
-    case CPURegisters::D5: D[5] = value; break;
-    case CPURegisters::D6: D[6] = value; break;
-    case CPURegisters::D7: D[7] = value; break;
+    case CPURegister::D0: D[0] = value; break;
+    case CPURegister::D1: D[1] = value; break;
+    case CPURegister::D2: D[2] = value; break;
+    case CPURegister::D3: D[3] = value; break;
+    case CPURegister::D4: D[4] = value; break;
+    case CPURegister::D5: D[5] = value; break;
+    case CPURegister::D6: D[6] = value; break;
+    case CPURegister::D7: D[7] = value; break;
 
-    case CPURegisters::A0: A(0) = value; break;
-    case CPURegisters::A1: A(1) = value; break;
-    case CPURegisters::A2: A(2) = value; break;
-    case CPURegisters::A3: A(3) = value; break;
-    case CPURegisters::A4: A(4) = value; break;
-    case CPURegisters::A5: A(5) = value; break;
-    case CPURegisters::A6: A(6) = value; break;
-    case CPURegisters::A7: A(7) = value; break;
+    case CPURegister::A0: A(0) = value; break;
+    case CPURegister::A1: A(1) = value; break;
+    case CPURegister::A2: A(2) = value; break;
+    case CPURegister::A3: A(3) = value; break;
+    case CPURegister::A4: A(4) = value; break;
+    case CPURegister::A5: A(5) = value; break;
+    case CPURegister::A6: A(6) = value; break;
+    case CPURegister::A7: A(7) = value; break;
 
-    case CPURegisters::PC: PC = value; break;
-    case CPURegisters::SR: SR = value; break;
+    case CPURegister::PC: PC = value; break;
+    case CPURegister::SR: SR = value; break;
 
-    case CPURegisters::USP: USP = A(7); break;
-    case CPURegisters::SSP: SSP = A(7); break;
+    case CPURegister::USP: USP = A(7); break;
+    case CPURegister::SSP: SSP = A(7); break;
     }
 }
 
@@ -191,29 +191,29 @@ void SCC68070::SetRegister(CPURegisters reg, const uint32_t value)
  *
  * \return A map containing the CPU registers with their name and value.
  */
-std::map<std::string, uint32_t> SCC68070::GetCPURegisters() const
+std::map<CPURegister, uint32_t> SCC68070::GetCPURegisters() const
 {
     return {
-        {"D0", D[0]},
-        {"D1", D[1]},
-        {"D2", D[2]},
-        {"D3", D[3]},
-        {"D4", D[4]},
-        {"D5", D[5]},
-        {"D6", D[6]},
-        {"D7", D[7]},
-        {"A0", A(0)},
-        {"A1", A(1)},
-        {"A2", A(2)},
-        {"A3", A(3)},
-        {"A4", A(4)},
-        {"A5", A(5)},
-        {"A6", A(6)},
-        {"A7", A(7)},
-        {"PC", PC},
-        {"SR", SR},
-        {"SSP", SSP},
-        {"USP", USP},
+        {CPURegister::D0, D[0]},
+        {CPURegister::D1, D[1]},
+        {CPURegister::D2, D[2]},
+        {CPURegister::D3, D[3]},
+        {CPURegister::D4, D[4]},
+        {CPURegister::D5, D[5]},
+        {CPURegister::D6, D[6]},
+        {CPURegister::D7, D[7]},
+        {CPURegister::A0, A(0)},
+        {CPURegister::A1, A(1)},
+        {CPURegister::A2, A(2)},
+        {CPURegister::A3, A(3)},
+        {CPURegister::A4, A(4)},
+        {CPURegister::A5, A(5)},
+        {CPURegister::A6, A(6)},
+        {CPURegister::A7, A(7)},
+        {CPURegister::PC, PC},
+        {CPURegister::SR, SR},
+        {CPURegister::SSP, SSP},
+        {CPURegister::USP, USP},
     };
 }
 
@@ -323,11 +323,11 @@ void SCC68070::DumpCPURegisters()
     if(!cdi.callbacks.HasOnLogDisassembler())
         return;
 
-    const std::map<std::string, uint32_t>& regs = GetCPURegisters();
-    for(const std::pair<std::string, uint32_t> reg : regs)
+    const std::map<CPURegister, uint32_t>& regs = GetCPURegisters();
+    for(const std::pair<CPURegister, uint32_t> reg : regs)
     {
         char s[30];
-        snprintf(s, 30, "%s: 0x%08X", reg.first.c_str(), reg.second);
+        snprintf(s, 30, "%s: 0x%08X", CPURegisterToString(reg.first), reg.second);
         cdi.callbacks.OnLogDisassembler({currentPC, "", s});
     }
 }
