@@ -175,7 +175,7 @@ uint8_t DS1216::GetByte(const uint16_t addr)
     if(patternCount < 0)
     {
         LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({RTC, "Get", "SRAM", cdi.board->cpu.currentPC, addr, sram[addr]});)
+                cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "SRAM", cdi.board->cpu.currentPC, addr, sram[addr]});)
         return sram[addr];
     }
 
@@ -184,7 +184,7 @@ uint8_t DS1216::GetByte(const uint16_t addr)
     const bool bit = clock[reg] & (1 << shift);
 
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({RTC, "Get", "clock", cdi.board->cpu.currentPC, addr, bit});)
+            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "clock", cdi.board->cpu.currentPC, addr, bit});)
 
     IncrementClockAccess();
     return bit;
@@ -195,7 +195,7 @@ void DS1216::SetByte(const uint16_t addr, const uint8_t data)
     if(patternCount < 0)
     {
         LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({RTC, "Set", "SRAM", cdi.board->cpu.currentPC, addr, data});)
+                cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "SRAM", cdi.board->cpu.currentPC, addr, data});)
         sram[addr] = data;
         PushPattern(data & 1);
     }
@@ -206,7 +206,7 @@ void DS1216::SetByte(const uint16_t addr, const uint8_t data)
         const bool bit = data & 1;
 
         LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({RTC, "Set", "clock", cdi.board->cpu.currentPC, addr, bit});)
+                cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "clock", cdi.board->cpu.currentPC, addr, bit});)
 
         clock[reg] &= ~(1 << shift);
         clock[reg] |= bit << shift;

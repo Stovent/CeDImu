@@ -2,7 +2,7 @@
 #define CDI_CORES_SCC68070_SCC68070_HPP
 
 class CDI;
-#include "../../common/enums.hpp"
+#include "../../common/types.hpp"
 
 #include <array>
 #include <atomic>
@@ -312,21 +312,6 @@ struct SCC68070Exception
     }
 };
 
-struct CPUInternalRegister
-{
-    std::string name;
-    uint32_t address;
-    uint16_t value;
-    std::string disassembledValue;
-};
-
-struct Instruction
-{
-    uint32_t address;
-    std::string biosLocation;
-    std::string instruction;
-};
-
 class SCC68070
 {
 public:
@@ -355,7 +340,7 @@ public:
 
     void SetRegister(CPURegister reg, const uint32_t value);
     std::map<CPURegister, uint32_t> GetCPURegisters() const;
-    std::vector<CPUInternalRegister> GetInternalRegisters() const;
+    std::vector<InternalRegister> GetInternalRegisters() const;
 
 private:
     CDI& cdi;

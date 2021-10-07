@@ -8,7 +8,7 @@
 namespace Audio
 {
 
-enum CodingInformation
+enum CodingInformation : uint8_t
 {
     emphasis = 0b01000000,
     bps      = 0b00110000, // bits per sample

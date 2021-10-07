@@ -6,7 +6,7 @@
 
 #include <fstream>
 
-struct CDIHeader
+struct DiscHeader
 {
     uint8_t minute;
     uint8_t second;
@@ -14,7 +14,7 @@ struct CDIHeader
     uint8_t mode; // should be 2 for CD-I tracks
 };
 
-struct CDISubheader
+struct DiscSubheader
 {
     uint8_t fileNumber;
     uint8_t channelNumber;
@@ -34,7 +34,7 @@ struct DiscTime
     uint32_t pos; /**< \brief The position in the disc file. */
 };
 
-enum SubmodeBits
+enum SubmodeBits : uint8_t
 {
     cdieof  = 0b10000000, // End of File
     cdirt   = 0b01000000, // Real Time
@@ -53,8 +53,8 @@ class CDIDisc
     friend CDIDirectory;
 
     std::ifstream disc;
-    CDIHeader header;
-    CDISubheader subheader;
+    DiscHeader header;
+    DiscSubheader subheader;
     CDIDirectory rootDirectory;
 
     bool LoadFileSystem();

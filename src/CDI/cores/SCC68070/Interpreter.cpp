@@ -39,7 +39,7 @@ void SCC68070::Interpreter()
                 currentOpcode = GetNextWord(Trigger);
                 if(cdi.callbacks.HasOnLogDisassembler())
                 {
-                    const Instruction inst = {currentPC, cdi.board->GetBIOS().GetModuleNameAt(currentPC - cdi.board->GetBIOS().base), (this->*DLUT[currentOpcode])(currentPC)};
+                    const LogInstruction inst = {currentPC, cdi.board->GetBIOS().GetModuleNameAt(currentPC - cdi.board->GetBIOS().base), (this->*DLUT[currentOpcode])(currentPC)};
                     cdi.callbacks.OnLogDisassembler(inst);
                 }
                 executionCycles += (this->*ILUT[currentOpcode])();

@@ -13,7 +13,16 @@
 #define LOG(content)
 #endif // ENABLE_LOG
 
-enum MemoryAccessLocation
+/** \struct LogInstruction
+ */
+struct LogInstruction
+{
+    uint32_t address;
+    std::string biosLocation;
+    std::string instruction;
+};
+
+enum class MemoryAccessLocation
 {
     CPU,
     BIOS,
@@ -59,7 +68,7 @@ struct LogSCC68070Exception
 class Callbacks
 {
     std::mutex onLogDisassemblerMutex;
-    std::function<void(const Instruction&)> onLogDisassemblerCallback;
+    std::function<void(const LogInstruction&)> onLogDisassemblerCallback;
 
     std::mutex onUARTOutMutex;
     std::function<void(uint8_t)> onUARTOutCallback;
@@ -80,7 +89,7 @@ class Callbacks
     std::function<void(const LogSCC68070Exception&)> onLogExceptionCallback;
 
 public:
-    explicit Callbacks(const std::function<void(const Instruction&)>& disassembler = nullptr,
+    explicit Callbacks(const std::function<void(const LogInstruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
                        const std::function<void(const Plane&)>& frameCompleted = nullptr,
                        const std::function<void(ControlArea, const std::string&)>& icadca = nullptr,
@@ -107,12 +116,12 @@ public:
         std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
         return (bool)onLogDisassemblerCallback;
     }
-    void SetOnLogDisassembler(const std::function<void(const Instruction&)>& callback)
+    void SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback)
     {
         std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
         onLogDisassemblerCallback = callback;
     }
-    void OnLogDisassembler(const Instruction& arg)
+    void OnLogDisassembler(const LogInstruction& arg)
     {
         std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
         if(onLogDisassemblerCallback)
@@ -211,14 +220,14 @@ inline const char* memoryAccessLocationToString(const MemoryAccessLocation loc)
 {
     switch(loc)
     {
-    case CPU:   return "CPU";
-    case BIOS:  return "BIOS";
-    case RAM:   return "RAM";
-    case VDSC:  return "VDSC";
-    case Slave: return "Slave";
-    case RTC:   return "RTC";
-    case OutOfRange: return "OUT OF RANGE";
-    default:    return "Unknown location";
+    case MemoryAccessLocation::CPU:   return "CPU";
+    case MemoryAccessLocation::BIOS:  return "BIOS";
+    case MemoryAccessLocation::RAM:   return "RAM";
+    case MemoryAccessLocation::VDSC:  return "VDSC";
+    case MemoryAccessLocation::Slave: return "Slave";
+    case MemoryAccessLocation::RTC:   return "RTC";
+    case MemoryAccessLocation::OutOfRange: return "OUT OF RANGE";
+    default: return "Unknown location";
     }
 }
 

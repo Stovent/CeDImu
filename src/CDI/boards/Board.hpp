@@ -3,7 +3,7 @@
 
 class CDI;
 #include "../CDIConfig.hpp"
-#include "../common/enums.hpp"
+#include "../common/types.hpp"
 #include "../cores/IRTC.hpp"
 #include "../cores/ISlave.hpp"
 #include "../cores/VDSC.hpp"
@@ -61,8 +61,8 @@ public:
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
 
-    virtual std::vector<VDSCRegister> GetInternalRegisters() = 0;
-    virtual std::vector<VDSCRegister> GetControlRegisters() = 0;
+    virtual std::vector<InternalRegister> GetInternalRegisters() = 0;
+    virtual std::vector<InternalRegister> GetControlRegisters() = 0;
     virtual const Plane& GetScreen() = 0;
     virtual const Plane& GetPlaneA() = 0;
     virtual const Plane& GetPlaneB() = 0;

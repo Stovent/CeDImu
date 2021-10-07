@@ -124,7 +124,7 @@ void M48T08::IncrementClock(const double ns)
 uint8_t M48T08::GetByte(const uint16_t addr)
 {
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({RTC, "Get", "Byte", cdi.board->cpu.currentPC, addr, sram[addr]});)
+            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "Byte", cdi.board->cpu.currentPC, addr, sram[addr]});)
     return sram[addr];
 }
 
@@ -139,7 +139,7 @@ uint8_t M48T08::GetByte(const uint16_t addr)
 void M48T08::SetByte(const uint16_t addr, const uint8_t data)
 {
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({RTC, "Set", "Byte", cdi.board->cpu.currentPC, addr, data});)
+            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "Byte", cdi.board->cpu.currentPC, addr, data});)
     if(addr == Control)
     {
         if(data & 0x40 && !(sram[Control] & 0x40))

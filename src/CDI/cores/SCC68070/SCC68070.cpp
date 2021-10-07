@@ -221,9 +221,9 @@ std::map<CPURegister, uint32_t> SCC68070::GetCPURegisters() const
  *
  * \return A vector containing every internal register with their name, address, value and meaning.
  */
-std::vector<CPUInternalRegister> SCC68070::GetInternalRegisters() const
+std::vector<InternalRegister> SCC68070::GetInternalRegisters() const
 {
-    std::vector<CPUInternalRegister> v({
+    std::vector<InternalRegister> v({
         {"LIR", 0x80001001, internal[LIR], ""},
 
         {"IDR",  0x80002001, internal[IDR],  ""},

@@ -53,18 +53,18 @@ const OS9::BIOS& MiniMMC::GetBIOS() const
     return masterVDSC.BIOS;
 }
 
-std::vector<VDSCRegister> MiniMMC::GetInternalRegisters()
+std::vector<InternalRegister> MiniMMC::GetInternalRegisters()
 {
-    std::vector<VDSCRegister> slaveRegs = slaveVDSC.GetInternalRegisters();
-    std::vector<VDSCRegister> masterRegs = masterVDSC.GetInternalRegisters();
+    std::vector<InternalRegister> slaveRegs = slaveVDSC.GetInternalRegisters();
+    std::vector<InternalRegister> masterRegs = masterVDSC.GetInternalRegisters();
     masterRegs.insert(masterRegs.begin(), slaveRegs.begin(), slaveRegs.end());
     return masterRegs;
 }
 
-std::vector<VDSCRegister> MiniMMC::GetControlRegisters()
+std::vector<InternalRegister> MiniMMC::GetControlRegisters()
 {
-    std::vector<VDSCRegister> slaveRegs = slaveVDSC.GetControlRegisters();
-    std::vector<VDSCRegister> masterRegs = masterVDSC.GetControlRegisters();
+    std::vector<InternalRegister> slaveRegs = slaveVDSC.GetControlRegisters();
+    std::vector<InternalRegister> masterRegs = masterVDSC.GetControlRegisters();
     masterRegs.insert(masterRegs.begin(), slaveRegs.begin(), slaveRegs.end());
     return masterRegs;
 }
