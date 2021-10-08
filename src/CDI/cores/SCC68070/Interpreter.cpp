@@ -20,9 +20,11 @@ void SCC68070::Interpreter()
             exceptions.pop();
             if(cdi.callbacks.HasOnLogException())
             {
-                const ExceptionType type = ex.vector == TRAPVInstruction || (ex.vector >= 32 && ex.vector < 48) ? ExceptionType::Exception : ExceptionType::Trap;
-                const uint32_t returnAddress = ex.vector == 32 || ex.vector == 47 || ex.vector == 45 ? PC + 2 : PC;
-                cdi.callbacks.OnLogException({type, returnAddress, ex.vector, DisassembleException(ex)});
+                const uint32_t returnAddress = ex.vector == 32 || ex.vector == 45 || ex.vector == 47 ? PC + 2 : PC;
+                const OS9::SystemCallType syscallType = OS9::SystemCallType(ex.vector == Trap0Instruction ? ex.data : -1);
+                const std::string inputs = ex.vector == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->cdi.board->GetPointer(addr); }) : "";
+                const OS9::SystemCall syscall = {syscallType, inputs, ""};
+                cdi.callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
             }
 //            DumpCPURegisters();
             executionCycles += Exception(ex.vector);

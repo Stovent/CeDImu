@@ -3,6 +3,7 @@
 
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "../cores/VDSC.hpp"
+#include "../OS9/SystemCalls.hpp"
 
 #include <functional>
 #include <mutex>
@@ -45,21 +46,14 @@ struct LogMemoryAccess
     uint32_t data; /**< The data. */
 };
 
-enum class ExceptionType
-{
-    Exception,
-    Trap,
-    Rte,
-};
-
 /** \struct LogSCC68070Exception
  */
 struct LogSCC68070Exception
 {
-    ExceptionType type; /**< Type of the exception. */
-    uint32_t returnAddress; /**< The program counter where the CPU will continue after a RTE, or the PC pull in a RTE. */
     uint8_t vector; /**< The vector number. */
-    std::string disassembled; /** The disassembled value of the exception. */
+    uint32_t returnAddress; /**< The program counter where the CPU will continue after a RTE instruction. */
+    std::string disassembled; /**< The disassembled value of the exception. */
+	OS9::SystemCall systemCall; /**< If it is a system call, contains its paremeters. */
 };
 
 /** \class Callbacks
@@ -88,19 +82,24 @@ class Callbacks
     std::mutex onLogExceptionMutex;
     std::function<void(const LogSCC68070Exception&)> onLogExceptionCallback;
 
+    std::mutex onLogRTEMutex;
+    std::function<void(uint32_t)> onLogRTECallback; /**< The parameter is the PC value pulled from the stack. */
+
 public:
     explicit Callbacks(const std::function<void(const LogInstruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
                        const std::function<void(const Plane&)>& frameCompleted = nullptr,
                        const std::function<void(ControlArea, const std::string&)>& icadca = nullptr,
                        const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr,
-                       const std::function<void(const LogSCC68070Exception&)>& logException = nullptr) :
+                       const std::function<void(const LogSCC68070Exception&)>& logException = nullptr,
+                       const std::function<void(uint32_t)>& logRTE = nullptr) :
        onLogDisassemblerCallback(disassembler),
        onUARTOutCallback(uartOut),
        onFrameCompletedCallback(frameCompleted),
        onLogICADCACallback(icadca),
        onLogMemoryAccessCallback(memoryAccess),
-       onLogExceptionCallback(logException)
+       onLogExceptionCallback(logException),
+       onLogRTECallback(logRTE)
    {}
 
    Callbacks(const Callbacks& other) :
@@ -213,6 +212,23 @@ public:
         std::lock_guard<std::mutex> lock(onLogExceptionMutex);
         if(onLogExceptionCallback)
             onLogExceptionCallback(arg);
+    }
+
+    bool HasOnLogRTE()
+    {
+        std::lock_guard<std::mutex> lock(onLogRTEMutex);
+        return (bool)onLogRTECallback;
+    }
+    void SetOnLogRTE(const std::function<void(uint32_t)>& callback)
+    {
+        std::lock_guard<std::mutex> lock(onLogRTEMutex);
+        onLogRTECallback = callback;
+    }
+    void OnLogRTE(uint32_t arg)
+    {
+        std::lock_guard<std::mutex> lock(onLogRTEMutex);
+        if(onLogRTECallback)
+            onLogRTECallback(arg);
     }
 };
 

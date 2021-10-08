@@ -3,13 +3,9 @@
 #include "../../common/utils.hpp"
 #include "../../OS9/SystemCalls.hpp"
 
-std::string SCC68070::DisassembleException(const SCC68070Exception& exception)const
+std::string SCC68070::exceptionVectorToString(uint8_t vector)
 {
-    const std::function<const uint8_t*(const uint32_t)> getString = [this] (const uint32_t addr) -> const uint8_t* {
-        return this->cdi.board->GetPointer(addr);
-    };
-
-    switch(exception.vector)
+    switch(vector)
     {
         case 0:  return "Reset:Initial SSP";
         case 1:  return "Reset:Initial PC";
@@ -33,7 +29,7 @@ std::string SCC68070::DisassembleException(const SCC68070Exception& exception)co
         case 29: return "Level 5 interrupt autovector";
         case 30: return "Level 6 interrupt autovector";
         case 31: return "Level 7 interrupt autovector";
-        case 32: return "TRAP 0 instruction (0x" + toHex(exception.data) + " " + OS9::systemCallNameToString(OS9::SystemCallType(exception.data)) + " " + OS9::systemCallInputsToString(OS9::SystemCallType(exception.data), GetCPURegisters(), getString) + ")";
+        case 32: return "TRAP 0 instruction";
         case 33: return "TRAP 1 instruction";
         case 34: return "TRAP 2 instruction";
         case 35: return "TRAP 3 instruction";
@@ -57,9 +53,9 @@ std::string SCC68070::DisassembleException(const SCC68070Exception& exception)co
         case 62: return "Level 6 on-chip interrupt autovector";
         case 63: return "Level 7 on-chip interrupt autovector";
         default:
-            if(exception.vector >= 64)
-                return "User interrupt vector " + std::to_string(exception.vector - 64);
-            return "Unknown exception " + std::to_string(exception.vector);
+            if(vector >= 64)
+                return "User interrupt vector " + std::to_string(vector - 64);
+            return "Unknown vector " + std::to_string(vector);
     }
 }
 

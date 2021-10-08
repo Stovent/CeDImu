@@ -154,6 +154,22 @@ enum ExceptionVectors : uint8_t
     Level5ExternalInterruptAutovector,
     Level6ExternalInterruptAutovector,
     Level7ExternalInterruptAutovector,
+    Trap0Instruction,
+    Trap1Instruction,
+    Trap2Instruction,
+    Trap3Instruction,
+    Trap4Instruction,
+    Trap5Instruction,
+    Trap6Instruction,
+    Trap7Instruction,
+    Trap8Instruction,
+    Trap9Instruction,
+    Trap10Instruction,
+    Trap11Instruction,
+    Trap12Instruction,
+    Trap13Instruction,
+    Trap14Instruction,
+    Trap15Instruction,
     Level1OnChipInterruptAutovector = 57,
     Level2OnChipInterruptAutovector,
     Level3OnChipInterruptAutovector,
@@ -397,7 +413,7 @@ private:
 
     void Interrupt(const uint8_t vector, const uint8_t priority);
     uint16_t Exception(const uint8_t vectorNumber);
-    std::string DisassembleException(const SCC68070Exception& exception) const;
+    static std::string exceptionVectorToString(uint8_t vector);
 
     // Addressing Modes
     uint32_t GetEffectiveAddress(const uint8_t mode, const uint8_t reg, const uint8_t sizeInBytes, uint16_t& calcTime);
