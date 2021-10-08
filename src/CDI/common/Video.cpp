@@ -21,11 +21,11 @@ uint32_t CLUT[256] = {0};
  * If the coding method is RGB555, dataA must contain the channel A data and dataB must contain the channel B data.
  * If it is not RGB555, dataB is the source data and dataA remain unused.
 */
-uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const uint8_t codingMethod)
+uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const ImageCodingMethod codingMethod)
 {
     uint16_t index = 0;
 
-    if(codingMethod == DYUV)
+    if(codingMethod == ImageCodingMethod::DYUV)
     {
         uint32_t previous = initialDYUV;
         for(uint16_t x = 0; x < width;)
@@ -39,7 +39,7 @@ uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
             previous |= line[x++ * 4 + 3];
         }
     }
-    else if(codingMethod == RGB555)
+    else if(codingMethod == ImageCodingMethod::RGB555)
     {
         for(uint16_t x = 0; x < width;)
         {
@@ -48,7 +48,7 @@ uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
             Video::decodeRGB555(pixel, &line[x++ * 4]);
         }
     }
-    else if(codingMethod == CLUT4)
+    else if(codingMethod == ImageCodingMethod::CLUT4)
     {
         for(uint16_t x = 0; x < width;)
         {
@@ -60,7 +60,7 @@ uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
     }
     else
     {
-        const uint8_t colorMask = codingMethod == CLUT8 ? 0xFF : 0x7F;
+        const uint8_t colorMask = codingMethod == ImageCodingMethod::CLUT8 ? 0xFF : 0x7F;
         for(uint16_t x = 0; x < width;)
         {
             const uint8_t color = dataB[index++] & colorMask;

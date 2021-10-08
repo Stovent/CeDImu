@@ -3,6 +3,7 @@
 
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "../cores/VDSC.hpp"
+#include "../OS9/SystemCalls.hpp"
 
 #include <functional>
 #include <mutex>
@@ -13,7 +14,16 @@
 #define LOG(content)
 #endif // ENABLE_LOG
 
-enum MemoryAccessLocation
+/** \struct LogInstruction
+ */
+struct LogInstruction
+{
+    uint32_t address;
+    std::string biosLocation;
+    std::string instruction;
+};
+
+enum class MemoryAccessLocation
 {
     CPU,
     BIOS,
@@ -36,21 +46,14 @@ struct LogMemoryAccess
     uint32_t data; /**< The data. */
 };
 
-enum class ExceptionType
-{
-    Exception,
-    Trap,
-    Rte,
-};
-
 /** \struct LogSCC68070Exception
  */
 struct LogSCC68070Exception
 {
-    ExceptionType type; /**< Type of the exception. */
-    uint32_t returnAddress; /**< The program counter where the CPU will continue after a RTE, or the PC pull in a RTE. */
     uint8_t vector; /**< The vector number. */
-    std::string disassembled; /** The disassembled value of the exception. */
+    uint32_t returnAddress; /**< The program counter where the CPU will continue after a RTE instruction. */
+    std::string disassembled; /**< The disassembled value of the exception. */
+	OS9::SystemCall systemCall; /**< If it is a system call, contains its paremeters. */
 };
 
 /** \class Callbacks
@@ -59,7 +62,7 @@ struct LogSCC68070Exception
 class Callbacks
 {
     std::mutex onLogDisassemblerMutex;
-    std::function<void(const Instruction&)> onLogDisassemblerCallback;
+    std::function<void(const LogInstruction&)> onLogDisassemblerCallback;
 
     std::mutex onUARTOutMutex;
     std::function<void(uint8_t)> onUARTOutCallback;
@@ -79,19 +82,24 @@ class Callbacks
     std::mutex onLogExceptionMutex;
     std::function<void(const LogSCC68070Exception&)> onLogExceptionCallback;
 
+    std::mutex onLogRTEMutex;
+    std::function<void(uint32_t)> onLogRTECallback; /**< The parameter is the PC value pulled from the stack. */
+
 public:
-    explicit Callbacks(const std::function<void(const Instruction&)>& disassembler = nullptr,
+    explicit Callbacks(const std::function<void(const LogInstruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
                        const std::function<void(const Plane&)>& frameCompleted = nullptr,
                        const std::function<void(ControlArea, const std::string&)>& icadca = nullptr,
                        const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr,
-                       const std::function<void(const LogSCC68070Exception&)>& logException = nullptr) :
+                       const std::function<void(const LogSCC68070Exception&)>& logException = nullptr,
+                       const std::function<void(uint32_t)>& logRTE = nullptr) :
        onLogDisassemblerCallback(disassembler),
        onUARTOutCallback(uartOut),
        onFrameCompletedCallback(frameCompleted),
        onLogICADCACallback(icadca),
        onLogMemoryAccessCallback(memoryAccess),
-       onLogExceptionCallback(logException)
+       onLogExceptionCallback(logException),
+       onLogRTECallback(logRTE)
    {}
 
    Callbacks(const Callbacks& other) :
@@ -107,12 +115,12 @@ public:
         std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
         return (bool)onLogDisassemblerCallback;
     }
-    void SetOnLogDisassembler(const std::function<void(const Instruction&)>& callback)
+    void SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback)
     {
         std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
         onLogDisassemblerCallback = callback;
     }
-    void OnLogDisassembler(const Instruction& arg)
+    void OnLogDisassembler(const LogInstruction& arg)
     {
         std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
         if(onLogDisassemblerCallback)
@@ -205,20 +213,37 @@ public:
         if(onLogExceptionCallback)
             onLogExceptionCallback(arg);
     }
+
+    bool HasOnLogRTE()
+    {
+        std::lock_guard<std::mutex> lock(onLogRTEMutex);
+        return (bool)onLogRTECallback;
+    }
+    void SetOnLogRTE(const std::function<void(uint32_t)>& callback)
+    {
+        std::lock_guard<std::mutex> lock(onLogRTEMutex);
+        onLogRTECallback = callback;
+    }
+    void OnLogRTE(uint32_t arg)
+    {
+        std::lock_guard<std::mutex> lock(onLogRTEMutex);
+        if(onLogRTECallback)
+            onLogRTECallback(arg);
+    }
 };
 
 inline const char* memoryAccessLocationToString(const MemoryAccessLocation loc)
 {
     switch(loc)
     {
-    case CPU:   return "CPU";
-    case BIOS:  return "BIOS";
-    case RAM:   return "RAM";
-    case VDSC:  return "VDSC";
-    case Slave: return "Slave";
-    case RTC:   return "RTC";
-    case OutOfRange: return "OUT OF RANGE";
-    default:    return "Unknown location";
+    case MemoryAccessLocation::CPU:   return "CPU";
+    case MemoryAccessLocation::BIOS:  return "BIOS";
+    case MemoryAccessLocation::RAM:   return "RAM";
+    case MemoryAccessLocation::VDSC:  return "VDSC";
+    case MemoryAccessLocation::Slave: return "Slave";
+    case MemoryAccessLocation::RTC:   return "RTC";
+    case MemoryAccessLocation::OutOfRange: return "OUT OF RANGE";
+    default: return "Unknown location";
     }
 }
 

@@ -54,12 +54,12 @@ const OS9::BIOS& Mono3::GetBIOS() const
     return mcd212.BIOS;
 }
 
-std::vector<VDSCRegister> Mono3::GetInternalRegisters()
+std::vector<InternalRegister> Mono3::GetInternalRegisters()
 {
     return mcd212.GetInternalRegisters();
 }
 
-std::vector<VDSCRegister> Mono3::GetControlRegisters()
+std::vector<InternalRegister> Mono3::GetControlRegisters()
 {
     return mcd212.GetControlRegisters();
 }

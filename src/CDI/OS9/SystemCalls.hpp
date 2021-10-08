@@ -127,7 +127,7 @@ struct SystemCall
 {
     SystemCallType m_type; /**< The type of the system call. */
     std::string inputs; /**< The input parameters. */
-    std::string outputs; /**< The output parameters. */
+    std::string outputs; /**< The output parameters. it is at the beginning of the call and has to be filled by the application when RTE is executed. */
 };
 
 std::string eventNameToString(const Event evt);

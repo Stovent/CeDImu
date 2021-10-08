@@ -272,55 +272,55 @@ void MCD212::ReloadDisplayParameters2(const bool CM, const uint8_t MF, const uin
     internalRegisters[MDDR2] |= FT << 8;
 }
 
-std::vector<VDSCRegister> MCD212::GetInternalRegisters() const
+std::vector<InternalRegister> MCD212::GetInternalRegisters() const
 {
-    std::vector<VDSCRegister> registers;
-    registers.push_back(VDSCRegister({"CSR1R", MCSR1R + 0x4FFFE0, GetCSR1RRegister(), DisassembleCSR1RRegister()}));
-    registers.push_back(VDSCRegister({"CSR2R", MCSR2R + 0x4FFFE0, GetCSR2RRegister(), DisassembleCSR2RRegister()}));
-    registers.push_back(VDSCRegister({"CSR1W", MCSR1W + 0x4FFFE0, GetCSR1WRegister(), DisassembleCSR1WRegister()}));
-    registers.push_back(VDSCRegister({"CSR2W", MCSR2W + 0x4FFFE0, GetCSR2WRegister(), DisassembleCSR2WRegister()}));
-    registers.push_back(VDSCRegister({"DCR1",  MDCR1  + 0x4FFFE0,  GetDCR1Register(), DisassembleDCR1Register()}));
-    registers.push_back(VDSCRegister({"DCR2",  MDCR2  + 0x4FFFE0,  GetDCR2Register(), DisassembleDCR2Register()}));
-    registers.push_back(VDSCRegister({"DDR1",  MDDR1  + 0x4FFFE0,  GetDDR1Register(), DisassembleDDR1Register()}));
-    registers.push_back(VDSCRegister({"DDR2",  MDDR2  + 0x4FFFE0,  GetDDR2Register(), DisassembleDDR2Register()}));
-    registers.push_back(VDSCRegister({"VSR1",  MVSR1  + 0x4FFFE0,  GetVSR1Register(), DisassembleVSR1Register()}));
-    registers.push_back(VDSCRegister({"VSR2",  MVSR2  + 0x4FFFE0,  GetVSR2Register(), DisassembleVSR2Register()}));
-    registers.push_back(VDSCRegister({"DCP1",  MDCP1  + 0x4FFFE0,  GetDCP1Register(), DisassembleDCP1Register()}));
-    registers.push_back(VDSCRegister({"DCP2",  MDCP2  + 0x4FFFE0,  GetDCP2Register(), DisassembleDCP2Register()}));
+    std::vector<InternalRegister> registers;
+    registers.push_back({"CSR1R", MCSR1R + 0x4FFFE0, GetCSR1RRegister(), DisassembleCSR1RRegister()});
+    registers.push_back({"CSR2R", MCSR2R + 0x4FFFE0, GetCSR2RRegister(), DisassembleCSR2RRegister()});
+    registers.push_back({"CSR1W", MCSR1W + 0x4FFFE0, GetCSR1WRegister(), DisassembleCSR1WRegister()});
+    registers.push_back({"CSR2W", MCSR2W + 0x4FFFE0, GetCSR2WRegister(), DisassembleCSR2WRegister()});
+    registers.push_back({"DCR1",  MDCR1  + 0x4FFFE0,  GetDCR1Register(), DisassembleDCR1Register()});
+    registers.push_back({"DCR2",  MDCR2  + 0x4FFFE0,  GetDCR2Register(), DisassembleDCR2Register()});
+    registers.push_back({"DDR1",  MDDR1  + 0x4FFFE0,  GetDDR1Register(), DisassembleDDR1Register()});
+    registers.push_back({"DDR2",  MDDR2  + 0x4FFFE0,  GetDDR2Register(), DisassembleDDR2Register()});
+    registers.push_back({"VSR1",  MVSR1  + 0x4FFFE0,  GetVSR1Register(), DisassembleVSR1Register()});
+    registers.push_back({"VSR2",  MVSR2  + 0x4FFFE0,  GetVSR2Register(), DisassembleVSR2Register()});
+    registers.push_back({"DCP1",  MDCP1  + 0x4FFFE0,  GetDCP1Register(), DisassembleDCP1Register()});
+    registers.push_back({"DCP2",  MDCP2  + 0x4FFFE0,  GetDCP2Register(), DisassembleDCP2Register()});
     return registers;
 }
 
-std::vector<VDSCRegister> MCD212::GetControlRegisters() const
+std::vector<InternalRegister> MCD212::GetControlRegisters() const
 {
-    std::vector<VDSCRegister> registers;
+    std::vector<InternalRegister> registers;
     for(uint32_t i = 0; i < 256; i++)
-        registers.push_back(VDSCRegister({"CLUT Color " + std::to_string(i), i, CLUT[i]}));
-    registers.push_back(VDSCRegister({"Image Coding Method",              ImageCodingMethod          + 0x80, controlRegisters[ImageCodingMethod]}));
-    registers.push_back(VDSCRegister({"Transparency Control",             TransparencyControl        + 0x80, controlRegisters[TransparencyControl]}));
-    registers.push_back(VDSCRegister({"Plane Order",                      PlaneOrder                 + 0x80, controlRegisters[PlaneOrder]}));
-    registers.push_back(VDSCRegister({"CLUT Bank",                        CLUTBank                   + 0x80, controlRegisters[CLUTBank]}));
-    registers.push_back(VDSCRegister({"Transparent Color For Plane A",    TransparentColorForPlaneA  + 0x80, controlRegisters[TransparentColorForPlaneA]}));
-    registers.push_back(VDSCRegister({"Transparent Color For Plane B",    TransparentColorForPlaneB  + 0x80, controlRegisters[TransparentColorForPlaneB]}));
-    registers.push_back(VDSCRegister({"Mask Color For Plane A",           MaskColorForPlaneA         + 0x80, controlRegisters[MaskColorForPlaneA]}));
-    registers.push_back(VDSCRegister({"Mask Color For Plane B",           MaskColorForPlaneB         + 0x80, controlRegisters[MaskColorForPlaneB]}));
-    registers.push_back(VDSCRegister({"DYUV Abs Start Value For Plane A", DYUVAbsStartValueForPlaneA + 0x80, controlRegisters[DYUVAbsStartValueForPlaneA]}));
-    registers.push_back(VDSCRegister({"DYUV Abs Start Value For Plane B", DYUVAbsStartValueForPlaneB + 0x80, controlRegisters[DYUVAbsStartValueForPlaneB]}));
-    registers.push_back(VDSCRegister({"Cursor Position",                  CursorPosition             + 0x80, controlRegisters[CursorPosition]}));
-    registers.push_back(VDSCRegister({"Cursor Control",                   CursorControl              + 0x80, controlRegisters[CursorControl]}));
-    registers.push_back(VDSCRegister({"Cursor Pattern",                   CursorPattern              + 0x80, controlRegisters[CursorPattern]}));
-    registers.push_back(VDSCRegister({"Region Control 0",                 RegionControl              + 0x80, controlRegisters[RegionControl]}));
-    registers.push_back(VDSCRegister({"Region Control 1",                 RegionControl + 1          + 0x80, controlRegisters[RegionControl + 1]}));
-    registers.push_back(VDSCRegister({"Region Control 2",                 RegionControl + 2          + 0x80, controlRegisters[RegionControl + 2]}));
-    registers.push_back(VDSCRegister({"Region Control 3",                 RegionControl + 3          + 0x80, controlRegisters[RegionControl + 3]}));
-    registers.push_back(VDSCRegister({"Region Control 4",                 RegionControl + 4          + 0x80, controlRegisters[RegionControl + 4]}));
-    registers.push_back(VDSCRegister({"Region Control 5",                 RegionControl + 5          + 0x80, controlRegisters[RegionControl + 5]}));
-    registers.push_back(VDSCRegister({"Region Control 6",                 RegionControl + 6          + 0x80, controlRegisters[RegionControl + 6]}));
-    registers.push_back(VDSCRegister({"Region Control 7",                 RegionControl + 7          + 0x80, controlRegisters[RegionControl + 7]}));
-    registers.push_back(VDSCRegister({"Backdrop Color",                   BackdropColor              + 0x80, controlRegisters[BackdropColor]}));
-    registers.push_back(VDSCRegister({"Mosaic Pixel Hold For Plane A",    MosaicPixelHoldForPlaneA   + 0x80, controlRegisters[MosaicPixelHoldForPlaneA]}));
-    registers.push_back(VDSCRegister({"Mosaic Pixel Hold For Plane B",    MosaicPixelHoldForPlaneB   + 0x80, controlRegisters[MosaicPixelHoldForPlaneB]}));
-    registers.push_back(VDSCRegister({"Weight Factor For Plane A",        WeightFactorForPlaneA      + 0x80, controlRegisters[WeightFactorForPlaneA]}));
-    registers.push_back(VDSCRegister({"Weight Factor For Plane B",        WeightFactorForPlaneB      + 0x80, controlRegisters[WeightFactorForPlaneB]}));
+        registers.push_back({"CLUT Color " + std::to_string(i), i, CLUT[i]});
+    registers.push_back({"Image Coding Method",              ImageCodingMethod          + 0x80, controlRegisters[ImageCodingMethod]});
+    registers.push_back({"Transparency Control",             TransparencyControl        + 0x80, controlRegisters[TransparencyControl]});
+    registers.push_back({"Plane Order",                      PlaneOrder                 + 0x80, controlRegisters[PlaneOrder]});
+    registers.push_back({"CLUT Bank",                        CLUTBank                   + 0x80, controlRegisters[CLUTBank]});
+    registers.push_back({"Transparent Color For Plane A",    TransparentColorForPlaneA  + 0x80, controlRegisters[TransparentColorForPlaneA]});
+    registers.push_back({"Transparent Color For Plane B",    TransparentColorForPlaneB  + 0x80, controlRegisters[TransparentColorForPlaneB]});
+    registers.push_back({"Mask Color For Plane A",           MaskColorForPlaneA         + 0x80, controlRegisters[MaskColorForPlaneA]});
+    registers.push_back({"Mask Color For Plane B",           MaskColorForPlaneB         + 0x80, controlRegisters[MaskColorForPlaneB]});
+    registers.push_back({"DYUV Abs Start Value For Plane A", DYUVAbsStartValueForPlaneA + 0x80, controlRegisters[DYUVAbsStartValueForPlaneA]});
+    registers.push_back({"DYUV Abs Start Value For Plane B", DYUVAbsStartValueForPlaneB + 0x80, controlRegisters[DYUVAbsStartValueForPlaneB]});
+    registers.push_back({"Cursor Position",                  CursorPosition             + 0x80, controlRegisters[CursorPosition]});
+    registers.push_back({"Cursor Control",                   CursorControl              + 0x80, controlRegisters[CursorControl]});
+    registers.push_back({"Cursor Pattern",                   CursorPattern              + 0x80, controlRegisters[CursorPattern]});
+    registers.push_back({"Region Control 0",                 RegionControl              + 0x80, controlRegisters[RegionControl]});
+    registers.push_back({"Region Control 1",                 RegionControl + 1          + 0x80, controlRegisters[RegionControl + 1]});
+    registers.push_back({"Region Control 2",                 RegionControl + 2          + 0x80, controlRegisters[RegionControl + 2]});
+    registers.push_back({"Region Control 3",                 RegionControl + 3          + 0x80, controlRegisters[RegionControl + 3]});
+    registers.push_back({"Region Control 4",                 RegionControl + 4          + 0x80, controlRegisters[RegionControl + 4]});
+    registers.push_back({"Region Control 5",                 RegionControl + 5          + 0x80, controlRegisters[RegionControl + 5]});
+    registers.push_back({"Region Control 6",                 RegionControl + 6          + 0x80, controlRegisters[RegionControl + 6]});
+    registers.push_back({"Region Control 7",                 RegionControl + 7          + 0x80, controlRegisters[RegionControl + 7]});
+    registers.push_back({"Backdrop Color",                   BackdropColor              + 0x80, controlRegisters[BackdropColor]});
+    registers.push_back({"Mosaic Pixel Hold For Plane A",    MosaicPixelHoldForPlaneA   + 0x80, controlRegisters[MosaicPixelHoldForPlaneA]});
+    registers.push_back({"Mosaic Pixel Hold For Plane B",    MosaicPixelHoldForPlaneB   + 0x80, controlRegisters[MosaicPixelHoldForPlaneB]});
+    registers.push_back({"Weight Factor For Plane A",        WeightFactorForPlaneA      + 0x80, controlRegisters[WeightFactorForPlaneA]});
+    registers.push_back({"Weight Factor For Plane B",        WeightFactorForPlaneB      + 0x80, controlRegisters[WeightFactorForPlaneB]});
     return registers;
 }
 

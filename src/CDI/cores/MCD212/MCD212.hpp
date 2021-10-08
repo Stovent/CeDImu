@@ -9,7 +9,7 @@ class MCD212;
 #include <mutex>
 #include <vector>
 
-enum MCD212Registers
+enum MCD212InternalRegister
 {
     MCSR2W = 0x00,
     MCSR2R = 0x01,
@@ -25,7 +25,7 @@ enum MCD212Registers
     MDCP1  = 0x1A,
 };
 
-enum MCD212ControlRegistersMap
+enum MCD212ControlRegister
 {
     CLUTColor = 0x00,
     ImageCodingMethod = 0x40,
@@ -52,17 +52,6 @@ enum MCD212ControlRegistersMap
     WeightFactorForPlaneB,
 };
 
-enum ImageCodingMethods
-{
-    OFF    = 0b0000,
-    CLUT8  = 0b0001,
-    RGB555 = 0b0001,
-    CLUT7  = 0b0011,
-    CLUT77 = 0b0100,
-    DYUV   = 0b0101,
-    CLUT4  = 0b1011,
-};
-
 class MCD212 : public VDSC
 {
 public:
@@ -85,8 +74,8 @@ public:
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
 
-    virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
-    virtual std::vector<VDSCRegister> GetControlRegisters() const override;
+    virtual std::vector<InternalRegister> GetInternalRegisters() const override;
+    virtual std::vector<InternalRegister> GetControlRegisters() const override;
     virtual const Plane& GetScreen() const override;
     virtual const Plane& GetPlaneA() const override;
     virtual const Plane& GetPlaneB() const override;

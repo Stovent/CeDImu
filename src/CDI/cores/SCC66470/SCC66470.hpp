@@ -50,8 +50,8 @@ public:
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
 
-    virtual std::vector<VDSCRegister> GetInternalRegisters() const override;
-    virtual std::vector<VDSCRegister> GetControlRegisters() const override;
+    virtual std::vector<InternalRegister> GetInternalRegisters() const override;
+    virtual std::vector<InternalRegister> GetControlRegisters() const override;
     virtual const Plane& GetScreen() const override;
     virtual const Plane& GetPlaneA() const override;
     virtual const Plane& GetPlaneB() const override;

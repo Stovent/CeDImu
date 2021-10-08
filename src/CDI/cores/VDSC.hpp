@@ -4,7 +4,7 @@
 class VDSC;
 
 class CDI;
-#include "../common/enums.hpp"
+#include "../common/types.hpp"
 #include "../OS9/BIOS.hpp"
 
 #include <string>
@@ -20,20 +20,12 @@ class CDI;
 #define PLANE_ARGB_SIZE  (PLANE_MAX_WIDTH * PLANE_MAX_HEIGHT * 4)
 #define CURSOR_ARGB_SIZE (CURSOR_WIDTH * CURSOR_HEIGHT * 4)
 
-enum ControlArea
+enum class ControlArea
 {
-    ica1,
-    dca1,
-    ica2,
-    dca2,
-};
-
-struct VDSCRegister
-{
-    std::string name;
-    uint32_t address;
-    uint32_t value;
-    std::string disassembledValue;
+    ICA1,
+    DCA1,
+    ICA2,
+    DCA2,
 };
 
 /** \struct Plane
@@ -79,8 +71,8 @@ public:
     virtual RAMBank GetRAMBank1() const = 0;
     virtual RAMBank GetRAMBank2() const = 0;
 
-    virtual std::vector<VDSCRegister> GetInternalRegisters() const = 0;
-    virtual std::vector<VDSCRegister> GetControlRegisters() const = 0;
+    virtual std::vector<InternalRegister> GetInternalRegisters() const = 0;
+    virtual std::vector<InternalRegister> GetControlRegisters() const = 0;
     virtual const Plane& GetScreen() const = 0;
     virtual const Plane& GetPlaneA() const = 0;
     virtual const Plane& GetPlaneB() const = 0;

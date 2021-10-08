@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "../common/enums.hpp"
+#include "../common/types.hpp"
 
 namespace OS9
 {

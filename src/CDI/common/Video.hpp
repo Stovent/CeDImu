@@ -7,7 +7,7 @@
 namespace Video
 {
 
-enum CodingInformation
+enum CodingInformation : uint8_t
 {
     ascf       = 0b10000000, // Application Specific Coding Flag
     eolf       = 0b01000000, // Even/Odd Lines Flag
@@ -15,10 +15,23 @@ enum CodingInformation
     coding     = 0b00001111,
 };
 
+#define ICM(method) Video::ImageCodingMethod::method
+
+enum class ImageCodingMethod
+{
+    OFF,
+    CLUT8,
+    CLUT7,
+    CLUT77,
+    CLUT4,
+    DYUV,
+    RGB555,
+};
+
 extern const uint8_t dequantizer[16];
 extern uint32_t CLUT[256];
 
-uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const uint8_t codingMethod);
+uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const ImageCodingMethod codingMethod);
 uint16_t decodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t* data, const uint32_t* CLUTTable, const bool cm);
 
 // Real-Time Decoders (set pixels in ARGB format)

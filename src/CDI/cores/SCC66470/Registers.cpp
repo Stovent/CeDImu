@@ -105,7 +105,7 @@ bool SCC66470::GetST() const
     return internalRegisters[SCSRW] & 0x0002;
 }
 
-std::vector<VDSCRegister> SCC66470::GetInternalRegisters() const
+std::vector<InternalRegister> SCC66470::GetInternalRegisters() const
 {
     const uint32_t base = isMaster ? 0x1FFFE0 : 0x1FFFC0;
     return {
@@ -130,7 +130,7 @@ std::vector<VDSCRegister> SCC66470::GetInternalRegisters() const
     };
 }
 
-std::vector<VDSCRegister> SCC66470::GetControlRegisters() const
+std::vector<InternalRegister> SCC66470::GetControlRegisters() const
 {
-    return std::vector<VDSCRegister>();
+    return std::vector<InternalRegister>();
 }

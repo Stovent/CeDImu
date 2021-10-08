@@ -11,11 +11,11 @@
 #include <fstream>
 #include <vector>
 
-static constexpr uint8_t codingLookUp[16] = {
-    CLUT4, CLUT7, CLUT8, OFF,
-    OFF, DYUV, RGB555, RGB555,
-    OFF, OFF, OFF, OFF,
-    OFF, OFF, OFF, OFF,
+static constexpr Video::ImageCodingMethod codingLookUp[16] = {
+    ICM(CLUT4), ICM(CLUT7), ICM(CLUT8), ICM(OFF),
+    ICM(OFF), ICM(DYUV), ICM(RGB555), ICM(RGB555),
+    ICM(OFF), ICM(OFF), ICM(OFF), ICM(OFF),
+    ICM(OFF), ICM(OFF), ICM(OFF), ICM(OFF),
 };
 
 CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :

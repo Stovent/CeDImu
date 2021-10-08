@@ -26,7 +26,7 @@ uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({OutOfRange, "Get", "Byte", cpu.currentPC, addr, 0}); })
+            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Byte", cpu.currentPC, addr, 0}); })
     throw SCC68070Exception(BusError, 0);
 }
 
@@ -53,7 +53,7 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({OutOfRange, "Get", "Word", cpu.currentPC, addr, 0}); })
+            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Word", cpu.currentPC, addr, 0}); })
     throw SCC68070Exception(BusError, 0);
 }
 
@@ -88,7 +88,7 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({OutOfRange, "Set", "Byte", cpu.currentPC, addr, data}); })
+            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Byte", cpu.currentPC, addr, data}); })
     throw SCC68070Exception(BusError, 0);
 }
 
@@ -118,7 +118,7 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
     }
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({OutOfRange, "Set", "Word", cpu.currentPC, addr, data}); })
+            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Word", cpu.currentPC, addr, data}); })
     throw SCC68070Exception(BusError, 0);
 }
 

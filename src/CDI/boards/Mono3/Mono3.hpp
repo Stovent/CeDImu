@@ -35,8 +35,8 @@ public:
     virtual uint32_t GetTotalFrameCount() override;
     virtual const OS9::BIOS& GetBIOS() const override;
 
-    virtual std::vector<VDSCRegister> GetInternalRegisters() override;
-    virtual std::vector<VDSCRegister> GetControlRegisters() override;
+    virtual std::vector<InternalRegister> GetInternalRegisters() override;
+    virtual std::vector<InternalRegister> GetControlRegisters() override;
     virtual const Plane& GetScreen() override;
     virtual const Plane& GetPlaneA() override;
     virtual const Plane& GetPlaneB() override;

@@ -2373,7 +2373,8 @@ uint16_t SCC68070::RTE()
         exceptions.push({FormatError, 2});
     }
 
-    cdi.callbacks.OnLogException({ExceptionType::Rte, PC, 0, ""});
+    if(cdi.callbacks.HasOnLogRTE())
+        cdi.callbacks.OnLogRTE(PC);
 
     SR = sr;
     return calcTime;

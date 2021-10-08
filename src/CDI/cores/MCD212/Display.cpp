@@ -10,6 +10,20 @@
 #define   SET_PA_BIT() registerCSR1R |= 0x20;
 #define UNSET_PA_BIT() registerCSR1R &= 0x80;
 
+static constexpr Video::ImageCodingMethod ICM_LUT_A[16] = {
+    ICM(OFF),    ICM(CLUT8), ICM(OFF), ICM(CLUT7),
+    ICM(CLUT77), ICM(DYUV),  ICM(OFF), ICM(OFF),
+    ICM(OFF),    ICM(OFF),   ICM(OFF), ICM(CLUT4),
+    ICM(OFF),    ICM(OFF),   ICM(OFF), ICM(OFF),
+};
+
+static constexpr Video::ImageCodingMethod ICM_LUT_B[16] = {
+    ICM(OFF),    ICM(RGB555), ICM(OFF), ICM(CLUT7),
+    ICM(CLUT77), ICM(DYUV),   ICM(OFF), ICM(OFF),
+    ICM(OFF),    ICM(OFF),    ICM(OFF), ICM(CLUT4),
+    ICM(OFF),    ICM(OFF),    ICM(OFF), ICM(OFF),
+};
+
 void MCD212::ExecuteVideoLine()
 {
     if(++verticalLines <= GetVerticalRetraceLines())
@@ -105,10 +119,11 @@ void MCD212::DrawLinePlaneA()
         const uint8_t fileType = GetFT12_1();
         if(fileType <= 1)
         {
-            const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
-            bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], planeA.width, nullptr, &memory[GetVSR1()], codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data(), controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
+            const Video::ImageCodingMethod codingMethod = ICM_LUT_A[controlRegisters[ImageCodingMethod] & 0x00000F];
+            const uint32_t* clut = codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data();
+            bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], planeA.width, nullptr, &memory[GetVSR1()], clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
 
-            if(codingMethod == CLUT4 || codingMethod == CLUT7 || codingMethod == CLUT77 || codingMethod == CLUT8)
+            if(codingMethod == ICM(CLUT4) || codingMethod == ICM(CLUT7) || codingMethod == ICM(CLUT77) || codingMethod == ICM(CLUT8))
                 HandleCLUTTransparency(&planeA[lineNumber * planeA.width * 4], planeA.width, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
         }
         else if(fileType == 2)
@@ -132,10 +147,10 @@ void MCD212::DrawLinePlaneB()
         const uint8_t fileType = GetFT12_2();
         if(fileType <= 1)
         {
-            const uint8_t codingMethod = controlRegisters[ImageCodingMethod] >> 8 & 0x00000F;
+            const Video::ImageCodingMethod codingMethod = ICM_LUT_B[controlRegisters[ImageCodingMethod] >> 8 & 0x00000F];
             bytes = Video::decodeBitmapLine(&planeB[lineNumber * planeB.width * 4], planeB.width, &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
 
-            if(codingMethod == CLUT4 || codingMethod == CLUT7)
+            if(codingMethod == ICM(CLUT4) || codingMethod == ICM(CLUT7))
                 HandleCLUTTransparency(&planeB[lineNumber * planeB.width * 4], planeB.width, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
         }
         else if(fileType == 2)
@@ -226,7 +241,7 @@ void MCD212::HandleCLUTTransparency(uint8_t* pixels, const uint16_t width, const
 
 void MCD212::DecodeMosaicLineA() // TODO
 {
-    const uint8_t codingMethod = controlRegisters[ImageCodingMethod] & 0x00000F;
+    const Video::ImageCodingMethod codingMethod = ICM_LUT_A[controlRegisters[ImageCodingMethod] & 0x00000F];
     uint8_t* data = &memory[GetVSR1()];
     uint8_t* pixels = &planeA[lineNumber * planeA.width * 4];
     uint16_t index = 0;
@@ -234,7 +249,7 @@ void MCD212::DecodeMosaicLineA() // TODO
 
     for(uint16_t x = 0; x < planeA.width;)
     {
-        if(codingMethod == DYUV)
+        if(codingMethod == ICM(DYUV))
         {
             Video::decodeDYUV(data[index++], &pixels[x * 4], previous);
             for(uint16_t i = 1; i < GetMF12_1(); i++)
@@ -245,7 +260,7 @@ void MCD212::DecodeMosaicLineA() // TODO
             previous |= pixels[x * 4 + 2];
             x += GetMF12_1();
         }
-        else if(codingMethod == CLUT4)
+        else if(codingMethod == ICM(CLUT4))
         {
             Video::decodeCLUT((data[index] >> 4 & 0x0F), &pixels[x * 4], CLUT.data());
             Video::decodeCLUT(data[index++] & 0x0F, &pixels[(x+1) * 4], CLUT.data());
@@ -255,7 +270,7 @@ void MCD212::DecodeMosaicLineA() // TODO
         }
         else // CLUT
         {
-            Video::decodeCLUT(data[index++] + (codingMethod == CLUT77 && controlRegisters[ImageCodingMethod] & 0x400000) ? 128 : 0, &pixels[x * 4], CLUT.data());
+            Video::decodeCLUT(data[index++] + (codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000) ? 128 : 0, &pixels[x * 4], CLUT.data());
             for(uint16_t i = 1; i < GetMF12_1(); i++)
                 memcpy(&pixels[(i + x) * 4], &pixels[x * 4], 4);
             x += GetMF12_1();
@@ -265,7 +280,7 @@ void MCD212::DecodeMosaicLineA() // TODO
 
 void MCD212::DecodeMosaicLineB() // TODO
 {
-    const uint8_t codingMethod = (controlRegisters[ImageCodingMethod] & 0x000F00) >> 8;
+    const Video::ImageCodingMethod codingMethod = ICM_LUT_B[controlRegisters[ImageCodingMethod] >> 8 & 0x00000F];
     uint8_t* dataA = &memory[GetVSR1()];
     uint8_t* dataB = &memory[GetVSR2()];
     uint8_t* pixels = &planeB[lineNumber * planeB.width * 4];
@@ -274,7 +289,7 @@ void MCD212::DecodeMosaicLineB() // TODO
 
     for(uint16_t x = 0; x < planeB.width;)
     {
-        if(codingMethod == DYUV)
+        if(codingMethod == ICM(DYUV))
         {
             Video::decodeDYUV(dataB[index++], &pixels[x * 4], previous);
             for(uint16_t i = 1; i < GetMF12_2(); i++)
@@ -285,7 +300,7 @@ void MCD212::DecodeMosaicLineB() // TODO
             previous |= pixels[x * 4 + 2];
             x += GetMF12_2();
         }
-        else if(codingMethod == RGB555)
+        else if(codingMethod == ICM(RGB555))
         {
             uint16_t color  = dataA[index] << 8;
             color |= dataB[index];
@@ -294,7 +309,7 @@ void MCD212::DecodeMosaicLineB() // TODO
                 memcpy(&pixels[(i + x) * 4], &pixels[x * 4], 4);
             x += GetMF12_2();
         }
-        else if(codingMethod == CLUT4)
+        else if(codingMethod == ICM(CLUT4))
         {
             Video::decodeCLUT((dataB[index] >> 4) & 0x0F, &pixels[x * 4], CLUT.data());
             Video::decodeCLUT(dataB[index++] & 0x0F, &pixels[(x+1) * 4], CLUT.data());
