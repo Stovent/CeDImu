@@ -45,6 +45,7 @@ MainFrame::MainFrame(CeDImu& cedimu) :
     m_cpuViewer(nullptr),
     m_settingsFrame(nullptr),
     m_vdscViewer(nullptr),
+    m_debugFrame(nullptr),
     m_oldCycleCount(0),
     m_oldFrameCount(0)
 {

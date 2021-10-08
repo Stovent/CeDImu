@@ -73,7 +73,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu) :
         std::lock_guard<std::mutex> lock(this->m_instructionsMutex);
         if(item >= (long)this->m_instructions.size())
             return "";
-        const Instruction& inst = this->m_instructions[item];
+        const LogInstruction& inst = this->m_instructions[item];
         if(column == 0)
             return toHex(inst.address);
         if(column == 1)
@@ -84,7 +84,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     });
     m_auiManager.AddPane(m_disassemblerList, wxAuiPaneInfo().Center().Caption("Disassembler").CloseButton(false).Floatable().Resizable());
 
-    m_cedimu.m_cdi.callbacks.SetOnLogDisassembler([=] (const Instruction& inst) {
+    m_cedimu.m_cdi.callbacks.SetOnLogDisassembler([=] (const LogInstruction& inst) {
         std::lock_guard<std::mutex> lock(this->m_instructionsMutex);
         if(this->m_flushInstructions)
         {
@@ -162,19 +162,19 @@ void CPUViewer::UpdateInternal()
     if(!m_cedimu.m_cdi.board)
         return;
 
-    std::vector<CPUInternalRegister> internal = m_cedimu.m_cdi.board->cpu.GetInternalRegisters();
+    std::vector<InternalRegister> internal = m_cedimu.m_cdi.board->cpu.GetInternalRegisters();
     long i = 0;
     if(internal.size() != (size_t)m_internalList->GetItemCount())
     {
         m_internalList->DeleteAllItems();
-        for(const CPUInternalRegister& reg : internal)
+        for(const InternalRegister& reg : internal)
         {
             m_internalList->InsertItem(i++, reg.name);
         }
     }
     else
     {
-        for(const CPUInternalRegister& reg : internal)
+        for(const InternalRegister& reg : internal)
         {
             m_internalList->SetItem(i, 1, toHex(reg.address));
             m_internalList->SetItem(i, 2, toHex(reg.value));
@@ -194,7 +194,7 @@ void CPUViewer::UpdateRegisters()
     int i = 0;
     for(std::pair<CPURegister, uint32_t> reg : cpuRegs)
     {
-        std::string val = i >= 8 && i < 16 ? " : " + std::to_string((int32_t)reg.second) : " : 0x" + toHex(reg.second);
+        std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : " : 0x" + toHex(reg.second);
         m_registers[i++]->SetValue(CPURegisterToString(reg.first) + val);
     }
 }

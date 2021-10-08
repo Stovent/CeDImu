@@ -26,7 +26,7 @@ public:
 
     GenericList* m_disassemblerList;
     std::mutex m_instructionsMutex;
-    std::vector<Instruction> m_instructions;
+    std::vector<LogInstruction> m_instructions;
     bool m_flushInstructions;
 
     wxTextCtrl* m_registers[20];

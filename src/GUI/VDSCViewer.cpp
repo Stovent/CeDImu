@@ -254,16 +254,16 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
 
         switch(area)
         {
-            case ControlArea::dca1:
+            case ControlArea::DCA1:
                 this->m_dca1.push_back(inst);
                 break;
-            case ControlArea::ica1:
+            case ControlArea::ICA1:
                 this->m_ica1.push_back(inst);
                 break;
-            case ControlArea::dca2:
+            case ControlArea::DCA2:
                 this->m_dca2.push_back(inst);
                 break;
-            case ControlArea::ica2:
+            case ControlArea::ICA2:
                 this->m_ica2.push_back(inst);
                 break;
         }
@@ -307,19 +307,19 @@ void VDSCViewer::UpdateRegisters()
         return;
     }
 
-    std::vector<VDSCRegister> iregs = m_cedimu.m_cdi.board->GetInternalRegisters();
+    std::vector<InternalRegister> iregs = m_cedimu.m_cdi.board->GetInternalRegisters();
     long i = 0;
     if(iregs.size() != (size_t)m_internalRegistersList->GetItemCount())
     {
         m_internalRegistersList->DeleteAllItems();
-        for(const VDSCRegister& reg : iregs)
+        for(const InternalRegister& reg : iregs)
         {
             m_internalRegistersList->InsertItem(i++, reg.name);
         }
     }
     else
     {
-        for(const VDSCRegister& reg : iregs)
+        for(const InternalRegister& reg : iregs)
         {
             m_internalRegistersList->SetItem(i, 1, toHex(reg.address));
             m_internalRegistersList->SetItem(i, 2, toHex(reg.value));
@@ -328,19 +328,19 @@ void VDSCViewer::UpdateRegisters()
         }
     }
 
-    std::vector<VDSCRegister> cregs = m_cedimu.m_cdi.board->GetControlRegisters();
+    std::vector<InternalRegister> cregs = m_cedimu.m_cdi.board->GetControlRegisters();
     i = 0;
     if(cregs.size() != (size_t)m_controlRegistersList->GetItemCount())
     {
         m_controlRegistersList->DeleteAllItems();
-        for(const VDSCRegister& reg : cregs)
+        for(const InternalRegister& reg : cregs)
         {
             m_controlRegistersList->InsertItem(i++, reg.name);
         }
     }
     else
     {
-        for(const VDSCRegister& reg : cregs)
+        for(const InternalRegister& reg : cregs)
         {
             m_controlRegistersList->SetItem(i, 1, toHex(reg.address));
             m_controlRegistersList->SetItem(i, 2, toHex(reg.value));

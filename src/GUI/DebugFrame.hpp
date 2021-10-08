@@ -31,6 +31,11 @@ public:
     std::mutex m_memoryLogsMutex;
     std::vector<LogMemoryAccess> m_memoryLogs;
 
+    GenericList* m_exceptionsList;
+    std::mutex m_exceptionsMutex;
+    std::vector<LogSCC68070Exception> m_exceptions;
+    bool m_updateExceptions;
+
     DebugFrame() = delete;
     DebugFrame(MainFrame* mainFrame, CeDImu& cedimu);
     ~DebugFrame();

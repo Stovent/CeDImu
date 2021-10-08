@@ -1,7 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include "CDI/common/enums.hpp"
+#include "CDI/common/types.hpp"
 
 #include <string>
 

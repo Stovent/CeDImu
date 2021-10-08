@@ -10,16 +10,17 @@ wxBEGIN_EVENT_TABLE(DebugFrame, wxFrame)
 wxEND_EVENT_TABLE()
 
 DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
-    wxFrame(mainFrame, wxID_ANY, "Debug", wxDefaultPosition, wxSize(465, 500)),
+    wxFrame(mainFrame, wxID_ANY, "Debug", wxDefaultPosition, wxSize(600, 500)),
     m_cedimu(cedimu),
     m_mainFrame(mainFrame),
     m_auiManager(this),
     m_updateTimer(this, wxID_ANY),
-    m_updateMemoryLogs(false)
+    m_updateMemoryLogs(false),
+    m_updateExceptions(false)
 {
     // Memory logs
     wxPanel* memoryPanel = new wxPanel(this);
-    m_auiManager.AddPane(memoryPanel, wxAuiPaneInfo().Left().Caption("Memory access").CloseButton(false).Floatable().Resizable());
+    m_auiManager.AddPane(memoryPanel, wxAuiPaneInfo().Center().Caption("Memory access").CloseButton(false).Floatable().Resizable());
     wxBoxSizer* memoryPanelSizer = new wxBoxSizer(wxVERTICAL);
     memoryPanel->SetSizer(memoryPanelSizer);
 
@@ -102,13 +103,12 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
     memoryPanelSizer->Add(m_memoryLogsList, wxSizerFlags().Expand().Proportion(1));
 
     m_cedimu.m_cdi.callbacks.SetOnLogMemoryAccess([=] (const LogMemoryAccess& log) {
-        if((log.location == CPU   && this->m_logCpu->GetValue())   ||
-           (log.location == BIOS  && this->m_logBios->GetValue())  ||
-           (log.location == RAM   && this->m_logRam->GetValue())   ||
-           (log.location == VDSC  && this->m_logVdsc->GetValue())  ||
-           (log.location == Slave && this->m_logSlave->GetValue()) ||
-           (log.location == RTC   && this->m_logNvram->GetValue())
-           )
+        if((log.location == MemoryAccessLocation::CPU   && this->m_logCpu->GetValue())   ||
+           (log.location == MemoryAccessLocation::BIOS  && this->m_logBios->GetValue())  ||
+           (log.location == MemoryAccessLocation::RAM   && this->m_logRam->GetValue())   ||
+           (log.location == MemoryAccessLocation::VDSC  && this->m_logVdsc->GetValue())  ||
+           (log.location == MemoryAccessLocation::Slave && this->m_logSlave->GetValue()) ||
+           (log.location == MemoryAccessLocation::RTC   && this->m_logNvram->GetValue()))
         {
             std::lock_guard<std::mutex> lock(this->m_memoryLogsMutex);
             this->m_memoryLogs.push_back(log);
@@ -117,6 +117,74 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
     });
 
 
+    // Exceptions
+    m_exceptionsList = new GenericList(this, [=] (wxListCtrl* list) {
+        wxListItem address;
+        address.SetText("Return address");
+        address.SetWidth(60);
+        list->InsertColumn(0, address);
+
+        wxListItem text;
+        text.SetText("Exception");
+        text.SetWidth(210);
+        list->InsertColumn(1, text);
+
+        wxListItem syscall;
+        syscall.SetText("System call");
+        syscall.SetWidth(80);
+        list->InsertColumn(2, syscall);
+
+        wxListItem inputs;
+        inputs.SetText("System call inputs");
+        inputs.SetWidth(400);
+        list->InsertColumn(3, inputs);
+
+        wxListItem outputs;
+        outputs.SetText("System call outputs");
+        outputs.SetWidth(400);
+        list->InsertColumn(4, outputs);
+    }, [=] (long item, long column) -> wxString {
+        std::lock_guard<std::mutex> lock(this->m_exceptionsMutex);
+        if(item >= (long)this->m_exceptions.size())
+            return "";
+
+        const LogSCC68070Exception& log = this->m_exceptions[this->m_exceptions.size() - 1 - item];
+        if(column == 0)
+            return toHex(log.returnAddress);
+        if(column == 1)
+            return log.disassembled;
+        if(column == 2 && log.vector == Trap0Instruction)
+            return OS9::systemCallNameToString(log.systemCall.m_type);
+        if(column == 3)
+            return log.systemCall.inputs;
+        if(column == 4)
+            return log.systemCall.outputs;
+        return "";
+    });
+    m_auiManager.AddPane(m_exceptionsList, wxAuiPaneInfo().Bottom().Caption("Exceptions stack").CloseButton(false).Floatable().Resizable());
+
+    m_cedimu.m_cdi.callbacks.SetOnLogException([=] (const LogSCC68070Exception& log) {
+        std::lock_guard<std::mutex> lock(m_exceptionsMutex);
+        m_updateExceptions = true;
+        m_exceptions.push_back(log);
+    });
+
+    m_cedimu.m_cdi.callbacks.SetOnLogRTE([=] (uint32_t pc) {
+        std::lock_guard<std::mutex> lock(m_exceptionsMutex);
+        m_updateExceptions = true;
+        for(std::vector<LogSCC68070Exception>::reverse_iterator it = this->m_exceptions.rbegin();
+            it != this->m_exceptions.rend(); it++)
+        {
+            if(pc == it->returnAddress && it->vector == Trap0Instruction)
+            {
+                it->systemCall.outputs = OS9::systemCallOutputsToString(it->systemCall.m_type, m_cedimu.m_cdi.board->cpu.GetCPURegisters(), [=] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
+                break;
+            }
+        }
+    });
+
+
+    m_auiManager.Update();
     Show();
     m_updateTimer.Start(16);
 }
@@ -124,12 +192,21 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
 DebugFrame::~DebugFrame()
 {
     m_cedimu.m_cdi.callbacks.SetOnLogMemoryAccess(nullptr);
+    m_cedimu.m_cdi.callbacks.SetOnLogException(nullptr);
+    m_cedimu.m_cdi.callbacks.SetOnLogRTE(nullptr);
     m_auiManager.UnInit();
     m_mainFrame->m_debugFrame = nullptr;
 }
 
 void DebugFrame::UpdateManager(wxTimerEvent&)
 {
+    if(m_updateExceptions)
+    {
+        m_exceptionsList->SetItemCount(m_exceptions.size());
+        m_exceptionsList->Refresh();
+        m_updateExceptions = false;
+    }
+
     if(m_updateMemoryLogs)
     {
         UpdateMemoryLogs();
@@ -141,5 +218,4 @@ void DebugFrame::UpdateMemoryLogs()
 {
     m_memoryLogsList->SetItemCount(m_memoryLogs.size());
     m_memoryLogsList->Refresh();
-
 }
