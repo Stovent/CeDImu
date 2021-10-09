@@ -1,4 +1,5 @@
 #include "SystemCalls.hpp"
+#include "Stt.hpp"
 
 #include <cstdio>
 
@@ -280,8 +281,8 @@ std::string systemCallInputsToString(const SystemCallType call, const std::map<C
     case SystemCallType::I$Write:   snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
     case SystemCallType::I$ReadLn:  snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
     case SystemCallType::I$WritLn:  snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
-    case SystemCallType::I$GetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(D0), REG(D1)); break;
-    case SystemCallType::I$SetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(D0), REG(D1)); break;
+    case SystemCallType::I$GetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd (%s) d2.w=%hd d3.l=%d a0=0x%X", REG(D0), REG(D1), sttFunctionToString(SttFunction(REG(D1))).c_str(), REG(D2), REG(D3), REG(A0)); break;
+    case SystemCallType::I$SetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd (%s) d2.l=%d d3.w=%hd d4.l=%d a0=0x%X a1=0x%X", REG(D0), REG(D1), sttFunctionToString(SttFunction(REG(D1))).c_str(), REG(D2), REG(D3), REG(D4), REG(A0), REG(A1)); break;
     case SystemCallType::I$Close:   snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
     default: snprintf(args, 256, "Unknown system call %d", (int)call);
     }
@@ -383,8 +384,8 @@ std::string systemCallOutputsToString(const SystemCallType call, const std::map<
     case SystemCallType::I$Write:   snprintf(args, 256, "d1.l=%d", REG(D1)); break;
     case SystemCallType::I$ReadLn:  snprintf(args, 256, "d1.l=%d", REG(D1)); break;
     case SystemCallType::I$WritLn:  snprintf(args, 256, "d1.l=%d", REG(D1)); break;
-    case SystemCallType::I$GetStt:  snprintf(args, 256, "TODO"); break;
-    case SystemCallType::I$SetStt:  snprintf(args, 256, "TODO"); break;
+    case SystemCallType::I$GetStt:  snprintf(args, 256, "d0.l=%d d1.l=%d d2.l=%d", REG(D0), REG(D1), REG(D2)); break;
+    case SystemCallType::I$SetStt:  return "";
     case SystemCallType::I$Close:   return "";
     default: snprintf(args, 256, "Unknown system call %d", (int)call);
     }
