@@ -103,7 +103,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     registersPanel->SetSizer(registersPanelSizer);
     for(int i = 0; i < 20; i++)
     {
-        m_registers[i] = new wxTextCtrl(registersPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(125, 23), wxTE_READONLY);
+        m_registers[i] = new wxTextCtrl(registersPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(130, 23), wxTE_READONLY);
         if(i == 8)
             registersPanelSizer->Add(m_registers[i], wxSizerFlags().Border(wxTOP, 10));
         else if(i == 15)
@@ -194,7 +194,7 @@ void CPUViewer::UpdateRegisters()
     int i = 0;
     for(std::pair<CPURegister, uint32_t> reg : cpuRegs)
     {
-        std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : " : 0x" + toHex(reg.second);
+        std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : reg.first == CPURegister::SR ? " : " + toBinString(reg.second, 16) : " : 0x" + toHex(reg.second);
         m_registers[i++]->SetValue(CPURegisterToString(reg.first) + val);
     }
 }

@@ -177,7 +177,10 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
         {
             if(pc == it->returnAddress && it->vector == Trap0Instruction)
             {
-                it->systemCall.outputs = OS9::systemCallOutputsToString(it->systemCall.m_type, m_cedimu.m_cdi.board->cpu.GetCPURegisters(), [=] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
+                const std::map<CPURegister, uint32_t> registers = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
+                char error[64] = {0};
+                snprintf(error, 64, "carry=%d d1.w=%hd ", registers.at(CPURegister::SR) & 1, registers.at(CPURegister::D1));
+                it->systemCall.outputs = std::string(error) + OS9::systemCallOutputsToString(it->systemCall.m_type, registers, [=] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
                 break;
             }
         }
