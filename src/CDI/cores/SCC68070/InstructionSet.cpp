@@ -48,9 +48,6 @@ uint16_t SCC68070::Exception(const uint8_t vectorNumber)
     SetLong(ARIWPr(7, 4), PC);
     SetWord(ARIWPr(7, 2), sr);
 
-    if(vectorNumber <= 1 || vectorNumber == 9 || vectorNumber == 24)
-        loop = true;
-
     switch(vectorNumber) // handle Exception Processing Clock Periods
     {
     case BusError: case AddressError:
@@ -2362,6 +2359,7 @@ uint16_t SCC68070::RTE()
     const uint16_t sr = GetWord(ARIWPo(7, 2));
     PC = GetLong(ARIWPo(7, 4));
     const uint16_t format = GetWord(ARIWPo(7, 2));
+    SR = sr;
 
     if((format & 0xF000) == 0xF000) // long format
     {
@@ -2374,9 +2372,8 @@ uint16_t SCC68070::RTE()
     }
 
     if(cdi.callbacks.HasOnLogRTE())
-        cdi.callbacks.OnLogRTE(PC);
+        cdi.callbacks.OnLogRTE(PC, format);
 
-    SR = sr;
     return calcTime;
 }
 

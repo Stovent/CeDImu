@@ -83,7 +83,7 @@ class Callbacks
     std::function<void(const LogSCC68070Exception&)> onLogExceptionCallback;
 
     std::mutex onLogRTEMutex;
-    std::function<void(uint32_t)> onLogRTECallback; /**< The parameter is the PC value pulled from the stack. */
+    std::function<void(uint32_t, uint16_t)> onLogRTECallback; /**< The parameter is the PC value pulled from the stack. */
 
 public:
     explicit Callbacks(const std::function<void(const LogInstruction&)>& disassembler = nullptr,
@@ -92,7 +92,7 @@ public:
                        const std::function<void(ControlArea, const std::string&)>& icadca = nullptr,
                        const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr,
                        const std::function<void(const LogSCC68070Exception&)>& logException = nullptr,
-                       const std::function<void(uint32_t)>& logRTE = nullptr) :
+                       const std::function<void(uint32_t, uint16_t)>& logRTE = nullptr) :
        onLogDisassemblerCallback(disassembler),
        onUARTOutCallback(uartOut),
        onFrameCompletedCallback(frameCompleted),
@@ -219,16 +219,16 @@ public:
         std::lock_guard<std::mutex> lock(onLogRTEMutex);
         return (bool)onLogRTECallback;
     }
-    void SetOnLogRTE(const std::function<void(uint32_t)>& callback)
+    void SetOnLogRTE(const std::function<void(uint32_t, uint16_t)>& callback)
     {
         std::lock_guard<std::mutex> lock(onLogRTEMutex);
         onLogRTECallback = callback;
     }
-    void OnLogRTE(uint32_t arg)
+    void OnLogRTE(uint32_t pc, uint16_t format)
     {
         std::lock_guard<std::mutex> lock(onLogRTEMutex);
         if(onLogRTECallback)
-            onLogRTECallback(arg);
+            onLogRTECallback(pc, format);
     }
 };
 
