@@ -392,4 +392,135 @@ std::string systemCallOutputsToString(const SystemCallType call, const std::map<
     return args;
 }
 
+std::string errorNameToString(const Error error)
+{
+    switch(error)
+    {
+    case Error::E$1: return "E$1";
+    case Error::E$2: return "E$2";
+    case Error::E$3: return "E$3";
+    case Error::E$4: return "E$4";
+
+    case Error::E$IllFnc: return "E$IllFnc";
+    case Error::E$FmtErr: return "E$FmtErr";
+    case Error::E$NotNum: return "E$NotNum";
+    case Error::E$IllArg: return "E$IllArg";
+
+    case Error::E$BusErr: return "E$BusErr";
+    case Error::E$AdrErr: return "E$AdrErr";
+    case Error::E$IllIns: return "E$IllIns";
+    case Error::E$ZerDiv: return "E$ZerDiv";
+    case Error::E$Chk:    return "E$Chk";
+    case Error::E$TrapV:  return "E$TrapV";
+    case Error::E$Violat: return "E$Violat";
+    case Error::E$Trace:  return "E$Trace";
+    case Error::E$1010:   return "E$1010";
+    case Error::E$1111:   return "E$1111";
+
+    case Error::E$113: return "E$113";
+    case Error::E$114: return "E$114";
+    case Error::E$115: return "E$115";
+    case Error::E$124: return "E$124";
+
+    case Error::E$Trap1:  return "E$Trap1";
+    case Error::E$Trap2:  return "E$Trap2";
+    case Error::E$Trap3:  return "E$Trap3";
+    case Error::E$Trap4:  return "E$Trap4";
+    case Error::E$Trap5:  return "E$Trap5";
+    case Error::E$Trap6:  return "E$Trap6";
+    case Error::E$Trap7:  return "E$Trap7";
+    case Error::E$Trap8:  return "E$Trap8";
+    case Error::E$Trap9:  return "E$Trap9";
+    case Error::E$Trap10: return "E$Trap10";
+    case Error::E$Trap11: return "E$Trap11";
+    case Error::E$Trap12: return "E$Trap12";
+    case Error::E$Trap13: return "E$Trap13";
+    case Error::E$Trap14: return "E$Trap14";
+    case Error::E$Trap15: return "E$Trap15";
+    case Error::E$FPUnordC: return "E$FPUnordC";
+    case Error::E$FPInxact: return "E$FPInxact";
+    case Error::E$FPDivZer: return "E$FPDivZer";
+    case Error::E$FPUndrFl: return "E$FPUndrFl";
+    case Error::E$FPOprErr: return "E$FPOprErr";
+    case Error::E$FPOverFl: return "E$FPOverFl";
+    case Error::E$FPNotNum: return "E$FPNotNum";
+    case Error::E$155: return "E$155";
+    case Error::E$156: return "E$156";
+    case Error::E$157: return "E$157";
+    case Error::E$158: return "E$158";
+
+    case Error::E$Permit:   return "E$Permit";
+    case Error::E$Differ:   return "E$Differ";
+    case Error::E$StkOvf:   return "E$StkOvf";
+    case Error::E$EvntID:   return "E$EvntID";
+    case Error::E$EvNF:     return "E$EvNF";
+    case Error::E$EvBusy:   return "E$EvBusy";
+    case Error::E$EvParm:   return "E$EvParm";
+    case Error::E$Damage:   return "E$Damage";
+    case Error::E$BadRev:   return "E$BadRev";
+    case Error::E$PthLost:  return "E$PthLost";
+    case Error::E$BadPart:  return "E$BadPart";
+    case Error::E$Hardware: return "E$Hardware";
+    case Error::E$SectSize: return "E$SectSize";
+
+    case Error::E$BPNum:   return "E$BPNum";
+    case Error::E$IllPath: return "E$IllPath";
+    case Error::E$Poll:    return "E$Poll";
+    case Error::E$BMode:   return "E$BMode";
+    case Error::E$DevOvf:  return "E$DevOvf";
+    case Error::E$BMID:    return "E$BMID";
+    case Error::E$DirFul:  return "E$DirFul";
+    case Error::E$MemFul:  return "E$MemFul";
+    case Error::E$UnkSvc:  return "E$UnkSvc";
+    case Error::E$ModBsy:  return "E$ModBsy";
+    case Error::E$BPAddr:  return "E$BPAddr";
+    case Error::E$EOF:     return "E$EOF";
+    case Error::E$VctBsy:  return "E$VctBsy";
+    case Error::E$NES:     return "E$NES";
+    case Error::E$FNA:     return "E$FNA";
+    case Error::E$BPNam:   return "E$BPNam";
+    case Error::E$PNNF:    return "E$PNNF";
+    case Error::E$SLF:     return "E$SLF";
+    case Error::E$CEF:     return "E$CEF";
+    case Error::E$IBA:     return "E$IBA";
+    case Error::E$HangUp:  return "E$HangUp";
+    case Error::E$MNF:     return "E$MNF";
+    case Error::E$NoClk:   return "E$NoClk";
+    case Error::E$DelSP:   return "E$DelSP";
+    case Error::E$IPrcID:  return "E$IPrcID";
+    case Error::E$Param:   return "E$Param";
+    case Error::E$NoChld:  return "E$NoChld";
+    case Error::E$ITrap:   return "E$ITrap";
+    case Error::E$PrcAbt:  return "E$PrcAbt";
+    case Error::E$PrcFul:  return "E$PrcFul";
+    case Error::E$IForkP:  return "E$IForkP";
+    case Error::E$KwnMod:  return "E$KwnMod";
+    case Error::E$BMCRC:   return "E$BMCRC";
+    case Error::E$USigP:   return "E$USigP";
+    case Error::E$NEMod:   return "E$NEMod";
+    case Error::E$BNam:    return "E$BNam";
+    case Error::E$BMHP:    return "E$BMHP";
+    case Error::E$NoRAM:   return "E$NoRAM";
+    case Error::E$DNE:     return "E$DNE";
+    case Error::E$NoTask:  return "E$NoTask";
+    case Error::E$Unit:    return "E$Unit";
+    case Error::E$Sect:    return "E$Sect";
+    case Error::E$WP:      return "E$WP";
+    case Error::E$CRC:     return "E$CRC";
+    case Error::E$Read:    return "E$Read";
+    case Error::E$Write:   return "E$Write";
+    case Error::E$NotRdy:  return "E$NotRdy";
+    case Error::E$Seek:    return "E$Seek";
+    case Error::E$Full:    return "E$Full";
+    case Error::E$BTyp:    return "E$BTyp";
+    case Error::E$DevBsy:  return "E$DevBsy";
+    case Error::E$DIDC:    return "E$DIDC";
+    case Error::E$Lock:    return "E$Lock";
+    case Error::E$Share:   return "E$Share";
+    case Error::E$DeadLk:  return "E$DeadLk";
+    case Error::E$Format:  return "E$Format";
+    default: return "Unknown error " + std::to_string((int)error);
+    }
+}
+
 } // namespace OS9
