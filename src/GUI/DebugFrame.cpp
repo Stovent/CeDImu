@@ -38,6 +38,8 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
     memoryButtonsSizer->Add(m_logSlave, wxSizerFlags().Proportion(1));
     m_logNvram = new wxCheckBox(memoryPanel, wxID_ANY, "NVRAM");
     memoryButtonsSizer->Add(m_logNvram, wxSizerFlags().Proportion(1));
+    m_logOutOfRange = new wxCheckBox(memoryPanel, wxID_ANY, "Out of range");
+    memoryButtonsSizer->Add(m_logOutOfRange, wxSizerFlags().Proportion(1));
 
     m_memoryLogsList = new GenericList(memoryPanel, [=] (wxListCtrl* list) {
         wxListItem location;
@@ -108,7 +110,8 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
            (log.location == MemoryAccessLocation::RAM   && this->m_logRam->GetValue())   ||
            (log.location == MemoryAccessLocation::VDSC  && this->m_logVdsc->GetValue())  ||
            (log.location == MemoryAccessLocation::Slave && this->m_logSlave->GetValue()) ||
-           (log.location == MemoryAccessLocation::RTC   && this->m_logNvram->GetValue()))
+           (log.location == MemoryAccessLocation::RTC   && this->m_logNvram->GetValue()) ||
+           (log.location == MemoryAccessLocation::OutOfRange && this->m_logOutOfRange->GetValue()))
         {
             std::lock_guard<std::mutex> lock(this->m_memoryLogsMutex);
             this->m_memoryLogs.push_back(log);
@@ -124,25 +127,30 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
         address.SetWidth(60);
         list->InsertColumn(0, address);
 
+        wxListItem module;
+        module.SetText("Module");
+        module.SetWidth(60);
+        list->InsertColumn(1, module);
+
         wxListItem text;
         text.SetText("Exception");
         text.SetWidth(210);
-        list->InsertColumn(1, text);
+        list->InsertColumn(2, text);
 
         wxListItem syscall;
         syscall.SetText("System call");
         syscall.SetWidth(80);
-        list->InsertColumn(2, syscall);
+        list->InsertColumn(3, syscall);
 
         wxListItem inputs;
         inputs.SetText("System call inputs");
-        inputs.SetWidth(400);
-        list->InsertColumn(3, inputs);
+        inputs.SetWidth(450);
+        list->InsertColumn(4, inputs);
 
         wxListItem outputs;
         outputs.SetText("System call outputs");
         outputs.SetWidth(400);
-        list->InsertColumn(4, outputs);
+        list->InsertColumn(5, outputs);
     }, [=] (long item, long column) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_exceptionsMutex);
         if(item >= (long)this->m_exceptions.size())
@@ -151,13 +159,15 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
         const LogSCC68070Exception& log = this->m_exceptions[this->m_exceptions.size() - 1 - item];
         if(column == 0)
             return toHex(log.returnAddress);
-        if(column == 1)
+        if(column == 1 && log.vector == Trap0Instruction)
+            return log.systemCall.module;
+        if(column == 2)
             return log.disassembled;
-        if(column == 2 && log.vector == Trap0Instruction)
-            return OS9::systemCallNameToString(log.systemCall.m_type);
-        if(column == 3)
-            return log.systemCall.inputs;
+        if(column == 3 && log.vector == Trap0Instruction)
+            return OS9::systemCallNameToString(log.systemCall.type);
         if(column == 4)
+            return log.systemCall.inputs;
+        if(column == 5)
             return log.systemCall.outputs;
         return "";
     });
@@ -169,7 +179,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
         m_exceptions.push_back(log);
     });
 
-    m_cedimu.m_cdi.callbacks.SetOnLogRTE([=] (uint32_t pc) {
+    m_cedimu.m_cdi.callbacks.SetOnLogRTE([=] (uint32_t pc, uint16_t format) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
         for(std::vector<LogSCC68070Exception>::reverse_iterator it = this->m_exceptions.rbegin();
@@ -180,7 +190,10 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
                 const std::map<CPURegister, uint32_t> registers = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
                 char error[64] = {0};
                 snprintf(error, 64, "carry=%d d1.w=%hd ", registers.at(CPURegister::SR) & 1, registers.at(CPURegister::D1));
-                it->systemCall.outputs = std::string(error) + OS9::systemCallOutputsToString(it->systemCall.m_type, registers, [=] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
+                m_updateExceptions = true;
+                const std::string outputs = std::string(error) + OS9::systemCallOutputsToString(it->systemCall.type, registers, [=] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
+                const OS9::SystemCall syscall = {it->systemCall.type, "", "", outputs};
+                m_exceptions.push_back(LogSCC68070Exception{it->vector, it->returnAddress, it->disassembled, syscall});
                 break;
             }
         }

@@ -26,6 +26,7 @@ public:
     wxCheckBox* m_logVdsc;
     wxCheckBox* m_logSlave;
     wxCheckBox* m_logNvram;
+    wxCheckBox* m_logOutOfRange;
     GenericList* m_memoryLogsList;
     bool m_updateMemoryLogs;
     std::mutex m_memoryLogsMutex;
