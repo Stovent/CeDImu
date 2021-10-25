@@ -23,7 +23,7 @@ void SCC68070::Interpreter()
                 const uint32_t returnAddress = ex.vector == 32 || ex.vector == 45 || ex.vector == 47 ? PC + 2 : PC;
                 const OS9::SystemCallType syscallType = OS9::SystemCallType(ex.vector == Trap0Instruction ? ex.data : -1);
                 const std::string inputs = ex.vector == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->cdi.board->GetPointer(addr); }) : "";
-                const OS9::SystemCall syscall = {syscallType, inputs, ""};
+                const OS9::SystemCall syscall = {syscallType, cdi.board->GetBIOS().GetModuleNameAt(currentPC - cdi.board->GetBIOS().base), inputs, ""};
                 cdi.callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
             }
 //            DumpCPURegisters();

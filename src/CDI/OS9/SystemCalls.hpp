@@ -125,7 +125,8 @@ enum class Event
 
 struct SystemCall
 {
-    SystemCallType m_type; /**< The type of the system call. */
+    SystemCallType type; /**< The type of the system call. */
+    std::string module; /**< The module where the call occured. */
     std::string inputs; /**< The input parameters. */
     std::string outputs; /**< The output parameters. it is at the beginning of the call and has to be filled by the application when RTE is executed. */
 };
