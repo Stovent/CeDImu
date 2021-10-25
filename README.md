@@ -9,9 +9,11 @@ Experimental Philips CD-I emulator
 
 Note: the project is still in a very early development stage, please open issues only to address problems in the existing code.
 
-## How to build
-CeDImu depends on wxWidgets 3.0. It requires a C++ compiler that supports C++17 with its filesystem header.
+## How to use
 
+See the [user manual](https://github.com/Stovent/CeDImu/blob/master/MANUAL.md).
+
+## How to build
 #### Build macros
 
 ``ENABLE_LOG``: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback and CeDImu to write in files the disassembly of the CPU and the memory accesses (default: ``OFF``).
@@ -40,17 +42,6 @@ cd build
 cmake ..
 make -j$(nproc --all)
 ```
-
-### Makefile (deprecated)
-
-#### Windows
-
-Use MinGW
-1. Open the Makefile and set the following variables:
-* ``wxLibPath``: contains the static libraries (e.g. libwxbase30u.a)
-* ``wxIPATH``: include directory (path must not contain the ``wx/`` subdirectory)
-* ``wxIMSWU``: mswu directory inside the static libraries directory
-2. Open a terminal and type ``make -f WinMakefile`` (Assuming ``make`` is in your PATH variable).
 
 ## Compatibility
 

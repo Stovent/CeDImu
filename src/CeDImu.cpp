@@ -1,9 +1,18 @@
 #include "CeDImu.hpp"
 #include "Config.hpp"
+#include "GUI/MainFrame.hpp"
+#include "CDI/CDI.hpp"
 
+#include <wx/image.h>
 #include <wx/msgdlg.h>
 
-constexpr float cpuSpeeds[17] = {
+#include <ctime>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <memory>
+
+constexpr float CPU_SPEEDS[] = {
     0.01,
     0.03,
     0.06,
@@ -23,139 +32,112 @@ constexpr float cpuSpeeds[17] = {
     64,
 };
 
+static constexpr int DEFAULT_CPU_SPEED = 8;
+static constexpr int MAX_CPU_SPEED = sizeof CPU_SPEEDS / sizeof *CPU_SPEEDS - 1;
+
 bool CeDImu::OnInit()
 {
+    wxImage::AddHandler(new wxPNGHandler);
     Config::loadConfig();
-    cpuSpeed = 8;
-    stopOnNextFrame.store(false);
+    m_cpuSpeed = DEFAULT_CPU_SPEED;
+    m_uartOut.open("uart_out", std::ios::out | std::ios::binary);
 
-    uartOut.open("uart_out", std::ios::out | std::ios::binary);
-    logInstructions.open("instructions.txt");
-    logMemoryAccess.open("memory_access.txt");
+    new MainFrame(*this);
 
-    mainFrame = new MainFrame(*this, "CeDImu", wxPoint(50, 50), wxSize(420, 310));
-    mainFrame->Show(true);
+    InitCDI();
 
-    InitializeCores();
     return true;
 }
 
 int CeDImu::OnExit()
 {
-    StopGameThread();
-    Config::saveConfig();
-    uartOut.close();
-    logInstructions.close();
-    logMemoryAccess.close();
+    m_cdi.UnloadBoard();
     return 0;
 }
 
-bool CeDImu::InitializeCores()
+bool CeDImu::InitCDI()
 {
-#ifdef _WIN32
-    biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('\\')+1);
-#else
-    biosName = Config::systemBIOS.substr(Config::systemBIOS.rfind('/')+1);
-#endif // _WIN32
-
-    FILE* f = fopen(Config::systemBIOS.c_str(), "rb");
-    if(!f)
+    std::ifstream biosFile(Config::systemBIOS, std::ios::binary | std::ios::in);
+    if(!biosFile)
     {
-        wxMessageBox("Could not open system BIOS file!\nPlease check the file in menu Config -> Settings");
+        std::cerr << "Failed to open system BIOS '" << Config::systemBIOS << "'" << std::endl;
+        wxMessageBox("Failed to open system BIOS '" + Config::systemBIOS + "'. Please check the BIOS path in the settings.");
         return false;
     }
 
-    fseek(f, 0, SEEK_END);
-    long biosSize = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    uint8_t* bios = new uint8_t[biosSize];
-    biosSize = fread(bios, 1, biosSize, f);
-    fclose(f);
+    biosFile.seekg(0, std::ios::end);
+    size_t biosSize = biosFile.tellg();
+    biosFile.seekg(0);
 
-    void* nvram = nullptr;
-    std::ifstream nvr("sram_" + biosName + ".bin", std::ios::in | std::ios::binary);
-    if(nvr)
+    std::unique_ptr<uint8_t[]> bios = std::make_unique<uint8_t[]>(biosSize);
+    biosFile.read((char*)bios.get(), biosSize);
+
+    std::unique_ptr<uint8_t[]> nvram = nullptr;
+    m_biosName = std::filesystem::path(Config::systemBIOS).filename().string();
+    std::ifstream nvramFile("nvram_" + m_biosName + ".bin");
+    if(nvramFile)
     {
-        nvr.seekg(0, std::ios::end);
-        size_t size = nvr.tellg();
-        nvr.seekg(0, std::ios::beg);
-        nvram = new uint8_t[size];
-        nvr.read((char*)nvram, size);
-        nvr.close();
+        nvramFile.seekg(0, std::ios::end);
+        size_t nvramSize = nvramFile.tellg();
+        nvramFile.seekg(0);
+        nvram = std::make_unique<uint8_t[]>(nvramSize);
+        nvramFile.read((char*)nvram.get(), nvramSize);
     }
+    else
+        std::cout << "Warning: no NVRAM file associated with the system BIOS used" << std::endl;
 
-    CDIConfig config = {
-        .PAL = Config::PAL,
-        .initialTime = Config::initialTime.size() ? stoi(Config::initialTime) : time(nullptr),
-        .has32KBNVRAM = Config::has32KBNVRAM,
-    };
-    cdi.config = config;
-    cdi.LoadBoard(bios, biosSize, nvram, Config::boardType);
-    delete[] bios;
+    std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+    m_cdi.config.has32KBNVRAM = Config::has32KBNVRAM;
+    m_cdi.config.PAL = Config::PAL;
+    if(Config::initialTime.size() == 0)
+        m_cdi.config.initialTime = time(NULL);
+    else
+        m_cdi.config.initialTime = stoi(Config::initialTime);
 
-    if(!cdi.board)
-    {
-        wxMessageBox("Unsupported board. See README.md for the list of supported BIOSes with their settings.");
-        return false;
-    }
-
-    cdi.callbacks.SetOnFrameCompleted([=] (const Plane&) -> void {
-        if(this->stopOnNextFrame.load())
-        {
-            this->stopOnNextFrame.store(false);
-            cdi.board->cpu.Stop(false);
-            mainFrame->pauseItem->Check();
-        }
-
-        mainFrame->gamePanel->RefreshScreen();
-
-        if(mainFrame->cpuViewer)
-            mainFrame->cpuViewer->flushInstructions = true;
-
-        if(mainFrame->vdscViewer)
-        {
-            mainFrame->vdscViewer->flushICADCA = true;
-        }
-    });
-
-    cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {
-        std::ofstream out("sram_" + biosName + ".bin", std::ios::out | std::ios::binary);
+    m_cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {
+        std::ofstream out("nvram_" + m_biosName + ".bin", std::ios::out | std::ios::binary);
         out.write((char*)data, size);
         out.close();
     });
 
-    cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
+    m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), Config::boardType);
+    if(!m_cdi.board)
+        return false;
+
+    m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
     return true;
+}
+
+void CeDImu::StartEmulation()
+{
+    std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+    if(m_cdi.board)
+        m_cdi.board->cpu.Run(true);
+}
+
+void CeDImu::StopEmulation()
+{
+    std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+    if(m_cdi.board)
+        m_cdi.board->cpu.Stop(true);
 }
 
 void CeDImu::IncreaseEmulationSpeed()
 {
-    if(cpuSpeed < 16)
+    if(m_cpuSpeed < MAX_CPU_SPEED)
     {
-        cpuSpeed++;
-        if(cdi.board)
-            cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
+        std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+        if(m_cdi.board)
+            m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[++m_cpuSpeed]);
     }
 }
 
 void CeDImu::DecreaseEmulationSpeed()
 {
-    if(cpuSpeed > 0)
+    if(m_cpuSpeed > 0)
     {
-        cpuSpeed--;
-        if(cdi.board)
-            cdi.board->cpu.SetEmulationSpeed(cpuSpeeds[cpuSpeed]);
+        std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+        if(m_cdi.board)
+            m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
     }
-}
-
-void CeDImu::StartGameThread()
-{
-    if(cdi.board)
-        cdi.board->cpu.Run(true);
-}
-
-void CeDImu::StopGameThread()
-{
-    if(cdi.board)
-        cdi.board->cpu.Stop();
 }

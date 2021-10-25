@@ -1,33 +1,38 @@
-#ifndef GAMEPANEL_HPP
-#define GAMEPANEL_HPP
+#ifndef GUI_GAMEPANEL_HPP
+#define GUI_GAMEPANEL_HPP
 
-class GamePanel;
-
+class MainFrame;
 #include "../CeDImu.hpp"
-#include "MainFrame.hpp"
 
+#include <wx/image.h>
+#include <wx/dc.h>
 #include <wx/panel.h>
-#include <wx/dcclient.h>
+
+#include <mutex>
 
 class GamePanel : public wxPanel
 {
 public:
-    CeDImu& app;
-    MainFrame* mainFrame;
+    MainFrame* m_mainFrame;
+    CeDImu& m_cedimu;
+    std::mutex m_screenMutex;
+    wxImage m_screen;
+    bool m_stopOnNextFrame;
 
-    int frameWidth;
-    int frameHeight;
-
-    GamePanel(MainFrame* parent, CeDImu& appp);
+    GamePanel() = delete;
+    GamePanel(MainFrame* parent, CeDImu& cedimu);
     ~GamePanel();
 
-    void RefreshScreen();
+    void Reset();
+    bool SaveScreenshot(const std::string& path);
+
+    void DrawScreen(wxDC& dc);
+    void OnPaintEvent(wxPaintEvent&);
 
     void OnKeyDown(wxKeyEvent& event);
     void OnKeyUp(wxKeyEvent& event);
-    void RefreshLoop(wxPaintEvent& event);
 
     wxDECLARE_EVENT_TABLE();
 };
 
-#endif // GAMEPANEL_HPP
+#endif // GUI_GAMEPANEL_HPP

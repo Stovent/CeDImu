@@ -1,40 +1,33 @@
 #ifndef CEDIMU_HPP
 #define CEDIMU_HPP
 
-class CeDImu;
-
 #include "CDI/CDI.hpp"
-#include "CDI/cores/VDSC.hpp"
-#include "CDI/cores/SCC68070/SCC68070.hpp"
-#include "GUI/MainFrame.hpp"
 
 #include <wx/app.h>
 
-#include <atomic>
-#include <cstdio>
+#include <fstream>
+#include <mutex>
+
+extern const float CPU_SPEEDS[];
 
 class CeDImu : public wxApp
 {
 public:
-    std::atomic<bool> stopOnNextFrame;
-    CDI cdi;
+    std::mutex m_cdiBoardMutex; // To lock only when accessing the board.
+    CDI m_cdi;
+    uint16_t m_cpuSpeed;
 
-    std::string biosName;
-    uint16_t cpuSpeed;
-
-    std::ofstream uartOut;
-    std::ofstream logInstructions;
-    std::ofstream logMemoryAccess;
-
-    MainFrame* mainFrame;
+    std::string m_biosName;
+    std::ofstream m_uartOut;
 
     virtual bool OnInit() override;
     virtual int OnExit() override;
-    bool InitializeCores();
+
+    bool InitCDI();
+    void StartEmulation();
+    void StopEmulation();
     void IncreaseEmulationSpeed();
     void DecreaseEmulationSpeed();
-    void StartGameThread();
-    void StopGameThread();
 };
 
 #endif // CEDIMU_HPP

@@ -1,5 +1,5 @@
-#ifndef GENERICLIST_HPP
-#define GENERICLIST_HPP
+#ifndef GUI_GENERICLIST_HPP
+#define GUI_GENERICLIST_HPP
 
 #include <wx/listctrl.h>
 
@@ -7,21 +7,21 @@
 
 class GenericList : public wxListCtrl
 {
-    std::function<std::string(long, long)> OnGetItem;
+    std::function<wxString(long, long)> m_OnGetItem;
 
 public:
-    GenericList(wxWindow* parent, std::function<void(wxListCtrl*)> builder, std::function<std::string(long, long)> getter) :
+    GenericList(wxWindow* parent, std::function<void(wxListCtrl*)> builder, std::function<wxString(long, long)> getter) :
         wxListCtrl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_VIRTUAL | wxLC_HRULES | wxLC_VRULES),
-        OnGetItem(getter)
+        m_OnGetItem(getter)
     {
         builder(this);
     }
 
     virtual wxString OnGetItemText(long item, long column) const override
     {
-        return OnGetItem(item, column);
+        return m_OnGetItem(item, column);
     }
 };
 
-#endif // GENERICLIST_HPP
+#endif // GUI_GENERICLIST_HPP
 

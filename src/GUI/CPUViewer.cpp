@@ -1,182 +1,200 @@
 #include "CPUViewer.hpp"
-#include "enums.hpp"
 #include "MainFrame.hpp"
 #include "../CDI/common/utils.hpp"
 
-#include <wx/dcclient.h>
+#include <wx/panel.h>
+#include <wx/sizer.h>
 
 wxBEGIN_EVENT_TABLE(CPUViewer, wxFrame)
-    EVT_TIMER(IDCPUViewerTimer, CPUViewer::RefreshLoop)
-    EVT_PAINT(CPUViewer::PaintEvent)
-    EVT_CLOSE(CPUViewer::OnClose)
+    EVT_TIMER(wxID_ANY, CPUViewer::UpdateManager)
 wxEND_EVENT_TABLE()
 
-CPUViewer::CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSize& size) :
-    wxFrame(parent, wxID_ANY, "SCC68070 viewer", pos, size),
-    auiManager(this),
-    cdi(idc),
-    renderTimer(this, IDCPUViewerTimer)
+CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu) :
+    wxFrame(mainFrame, wxID_ANY, "CPU Viewer", wxDefaultPosition, wxSize(800, 550)),
+    m_cedimu(cedimu),
+    m_mainFrame(mainFrame),
+    m_auiManager(this),
+    m_updateTimer(this, wxID_ANY),
+    m_updateManager(false),
+    m_flushInstructions(false),
+    m_lastByte(0)
 {
-    mainFrame = parent;
-    flushInstructions = false;
+    // Internal registers
+    m_internalList = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_HRULES | wxLC_VRULES);
+    m_auiManager.AddPane(m_internalList, wxAuiPaneInfo().Left().Caption("Internal registers").CloseButton(false).Floatable().Resizable().BestSize(190, -1));
 
-    disassembler = new GenericList(this, [=] (wxListCtrl* frame) {
-
-        frame->EnableAlternateRowColours();
-
-        wxListItem addressCol;
-        addressCol.SetId(0);
-        addressCol.SetText("Address");
-        addressCol.SetWidth(70);
-        frame->InsertColumn(0, addressCol);
-
-        wxListItem kernelCol;
-        kernelCol.SetId(1);
-        kernelCol.SetText("Kernel location");
-        kernelCol.SetWidth(100);
-        frame->InsertColumn(1, kernelCol);
-
-        wxListItem instructionCol;
-        instructionCol.SetId(2);
-        instructionCol.SetText("Instruction");
-        instructionCol.SetWidth(700);
-        frame->InsertColumn(2, instructionCol);
-
-    }, [this] (long item, long column) -> std::string {
-        std::lock_guard<std::mutex> lock(this->instructionsMutex);
-        if(column == 0)
-            return toHex(this->instructions[item].address);
-        if(column == 1)
-            return this->instructions[item].biosLocation;
-        return this->instructions[item].instruction;
-    });
-
-    uart = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY | wxTE_MULTILINE);
-
-    wxPanel* registersPanel = new wxPanel(this);
-    for(uint8_t i = 0; i < 8; i++)
-    {
-        d[i] = new wxTextCtrl(registersPanel, wxID_ANY, "D" + std::to_string(i) + ": 0", wxPoint(0, i * 23), wxSize(125, 23), wxTE_READONLY); d[i]->SetBackgroundColour(*wxWHITE);
-        a[i] = new wxTextCtrl(registersPanel, wxID_ANY, "A" + std::to_string(i) + ": 0", wxPoint(0, i * 23 + 189), wxSize(125, 23), wxTE_READONLY); a[i]->SetBackgroundColour(*wxWHITE);
-    }
-    usp = new wxTextCtrl(registersPanel, wxID_ANY, "USP: 0", wxPoint(0, 377), wxSize(125, 23), wxTE_READONLY); usp->SetBackgroundColour(*wxWHITE);
-    ssp = new wxTextCtrl(registersPanel, wxID_ANY, "SSP: 0", wxPoint(0, 400), wxSize(125, 23), wxTE_READONLY); ssp->SetBackgroundColour(*wxWHITE);
-    pc = new wxTextCtrl(registersPanel, IDCPUViewerpc, "PC: 0", wxPoint(0, 423), wxSize(125, 23), wxTE_READONLY); pc->SetBackgroundColour(*wxWHITE);
-    sr = new wxTextCtrl(registersPanel, IDCPUViewersr, "SR: 0", wxPoint(0, 446), wxSize(125, 23), wxTE_READONLY); sr->SetBackgroundColour(*wxWHITE);
-
-    internalRegisters = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(300, 0), wxLC_REPORT | wxLC_HRULES | wxLC_VRULES);
     wxListItem nameCol;
     nameCol.SetId(0);
     nameCol.SetText("Name");
     nameCol.SetWidth(60);
-    internalRegisters->InsertColumn(0, nameCol);
+    m_internalList->InsertColumn(0, nameCol);
 
     wxListItem addressCol;
     addressCol.SetId(1);
     addressCol.SetText("Address");
     addressCol.SetWidth(62);
-    internalRegisters->InsertColumn(1, addressCol);
+    m_internalList->InsertColumn(1, addressCol);
 
     wxListItem valueCol;
     valueCol.SetId(2);
     valueCol.SetText("Value");
-    valueCol.SetWidth(60);
-    internalRegisters->InsertColumn(2, valueCol);
+    valueCol.SetWidth(45);
+    m_internalList->InsertColumn(2, valueCol);
 
     wxListItem disCol;
     disCol.SetId(3);
     disCol.SetText("Disassembled value");
     disCol.SetWidth(120);
-    internalRegisters->InsertColumn(3, disCol);
+    m_internalList->InsertColumn(3, disCol);
 
-    std::vector<CPUInternalRegister> iregs = cdi.board->cpu.GetInternalRegisters();
-    long i = 0;
-    for(const CPUInternalRegister& reg : iregs)
+
+    // Disassembler
+    m_disassemblerList = new GenericList(this, [=] (wxListCtrl* list) {
+        list->EnableAlternateRowColours();
+
+        wxListItem addressCol;
+        addressCol.SetId(0);
+        addressCol.SetText("Address");
+        addressCol.SetWidth(70);
+        list->InsertColumn(0, addressCol);
+
+        wxListItem kernelCol;
+        kernelCol.SetId(1);
+        kernelCol.SetText("Location");
+        kernelCol.SetWidth(70);
+        list->InsertColumn(1, kernelCol);
+
+        wxListItem instructionCol;
+        instructionCol.SetId(2);
+        instructionCol.SetText("Instruction");
+        instructionCol.SetWidth(700);
+        list->InsertColumn(2, instructionCol);
+    }, [=] (long item, long column) -> wxString {
+        std::lock_guard<std::mutex> lock(this->m_instructionsMutex);
+        if(item >= (long)this->m_instructions.size())
+            return "";
+        const LogInstruction& inst = this->m_instructions[item];
+        if(column == 0)
+            return toHex(inst.address);
+        if(column == 1)
+            return inst.biosLocation;
+        if(column == 2)
+            return inst.instruction;
+        return "";
+    });
+    m_auiManager.AddPane(m_disassemblerList, wxAuiPaneInfo().Center().Caption("Disassembler").CloseButton(false).Floatable().Resizable());
+
+    m_cedimu.m_cdi.callbacks.SetOnLogDisassembler([=] (const LogInstruction& inst) {
+        std::lock_guard<std::mutex> lock(this->m_instructionsMutex);
+        if(this->m_flushInstructions)
+        {
+            this->m_flushInstructions = false;
+            this->m_instructions.clear();
+        }
+        this->m_instructions.push_back(inst);
+        this->m_updateManager = true;
+    });
+
+
+    // Registers
+    wxPanel* registersPanel = new wxPanel(this);
+    m_auiManager.AddPane(registersPanel, wxAuiPaneInfo().Right().Layer(1).Caption("CPU registers").CloseButton(false).Floatable().Resizable().BestSize(130, -1));
+    wxBoxSizer* registersPanelSizer = new wxBoxSizer(wxVERTICAL);
+    registersPanel->SetSizer(registersPanelSizer);
+    for(int i = 0; i < 20; i++)
     {
-        long itemIndex = internalRegisters->InsertItem(i++, reg.name);
-        internalRegisters->SetItem(itemIndex, 1, toHex(reg.address));
-        internalRegisters->SetItem(itemIndex, 2, toHex(reg.value));
-        internalRegisters->SetItem(itemIndex, 3, reg.disassembledValue);
+        m_registers[i] = new wxTextCtrl(registersPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(130, 23), wxTE_READONLY);
+        if(i == 8)
+            registersPanelSizer->Add(m_registers[i], wxSizerFlags().Border(wxTOP, 10));
+        else if(i == 15)
+            registersPanelSizer->Add(m_registers[i], wxSizerFlags().Border(wxBOTTOM, 10));
+        else
+            registersPanelSizer->Add(m_registers[i]);
     }
 
-    auiManager.AddPane(disassembler, wxAuiPaneInfo().Caption("Disassembler").Center().CloseButton(false).Resizable());
-    auiManager.AddPane(internalRegisters, wxAuiPaneInfo().Caption("Internal Registers").Left().CloseButton(false).Resizable().BestSize(300, 0));
-    auiManager.AddPane(registersPanel, wxAuiPaneInfo().Caption("CPU Registers").Right().CloseButton(false).Resizable().BestSize(130, 0));
-    auiManager.AddPane(uart, wxAuiPaneInfo().Caption("UART").Bottom().CloseButton(false).Resizable().BestSize(0, 100));
-    auiManager.Update();
 
-    uart->Bind(wxEVT_KEY_DOWN, [this] (wxKeyEvent& event) {
+    // UART
+    m_uartTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+    m_auiManager.AddPane(m_uartTextCtrl, wxAuiPaneInfo().Bottom().Caption("UART out").CloseButton(false).Floatable().Resizable().BestSize(-1, 200));
+    m_uartTextCtrl->Bind(wxEVT_KEY_DOWN, [=] (wxKeyEvent& event) {
         const int key = event.GetKeyCode();
+        std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
         if(key < 128)
-            this->cdi.board->cpu.SendUARTIn(key);
+            if(this->m_cedimu.m_cdi.board)
+                this->m_cedimu.m_cdi.board->cpu.SendUARTIn(key);
     });
 
-    cdi.callbacks.SetOnUARTOut([this] (uint8_t byte) -> void {
-        this->mainFrame->app.uartOut.put((char)byte);
-        this->uart->AppendText((char)byte);
+    m_cedimu.m_cdi.callbacks.SetOnUARTOut([=] (uint8_t d) {
+        this->m_cedimu.m_uartOut.put(d);
+        if(!((this->m_lastByte == '\r' && d == '\n') || (this->m_lastByte == '\n' && d == '\r')))
+            this->m_uartTextCtrl->AppendText((char)d);
+        this->m_lastByte = d;
     });
 
-    cdi.callbacks.SetOnLogDisassembler([this] (const Instruction& inst) {
-        std::lock_guard<std::mutex> lock(this->instructionsMutex);
-        if(this->flushInstructions)
-        {
-            LOG(for(const Instruction& inst : this->instructions) \
-                this->mainFrame->app.logInstructions << std::hex << inst.address << "\t(" << inst.biosLocation << ")\t" << inst.instruction << std::endl;)
 
-            this->instructions.clear();
-            this->flushInstructions = false;
-        }
-        this->instructions.push_back(inst);
-    });
-
-    renderTimer.Start(16);
+    m_auiManager.Update();
+    Show();
+    m_updateTimer.Start(16);
 }
 
 CPUViewer::~CPUViewer()
 {
-    auiManager.UnInit();
+    m_cedimu.m_cdi.callbacks.SetOnLogDisassembler(nullptr);
+    m_cedimu.m_cdi.callbacks.SetOnUARTOut(nullptr);
+    m_auiManager.UnInit();
+    m_mainFrame->m_cpuViewer = nullptr;
 }
 
-void CPUViewer::OnClose(wxCloseEvent& event)
+void CPUViewer::UpdateManager(wxTimerEvent&)
 {
-    cdi.callbacks.SetOnLogDisassembler(nullptr);
-    cdi.callbacks.SetOnUARTOut(nullptr);
-    mainFrame->cpuViewer = nullptr;
-    renderTimer.Stop();
-    Destroy();
+    if(!m_updateManager)
+        return;
+    m_updateManager = false;
+    m_disassemblerList->SetItemCount(m_instructions.size());
+    m_disassemblerList->Refresh();
+    UpdateInternal();
+    UpdateRegisters();
 }
 
-void CPUViewer::PaintEvent(wxPaintEvent& event)
+void CPUViewer::UpdateInternal()
 {
-    PaintEvent();
-}
+    std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+    if(!m_cedimu.m_cdi.board)
+        return;
 
-void CPUViewer::RefreshLoop(wxTimerEvent& event)
-{
-    PaintEvent();
-}
-
-void CPUViewer::PaintEvent()
-{
-    std::map<std::string, uint32_t> regs = cdi.board->cpu.GetCPURegisters();
-    for(uint8_t i = 0; i < 8; i++)
-    {
-        d[i]->SetLabelText("D" + std::to_string(i) + ": " + std::to_string(regs["D" + std::to_string(i)]));
-        a[i]->SetLabelText("A" + std::to_string(i) + ": 0x" + toHex(regs["A" + std::to_string(i)]));
-    }
-    usp->SetLabelText("USP: 0x" + toHex(regs["USP"]));
-    ssp->SetLabelText("SSP: 0x" + toHex(regs["SSP"]));
-    pc->SetLabelText("PC: 0x" + toHex(regs["PC"]));
-    sr->SetLabelText("SR: " + toBinString(regs["SR"], 16));
-
-    disassembler->SetItemCount(instructions.size());
-    disassembler->Refresh();
-
-    std::vector<CPUInternalRegister> iregs = cdi.board->cpu.GetInternalRegisters();
+    std::vector<InternalRegister> internal = m_cedimu.m_cdi.board->cpu.GetInternalRegisters();
     long i = 0;
-    for(const CPUInternalRegister& reg : iregs)
+    if(internal.size() != (size_t)m_internalList->GetItemCount())
     {
-        internalRegisters->SetItem(i, 2, toHex(reg.value));
-        internalRegisters->SetItem(i++, 3, reg.disassembledValue);
+        m_internalList->DeleteAllItems();
+        for(const InternalRegister& reg : internal)
+        {
+            m_internalList->InsertItem(i++, reg.name);
+        }
+    }
+    else
+    {
+        for(const InternalRegister& reg : internal)
+        {
+            m_internalList->SetItem(i, 1, toHex(reg.address));
+            m_internalList->SetItem(i, 2, toHex(reg.value));
+            m_internalList->SetItem(i, 3, reg.disassembledValue);
+            i++;
+        }
+    }
+}
+
+void CPUViewer::UpdateRegisters()
+{
+    std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+    if(!m_cedimu.m_cdi.board)
+        return;
+
+    std::map<CPURegister, uint32_t> cpuRegs = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
+    int i = 0;
+    for(std::pair<CPURegister, uint32_t> reg : cpuRegs)
+    {
+        std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : reg.first == CPURegister::SR ? " : " + toBinString(reg.second, 16) : " : 0x" + toHex(reg.second);
+        m_registers[i++]->SetValue(CPURegisterToString(reg.first) + val);
     }
 }

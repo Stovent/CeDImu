@@ -1,372 +1,311 @@
 #include "MainFrame.hpp"
 #include "enums.hpp"
+#include "CPUViewer.hpp"
+#include "DebugFrame.hpp"
+#include "GamePanel.hpp"
+#include "SettingsFrame.hpp"
 #include "VDSCViewer.hpp"
+#include "../CeDImu.hpp"
 #include "../Config.hpp"
 
-#include <wx/button.h>
-#include <wx/checkbox.h>
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
-#include <wx/notebook.h>
-#include <wx/sizer.h>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
+    EVT_TIMER(wxID_ANY, MainFrame::UpdateUI)
+    EVT_CLOSE(MainFrame::OnClose)
     EVT_MENU(IDMainFrameOnOpenDisc, MainFrame::OnOpenDisc)
     EVT_MENU(IDMainFrameOnCloseDisc, MainFrame::OnCloseDisc)
+    EVT_MENU(IDMainFrameOnScreenshot, MainFrame::OnScreenshot)
     EVT_MENU(wxID_EXIT, MainFrame::OnExit)
     EVT_MENU(IDMainFrameOnPause, MainFrame::OnPause)
-    EVT_MENU(IDMainFrameOnExecuteXInstructions, MainFrame::OnExecuteXInstructions)
-    EVT_MENU(IDMainFrameOnReset,  MainFrame::OnReset)
-    EVT_MENU(IDMainFrameOnRebootCore,  MainFrame::OnRebootCore)
-    EVT_MENU(IDMainFrameOnResizeView,  MainFrame::OnResizeView)
-    EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
+    EVT_MENU(IDMainFrameOnSingleStep, MainFrame::OnSingleStep)
+    EVT_MENU(IDMainFrameOnFrameAdvance, MainFrame::OnFrameAdvance)
+    EVT_MENU(IDMainFrameOnIncreaseSpeed, MainFrame::OnIncreaseSpeed)
+    EVT_MENU(IDMainFrameOnDecreaseSpeed, MainFrame::OnDecreaseSpeed)
+    EVT_MENU(IDMainFrameOnReloadCore, MainFrame::OnReloadCore)
     EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
+    EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
     EVT_MENU(IDMainFrameOnExportRawVideo, MainFrame::OnExportRawVideo)
-    EVT_MENU(IDMainFrameOnCPUViewer,   MainFrame::OnCPUViewer)
-    EVT_MENU(IDMainFrameOnVDSCViewer,  MainFrame::OnVDSCViewer)
-    EVT_MENU(IDMainFrameOnRAMSearch,   MainFrame::OnRAMSearch)
-    EVT_MENU(IDMainFrameOnDebug, MainFrame::OnDebug)
+    EVT_MENU(IDMainFrameOnCPUViewer, MainFrame::OnCPUViewer)
+    EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
+    EVT_MENU(IDMainFrameOnDebugFrame, MainFrame::OnDebugFrame)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
-    EVT_MENU(IDMainFrameOnAbout, MainFrame::OnAbout)
-    EVT_TIMER(wxID_ANY, MainFrame::RefreshStatusBar)
+    EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame(CeDImu& appp, const wxString& title, const wxPoint& pos, const wxSize& size) : wxFrame(NULL, wxID_ANY, title, pos, size), app(appp)
+MainFrame::MainFrame(CeDImu& cedimu) :
+    wxFrame(NULL, wxID_ANY, "CeDImu", wxDefaultPosition, wxSize(400, 300)),
+    m_cedimu(cedimu),
+    m_updateTimer(this),
+    m_gamePanel(new GamePanel(this, m_cedimu)),
+    m_cpuViewer(nullptr),
+    m_settingsFrame(nullptr),
+    m_vdscViewer(nullptr),
+    m_debugFrame(nullptr),
+    m_oldCycleCount(0),
+    m_oldFrameCount(0)
 {
-    gamePanel = new GamePanel(this, appp);
-    cpuViewer = nullptr;
-    ramSearchFrame = nullptr;
-    settingsFrame = nullptr;
-    vdscViewer = nullptr;
-    oldFrameCount = 0;
-    oldCycleCount = 0;
-
     CreateMenuBar();
+    CreateStatusBar(3);
 
-    CreateStatusBar(5);
-    SetStatusText("CeDImu");
-
-    renderTimer.SetOwner(this);
-    renderTimer.Start(1000);
+    Show();
+    m_updateTimer.Start(1000);
 }
 
 void MainFrame::CreateMenuBar()
 {
-    wxMenu* file = new wxMenu;
-    file->Append(IDMainFrameOnOpenDisc, "Open disc\tCtrl+O", "Choose the disc to load");
-    file->AppendSeparator();
-    file->Append(IDMainFrameOnCloseDisc, "Close disc\tCtrl+Maj+C", "Close the disc currently playing");
-    file->Append(wxID_EXIT);
+    wxMenuBar* menuBar = new wxMenuBar();
 
-    wxMenu* emulation = new wxMenu;
-    pauseItem = emulation->AppendCheckItem(IDMainFrameOnPause, "Pause");
-    pauseItem->Check();
-    emulation->Append(IDMainFrameOnExecuteXInstructions, "Execute X instructions\tCtrl+X");
-    emulation->AppendSeparator();
-    emulation->Append(IDMainFrameOnReset, "Reset\tCtrl+Shift+R");
-    emulation->Append(IDMainFrameOnRebootCore, "Reboot Core\tCtrl+Shift+B");
-    emulation->Append(IDMainFrameOnResizeView, "Resize view");
+    wxMenu* fileMenu = new wxMenu();
+    fileMenu->Append(IDMainFrameOnOpenDisc, "Open disc\tCtrl+O");
+    fileMenu->Append(IDMainFrameOnCloseDisc, "Close disc\tCtrl+C");
+    fileMenu->AppendSeparator();
+    fileMenu->Append(IDMainFrameOnScreenshot, "Take screenshot\tCtrl+Shift+S", "Save to file the current frame");
+    fileMenu->AppendSeparator();
+    fileMenu->Append(wxID_EXIT, "Close", "Closes CeDImu");
+    menuBar->Append(fileMenu, "File");
 
-    wxMenu* cdi = new wxMenu;
-    wxMenu* cdiexport = new wxMenu;
-    cdiexport->Append(IDMainFrameOnExportFiles, "Files");
-    cdiexport->Append(IDMainFrameOnExportAudio, "Audio");
-    cdiexport->Append(IDMainFrameOnExportVideo, "Video");
-    cdiexport->Append(IDMainFrameOnExportRawVideo, "Raw video");
-    cdi->AppendSubMenu(cdiexport, "Export");
+    wxMenu* emulationMenu = new wxMenu();
+    m_pauseMenuItem = emulationMenu->AppendCheckItem(IDMainFrameOnPause, "Pause\tPause", "Pause or resume emulation");
+    m_pauseMenuItem->Check();
+    emulationMenu->Append(IDMainFrameOnSingleStep, "Single step\tG", "Execute a single instruction");
+    emulationMenu->Append(IDMainFrameOnFrameAdvance, "Frame advance\tF", "Start emulation until the end of the next frame");
+    emulationMenu->Append(IDMainFrameOnIncreaseSpeed, "Increase Speed", "Increase the emulation speed");
+    emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed", "Decrease the emulation speed");
+    emulationMenu->Append(IDMainFrameOnReloadCore, "Reload core\tCtrl+R");
+    menuBar->Append(emulationMenu, "Emulation");
 
-    wxMenu* tools = new wxMenu;
-    tools->Append(IDMainFrameOnCPUViewer, "CPU Viewer\tCtrl+C");
-    tools->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer\tCtrl+V");
-    tools->Append(IDMainFrameOnRAMSearch, "RAM Search\tCtrl+R");
-    tools->Append(IDMainFrameOnDebug, "Debug");
+    wxMenu* cdiMenu = new wxMenu();
+    cdiMenu->Append(IDMainFrameOnExportAudio, "Export audio");
+    cdiMenu->Append(IDMainFrameOnExportFiles, "Export files");
+    cdiMenu->Append(IDMainFrameOnExportVideo, "Export video");
+    cdiMenu->Append(IDMainFrameOnExportRawVideo, "Export raw video");
+    menuBar->Append(cdiMenu, "CD-I");
 
-    wxMenu* config = new wxMenu;
-    config->Append(IDMainFrameOnSettings, "Settings\tCtrl+Shift+S");
+    wxMenu* toolsMenu = new wxMenu();
+    toolsMenu->Append(IDMainFrameOnCPUViewer, "CPU Viewer");
+    toolsMenu->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer");
+    toolsMenu->Append(IDMainFrameOnDebugFrame, "Debug");
+    menuBar->Append(toolsMenu, "Tools");
 
-    wxMenu* help = new wxMenu;
-    help->Append(IDMainFrameOnAbout, "About");
-
-    wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(file, "File");
-    menuBar->Append(emulation, "Emulation");
-    menuBar->Append(cdi, "CD-I");
-    menuBar->Append(tools, "Tools");
-    menuBar->Append(config, "Config");
-    menuBar->Append(help, "Help");
+    wxMenu* optionsMenu = new wxMenu();
+    optionsMenu->Append(IDMainFrameOnSettings, "Settings", "Edit CeDImu's settings");
+    optionsMenu->Append(wxID_ABOUT, "About");
+    menuBar->Append(optionsMenu, "Options");
 
     SetMenuBar(menuBar);
 }
 
-void MainFrame::RefreshTitle()
+void MainFrame::UpdateTitle()
 {
-    const std::string gameName = !app.cdi.disc.gameName.empty() ? app.cdi.disc.gameName + " | " : "";
-    const std::string biosName = app.cdi.board ? app.biosName + " | " : "";
-    const std::string boardName = app.cdi.board ? app.cdi.board->name + " | " : "";
-    SetTitle(gameName + biosName + boardName + "CeDImu");
+    const std::string disc = m_cedimu.m_cdi.disc.gameName.length() ? m_cedimu.m_cdi.disc.gameName + " | " : "";
+    const std::string bios = m_cedimu.m_cdi.board ? m_cedimu.m_cdi.board->name + " (" + m_cedimu.m_biosName + ") | " : "";
+    SetTitle(disc + bios + "CeDImu");
 }
 
-void MainFrame::RefreshStatusBar(wxTimerEvent& event)
+void MainFrame::UpdateStatusBar()
 {
-    uint16_t fps = 0;
-    if(app.cdi.board)
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+
+    uint64_t cycleRate = 0;
+    uint32_t frameRate = 0;
+    if(m_cedimu.m_cdi.board)
     {
-        fps = app.cdi.board->GetTotalFrameCount() - oldFrameCount;
-        oldFrameCount = app.cdi.board->GetTotalFrameCount();
+        cycleRate = m_cedimu.m_cdi.board->cpu.totalCycleCount - m_oldCycleCount;
+        m_oldCycleCount = m_cedimu.m_cdi.board->cpu.totalCycleCount;
+
+        const uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
+        frameRate = fc - m_oldFrameCount;
+        m_oldFrameCount = fc;
     }
 
-    double freq = 0.0;
-    if(app.cdi.board)
-    {
-        freq = (app.cdi.board->cpu.totalCycleCount - (double)oldCycleCount) / 1'000'000.0;
-        oldCycleCount = app.cdi.board->cpu.totalCycleCount;
-    }
-
-    const DiscTime discTime = app.cdi.disc.GetTime();
-
-    SetStatusText("FPS: " + std::to_string(fps), 1);
-    SetStatusText("Frames: " + std::to_string(oldFrameCount), 2);
-    SetStatusText(std::to_string(freq) + " MHz", 3);
-    SetStatusText("Disc: " + std::to_string(discTime.minute) + ':' + std::to_string(discTime.second) + ':' + std::to_string(discTime.sector), 4);
-    RefreshTitle();
+    SetStatusText(std::to_string(int(CPU_SPEEDS[m_cedimu.m_cpuSpeed] * 100)) + "% (" + std::to_string(cycleRate) + " Hz)", 1);
+    SetStatusText(std::to_string(m_oldFrameCount) + " / " + std::to_string(frameRate) + " FPS", 2);
 }
 
-void MainFrame::OnOpenDisc(wxCommandEvent& event)
+void MainFrame::UpdateUI(wxTimerEvent&)
 {
-    if(app.cdi.board == nullptr)
-    {
-        wxMessageBox("The BIOS has not been loaded yet.");
-    }
-
-    wxFileDialog openFileDialog(this, "Open disc", Config::discDirectory, "", "Binary files (*.bin;*.iso)|*.bin;*.iso|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-    if (openFileDialog.ShowModal() == wxID_CANCEL)
-        return;
-
-    if(!app.cdi.disc.Open(openFileDialog.GetPath().ToStdString()))
-    {
-        wxMessageBox("Could not open disc!");
-        return;
-    }
-
-    if(Config::skipBIOS)
-    {
-        CDIFile* module = app.cdi.disc.GetFile(app.cdi.disc.mainModule);
-        uint32_t size;
-        uint8_t* d = module->GetContent(size);
-        if(d != nullptr && size)
-        {
-            uint32_t address = 0;
-            app.cdi.board->PutDataInMemory(d, size, address);
-            // Get the module execution offset based on the module header,
-            // assuming the loaded module will always be a program
-            address += app.cdi.board->GetLong(address + 0x30, NoFlags);
-            uint8_t arr[4] = {(uint8_t)(address >> 24), (uint8_t)(address >> 16), (uint8_t)(address >> 8), (uint8_t)(address)};
-            app.cdi.board->WriteToBIOSArea(arr, 4, 4);
-        }
-    }
-
-    if(app.cdi.board)
-        if(!pauseItem->IsChecked())
-            app.StartGameThread();
+    UpdateTitle();
+    UpdateStatusBar();
 }
 
-void MainFrame::OnCloseDisc(wxCommandEvent& event)
+void MainFrame::OnOpenDisc(wxCommandEvent&)
 {
-    app.StopGameThread();
-    app.cdi.disc.Close();
+    wxFileDialog fileDlg(this, wxFileSelectorPromptStr, Config::discDirectory, wxEmptyString, "Binary files (*.bin;*.iso)|*.bin;*.iso|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    if(fileDlg.ShowModal() == wxID_OK)
+        if(!m_cedimu.m_cdi.disc.Open(fileDlg.GetPath().ToStdString()))
+            wxMessageBox("Failed to open disc");
 }
 
-void MainFrame::OnExit(wxCommandEvent& WXUNUSED(event))
+void MainFrame::OnCloseDisc(wxCommandEvent&)
 {
-    app.StopGameThread();
-    Close(true);
+    m_cedimu.m_cdi.disc.Close();
 }
 
-void MainFrame::OnPause(wxCommandEvent& event)
+void MainFrame::OnScreenshot(wxCommandEvent&)
 {
-    if(pauseItem->IsChecked())
+    wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    if(dirDlg.ShowModal() == wxID_OK)
+        if(!m_gamePanel->SaveScreenshot(dirDlg.GetPath().ToStdString()))
+            wxMessageBox("Failed to save screenshot");
+}
+
+void MainFrame::OnExit(wxCommandEvent&)
+{
+    Close();
+}
+
+void MainFrame::OnClose(wxCloseEvent&)
+{
+    Destroy();
+}
+
+void MainFrame::OnPause(wxCommandEvent&)
+{
+    if(m_pauseMenuItem->IsChecked())
     {
-        app.StopGameThread();
-        SetStatusText("Pause");
+        m_cedimu.StopEmulation();
+        if(m_vdscViewer)
+            m_vdscViewer->m_updateLists = true;
     }
     else
     {
-        app.StartGameThread();
-        SetStatusText("Running");
+        m_gamePanel->m_stopOnNextFrame = false;
+        m_cedimu.StartEmulation();
     }
 }
 
-void MainFrame::Pause()
+void MainFrame::OnSingleStep(wxCommandEvent&)
 {
-    if(pauseItem->IsChecked())
+    if(m_pauseMenuItem->IsChecked())
     {
-        app.StartGameThread();
-        pauseItem->Check(false);
-        SetStatusText("Running");
+        std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->cpu.Run(false);
+    }
+}
+
+void MainFrame::OnFrameAdvance(wxCommandEvent&)
+{
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    if(m_cedimu.m_cdi.board)
+    {
+        m_gamePanel->m_stopOnNextFrame = true;
+        if(!m_cedimu.m_cdi.board->cpu.IsRunning())
+            m_cedimu.m_cdi.board->cpu.Run(true);
+    }
+}
+
+void MainFrame::OnIncreaseSpeed(wxCommandEvent&)
+{
+    m_cedimu.IncreaseEmulationSpeed();
+    UpdateStatusBar();
+}
+
+void MainFrame::OnDecreaseSpeed(wxCommandEvent&)
+{
+    m_cedimu.DecreaseEmulationSpeed();
+    UpdateStatusBar();
+}
+
+void MainFrame::OnReloadCore(wxCommandEvent&)
+{
+    if(m_cedimu.InitCDI())
+    {
+        m_gamePanel->Reset();
+        if(!m_pauseMenuItem->IsChecked())
+            m_cedimu.StartEmulation();
+        SetStatusText("Core reloaded");
+    }
+    else
+        SetStatusText("Failed to reload core");
+}
+
+void MainFrame::OnExportAudio(wxCommandEvent&)
+{
+    if(m_cedimu.m_cdi.disc.IsOpen())
+    {
+        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        if(dirDlg.ShowModal() == wxID_OK)
+            m_cedimu.m_cdi.disc.ExportAudio(dirDlg.GetPath().ToStdString());
     }
     else
     {
-        app.StopGameThread();
-        pauseItem->Check(true);
-        SetStatusText("Pause");
+        wxMessageBox("No disc opened");
     }
 }
 
-void MainFrame::OnExecuteXInstructions(wxCommandEvent& event)
+void MainFrame::OnExportFiles(wxCommandEvent&)
 {
-    if(!app.cdi.board)
-        return;
-
-    wxFrame* genericFrame = new wxFrame(this, wxID_ANY, "Execute instructions", GetPosition(), wxSize(200, 60));
-    wxTextCtrl* input = new wxTextCtrl(genericFrame, wxID_ANY);
-    wxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
-    wxButton* button = new wxButton(genericFrame, wxID_ANY, "Execute");
-
-    button->Bind(wxEVT_BUTTON, [this, genericFrame, input] (wxEvent& event) {
-        for(int i = 0; i < stoi(input->GetValue().ToStdString()); i++)
-            this->app.cdi.board->cpu.Run(false);
-    });
-
-    sizer->Add(input, 1, wxEXPAND);
-    sizer->Add(button, 0, wxALIGN_RIGHT);
-
-    genericFrame->SetSizer(sizer);
-    genericFrame->Show();
-}
-
-void MainFrame::OnReset(wxCommandEvent& event)
-{
-    if(app.cdi.board)
-        app.cdi.board->Reset(true);
-}
-
-void MainFrame::OnRebootCore(wxCommandEvent& event)
-{
-    app.InitializeCores();
-    pauseItem->Check();
-}
-
-void MainFrame::OnResizeView(wxCommandEvent& event)
-{
-    SetClientSize(gamePanel->frameWidth, gamePanel->frameHeight);
-}
-
-void MainFrame::OnExportFiles(wxCommandEvent& event)
-{
-    std::string dir;
-    wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-    if(dirDialog.ShowModal() != wxID_OK)
-        return;
-
-    dir = dirDialog.GetPath();
-    if(app.cdi.disc.IsOpen())
+    if(m_cedimu.m_cdi.disc.IsOpen())
     {
-        SetStatusText("Exporting files...");
-        app.cdi.disc.ExportFiles(dir);
-        SetStatusText("Files exported!");
+        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        if(dirDlg.ShowModal() == wxID_OK)
+            m_cedimu.m_cdi.disc.ExportFiles(dirDlg.GetPath().ToStdString());
     }
     else
-        wxMessageBox("No disc loaded, no file to export");
+    {
+        wxMessageBox("No disc opened");
+    }
 }
 
-void MainFrame::OnExportAudio(wxCommandEvent& event)
+void MainFrame::OnExportVideo(wxCommandEvent&)
 {
-    std::string dir;
-    wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-    if(dirDialog.ShowModal() != wxID_OK)
-        return;
-
-    dir = dirDialog.GetPath();
-    if(app.cdi.disc.IsOpen())
+    if(m_cedimu.m_cdi.disc.IsOpen())
     {
-        SetStatusText("Exporting audio...");
-        app.cdi.disc.ExportAudio(dir);
-        SetStatusText("Audio exported!");
+        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        if(dirDlg.ShowModal() == wxID_OK)
+            m_cedimu.m_cdi.disc.ExportVideo(dirDlg.GetPath().ToStdString());
     }
     else
-        wxMessageBox("No disc loaded, no audio to export");
+    {
+        wxMessageBox("No disc opened");
+    }
 }
 
-void MainFrame::OnExportVideo(wxCommandEvent& event)
+void MainFrame::OnExportRawVideo(wxCommandEvent&)
 {
-    std::string dir;
-    wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-    if(dirDialog.ShowModal() != wxID_OK)
-        return;
-
-    dir = dirDialog.GetPath();
-    if(app.cdi.disc.IsOpen())
+    if(m_cedimu.m_cdi.disc.IsOpen())
     {
-        SetStatusText("Exporting video...");
-        app.cdi.disc.ExportVideo(dir);
-        SetStatusText("Video exported!");
+        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        if(dirDlg.ShowModal() == wxID_OK)
+            m_cedimu.m_cdi.disc.ExportRawVideo(dirDlg.GetPath().ToStdString());
     }
     else
-        wxMessageBox("No disc loaded, no video to export");
-}
-
-void MainFrame::OnExportRawVideo(wxCommandEvent& event)
-{
-    std::string dir;
-    wxDirDialog dirDialog(this, wxDirSelectorPromptStr, Config::discDirectory, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-    if(dirDialog.ShowModal() != wxID_OK)
-        return;
-
-    dir = dirDialog.GetPath();
-    if(app.cdi.disc.IsOpen())
     {
-        SetStatusText("Exporting raw video...");
-        app.cdi.disc.ExportRawVideo(dir);
-        SetStatusText("Raw video exported!");
+        wxMessageBox("No disc opened");
     }
-    else
-        wxMessageBox("No disc loaded, nothing to export");
 }
 
-void MainFrame::OnCPUViewer(wxCommandEvent& event)
+void MainFrame::OnCPUViewer(wxCommandEvent&)
 {
-    if(cpuViewer != nullptr || !app.cdi.board)
-        return;
-    cpuViewer = new CPUViewer(app.cdi, this, this->GetPosition() + wxPoint(this->GetSize().GetWidth(), 0), wxSize(700, 650));
-    cpuViewer->Show();
+    if(m_cpuViewer == nullptr)
+        m_cpuViewer = new CPUViewer(this, m_cedimu);
 }
 
-void MainFrame::OnVDSCViewer(wxCommandEvent& event)
+void MainFrame::OnVDSCViewer(wxCommandEvent&)
 {
-    if(vdscViewer != nullptr || !app.cdi.board)
-        return;
-    vdscViewer = new VDSCViewer(this, app.cdi);
-    vdscViewer->Show();
+    if(m_vdscViewer == nullptr)
+        m_vdscViewer = new VDSCViewer(this, m_cedimu);
 }
 
-void MainFrame::OnRAMSearch(wxCommandEvent& event)
+void MainFrame::OnDebugFrame(wxCommandEvent&)
 {
-    if(ramSearchFrame != nullptr || !app.cdi.board)
-        return;
-    ramSearchFrame = new RAMSearchFrame(*app.cdi.board, this, this->GetPosition() + wxPoint(50, 50), wxSize(410, 600));
-    ramSearchFrame->Show();
+    if(m_debugFrame == nullptr)
+        m_debugFrame = new DebugFrame(this, m_cedimu);
 }
 
-void MainFrame::OnDebug(wxCommandEvent& event)
+void MainFrame::OnSettings(wxCommandEvent&)
 {
-    if(debugFrame != nullptr || !app.cdi.board)
-        return;
-    debugFrame = new DebugFrame(this, app.cdi);
-    debugFrame->Show();
+    if(m_settingsFrame == nullptr)
+        m_settingsFrame = new SettingsFrame(this);
 }
 
-void MainFrame::OnSettings(wxCommandEvent& event)
+void MainFrame::OnAbout(wxCommandEvent&)
 {
-    if(settingsFrame != nullptr)
-        return;
-    settingsFrame = new SettingsFrame(this);
-    settingsFrame->Show();
-}
-
-void MainFrame::OnAbout(wxCommandEvent& event)
-{
-    wxMessageBox("CeDImu is an open-source Philips CD-I emulator created by Stovent.", "About CeDImu", wxOK);
+    wxMessageBox("CeDImu is a Philips CD-i player emulator, written by Stovent.");
 }

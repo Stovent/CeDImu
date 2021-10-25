@@ -1,5 +1,5 @@
-#ifndef ENUMS_HPP
-#define ENUMS_HPP
+#ifndef GUI_ENUMS_HPP
+#define GUI_ENUMS_HPP
 
 #include <wx/defs.h>
 
@@ -7,35 +7,21 @@ enum
 {
     IDMainFrameOnOpenDisc = wxID_HIGHEST + 1,
     IDMainFrameOnCloseDisc,
+    IDMainFrameOnScreenshot,
     IDMainFrameOnPause,
-    IDMainFrameOnExecuteXInstructions,
-    IDMainFrameOnReset,
-    IDMainFrameOnRebootCore,
-    IDMainFrameOnResizeView,
-    IDMainFrameOnExportFiles,
+    IDMainFrameOnSingleStep,
+    IDMainFrameOnFrameAdvance,
+    IDMainFrameOnIncreaseSpeed,
+    IDMainFrameOnDecreaseSpeed,
+    IDMainFrameOnReloadCore,
     IDMainFrameOnExportAudio,
+    IDMainFrameOnExportFiles,
     IDMainFrameOnExportVideo,
     IDMainFrameOnExportRawVideo,
-    IDMainFrameOnVDSCViewer,
     IDMainFrameOnCPUViewer,
-    IDMainFrameOnRAMSearch,
-    IDMainFrameOnDebug,
+    IDMainFrameOnVDSCViewer,
+    IDMainFrameOnDebugFrame,
     IDMainFrameOnSettings,
-    IDMainFrameOnAbout,
-
-    IDCPUViewerOnClose,
-    IDCPUViewerTimer,
-    IDCPUViewerpc, IDCPUViewersr,
-
-    IDRAMSearchListCheckMisaligned,
-    IDRAMSearchListSigned,
-    IDRAMSearchListUnsigned,
-    IDRAMSearchListHexadecimal,
-    IDRAMSearchListByte1,
-    IDRAMSearchListByte2,
-    IDRAMSearchListByte4,
-
-    IDVDSCViewerTimer,
 };
 
-#endif // ENUMS_HPP
+#endif // GUI_ENUMS_HPP

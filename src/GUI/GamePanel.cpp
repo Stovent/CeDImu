@@ -1,149 +1,182 @@
 #include "GamePanel.hpp"
+#include "CPUViewer.hpp"
+#include "MainFrame.hpp"
+#include "VDSCViewer.hpp"
+
+#include "../Config.hpp"
+
+#include <wx/dcclient.h>
 
 wxBEGIN_EVENT_TABLE(GamePanel, wxPanel)
+    EVT_PAINT(GamePanel::OnPaintEvent)
     EVT_KEY_DOWN(GamePanel::OnKeyDown)
     EVT_KEY_UP(GamePanel::OnKeyUp)
-    EVT_PAINT(GamePanel::RefreshLoop)
 wxEND_EVENT_TABLE()
 
-GamePanel::GamePanel(MainFrame* parent, CeDImu& appp) : wxPanel(parent), app(appp)
+GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu) :
+    wxPanel(parent),
+    m_mainFrame(parent),
+    m_cedimu(cedimu),
+    m_screen(0, 0),
+    m_stopOnNextFrame(false)
 {
-    mainFrame = parent;
+    SetDoubleBuffered(true);
+
+    m_cedimu.m_cdi.callbacks.SetOnFrameCompleted([this] (const Plane& plane) {
+        if(m_mainFrame->m_cpuViewer)
+            m_mainFrame->m_cpuViewer->m_flushInstructions = true;
+
+        if(m_mainFrame->m_vdscViewer)
+            m_mainFrame->m_vdscViewer->m_flushIcadca = true;
+
+        if(this->m_stopOnNextFrame)
+        {
+            this->m_cedimu.m_cdi.board->cpu.Stop(false);
+            this->m_mainFrame->m_pauseMenuItem->Check();
+        }
+
+        std::lock_guard<std::mutex> __(this->m_screenMutex);
+        if(this->m_screen.Create(plane.width, plane.height))
+        {
+            memcpy(this->m_screen.GetData(), plane.data(), plane.width * plane.height * 3);
+            this->Refresh();
+        }
+    });
 }
 
 GamePanel::~GamePanel()
 {
-    app.cdi.callbacks.SetOnFrameCompleted(nullptr);
+    m_cedimu.m_cdi.callbacks.SetOnFrameCompleted(nullptr);
 }
 
-void GamePanel::RefreshLoop(wxPaintEvent& event)
+void GamePanel::Reset()
 {
-    if(!app.cdi.board)
-        return;
+    std::lock_guard<std::mutex> lock(m_screenMutex);
+    m_screen = wxImage(0, 0);
+    Refresh();
+}
 
-    const Plane& p = app.cdi.board->GetScreen();
-    if(p.width == 0 || p.height == 0)
-        return;
+bool GamePanel::SaveScreenshot(const std::string& path)
+{
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    if(!m_cedimu.m_cdi.board)
+        return false;
 
-    wxImage screen(p.width, p.height);
-    memcpy(screen.GetData(), p.data(), p.width * p.height * 3);
+    std::lock_guard<std::mutex> lock2(m_screenMutex);
+    uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
+    return m_screen.SaveFile(path + "/frame_" + std::to_string(fc) + ".png", wxBITMAP_TYPE_PNG);
+}
 
-    wxPaintDC dc(this);
+void GamePanel::DrawScreen(wxDC& dc)
+{
     dc.Clear();
-    dc.SetBrush(*wxBLACK_BRUSH);
-    dc.DrawRectangle(0, 0, mainFrame->GetClientSize().x, mainFrame->GetClientSize().y);
-    dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+    std::lock_guard<std::mutex> lock(m_screenMutex);
+    if(m_screen.IsOk())
+    {
+        const wxSize size = GetClientSize();
+        if(size.x > 0 && size.y > 0)
+        {
+            wxBitmap screen(m_screen.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST));
+            if(screen.IsOk())
+                dc.DrawBitmap(screen, 0, 0);
+        }
+    }
 }
 
-void GamePanel::RefreshScreen()
+void GamePanel::OnPaintEvent(wxPaintEvent&)
 {
-    const Plane& p = app.cdi.board->GetScreen();
-    if(p.width == 0 || p.height == 0)
-        return;
-
-    frameWidth = p.width;
-    frameHeight = p.height;
-    wxImage screen(p.width, p.height);
-    memcpy(screen.GetData(), p.data(), p.width * p.height * 3);
-
-    wxClientDC dc(this);
-    dc.DrawBitmap(wxBitmap(screen.Scale(mainFrame->GetClientSize().x, mainFrame->GetClientSize().y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+    wxPaintDC dc(this);
+    DrawScreen(dc);
 }
 
 void GamePanel::OnKeyDown(wxKeyEvent& event)
 {
-    switch(event.GetKeyCode())
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    int keyCode = event.GetKeyCode();
+    if(keyCode == Config::keyUp)
     {
-    // Shortcuts
-    case 'A':
-        mainFrame->Pause();
-        break;
-
-    case 'Z':
-        if(!app.cdi.board)
-            break;
-        app.stopOnNextFrame.store(true);
-        if(!app.cdi.board->cpu.IsRunning())
-            app.StartGameThread();
-        break;
-
-    case 'E':
-        if(app.cdi.board && app.mainFrame->pauseItem->IsChecked())
-            app.cdi.board->cpu.Run(false);
-        break;
-    case 'M':
-        app.DecreaseEmulationSpeed();
-        break;
-    case '=':
-        app.IncreaseEmulationSpeed();
-        break;
-
-    // Controller
-    case 'O':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetButton1(true);
-        break;
-
-    case 'P':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetButton2(true);
-        break;
-
-    case 'D':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetLeft(true);
-        break;
-
-    case 'R':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetUp(true);
-        break;
-
-    case 'G':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetRight(true);
-        break;
-
-    case 'F':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetDown(true);
-        break;
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetUp(true);
     }
+    else if(keyCode == Config::keyRight)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetRight(true);
+    }
+    else if(keyCode == Config::keyDown)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetDown(true);
+    }
+    else if(keyCode == Config::keyLeft)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetLeft(true);
+    }
+    else if(keyCode == Config::key1)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton1(true);
+    }
+    else if(keyCode == Config::key2)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton2(true);
+    }
+    else if(keyCode == Config::key12)
+    {
+        if(m_cedimu.m_cdi.board)
+        {
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton1(true);
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton2(true);
+        }
+    }
+    else
+        event.Skip();
 }
 
 void GamePanel::OnKeyUp(wxKeyEvent& event)
 {
-    switch(event.GetKeyCode())
+    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    int keyCode = event.GetKeyCode();
+    if(keyCode == Config::keyUp)
     {
-    // Controller
-    case 'O':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetButton1(false);
-        break;
-
-    case 'P':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetButton2(false);
-        break;
-
-    case 'D':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetLeft(false);
-        break;
-
-    case 'R':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetUp(false);
-        break;
-
-    case 'G':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetRight(false);
-        break;
-
-    case 'F':
-        if(app.cdi.board)
-            app.cdi.board->slave->pointingDevice->SetDown(false);
-        break;
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetUp(false);
     }
+    else if(keyCode == Config::keyRight)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetRight(false);
+    }
+    else if(keyCode == Config::keyDown)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetDown(false);
+    }
+    else if(keyCode == Config::keyLeft)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetLeft(false);
+    }
+    else if(keyCode == Config::key1)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton1(false);
+    }
+    else if(keyCode == Config::key2)
+    {
+        if(m_cedimu.m_cdi.board)
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton2(false);
+    }
+    else if(keyCode == Config::key12)
+    {
+        if(m_cedimu.m_cdi.board)
+        {
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton1(false);
+            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton2(false);
+        }
+    }
+    else
+        event.Skip();
 }

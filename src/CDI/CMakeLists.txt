@@ -24,7 +24,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 option(ENABLE_LOG "Allows the library to print some messages in the console and the use of OnLogMemoryAccess callback" OFF)
-
 if(ENABLE_LOG)
     add_definitions(-DENABLE_LOG)
 endif()
@@ -69,4 +68,4 @@ add_library(cdi ${LIBRARY_TYPE}
 )
 
 include(${wxWidgets_USE_FILE})
-target_include_directories(cdi PUBLIC ${wxWidgets_INCLUDE_DIRS})
+target_include_directories(cdi PRIVATE ${wxWidgets_INCLUDE_DIRS})

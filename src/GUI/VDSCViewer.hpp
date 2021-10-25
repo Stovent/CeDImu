@@ -1,15 +1,14 @@
-#ifndef VDSCVIEWER_HPP
-#define VDSCVIEWER_HPP
+#ifndef GUI_VDSCVIEWER_HPP
+#define GUI_VDSCVIEWER_HPP
 
-class CDI;
+class CeDImu;
 class MainFrame;
 #include "GenericList.hpp"
 
+#include <wx/image.h>
 #include <wx/frame.h>
-#include <wx/listctrl.h>
 #include <wx/notebook.h>
 #include <wx/panel.h>
-#include <wx/sizer.h>
 #include <wx/timer.h>
 
 #include <mutex>
@@ -17,36 +16,48 @@ class MainFrame;
 
 class VDSCViewer : public wxFrame
 {
-    std::vector<std::string> ICA1;
-    std::vector<std::string> DCA1;
-    std::vector<std::string> ICA2;
-    std::vector<std::string> DCA2;
-
-    MainFrame* mainFrame;
-    CDI& cdi;
-    wxTimer timer;
-    wxNotebook* notebook;
-    wxListCtrl* internalList;
-    wxListCtrl* controlList;
-    wxPanel* planeAPanel;
-    wxPanel* planeBPanel;
-    wxPanel* cursorPanel;
-    wxPanel* backgroundPanel;
-    GenericList* ica1List;
-    GenericList* dca1List;
-    GenericList* ica2List;
-    GenericList* dca2List;
-
 public:
-    std::mutex caMutex;
-    bool flushICADCA;
+    CeDImu& m_cedimu;
+    MainFrame* m_mainFrame;
 
-    VDSCViewer(MainFrame* parent, CDI& idc);
+    wxTimer m_updateTimer;
+    wxNotebook* m_notebook;
+
+    wxListCtrl* m_internalRegistersList;
+    wxListCtrl* m_controlRegistersList;
+
+    bool m_flushIcadca;
+    bool m_updateLists;
+    std::mutex m_icadcaMutex;
+    std::vector<std::string> m_dca1;
+    std::vector<std::string> m_ica1;
+    std::vector<std::string> m_dca2;
+    std::vector<std::string> m_ica2;
+    GenericList* m_dca1List;
+    GenericList* m_ica1List;
+    GenericList* m_dca2List;
+    GenericList* m_ica2List;
+
+    wxPanel* m_planeAPanel;
+    wxPanel* m_planeBPanel;
+    wxPanel* m_cursorPanel;
+    wxPanel* m_backgdPanel;
+    std::mutex m_imgMutex;
+    wxImage m_imgPlaneA;
+    wxImage m_imgPlaneB;
+    wxImage m_imgCursor;
+    wxImage m_imgBackgd;
+
+    VDSCViewer() = delete;
+    VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu);
     ~VDSCViewer();
 
-    void RefreshLoop(wxTimerEvent& event);
+    void UpdateNotebook(wxTimerEvent&);
+    void UpdateRegisters();
+    void UpdateIcadca();
+    void UpdatePanels();
 
     wxDECLARE_EVENT_TABLE();
 };
 
-#endif // VDSCVIEWER_HPP
+#endif // GUI_VDSCVIEWER_HPP

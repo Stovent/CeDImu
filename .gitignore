@@ -2,8 +2,9 @@
 /*
 
 !.gitignore
-!WinMakefile
 !CMakeLists.txt
+!MANUAL.md
+!README.md
 
 !/cditool
 !/resources

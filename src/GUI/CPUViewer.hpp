@@ -1,53 +1,48 @@
-#ifndef CPUVIEWER_HPP
-#define CPUVIEWER_HPP
+#ifndef GUI_CPUVIEWER_HPP
+#define GUI_CPUVIEWER_HPP
 
+#include "../CeDImu.hpp"
 class MainFrame;
 #include "GenericList.hpp"
-#include "../CDI/cores/SCC68070/SCC68070.hpp"
 
+#include <wx/aui/framemanager.h>
 #include <wx/frame.h>
 #include <wx/listctrl.h>
-#include <wx/sizer.h>
 #include <wx/textctrl.h>
 #include <wx/timer.h>
-#include <wx/aui/framemanager.h>
 
 #include <mutex>
-#include <vector>
 
 class CPUViewer : public wxFrame
 {
 public:
-    bool flushInstructions;
-    std::mutex instructionsMutex;
-    std::vector<Instruction> instructions;
+    CeDImu& m_cedimu;
+    MainFrame* m_mainFrame;
+    wxAuiManager m_auiManager;
+    wxTimer m_updateTimer;
+    bool m_updateManager;
 
-    CPUViewer(CDI& idc, MainFrame* parent, const wxPoint& pos, const wxSize& size);
+    wxListCtrl* m_internalList;
+
+    GenericList* m_disassemblerList;
+    std::mutex m_instructionsMutex;
+    std::vector<LogInstruction> m_instructions;
+    bool m_flushInstructions;
+
+    wxTextCtrl* m_registers[20];
+
+    uint8_t m_lastByte;
+    wxTextCtrl* m_uartTextCtrl;
+
+    CPUViewer() = delete;
+    CPUViewer(MainFrame* mainFrame, CeDImu& cedimu);
     ~CPUViewer();
 
-    wxAuiManager auiManager;
-
-    CDI& cdi;
-    MainFrame* mainFrame;
-    wxTimer renderTimer;
-
-    wxListCtrl* internalRegisters;
-    GenericList* disassembler;
-    wxTextCtrl* uart;
-
-    wxTextCtrl* d[8];
-    wxTextCtrl* a[8];
-    wxTextCtrl* usp;
-    wxTextCtrl* ssp;
-    wxTextCtrl* pc;
-    wxTextCtrl* sr;
-
-    void OnClose(wxCloseEvent& event);
-    void PaintEvent(wxPaintEvent& event);
-    void PaintEvent();
-    void RefreshLoop(wxTimerEvent& event);
+    void UpdateManager(wxTimerEvent&);
+    void UpdateInternal();
+    void UpdateRegisters();
 
     wxDECLARE_EVENT_TABLE();
 };
 
-#endif // CPUVIEWER_HPP
+#endif // GUI_CPUVIEWER_HPP

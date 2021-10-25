@@ -33,12 +33,10 @@ add_executable(CeDImu
     GUI/DebugFrame.cpp
     GUI/GamePanel.cpp
     GUI/MainFrame.cpp
-    GUI/RAMSearchFrame.cpp
-    GUI/RAMSearchList.cpp
     GUI/SettingsFrame.cpp
     GUI/VDSCViewer.cpp
 )
 
 include(${wxWidgets_USE_FILE})
-target_include_directories(CeDImu PUBLIC ${wxWidgets_INCLUDE_DIRS})
+target_include_directories(CeDImu PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_link_libraries(CeDImu cdi ${wxWidgets_LIBRARIES} stdc++fs)
