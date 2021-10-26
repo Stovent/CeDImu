@@ -7,7 +7,9 @@ jobs:
             - uses: actions/checkout@v2
             - run: echo "checked out"
             - run: sudo apt install libwxgtk3.0-gtk3-dev
-            - run: mkdir build && cd build
+            - run: mkdir ${{runner.workspace}}/build
+            - run: cd ${{runner.workspace}}/build
+            - run: pwd
             - run: cmake .. -DENABLE_LOG=1
             - run: make
 
