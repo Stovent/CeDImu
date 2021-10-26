@@ -32,7 +32,7 @@ Use CMake-GUI
 
 #### Linux
 
-Package dependency: ``libwxgtk3.0-dev``
+Package dependency: `libwxgtk3.0-gtk3-dev`
 
 Install the dependency, then open a terminal in the root directory of the git and type:
 
