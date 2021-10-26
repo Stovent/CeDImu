@@ -1,0 +1,11 @@
+name: Build Linux
+on: [push]
+jobs:
+    test-job:
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo "Hello Actions"
+            - run: pwd
+            - uses: actions/checkout@v2
+            - run: echo "checked out"
+            - run: ls -l
