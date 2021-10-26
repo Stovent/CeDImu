@@ -5,18 +5,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - name: Install wxWidgets
-              run: sudo apt install libwxgtk3.0-gtk3-dev
-            - run: mkdir ${{runner.workspace}}/build
-            - working-directory: ${{runner.workspace}}/build
-              run: cmake $GITHUB_WORKSPACE -DENABLE_LOG=1
-            - working-directory: ${{runner.workspace}}/build
-              run: |
-                      make -j$(nproc --all)
-                      mkdir dist
-                      cp CeDImu dist
-            - uses: actions/upload-artifact@v1
-              with:
-                      name: CeDImu-linux-x86_64
-                      path: ${{runner.workspace}}/build/dist
+            - run: echo "checked out"
+            - run: sudo apt install libwxgtk3.0-dev
+            - run: mkdir build && cd build
+            - run: cmake .. -DENABLE_LOG=1
+            - run: make
 
