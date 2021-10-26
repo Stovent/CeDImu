@@ -4,8 +4,10 @@ jobs:
     test-job:
         runs-on: ubuntu-latest
         steps:
-            - run: echo "Hello Actions"
-            - run: pwd
             - uses: actions/checkout@v2
             - run: echo "checked out"
-            - run: ls -l
+            - run: apt install libwxgtk3.0-dev
+            - run: mkdir build && cd build
+            - run: cmake .. -DENABLE_LOG=1
+            - run: make
+
