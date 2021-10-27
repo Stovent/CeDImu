@@ -21,13 +21,13 @@
     controlsSizer->Add(key##k##Sizer, wxSizerFlags().DoubleBorder()); \
     wxStaticText* key##k##Text = new wxStaticText(controlsPanel, wxID_ANY, label); \
     key##k##Sizer->Add(key##k##Text, wxSizerFlags().Border(wxRIGHT, 20).Align(wxALIGN_CENTER_VERTICAL)); \
-    wxButton* key##k##Button = new wxButton(controlsPanel, wxID_ANY, wxAcceleratorEntry(0, m_key##k).ToString(), wxDefaultPosition, wxSize(100, 25)); \
+    wxButton* key##k##Button = new wxButton(controlsPanel, wxID_ANY, this->m_key##k ? wxAcceleratorEntry(0, m_key##k).ToString() : "", wxDefaultPosition, wxSize(100, 25)); \
     key##k##Button->Bind(wxEVT_BUTTON, [this, key##k##Button] (wxEvent&) { \
         key##k##Button->SetLabel("Waiting for key..."); \
         key##k##Button->Bind(wxEVT_CHAR_HOOK, [this, key##k##Button] (wxKeyEvent& evt) { \
             key##k##Button->Bind(wxEVT_CHAR_HOOK, [] (wxKeyEvent&) {}); \
             this->m_key##k = evt.GetKeyCode(); \
-            key##k##Button->SetLabel(wxAcceleratorEntry(0, this->m_key##k).ToString()); \
+            key##k##Button->SetLabel(this->m_key##k ? wxAcceleratorEntry(0, this->m_key##k).ToString() : ""); \
         }); \
     }); \
     key##k##Sizer->Add(key##k##Button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
