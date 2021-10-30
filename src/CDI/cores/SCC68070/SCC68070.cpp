@@ -124,7 +124,7 @@ void SCC68070::INT1()
 {
     const uint8_t level = internal[LIR] >> 4 & 0x07;
     if(level)
-        Interrupt(Level1ExternalInterruptAutovector - 1 + level, level);
+        Interrupt(Level1OnChipInterruptAutovector - 1 + level, level);
 }
 
 /** \brief Trigger interrupt with LIR2 level.
@@ -133,7 +133,7 @@ void SCC68070::INT2()
 {
     const uint8_t level = internal[LIR] & 0x07;
     if(level)
-        Interrupt(Level1ExternalInterruptAutovector - 1 + level, level);
+        Interrupt(Level1OnChipInterruptAutovector - 1 + level, level);
 }
 
 /** \brief Trigger level 2 external interrupt vector.
