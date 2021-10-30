@@ -13,36 +13,6 @@ Note: the project is still in a very early development stage, please open issues
 
 See the [user manual](https://github.com/Stovent/CeDImu/blob/master/MANUAL.md).
 
-## How to build
-#### Build macros
-
-``ENABLE_LOG``: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback and CeDImu to write in files the disassembly of the CPU and the memory accesses (default: ``OFF``).
-
-### CMake
-
-#### Variables
-
-``LIBRARY_TYPE``: used to build the core as a static or shared library (default: ``STATIC``).
-
-``BUILD_CDITOOL``: build cditool or not (default: ``OFF``).
-
-#### Windows
-
-Use CMake-GUI
-
-#### Linux
-
-Package dependency: `libwxgtk3.0-gtk3-dev`
-
-Install the dependency, then open a terminal in the root directory of the git and type:
-
-```sh
-mkdir build
-cd build
-cmake ..
-make -j$(nproc --all)
-```
-
 ## Compatibility
 
 DVC support will be added when CeDImu will have a good compatibility with the base case system on several boards.
@@ -84,7 +54,6 @@ Compatible means it is capable of playing discs.
 ## Features
 
 - [ ] CDI-related functions
-
   - [x] CDI file system
   - [x] Export files
   - [x] Export audio
@@ -94,13 +63,48 @@ Compatible means it is capable of playing discs.
   
 
 - [ ] Tools
-  - [ ] RAM Search
-  - [ ] Memory Viewer
   - [x] CPU Viewer
   - [x] VDSC Viewer
+  - [x] Debug (memory access logs and exception and system call tracing)
+  - [ ] RAM Search
+  - [ ] Memory Viewer
   - [ ] Savestates
 
+## How to build
+
+#### Build macros
+
+`ENABLE_LOG`: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback and allows CeDImu to write in files the disassembly of the CPU, the memory accesses and the exceptions and system calls (default: `OFF`).
+
+### CMake
+
+#### Variables
+
+`LIBRARY_TYPE`: used to build the core as a static or shared library (default: `STATIC`).
+
+`BUILD_CDITOOL`: build cditool or not (default: `OFF`).
+
+#### Windows
+
+Use CMake-GUI
+
+#### Linux
+
+Package dependency: `libwxgtk3.0-gtk3-dev`
+
+Install the dependency, then open a terminal in the root directory of the git and type:
+
+```sh
+mkdir build
+cd build
+cmake ..
+make -j$(nproc --all)
+```
+
+If you want to have the memory access logs, replace `cmake ..` with `cmake .. -DENABLE_LOG=1`
+
 ## libCeDImu
+
 If I get everything listed upper working, stable and fully functional, the goal is to create libCeDImu, a complete library (static and/or dynamic) to allow any program to implement CDI applications (other emulators like Bizhawk, MAME, etc).
 
 ## Special Thanks

@@ -93,6 +93,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu) :
         }
         this->m_instructions.push_back(inst);
         this->m_updateManager = true;
+        LOG(m_cedimu.WriteInstruction(inst);)
     });
 
 

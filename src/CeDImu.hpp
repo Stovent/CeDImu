@@ -19,6 +19,9 @@ public:
 
     std::string m_biosName;
     std::ofstream m_uartOut;
+    std::ofstream m_instructionsOut;
+    std::ofstream m_exceptionsOut;
+    std::ofstream m_memoryAccessOut;
 
     virtual bool OnInit() override;
     virtual int OnExit() override;
@@ -28,6 +31,11 @@ public:
     void StopEmulation();
     void IncreaseEmulationSpeed();
     void DecreaseEmulationSpeed();
+
+    void WriteInstruction(const LogInstruction& inst);
+    void WriteException(const LogSCC68070Exception& e, size_t trapIndex);
+    void WriteRTE(uint32_t pc, uint16_t format, const LogSCC68070Exception& e, size_t trapIndex);
+    void WriteMemoryAccess(const LogMemoryAccess& log);
 };
 
 #endif // CEDIMU_HPP

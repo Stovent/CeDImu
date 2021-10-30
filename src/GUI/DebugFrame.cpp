@@ -16,6 +16,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
     m_auiManager(this),
     m_updateTimer(this, wxID_ANY),
     m_updateMemoryLogs(false),
+    m_trapCount(0),
     m_updateExceptions(false)
 {
     // Memory logs
@@ -116,6 +117,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
             std::lock_guard<std::mutex> lock(this->m_memoryLogsMutex);
             this->m_memoryLogs.push_back(log);
             this->m_updateMemoryLogs = true;
+            LOG(m_cedimu.WriteMemoryAccess(log);)
         }
     });
 
@@ -156,19 +158,19 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
         if(item >= (long)this->m_exceptions.size())
             return "";
 
-        const LogSCC68070Exception& log = this->m_exceptions[this->m_exceptions.size() - 1 - item];
+        const std::pair<size_t, LogSCC68070Exception>& log = this->m_exceptions[this->m_exceptions.size() - 1 - item];
         if(column == 0)
-            return toHex(log.returnAddress);
-        if(column == 1 && log.vector == Trap0Instruction)
-            return log.systemCall.module;
+            return toHex(log.second.returnAddress);
+        if(column == 1 && log.second.vector == Trap0Instruction)
+            return log.second.systemCall.module;
         if(column == 2)
-            return log.disassembled;
-        if(column == 3 && log.vector == Trap0Instruction)
-            return OS9::systemCallNameToString(log.systemCall.type);
+            return log.second.disassembled;
+        if(column == 3 && log.second.vector == Trap0Instruction)
+            return OS9::systemCallNameToString(log.second.systemCall.type);
         if(column == 4)
-            return log.systemCall.inputs;
+            return log.second.systemCall.inputs;
         if(column == 5)
-            return log.systemCall.outputs;
+            return log.second.systemCall.outputs;
         return "";
     });
     m_auiManager.AddPane(m_exceptionsList, wxAuiPaneInfo().Bottom().Caption("Exceptions stack").CloseButton(false).Floatable().Resizable());
@@ -176,17 +178,20 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
     m_cedimu.m_cdi.callbacks.SetOnLogException([=] (const LogSCC68070Exception& log) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
-        m_exceptions.push_back(log);
+        const size_t trap = log.vector >= Trap0Instruction && log.vector <= Trap15Instruction ? ++m_trapCount : 0;
+        m_exceptions.push_back({trap, log});
+        LOG(m_cedimu.WriteException(log, trap);)
     });
 
     m_cedimu.m_cdi.callbacks.SetOnLogRTE([=] (uint32_t pc, uint16_t format) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
-        for(std::vector<LogSCC68070Exception>::reverse_iterator it = this->m_exceptions.rbegin();
+        for(std::vector<std::pair<size_t, LogSCC68070Exception>>::reverse_iterator it = this->m_exceptions.rbegin();
             it != this->m_exceptions.rend(); it++)
         {
-            if(pc == it->returnAddress && it->vector == Trap0Instruction)
+            if(pc == it->second.returnAddress && it->second.vector == Trap0Instruction)
             {
+                size_t index = it->first;
                 const std::map<CPURegister, uint32_t> registers = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
                 const bool cc = registers.at(CPURegister::SR) & 1;
                 char error[64] = {0};
@@ -199,11 +204,13 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
                 }
                 else
                 {
-                    outputs = OS9::systemCallOutputsToString(it->systemCall.type, registers, [=] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
+                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [=] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
                 }
 
-                const OS9::SystemCall syscall = {it->systemCall.type, "", "", cc ? std::string(error) : outputs};
-                m_exceptions.push_back(LogSCC68070Exception{it->vector, it->returnAddress, it->disassembled, syscall});
+                const OS9::SystemCall syscall = {it->second.systemCall.type, "", "", cc ? std::string(error) : outputs};
+                const LogSCC68070Exception rte{it->second.vector, it->second.returnAddress, it->second.disassembled, syscall};
+                m_exceptions.push_back({index, rte});
+                LOG(m_cedimu.WriteRTE(pc, format, rte, index);)
                 break;
             }
         }
@@ -235,13 +242,8 @@ void DebugFrame::UpdateManager(wxTimerEvent&)
 
     if(m_updateMemoryLogs)
     {
-        UpdateMemoryLogs();
+        m_memoryLogsList->SetItemCount(m_memoryLogs.size());
+        m_memoryLogsList->Refresh();
         m_updateMemoryLogs = false;
     }
-}
-
-void DebugFrame::UpdateMemoryLogs()
-{
-    m_memoryLogsList->SetItemCount(m_memoryLogs.size());
-    m_memoryLogsList->Refresh();
 }

@@ -2,6 +2,7 @@
 #include "Config.hpp"
 #include "GUI/MainFrame.hpp"
 #include "CDI/CDI.hpp"
+#include "CDI/OS9/SystemCalls.hpp"
 
 #include <wx/image.h>
 #include <wx/msgdlg.h>
@@ -10,6 +11,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <memory>
 
 constexpr float CPU_SPEEDS[] = {
@@ -41,6 +43,9 @@ bool CeDImu::OnInit()
     Config::loadConfig();
     m_cpuSpeed = DEFAULT_CPU_SPEED;
     m_uartOut.open("uart_out", std::ios::out | std::ios::binary);
+    LOG(m_instructionsOut.open("instructions.txt");)
+    LOG(m_exceptionsOut.open("exceptions.txt");)
+    LOG(m_memoryAccessOut.open("memory_access.txt");)
 
     new MainFrame(*this);
 
@@ -140,4 +145,61 @@ void CeDImu::DecreaseEmulationSpeed()
         if(m_cdi.board)
             m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
     }
+}
+
+void CeDImu::WriteInstruction(const LogInstruction& inst)
+{
+    m_instructionsOut << std::setiosflags(std::ios::left)
+                      << std::setw(8) << std::hex << inst.address
+                      << std::setw(12) << inst.biosLocation
+                      << inst.instruction
+                      << std::endl;
+}
+
+void CeDImu::WriteException(const LogSCC68070Exception& e, size_t trapIndex)
+{
+    m_exceptionsOut << std::setiosflags(std::ios::left)
+                    << std::setw(8) << std::hex << e.returnAddress
+                    << std::setw(12) << (e.vector == Trap0Instruction ? e.systemCall.module : "")
+                    << std::setw(20) << e.disassembled;
+
+    m_instructionsOut << std::setw(8) << std::hex << e.returnAddress
+                      << std::setw(12) << (e.vector == Trap0Instruction ? e.systemCall.module : "")
+                      << std::setw(20) << e.disassembled;
+
+    if(e.vector == Trap0Instruction)
+    {
+        m_exceptionsOut << std::dec << '[' << trapIndex << "]  "
+                        << std::setw(12) << OS9::systemCallNameToString(e.systemCall.type)
+                        << e.systemCall.inputs;
+        m_instructionsOut << std::dec << '[' << trapIndex << "]  "
+                          << OS9::systemCallNameToString(e.systemCall.type);
+    }
+
+    m_exceptionsOut << std::endl;
+    m_instructionsOut << std::endl;
+}
+
+void CeDImu::WriteRTE(uint32_t pc, uint16_t format, const LogSCC68070Exception& e, size_t trapIndex)
+{
+    m_exceptionsOut << std::setiosflags(std::ios::left)
+                    << std::setw(8) << std::hex << e.returnAddress
+                    << std::setw(12) << (e.vector == Trap0Instruction ? e.systemCall.module : "")
+                    << "               RTE  "
+                    << std::dec << '[' << trapIndex << "]  "
+                    << std::setw(12) << OS9::systemCallNameToString(e.systemCall.type)
+                    << e.systemCall.outputs << std::endl;
+}
+
+void CeDImu::WriteMemoryAccess(const LogMemoryAccess& log)
+{
+    m_memoryAccessOut << std::setiosflags(std::ios::left)
+                      << std::setw(14) << memoryAccessLocationToString(log.location)
+                      << std::setw(8) << std::hex << log.pc
+                      << std::setw(6) << log.direction
+                      << std::setw(10) << log.type
+                      << std::setw(10) << log.address
+                      << std::setw(10) << std::dec << log.data << "  0x"
+                      << std::setw(10) << std::hex << log.data
+                      << std::endl;
 }

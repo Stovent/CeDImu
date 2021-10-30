@@ -34,7 +34,8 @@ public:
 
     GenericList* m_exceptionsList;
     std::mutex m_exceptionsMutex;
-    std::vector<LogSCC68070Exception> m_exceptions;
+    std::vector<std::pair<size_t, LogSCC68070Exception>> m_exceptions; // <trap index starting at 1, exception>
+    size_t m_trapCount;
     bool m_updateExceptions;
 
     DebugFrame() = delete;
@@ -42,7 +43,6 @@ public:
     ~DebugFrame();
 
     void UpdateManager(wxTimerEvent&);
-    void UpdateMemoryLogs();
 
     wxDECLARE_EVENT_TABLE();
 };
