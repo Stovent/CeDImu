@@ -1,17 +1,24 @@
-#ifndef CDI_DEVICES_POINTINGDEVICE_HPP
-#define CDI_DEVICES_POINTINGDEVICE_HPP
+#ifndef CDI_POINTINGDEVICE_HPP
+#define CDI_POINTINGDEVICE_HPP
 
 class ISlave;
 
 #include <array>
 #include <mutex>
 
-enum class PointingDeviceTypes : char
+enum class PointingDeviceType : char
 {
     Relative = 'M',
     Maneuvering = 'J',
     Absolute = 'T',
     AbsoluteScreen = 'S',
+};
+
+enum class GamepadSpeed
+{
+    N,
+    I,
+    II,
 };
 
 struct PointerState
@@ -27,17 +34,15 @@ class PointingDevice
 {
 public:
     ISlave& slave;
-    const PointingDeviceTypes type;
+    const PointingDeviceType type;
     const uint64_t dataPacketDelay;
     std::array<uint8_t, 4> pointerMessage;
 
     PointingDevice() = delete;
-    PointingDevice(ISlave& slv, const PointingDeviceTypes deviceType) : slave(slv), type(deviceType), dataPacketDelay((type == PointingDeviceTypes::Absolute || type == PointingDeviceTypes::AbsoluteScreen) ? 33'333'333 : 25'000'000) {}
-    virtual ~PointingDevice() {}
+    PointingDevice(ISlave& slv, const PointingDeviceType deviceType);
 
-    virtual void IncrementTime(const size_t ns) = 0;
+    void IncrementTime(const size_t ns);
 
-    // TODO: move this in the subclasses?
     void SetButton1(const bool pressed);
     void SetButton2(const bool pressed);
     void SetLeft(const bool pressed);
@@ -45,9 +50,11 @@ public:
     void SetRight(const bool pressed);
     void SetDown(const bool pressed);
     void SetAbsolutePointerLocation(const bool pd, const int x, const int y);
+    void SetCursorSpeed(const GamepadSpeed speed);
 
-protected:
-    size_t timeSinceLastCommand;
+private:
+    uint64_t timer;
+    uint32_t cursorSpeed;
     std::mutex pointerMutex;
 
     PointerState pointerState = {false, false, false, 0, 0};
@@ -60,4 +67,4 @@ protected:
     void GeneratePointerMessage();
 };
 
-#endif // CDI_DEVICES_POINTINGDEVICE_HPP
+#endif // CDI_POINTINGDEVICE_HPP

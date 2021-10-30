@@ -1,5 +1,65 @@
 #include "PointingDevice.hpp"
-#include "../cores/ISlave.hpp"
+#include "cores/ISlave.hpp"
+
+PointingDevice::PointingDevice(ISlave& slv, const PointingDeviceType deviceType) :
+    slave(slv),
+    type(deviceType),
+    dataPacketDelay((type == PointingDeviceType::Absolute || type == PointingDeviceType::AbsoluteScreen) ? 33'333'333 : 25'000'000),
+    timer(0),
+    cursorSpeed(8)
+{}
+
+
+void PointingDevice::IncrementTime(const size_t ns)
+{
+    timer += ns;
+
+    if(timer >= dataPacketDelay)
+    {
+        std::lock_guard<std::mutex> lock(pointerMutex);
+        bool update = false;
+
+        // TODO: handle acceleration and speeds 1, 8, 16
+        if(padLeft)
+        {
+            pointerState.x = -cursorSpeed;
+            update = true;
+        }
+        else if(padRight)
+        {
+            pointerState.x = cursorSpeed;
+            update = true;
+        }
+        else
+            pointerState.x = 0;
+
+        if(padUp)
+        {
+            pointerState.y = -cursorSpeed;
+            update = true;
+        }
+        else if(padDown)
+        {
+            pointerState.y = cursorSpeed;
+            update = true;
+        }
+        else
+            pointerState.y = 0;
+
+        if(pointerState.btn1 != lastPointerState.btn1)
+            update = true;
+
+        if(pointerState.btn2 != lastPointerState.btn2)
+            update = true;
+
+        if(update)
+        {
+            timer = 0;
+            GeneratePointerMessage();
+            slave.UpdatePointerState();
+        }
+    }
+}
 
 /** \brief Set button 1 state.
  * \param pressed true if the button is pressed, false otherwise.
@@ -84,26 +144,45 @@ void PointingDevice::SetAbsolutePointerLocation(const bool pd, const int x, cons
     pointerState.y = y;
 }
 
+void PointingDevice::SetCursorSpeed(const GamepadSpeed speed)
+{
+    switch(speed)
+    {
+    case GamepadSpeed::N:
+        cursorSpeed = 8;
+        break;
+
+    case GamepadSpeed::I:
+        cursorSpeed = 1;
+        break;
+
+    case GamepadSpeed::II:
+        cursorSpeed = 16;
+        break;
+    }
+}
+
 // pointerLock must be locked before calling this method.
 void PointingDevice::GeneratePointerMessage()
 {
     switch(type)
     {
-    case PointingDeviceTypes::Absolute:
-    case PointingDeviceTypes::AbsoluteScreen:
+    case PointingDeviceType::Absolute:
+    case PointingDeviceType::AbsoluteScreen:
         pointerMessage[0] = 0x40 | pointerState.btn1 << 5 | pointerState.btn2 << 4 | (pointerState.x >> 6 & 0xF);
         pointerMessage[1] = pointerState.pd << 5 | (pointerState.y >> 6 & 0xF);
         pointerMessage[2] = pointerState.x & 0x3F;
         pointerMessage[3] = pointerState.y & 0x3F;
         break;
 
-    case PointingDeviceTypes::Maneuvering:
-    case PointingDeviceTypes::Relative:
+    case PointingDeviceType::Maneuvering:
+    case PointingDeviceType::Relative:
         pointerMessage[0] = 0x40 | pointerState.btn1 << 5 | pointerState.btn2 << 4 | (pointerState.y >> 4 & 0xC) | (pointerState.x >> 6 & 3);
         pointerMessage[1] = pointerState.x & 0x3F;
         pointerMessage[2] = pointerState.y & 0x3F;
         pointerMessage[3] = 0;
         break;
     }
+
     lastPointerState = pointerState;
 }

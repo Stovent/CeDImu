@@ -9,7 +9,7 @@ Mono3::Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void
     mcd212(cdi, vdscBios, vdscSize, conf.PAL),
     nvramMaxAddress(conf.has32KBNVRAM ? 0x330000 : 0x324000)
 {
-    slave = std::make_unique<HLE::IKAT>(cdi, conf.PAL, 0x310000);
+    slave = std::make_unique<HLE::IKAT>(cdi, conf.PAL, 0x310000, PointingDeviceType::Maneuvering);
     if(conf.has32KBNVRAM)
         timekeeper = std::make_unique<DS1216>(cdi, conf.initialTime, (uint8_t*)nvram);
     else

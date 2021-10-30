@@ -58,7 +58,7 @@ class IKAT : public ISlave
 
 public:
     IKAT() = delete;
-    IKAT(CDI& idc, const bool PAL, uint32_t busbase);
+    IKAT(CDI& idc, const bool PAL, uint32_t busbase, const PointingDeviceType deviceType);
 
     virtual void UpdatePointerState() override;
     virtual void IncrementTime(const size_t ns) override;

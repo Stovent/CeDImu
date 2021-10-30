@@ -31,7 +31,7 @@ namespace HLE
 #define UNSET_WRIDLE(var) var &= 0x10;
 #define SET_RDWRIDLE(var) var = 0x11;
 
-IKAT::IKAT(CDI& idc, const bool PAL, uint32_t busbase) : ISlave(idc, busbase)
+IKAT::IKAT(CDI& idc, const bool PAL, uint32_t busbase, const PointingDeviceType deviceType) : ISlave(idc, busbase, deviceType)
 {
     responseCF6[2] = PAL + 1;
 

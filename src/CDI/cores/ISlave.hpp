@@ -2,8 +2,7 @@
 #define CDI_CORES_ISLAVE_HPP
 
 class CDI;
-#include "../devices/PointingDevice.hpp"
-#include "../devices/ManeuveringDevice.hpp"
+#include "../PointingDevice.hpp"
 
 #include <memory>
 
@@ -15,7 +14,7 @@ public:
     const uint32_t busBase;
 
     ISlave() = delete;
-    ISlave(CDI& idc, uint32_t busbase) : cdi(idc), pointingDevice(std::make_unique<ManeuveringDevice>(*this)), busBase(busbase) {}
+    ISlave(CDI& idc, uint32_t busbase, const PointingDeviceType deviceType) : cdi(idc), pointingDevice(std::make_unique<PointingDevice>(*this, deviceType)), busBase(busbase) {}
     virtual ~ISlave() {}
 
     virtual void UpdatePointerState() = 0;
