@@ -200,6 +200,6 @@ void CeDImu::WriteMemoryAccess(const LogMemoryAccess& log)
                       << std::setw(10) << log.type
                       << std::setw(10) << log.address
                       << std::setw(10) << std::dec << log.data << "  0x"
-                      << std::setw(10) << std::hex << log.data
+                      << std::hex << log.data
                       << std::endl;
 }

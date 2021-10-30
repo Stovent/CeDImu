@@ -48,6 +48,7 @@ public:
     void OnIncreaseSpeed(wxCommandEvent&);
     void OnDecreaseSpeed(wxCommandEvent&);
     void OnReloadCore(wxCommandEvent&);
+    void OnResizeView(wxCommandEvent&);
 
     void OnExportAudio(wxCommandEvent&);
     void OnExportFiles(wxCommandEvent&);

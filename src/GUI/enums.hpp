@@ -14,6 +14,7 @@ enum
     IDMainFrameOnIncreaseSpeed,
     IDMainFrameOnDecreaseSpeed,
     IDMainFrameOnReloadCore,
+    IDMainFrameOnResizeView,
     IDMainFrameOnExportAudio,
     IDMainFrameOnExportFiles,
     IDMainFrameOnExportVideo,

@@ -26,6 +26,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnIncreaseSpeed, MainFrame::OnIncreaseSpeed)
     EVT_MENU(IDMainFrameOnDecreaseSpeed, MainFrame::OnDecreaseSpeed)
     EVT_MENU(IDMainFrameOnReloadCore, MainFrame::OnReloadCore)
+    EVT_MENU(IDMainFrameOnResizeView, MainFrame::OnResizeView)
     EVT_MENU(IDMainFrameOnExportAudio, MainFrame::OnExportAudio)
     EVT_MENU(IDMainFrameOnExportFiles, MainFrame::OnExportFiles)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
@@ -77,6 +78,7 @@ void MainFrame::CreateMenuBar()
     emulationMenu->Append(IDMainFrameOnIncreaseSpeed, "Increase Speed", "Increase the emulation speed");
     emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed", "Decrease the emulation speed");
     emulationMenu->Append(IDMainFrameOnReloadCore, "Reload core\tCtrl+R");
+    emulationMenu->Append(IDMainFrameOnResizeView, "Resize View");
     menuBar->Append(emulationMenu, "Emulation");
 
     wxMenu* cdiMenu = new wxMenu();
@@ -223,6 +225,13 @@ void MainFrame::OnReloadCore(wxCommandEvent&)
     }
     else
         SetStatusText("Failed to reload core");
+}
+
+void MainFrame::OnResizeView(wxCommandEvent&)
+{
+    const wxSize size = m_gamePanel->m_screen.GetSize();
+    if(size.x > 0 && size.y > 0)
+        SetClientSize(size.x, size.y);
 }
 
 void MainFrame::OnExportAudio(wxCommandEvent&)
