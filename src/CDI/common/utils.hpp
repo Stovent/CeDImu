@@ -99,6 +99,22 @@ inline uint32_t binStringToInt(const std::string& s)
     return ret;
 }
 
+/** \brief Truncate the input if is greater or lower than the uint8_t range.
+ *
+ * \param data The input to truncate.
+ * \return the input if if fits in the range, 0 if input is lower, 255 if input is greater.
+ */
+inline uint8_t limu8(const int data)
+{
+    if(data > 255)
+        return 255;
+
+    if(data < 0)
+        return 0;
+
+    return data;
+}
+
 /** \brief Truncate the input if is greater or lower than the int16_t range.
  *
  * \param data The input to truncate.

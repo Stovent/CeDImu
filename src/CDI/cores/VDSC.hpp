@@ -35,7 +35,10 @@ struct Plane : public std::vector<uint8_t>
 {
     uint16_t width; /**< Width of the plane. */
     uint16_t height; /**< Height of the plane. */
-    explicit Plane(const size_t sz = 0, uint16_t w = 0, uint16_t h = 0) : std::vector<uint8_t>(sz, 0), width(w), height(h) {}
+
+    explicit Plane(const size_t sz = PLANE_ARGB_SIZE, uint16_t w = 0, uint16_t h = 0) : std::vector<uint8_t>(sz, 0), width(w), height(h) {}
+    const uint8_t* operator()(size_t line, size_t pixelSize) const { return data() + line * width * pixelSize; }
+    uint8_t* operator()(size_t line, size_t pixelSize) { return data() + line * width * pixelSize; }
 };
 
 struct RAMBank

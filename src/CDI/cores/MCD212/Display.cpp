@@ -47,7 +47,7 @@ void MCD212::ExecuteVideoLine()
 
     if(lineNumber == 0)
     {
-        screen.width = backgroundPlane.width = planeA.width = GetHorizontalResolution1();
+        screen.width = planeA.width = GetHorizontalResolution1();
         planeB.width = GetHorizontalResolution2();
         screen.height = backgroundPlane.height = planeB.height = planeA.height = GetVerticalResolution();
     }
@@ -64,6 +64,7 @@ void MCD212::ExecuteVideoLine()
         DrawLineBackground();
         if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
             DrawLineCursor();
+        OverlayMix();
 
         if(GetIC1() && GetDC1())
         {
@@ -81,19 +82,6 @@ void MCD212::ExecuteVideoLine()
     {
         if(GetDE())
         {
-            Video::splitARGB(backgroundPlane.data(), backgroundPlane.width * backgroundPlane.height * 4, nullptr, screen.data());
-
-            if(controlRegisters[PlaneOrder] & 1)
-            {
-                Video::paste(screen.data(), screen.width, screen.height, planeA.data(), planeA.width, planeA.height);
-                Video::paste(screen.data(), screen.width, screen.height, planeB.data(), planeB.width, planeB.height);
-            }
-            else
-            {
-                Video::paste(screen.data(), screen.width, screen.height, planeB.data(), planeB.width, planeB.height);
-                Video::paste(screen.data(), screen.width, screen.height, planeA.data(), planeA.width, planeA.height);
-            }
-
             if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
             {
                 const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // TODO: address is in double resolution mode
@@ -168,19 +156,11 @@ void MCD212::DrawLinePlaneB()
 
 void MCD212::DrawLineBackground()
 {
-    uint8_t* pixels  = &backgroundPlane[backgroundPlane.width * lineNumber * 4];
-    const uint8_t A = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-    const uint8_t R = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-    const uint8_t G = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-    const uint8_t B = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
-
-    for(uint16_t i = 0, j = 0; i < backgroundPlane.width; i++)
-    {
-        pixels[j++] = A;
-        pixels[j++] = R;
-        pixels[j++] = G;
-        pixels[j++] = B;
-    }
+    // The point is that the pixels of a line are all the same, so backgroundPlane only contains the color of each line.
+    backgroundPlane[lineNumber * 4]     = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
+    backgroundPlane[lineNumber * 4 + 1] = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
+    backgroundPlane[lineNumber * 4 + 2] = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
+    backgroundPlane[lineNumber * 4 + 3] = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
 }
 
 void MCD212::DrawLineCursor()
@@ -213,6 +193,79 @@ void MCD212::DrawLineCursor()
             j += 4;
         }
         mask >>= 1;
+    }
+}
+
+void MCD212::OverlayMix()
+{
+    uint8_t* dst = screen(lineNumber, 3);
+    uint8_t* backgd = backgroundPlane(lineNumber, 4);
+    uint8_t* backPlane;
+    uint8_t* frontPlane;
+    uint8_t weightBack;
+    uint8_t weightFront;
+
+    if(controlRegisters[PlaneOrder] & 1)
+    {
+        backPlane = planeA(lineNumber, 4);
+        frontPlane = planeB(lineNumber, 4);
+        weightBack = controlRegisters[WeightFactorForPlaneA] & 0x0000003F;
+        weightFront = controlRegisters[WeightFactorForPlaneB] & 0x0000003F;
+    }
+    else
+    {
+        backPlane = planeB(lineNumber, 4);
+        frontPlane = planeA(lineNumber, 4);
+        weightBack = controlRegisters[WeightFactorForPlaneB] & 0x0000003F;
+        weightFront = controlRegisters[WeightFactorForPlaneA] & 0x0000003F;
+    }
+
+    const int abg = *backgd++;
+    const int rbg = *backgd++;
+    const int gbg = *backgd++;
+    const int bbg = *backgd++;
+
+    for(uint16_t w = 0; w < planeA.width; w++)
+    {
+        int abp = *backPlane++;
+        int rbp = *backPlane++;
+        int gbp = *backPlane++;
+        int bbp = *backPlane++;
+
+        int afp = *frontPlane++;
+        int rfp = *frontPlane++;
+        int gfp = *frontPlane++;
+        int bfp = *frontPlane++;
+
+        rbp = ((rbp - 16) * weightBack) / 63 + 16;
+        gbp = ((gbp - 16) * weightBack) / 63 + 16;
+        bbp = ((bbp - 16) * weightBack) / 63 + 16;
+
+        rfp = ((rfp - 16) * weightFront) / 63 + 16;
+        gfp = ((gfp - 16) * weightFront) / 63 + 16;
+        bfp = ((bfp - 16) * weightFront) / 63 + 16;
+
+        int a = afp + abp * (255 - afp);
+        int r = rbg;
+        int g = gbg;
+        int b = bbg;
+
+        if(!(controlRegisters[TransparencyControl] & 0x800000)) // Mixing
+        {
+            r = limu8(rbp + rfp - 16);
+            g = limu8(gbp + gfp - 16);
+            b = limu8(bbp + bfp - 16);
+        }
+        else if(a > 0)
+        {
+            r = (rfp * afp + rbp * abp * (255 - afp)) / a;
+            g = (gfp * afp + gbp * abp * (255 - afp)) / a;
+            b = (bfp * afp + bbp * abp * (255 - afp)) / a;
+        }
+
+        *dst++ = r;
+        *dst++ = g;
+        *dst++ = b;
     }
 }
 

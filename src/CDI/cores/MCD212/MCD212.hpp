@@ -111,6 +111,7 @@ private:
     void DrawLinePlaneB();
     void DrawLineCursor();
     void DrawLineBackground();
+    void OverlayMix();
     void HandleCLUTTransparency(uint8_t* pixels, const uint16_t width, const uint32_t control, const uint32_t color);
 
     // Display File Decoders

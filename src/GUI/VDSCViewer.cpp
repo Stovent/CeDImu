@@ -65,6 +65,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     m_internalRegistersList->InsertColumn(2, valueCol);
     m_internalRegistersList->InsertColumn(3, disCol);
 
+    nameCol.SetWidth(185);
     m_controlRegistersList = new wxListCtrl(registersPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_HRULES | wxLC_VRULES);
     controlSizer->Add(m_controlRegistersList, wxSizerFlags().Expand());
     m_controlRegistersList->InsertColumn(0, nameCol);
