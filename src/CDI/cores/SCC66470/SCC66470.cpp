@@ -32,16 +32,6 @@ void SCC66470::MemorySwap()
     memorySwapCount = 0;
 }
 
-void SCC66470::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
-{
-    memcpy(&memory[position], s, size);
-}
-
-void SCC66470::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
-{
-    PutDataInMemory(s, size, position + 0x180000);
-}
-
 RAMBank SCC66470::GetRAMBank1() const
 {
     return {memory.data(), 0, 0x80000};

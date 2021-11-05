@@ -62,16 +62,6 @@ void MCD212::IncrementTime(const double ns)
     }
 }
 
-void MCD212::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
-{
-    memcpy(&memory[position], s, size);
-}
-
-void MCD212::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
-{
-    PutDataInMemory(s, size, position + 0x400000);
-}
-
 void MCD212::MemorySwap()
 {
     memorySwapCount = 0;

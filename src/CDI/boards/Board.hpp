@@ -55,9 +55,6 @@ public:
         return nullptr;
     }
 
-    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
-    virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;
-
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
 

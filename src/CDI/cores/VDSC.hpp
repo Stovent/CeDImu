@@ -62,9 +62,6 @@ public:
     virtual void Reset() = 0;
     virtual void IncrementTime(const double ns) = 0;
 
-    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) = 0;
-    virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) = 0;
-
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) = 0;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) = 0;
 

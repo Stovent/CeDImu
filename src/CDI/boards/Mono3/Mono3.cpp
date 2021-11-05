@@ -34,16 +34,6 @@ void Mono3::IncrementTime(const double ns)
     mcd212.IncrementTime(ns);
 }
 
-void Mono3::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
-{
-    mcd212.PutDataInMemory(s, size, position);
-}
-
-void Mono3::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
-{
-    mcd212.WriteToBIOSArea(s, size, position);
-}
-
 uint32_t Mono3::GetTotalFrameCount()
 {
     return mcd212.totalFrameCount;

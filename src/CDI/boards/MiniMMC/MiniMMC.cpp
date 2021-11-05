@@ -30,19 +30,6 @@ void MiniMMC::IncrementTime(const double ns)
     slaveVDSC.IncrementTime(ns);
 }
 
-void MiniMMC::PutDataInMemory(const void* s, unsigned int size, unsigned int position)
-{
-    if(position >= 0x080000)
-        slaveVDSC.PutDataInMemory(s, size, position);
-    else
-        masterVDSC.PutDataInMemory(s, size, position);
-}
-
-void MiniMMC::WriteToBIOSArea(const void* s, unsigned int size, unsigned int position)
-{
-    masterVDSC.WriteToBIOSArea(s, size, position);
-}
-
 uint32_t MiniMMC::GetTotalFrameCount()
 {
     return masterVDSC.totalFrameCount;

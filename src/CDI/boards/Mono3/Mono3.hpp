@@ -29,9 +29,6 @@ public:
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
 
-    virtual void PutDataInMemory(const void* s, unsigned int size, unsigned int position) override;
-    virtual void WriteToBIOSArea(const void* s, unsigned int size, unsigned int position) override;
-
     virtual uint32_t GetTotalFrameCount() override;
     virtual const OS9::BIOS& GetBIOS() const override;
 
