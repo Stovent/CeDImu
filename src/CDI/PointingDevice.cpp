@@ -4,9 +4,10 @@
 PointingDevice::PointingDevice(ISlave& slv, const PointingDeviceType deviceType) :
     slave(slv),
     type(deviceType),
-    dataPacketDelay((type == PointingDeviceType::Absolute || type == PointingDeviceType::AbsoluteScreen) ? 33'333'333 : 25'000'000),
+    dataPacketDelay(getDataPacketDelay(deviceType)),
     timer(0),
-    cursorSpeed(8)
+    consecutiveCursorPackets(0),
+    gamepadSpeed(GamepadSpeed::N)
 {}
 
 
@@ -16,32 +17,47 @@ void PointingDevice::IncrementTime(const size_t ns)
 
     if(timer >= dataPacketDelay)
     {
+        timer -= dataPacketDelay;
         std::lock_guard<std::mutex> lock(pointerMutex);
         bool update = false;
 
-        // TODO: handle acceleration and speeds 1, 8, 16
+        if(!padLeft && !padUp && !padRight && !padDown)
+            consecutiveCursorPackets = 0;
+        else
+            consecutiveCursorPackets++;
+
+        int speed = getCursorSpeed(gamepadSpeed, consecutiveCursorPackets);
+
         if(padLeft)
         {
-            pointerState.x = -cursorSpeed;
+            pointerState.x = -speed;
             update = true;
+            if(lastPointerState.x < pointerState.x)
+                consecutiveCursorPackets = 0;
         }
         else if(padRight)
         {
-            pointerState.x = cursorSpeed;
+            pointerState.x = speed;
             update = true;
+            if(lastPointerState.x > pointerState.x)
+                consecutiveCursorPackets = 0;
         }
         else
             pointerState.x = 0;
 
         if(padUp)
         {
-            pointerState.y = -cursorSpeed;
+            pointerState.y = -speed;
             update = true;
+            if(lastPointerState.y < pointerState.y)
+                consecutiveCursorPackets = 0;
         }
         else if(padDown)
         {
-            pointerState.y = cursorSpeed;
+            pointerState.y = speed;
             update = true;
+            if(lastPointerState.y > pointerState.y)
+                consecutiveCursorPackets = 0;
         }
         else
             pointerState.y = 0;
@@ -54,7 +70,6 @@ void PointingDevice::IncrementTime(const size_t ns)
 
         if(update)
         {
-            timer = 0;
             GeneratePointerMessage();
             slave.UpdatePointerState();
         }
@@ -146,20 +161,7 @@ void PointingDevice::SetAbsolutePointerLocation(const bool pd, const int x, cons
 
 void PointingDevice::SetCursorSpeed(const GamepadSpeed speed)
 {
-    switch(speed)
-    {
-    case GamepadSpeed::N:
-        cursorSpeed = 8;
-        break;
-
-    case GamepadSpeed::I:
-        cursorSpeed = 1;
-        break;
-
-    case GamepadSpeed::II:
-        cursorSpeed = 16;
-        break;
-    }
+    gamepadSpeed = speed;
 }
 
 // pointerLock must be locked before calling this method.
