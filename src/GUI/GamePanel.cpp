@@ -56,15 +56,14 @@ void GamePanel::Reset()
     Refresh();
 }
 
-bool GamePanel::SaveScreenshot(const std::string& path)
+bool GamePanel::SaveScreenshot(const std::string& file)
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
     if(!m_cedimu.m_cdi.board)
         return false;
 
     std::lock_guard<std::mutex> lock2(m_screenMutex);
-    uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
-    return m_screen.SaveFile(path + "/frame_" + std::to_string(fc) + ".png", wxBITMAP_TYPE_PNG);
+    return m_screen.SaveFile(file, wxBITMAP_TYPE_PNG);
 }
 
 void GamePanel::DrawScreen(wxDC& dc)
@@ -91,7 +90,7 @@ void GamePanel::OnPaintEvent(wxPaintEvent&)
 
 void GamePanel::OnKeyDown(wxKeyEvent& event)
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
     int keyCode = event.GetKeyCode();
     if(keyCode == Config::keyUp)
     {
@@ -137,7 +136,7 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
 
 void GamePanel::OnKeyUp(wxKeyEvent& event)
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
     int keyCode = event.GetKeyCode();
     if(keyCode == Config::keyUp)
     {

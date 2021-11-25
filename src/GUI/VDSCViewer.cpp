@@ -5,9 +5,10 @@
 #include "../CDI/common/Video.hpp"
 
 #include <wx/button.h>
-#include <wx/dirdlg.h>
+#include <wx/filedlg.h>
 #include <wx/dcclient.h>
 #include <wx/image.h>
+#include <wx/msgdlg.h>
 #include <wx/sizer.h>
 
 wxBEGIN_EVENT_TABLE(VDSCViewer, wxFrame)
@@ -170,17 +171,26 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     planeAButton->Bind(wxEVT_BUTTON, [=] (wxEvent&) {
         if(!this->m_imgPlaneA.IsOk())
             return;
-        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if(dirDlg.ShowModal() == wxID_OK)
+
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+        if(!this->m_cedimu.m_cdi.board)
+            return;
+
+        bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
+        if(isRunning)
+            this->m_cedimu.StopEmulation();
+        uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
+
+        wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "planeA_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if(fileDlg.ShowModal() == wxID_OK)
         {
-            std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-            if(this->m_cedimu.m_cdi.board)
-            {
-                uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
-                std::lock_guard<std::mutex> lock2(m_imgMutex);
-                this->m_imgPlaneA.SaveFile(dirDlg.GetPath().ToStdString() + "/planeA_" + std::to_string(fc) + ".png", wxBITMAP_TYPE_PNG);
-            }
+            std::lock_guard<std::mutex> lock2(m_imgMutex);
+            if(!this->m_imgPlaneA.SaveFile(fileDlg.GetPath().ToStdString(), wxBITMAP_TYPE_PNG))
+                wxMessageBox("Failed to save plane A");
         }
+
+        if(isRunning)
+            this->m_cedimu.StartEmulation();
     });
     buttonsSizer->Add(planeAButton, wxSizerFlags().Border().Proportion(1));
 
@@ -188,17 +198,26 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     planeBButton->Bind(wxEVT_BUTTON, [=] (wxEvent&) {
         if(!this->m_imgPlaneB.IsOk())
             return;
-        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if(dirDlg.ShowModal() == wxID_OK)
+
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+        if(!this->m_cedimu.m_cdi.board)
+            return;
+
+        bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
+        if(isRunning)
+            this->m_cedimu.StopEmulation();
+        uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
+
+        wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "planeB_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if(fileDlg.ShowModal() == wxID_OK)
         {
-            std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-            if(this->m_cedimu.m_cdi.board)
-            {
-                uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
-                std::lock_guard<std::mutex> lock2(m_imgMutex);
-                this->m_imgPlaneB.SaveFile(dirDlg.GetPath().ToStdString() + "/planeB_" + std::to_string(fc) + ".png", wxBITMAP_TYPE_PNG);
-            }
+            std::lock_guard<std::mutex> lock2(m_imgMutex);
+            if(!this->m_imgPlaneB.SaveFile(fileDlg.GetPath().ToStdString(), wxBITMAP_TYPE_PNG))
+                wxMessageBox("Failed to save plane B");
         }
+
+        if(isRunning)
+            this->m_cedimu.StartEmulation();
     });
     buttonsSizer->Add(planeBButton, wxSizerFlags().Border().Proportion(1));
 
@@ -206,17 +225,26 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     cursorButton->Bind(wxEVT_BUTTON, [=] (wxEvent&) {
         if(!this->m_imgCursor.IsOk())
             return;
-        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if(dirDlg.ShowModal() == wxID_OK)
+
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+        if(!this->m_cedimu.m_cdi.board)
+            return;
+
+        bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
+        if(isRunning)
+            this->m_cedimu.StopEmulation();
+        uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
+
+        wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "cursor_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if(fileDlg.ShowModal() == wxID_OK)
         {
-            std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-            if(this->m_cedimu.m_cdi.board)
-            {
-                uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
-                std::lock_guard<std::mutex> lock2(m_imgMutex);
-                this->m_imgCursor.SaveFile(dirDlg.GetPath().ToStdString() + "/cursor_" + std::to_string(fc) + ".png", wxBITMAP_TYPE_PNG);
-            }
+            std::lock_guard<std::mutex> lock2(m_imgMutex);
+            if(!this->m_imgCursor.SaveFile(fileDlg.GetPath().ToStdString(), wxBITMAP_TYPE_PNG))
+                wxMessageBox("Failed to save cursor");
         }
+
+        if(isRunning)
+            this->m_cedimu.StartEmulation();
     });
     buttonsSizer->Add(cursorButton, wxSizerFlags().Border().Proportion(1));
 
@@ -224,17 +252,26 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     backgdButton->Bind(wxEVT_BUTTON, [=] (wxEvent&) {
         if(!this->m_imgBackgd.IsOk())
             return;
-        wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if(dirDlg.ShowModal() == wxID_OK)
+
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+        if(!this->m_cedimu.m_cdi.board)
+            return;
+
+        bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
+        if(isRunning)
+            this->m_cedimu.StopEmulation();
+        uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
+
+        wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "background_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if(fileDlg.ShowModal() == wxID_OK)
         {
-            std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-            if(this->m_cedimu.m_cdi.board)
-            {
-                uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
-                std::lock_guard<std::mutex> lock2(m_imgMutex);
-                this->m_imgBackgd.SaveFile(dirDlg.GetPath().ToStdString() + "/background_" + std::to_string(fc) + ".png", wxBITMAP_TYPE_PNG);
-            }
+            std::lock_guard<std::mutex> lock2(m_imgMutex);
+            if(!this->m_imgBackgd.SaveFile(fileDlg.GetPath().ToStdString(), wxBITMAP_TYPE_PNG))
+                wxMessageBox("Failed to save background");
         }
+
+        if(isRunning)
+            this->m_cedimu.StartEmulation();
     });
     buttonsSizer->Add(backgdButton, wxSizerFlags().Border().Proportion(1));
 
@@ -300,7 +337,7 @@ void VDSCViewer::UpdateNotebook(wxTimerEvent&)
 
 void VDSCViewer::UpdateRegisters()
 {
-    std::unique_lock<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    std::unique_lock<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
     if(!m_cedimu.m_cdi.board)
     {
         m_internalRegistersList->DeleteAllItems();
@@ -364,7 +401,7 @@ void VDSCViewer::UpdateIcadca()
 
 void VDSCViewer::UpdatePanels()
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
     if(!m_cedimu.m_cdi.board)
         return;
 

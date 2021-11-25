@@ -119,7 +119,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     m_auiManager.AddPane(m_uartTextCtrl, wxAuiPaneInfo().Bottom().Caption("UART out").CloseButton(false).Floatable().Resizable().BestSize(-1, 200));
     m_uartTextCtrl->Bind(wxEVT_KEY_DOWN, [=] (wxKeyEvent& event) {
         const int key = event.GetKeyCode();
-        std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
         if(key < 128)
             if(this->m_cedimu.m_cdi.board)
                 this->m_cedimu.m_cdi.board->cpu.SendUARTIn(key);
@@ -159,7 +159,7 @@ void CPUViewer::UpdateManager(wxTimerEvent&)
 
 void CPUViewer::UpdateInternal()
 {
-    std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
     if(!m_cedimu.m_cdi.board)
         return;
 
@@ -187,7 +187,7 @@ void CPUViewer::UpdateInternal()
 
 void CPUViewer::UpdateRegisters()
 {
-    std::lock_guard<std::mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
     if(!m_cedimu.m_cdi.board)
         return;
 

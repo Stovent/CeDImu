@@ -91,7 +91,7 @@ bool CeDImu::InitCDI()
     else
         std::cout << "Warning: no NVRAM file associated with the system BIOS used" << std::endl;
 
-    std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
     m_cdi.config.has32KBNVRAM = Config::has32KBNVRAM;
     m_cdi.config.PAL = Config::PAL;
     if(Config::initialTime.size() == 0)
@@ -115,14 +115,14 @@ bool CeDImu::InitCDI()
 
 void CeDImu::StartEmulation()
 {
-    std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
     if(m_cdi.board)
         m_cdi.board->cpu.Run(true);
 }
 
 void CeDImu::StopEmulation()
 {
-    std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
     if(m_cdi.board)
         m_cdi.board->cpu.Stop(true);
 }
@@ -131,7 +131,7 @@ void CeDImu::IncreaseEmulationSpeed()
 {
     if(m_cpuSpeed < MAX_CPU_SPEED)
     {
-        std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+        std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
         if(m_cdi.board)
             m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[++m_cpuSpeed]);
     }
@@ -141,7 +141,7 @@ void CeDImu::DecreaseEmulationSpeed()
 {
     if(m_cpuSpeed > 0)
     {
-        std::lock_guard<std::mutex> lock(m_cdiBoardMutex);
+        std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
         if(m_cdi.board)
             m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
     }

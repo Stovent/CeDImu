@@ -13,7 +13,7 @@ extern const float CPU_SPEEDS[];
 class CeDImu : public wxApp
 {
 public:
-    std::mutex m_cdiBoardMutex; // To lock only when accessing the board.
+    std::recursive_mutex m_cdiBoardMutex; // To lock only when accessing the board.
     CDI m_cdi;
     uint16_t m_cpuSpeed;
 

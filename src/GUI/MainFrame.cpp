@@ -111,7 +111,7 @@ void MainFrame::UpdateTitle()
 
 void MainFrame::UpdateStatusBar()
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
 
     uint64_t cycleRate = 0;
     uint32_t frameRate = 0;
@@ -150,10 +150,22 @@ void MainFrame::OnCloseDisc(wxCommandEvent&)
 
 void MainFrame::OnScreenshot(wxCommandEvent&)
 {
-    wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-    if(dirDlg.ShowModal() == wxID_OK)
-        if(!m_gamePanel->SaveScreenshot(dirDlg.GetPath().ToStdString()))
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
+    if(!m_cedimu.m_cdi.board)
+        return;
+
+    bool isRunning = !m_pauseMenuItem->IsChecked();
+    if(isRunning)
+        m_cedimu.StopEmulation();
+
+    uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
+    wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "frame_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if(fileDlg.ShowModal() == wxID_OK)
+        if(!m_gamePanel->SaveScreenshot(fileDlg.GetPath().ToStdString()))
             wxMessageBox("Failed to save screenshot");
+
+    if(isRunning)
+        m_cedimu.StartEmulation();
 }
 
 void MainFrame::OnExit(wxCommandEvent&)
@@ -185,7 +197,7 @@ void MainFrame::OnSingleStep(wxCommandEvent&)
 {
     if(m_pauseMenuItem->IsChecked())
     {
-        std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+        std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
         if(m_cedimu.m_cdi.board)
             m_cedimu.m_cdi.board->cpu.Run(false);
     }
@@ -193,7 +205,7 @@ void MainFrame::OnSingleStep(wxCommandEvent&)
 
 void MainFrame::OnFrameAdvance(wxCommandEvent&)
 {
-    std::lock_guard<std::mutex> lock(m_cedimu.m_cdiBoardMutex);
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
     if(m_cedimu.m_cdi.board)
     {
         m_gamePanel->m_stopOnNextFrame = true;
@@ -231,7 +243,10 @@ void MainFrame::OnResizeView(wxCommandEvent&)
 {
     const wxSize size = m_gamePanel->m_screen.GetSize();
     if(size.x > 0 && size.y > 0)
+    {
         SetClientSize(size.x, size.y);
+        Refresh();
+    }
 }
 
 void MainFrame::OnExportAudio(wxCommandEvent&)

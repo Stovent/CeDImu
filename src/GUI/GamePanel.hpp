@@ -24,7 +24,7 @@ public:
     ~GamePanel();
 
     void Reset();
-    bool SaveScreenshot(const std::string& path);
+    bool SaveScreenshot(const std::string& file);
 
     void DrawScreen(wxDC& dc);
     void OnPaintEvent(wxPaintEvent&);
