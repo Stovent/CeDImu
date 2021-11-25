@@ -94,43 +94,81 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     wxStaticBoxSizer* ica2Sizer = new wxStaticBoxSizer(wxVERTICAL, icadcaPage, "ICA 2");
     icaSizer->Add(ica2Sizer, wxSizerFlags().Expand().Proportion(1));
 
-    const std::function<void(wxListCtrl*)>icadcaListBuilder = [=] (wxListCtrl* list) {
-        wxListItem col;
-        col.SetId(0);
-        col.SetText("Instruction");
-        col.SetWidth(200);
-        list->InsertColumn(0, col);
+    const std::function<void(wxListCtrl*)>dcaListBuilder = [=] (wxListCtrl* list) {
+        wxListItem frame;
+        frame.SetId(0);
+        frame.SetText("Frame");
+        frame.SetWidth(50);
+        list->InsertColumn(0, frame);
+
+        wxListItem line;
+        line.SetId(1);
+        line.SetText("Line");
+        line.SetWidth(35);
+        list->InsertColumn(1, line);
+
+        wxListItem inst;
+        inst.SetId(3);
+        inst.SetText("Instruction");
+        inst.SetWidth(80);
+        list->InsertColumn(3, inst);
     };
 
-    m_dca1List = new GenericList(icadcaPage, icadcaListBuilder, [=] (long item, long) -> wxString {
+    const std::function<void(wxListCtrl*)>icaListBuilder = [=] (wxListCtrl* list) {
+        wxListItem frame;
+        frame.SetId(0);
+        frame.SetText("Frame");
+        frame.SetWidth(50);
+        list->InsertColumn(0, frame);
+
+        wxListItem inst;
+        inst.SetId(2);
+        inst.SetText("Instruction");
+        inst.SetWidth(80);
+        list->InsertColumn(2, inst);
+    };
+
+    m_dca1List = new GenericList(icadcaPage, dcaListBuilder, [=] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(item >= (long)this->m_dca1.size())
             return "";
-        return this->m_dca1[item];
+        if(col == 0)
+            return std::to_string(this->m_dca1[item].frame);
+        if(col == 1)
+            return std::to_string(this->m_dca1[item].line);
+        return toHex(this->m_dca1[item].instruction);
     });
     dca1Sizer->Add(m_dca1List, wxSizerFlags().Expand().Proportion(1));
 
-    m_ica1List = new GenericList(icadcaPage, icadcaListBuilder, [=] (long item, long) -> wxString {
+    m_ica1List = new GenericList(icadcaPage, icaListBuilder, [=] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(item >= (long)this->m_ica1.size())
             return "";
-        return this->m_ica1[item];
+        if(col == 0)
+            return std::to_string(this->m_ica1[item].frame);
+        return toHex(this->m_ica1[item].instruction);
     });
     ica1Sizer->Add(m_ica1List, wxSizerFlags().Expand().Proportion(1));
 
-    m_dca2List = new GenericList(icadcaPage, icadcaListBuilder, [=] (long item, long) -> wxString {
+    m_dca2List = new GenericList(icadcaPage, dcaListBuilder, [=] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(item >= (long)this->m_dca2.size())
             return "";
-        return this->m_dca2[item];
+        if(col == 0)
+            return std::to_string(this->m_dca2[item].frame);
+        if(col == 1)
+            return std::to_string(this->m_dca2[item].line);
+        return toHex(this->m_dca2[item].instruction);
     });
     dca2Sizer->Add(m_dca2List, wxSizerFlags().Expand().Proportion(1));
 
-    m_ica2List = new GenericList(icadcaPage, icadcaListBuilder, [=] (long item, long) -> wxString {
+    m_ica2List = new GenericList(icadcaPage, icaListBuilder, [=] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(item >= (long)this->m_ica2.size())
             return "";
-        return this->m_ica2[item];
+        if(col == 0)
+            return std::to_string(this->m_ica2[item].frame);
+        return toHex(this->m_ica2[item].instruction);
     });
     ica2Sizer->Add(m_ica2List, wxSizerFlags().Expand().Proportion(1));
 
@@ -279,7 +317,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     Show();
     m_updateTimer.Start(16);
 
-    m_cedimu.m_cdi.callbacks.SetOnLogICADCA([=] (ControlArea area, const std::string& inst) {
+    m_cedimu.m_cdi.callbacks.SetOnLogICADCA([=] (ControlArea area, LogICADCA inst) {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(this->m_flushIcadca)
         {

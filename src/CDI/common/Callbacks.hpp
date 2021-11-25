@@ -46,6 +46,15 @@ struct LogMemoryAccess
     uint32_t data; /**< The data. */
 };
 
+/** \struct LogICADCA
+ */
+struct LogICADCA
+{
+    uint32_t frame; /**< The frame number. */
+    uint16_t line; /**< The line where the DCA occured, unused by ICA. */
+    uint32_t instruction; /**< The instruction. */
+};
+
 /** \struct LogSCC68070Exception
  */
 struct LogSCC68070Exception
@@ -71,10 +80,10 @@ class Callbacks
     std::function<void(const Plane&)> onFrameCompletedCallback;
 
     std::mutex onSaveNVRAMMutex;
-    std::function<void(const void* data, size_t size)> onSaveNVRAMCallback;
+    std::function<void(const void* data, size_t)> onSaveNVRAMCallback;
 
     std::mutex onLogICADCAMutex;
-    std::function<void(ControlArea, const std::string&)> onLogICADCACallback;
+    std::function<void(ControlArea, LogICADCA)> onLogICADCACallback;
 
     std::mutex onLogMemoryAccessMutex;
     std::function<void(const LogMemoryAccess&)> onLogMemoryAccessCallback;
@@ -89,7 +98,7 @@ public:
     explicit Callbacks(const std::function<void(const LogInstruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
                        const std::function<void(const Plane&)>& frameCompleted = nullptr,
-                       const std::function<void(ControlArea, const std::string&)>& icadca = nullptr,
+                       const std::function<void(ControlArea, LogICADCA)>& icadca = nullptr,
                        const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr,
                        const std::function<void(const LogSCC68070Exception&)>& logException = nullptr,
                        const std::function<void(uint32_t, uint16_t)>& logRTE = nullptr) :
@@ -168,12 +177,12 @@ public:
         std::lock_guard<std::mutex> lock(onLogICADCAMutex);
         return (bool)onLogICADCACallback;
     }
-    void SetOnLogICADCA(const std::function<void(ControlArea, const std::string&)>& callback)
+    void SetOnLogICADCA(const std::function<void(ControlArea, LogICADCA)>& callback)
     {
         std::lock_guard<std::mutex> lock(onLogICADCAMutex);
         onLogICADCACallback = callback;
     }
-    void OnLogICADCA(ControlArea area, const std::string& inst)
+    void OnLogICADCA(ControlArea area, LogICADCA inst)
     {
         std::lock_guard<std::mutex> lock(onLogICADCAMutex);
         if(onLogICADCACallback)

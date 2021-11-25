@@ -77,7 +77,7 @@ void MCD212::ExecuteICA1()
         const uint32_t ica = GetLong(addr);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::ICA1, "Frame " + std::to_string(totalFrameCount + 1) + " : 0x" + toHex(ica));
+            cdi.callbacks.OnLogICADCA(ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
         addr += 4;
 
         switch(ica >> 28)
@@ -144,7 +144,7 @@ void MCD212::ExecuteDCA1()
         SetDCP1(addr + 4);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::DCA1, "Frame " + std::to_string(totalFrameCount + 1) + "  line " + std::to_string(lineNumber) + ": 0x" + toHex(dca));
+            cdi.callbacks.OnLogICADCA(ControlArea::DCA1, { totalFrameCount + 1, lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -209,7 +209,7 @@ void MCD212::ExecuteICA2()
         const uint32_t ica = GetLong(addr);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::ICA2, "Frame " + std::to_string(totalFrameCount + 1) + " : 0x" + toHex(ica));
+            cdi.callbacks.OnLogICADCA(ControlArea::ICA2, { totalFrameCount + 1, 0, ica });
         addr += 4;
 
         switch(ica >> 28)
@@ -269,7 +269,7 @@ void MCD212::ExecuteDCA2()
         SetDCP2(addr + 4);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::DCA2, "Frame " + std::to_string(totalFrameCount + 1) + "  line " + std::to_string(lineNumber) + ": 0x" + toHex(dca));
+            cdi.callbacks.OnLogICADCA(ControlArea::DCA2, { totalFrameCount + 1, lineNumber, dca });
 
         switch(dca >> 28)
         {

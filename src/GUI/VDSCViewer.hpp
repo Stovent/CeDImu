@@ -4,6 +4,7 @@
 class CeDImu;
 class MainFrame;
 #include "GenericList.hpp"
+#include "../CDI/common/Callbacks.hpp"
 
 #include <wx/image.h>
 #include <wx/frame.h>
@@ -29,10 +30,10 @@ public:
     bool m_flushIcadca;
     bool m_updateLists;
     std::mutex m_icadcaMutex;
-    std::vector<std::string> m_dca1;
-    std::vector<std::string> m_ica1;
-    std::vector<std::string> m_dca2;
-    std::vector<std::string> m_ica2;
+    std::vector<LogICADCA> m_dca1;
+    std::vector<LogICADCA> m_ica1;
+    std::vector<LogICADCA> m_dca2;
+    std::vector<LogICADCA> m_ica2;
     GenericList* m_dca1List;
     GenericList* m_ica1List;
     GenericList* m_dca2List;
