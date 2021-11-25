@@ -248,18 +248,17 @@ void MCD212::OverlayMix()
         int gfp = *frontPlane++;
         int bfp = *frontPlane++;
 
-        rbp = ((rbp - 16) * weightBack) / 63 + 16;
-        gbp = ((gbp - 16) * weightBack) / 63 + 16;
-        bbp = ((bbp - 16) * weightBack) / 63 + 16;
+        rbp = (limu8(rbp - 16) * weightBack) / 63 + 16;
+        gbp = (limu8(gbp - 16) * weightBack) / 63 + 16;
+        bbp = (limu8(bbp - 16) * weightBack) / 63 + 16;
 
-        rfp = ((rfp - 16) * weightFront) / 63 + 16;
-        gfp = ((gfp - 16) * weightFront) / 63 + 16;
-        bfp = ((bfp - 16) * weightFront) / 63 + 16;
+        rfp = (limu8(rfp - 16) * weightFront) / 63 + 16;
+        gfp = (limu8(gfp - 16) * weightFront) / 63 + 16;
+        bfp = (limu8(bfp - 16) * weightFront) / 63 + 16;
 
-        int a = afp + abp * (255 - afp);
-        int r = rbg;
-        int g = gbg;
-        int b = bbg;
+        int r = 16;
+        int g = 16;
+        int b = 16;
 
         if(!(controlRegisters[TransparencyControl] & 0x800000)) // Mixing
         {
@@ -267,11 +266,25 @@ void MCD212::OverlayMix()
             g = limu8(gbp + gfp - 16);
             b = limu8(bbp + bfp - 16);
         }
-        else if(a > 0)
+        else
         {
-            r = (rfp * afp + rbp * abp * (255 - afp)) / a;
-            g = (gfp * afp + gbp * abp * (255 - afp)) / a;
-            b = (bfp * afp + bbp * abp * (255 - afp)) / a;
+            int ap = afp + abp * (255 - afp);
+            int rp = 16;
+            int gp = 16;
+            int bp = 16;
+
+            if(ap > 0)
+            {
+                rp = (rfp * afp + rbp * abp * (255 - afp)) / ap;
+                gp = (gfp * afp + gbp * abp * (255 - afp)) / ap;
+                bp = (bfp * afp + bbp * abp * (255 - afp)) / ap;
+            }
+
+            if(ap >= 256)
+                ap /= 255;
+            r = (rp * ap + rbg * abg * (255 - ap)) / 255;
+            g = (gp * ap + gbg * abg * (255 - ap)) / 255;
+            b = (bp * ap + bbg * abg * (255 - ap)) / 255;
         }
 
         *dst++ = r;
