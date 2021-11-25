@@ -95,6 +95,8 @@ private:
     std::array<uint32_t, 0x80> controlRegisters;
     std::array<uint32_t, 256> CLUT;
     std::array<uint16_t, 16>  cursorPatterns;
+    std::array<std::array<bool, PLANE_MAX_WIDTH>, 2> regionFlags;
+    uint8_t currentRegionControl;
 
     std::array<uint16_t, 32> internalRegisters;
     uint8_t registerCSR1R;
@@ -109,7 +111,8 @@ private:
     void DrawLineCursor();
     void DrawLineBackground();
     void OverlayMix();
-    void HandleCLUTTransparency(uint8_t* pixels, const uint16_t width, const uint32_t control, const uint32_t color);
+    void HandleTransparency(uint8_t* pixel, const uint16_t pos, const uint32_t control, const uint32_t color);
+    void HandleRegions(const uint16_t pos);
 
     // Display File Decoders
     void DecodeMosaicLineA();

@@ -110,14 +110,10 @@ void MCD212::DrawLinePlaneA()
             const Video::ImageCodingMethod codingMethod = ICM_LUT_A[controlRegisters[ImageCodingMethod] & 0x00000F];
             const uint32_t* clut = codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data();
             bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], planeA.width, nullptr, &memory[GetVSR1()], clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
-
-            if(codingMethod == ICM(CLUT4) || codingMethod == ICM(CLUT7) || codingMethod == ICM(CLUT77) || codingMethod == ICM(CLUT8))
-                HandleCLUTTransparency(&planeA[lineNumber * planeA.width * 4], planeA.width, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
         }
         else if(fileType == 2)
         {
             bytes = Video::decodeRunLengthLine(&planeA[lineNumber * planeA.width * 4], planeA.width, &memory[GetVSR1()], CLUT.data(), GetCM1());
-            HandleCLUTTransparency(&planeA[lineNumber * planeA.width * 4], planeA.width, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
         }
         else
         {
@@ -137,14 +133,10 @@ void MCD212::DrawLinePlaneB()
         {
             const Video::ImageCodingMethod codingMethod = ICM_LUT_B[controlRegisters[ImageCodingMethod] >> 8 & 0x00000F];
             bytes = Video::decodeBitmapLine(&planeB[lineNumber * planeB.width * 4], planeB.width, &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
-
-            if(codingMethod == ICM(CLUT4) || codingMethod == ICM(CLUT7))
-                HandleCLUTTransparency(&planeB[lineNumber * planeB.width * 4], planeB.width, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
         }
         else if(fileType == 2)
         {
             bytes = Video::decodeRunLengthLine(&planeB[lineNumber * planeB.width * 4], planeB.width, &memory[GetVSR2()], &CLUT[128], GetCM2());
-            HandleCLUTTransparency(&planeB[lineNumber * planeB.width * 4], planeB.width, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
         }
         else
         {
@@ -202,22 +194,20 @@ void MCD212::OverlayMix()
     uint8_t* backgd = backgroundPlane(lineNumber, 4);
     uint8_t* backPlane;
     uint8_t* frontPlane;
-    uint8_t weightBack;
-    uint8_t weightFront;
+
+    regionFlags[0].fill(false);
+    regionFlags[1].fill(false);
+    currentRegionControl = RegionControl - 1;
 
     if(controlRegisters[PlaneOrder] & 1)
     {
         backPlane = planeA(lineNumber, 4);
         frontPlane = planeB(lineNumber, 4);
-        weightBack = controlRegisters[WeightFactorForPlaneA] & 0x0000003F;
-        weightFront = controlRegisters[WeightFactorForPlaneB] & 0x0000003F;
     }
     else
     {
         backPlane = planeB(lineNumber, 4);
         frontPlane = planeA(lineNumber, 4);
-        weightBack = controlRegisters[WeightFactorForPlaneB] & 0x0000003F;
-        weightFront = controlRegisters[WeightFactorForPlaneA] & 0x0000003F;
     }
 
     const int abg = *backgd++;
@@ -227,6 +217,27 @@ void MCD212::OverlayMix()
 
     for(uint16_t w = 0; w < planeA.width; w++)
     {
+        HandleRegions(w);
+
+        uint8_t weightBack;
+        uint8_t weightFront;
+        if(controlRegisters[PlaneOrder] & 1)
+        {
+            HandleTransparency(backPlane,  w, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
+            HandleTransparency(frontPlane, w, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
+
+            weightBack = controlRegisters[WeightFactorForPlaneA] & 0x0000003F;
+            weightFront = controlRegisters[WeightFactorForPlaneB] & 0x0000003F;
+        }
+        else
+        {
+            HandleTransparency(backPlane,  w, controlRegisters[TransparencyControl] >> 8 & 0xF, controlRegisters[TransparentColorForPlaneB]);
+            HandleTransparency(frontPlane, w, controlRegisters[TransparencyControl] & 0xF, controlRegisters[TransparentColorForPlaneA]);
+
+            weightBack = controlRegisters[WeightFactorForPlaneB] & 0x0000003F;
+            weightFront = controlRegisters[WeightFactorForPlaneA] & 0x0000003F;
+        }
+
         int abp = *backPlane++;
         int rbp = *backPlane++;
         int gbp = *backPlane++;
@@ -269,27 +280,116 @@ void MCD212::OverlayMix()
     }
 }
 
-void MCD212::HandleCLUTTransparency(uint8_t* pixels, const uint16_t width, const uint32_t control, const uint32_t color)
+void MCD212::HandleTransparency(uint8_t* pixel, const uint16_t pos, const uint32_t control, const uint32_t color)
 {
+    const uint8_t r = color >> 16;
+    const uint8_t g = color >> 8;
+    const uint8_t b = color;
+
     switch(control)
     {
     case 0: // Always
-        for(uint16_t i = 0; i < width; i++, pixels += 4)
-            *pixels = 0;
+        pixel[0] = 0;
         break;
 
     case 1: // Color Key = True
-        for(uint16_t i = 0; i < width; i++, pixels += 4)
-            if(*(pixels + 1) == (color >> 16 & 0xFF) && *(pixels + 2) == (color >> 8 & 0xFF) && *(pixels + 3) == (color & 0xFF))
-                *pixels = 0;
+        if(pixel[1] == r && pixel[2] == g && pixel[3] == b)
+            pixel[0] = 0;
+        break;
+
+    case 2: // Transparency Bit = 1
+        if(pixel[0] == 255)
+            pixel[0] = 0;
+        break;
+
+    case 3: // Region Flag 0 = True
+        if(regionFlags[0][pos])
+            pixel[0] = 0;
+        break;
+
+    case 4: // Region Flag 1 = True
+        if(regionFlags[1][pos])
+            pixel[0] = 0;
+        break;
+
+    case 5: // Region Flag 0 or Color Key = True
+        if(regionFlags[0][pos] || (pixel[1] == r && pixel[2] == g && pixel[3] == b))
+            pixel[0] = 0;
+        break;
+
+    case 6: // Region Flag 1 or Color Key = True
+        if(regionFlags[1][pos] || (pixel[1] == r && pixel[2] == g && pixel[3] == b))
+            pixel[0] = 0;
+        break;
+
+    case 8: // Never
+        pixel[0] = 255;
         break;
 
     case 9: // Color Key = False
-        for(uint16_t i = 0; i < width; i++, pixels += 4)
-            if(!(*(pixels + 1) == (color >> 16 & 0xFF) && *(pixels + 2) == (color >> 8 & 0xFF) && *(pixels + 3) == (color & 0xFF)))
-                *pixels = 0;
+        if(!(pixel[1] == r && pixel[2] == g && pixel[3] == b))
+            pixel[0] = 0;
+        break;
+
+    case 10: // Transparency Bit = 0
+        if(pixel[0] == 128)
+            pixel[0] = 0;
+        break;
+
+    case 11: // Region Flag 0 = False
+        if(!regionFlags[0][pos])
+            pixel[0] = 0;
+        break;
+
+    case 12: // Region Flag 1 = False
+        if(!regionFlags[1][pos])
+            pixel[0] = 0;
+        break;
+
+    case 13: // Region Flag 0 or Color Key = False
+        if(!regionFlags[0][pos] || !(pixel[1] == r && pixel[2] == g && pixel[3] == b))
+            pixel[0] = 0;
+        break;
+
+    case 14: // Region Flag 1 or Color Key = False
+        if(!regionFlags[1][pos] || !(pixel[1] == r && pixel[2] == g && pixel[3] == b))
+            pixel[0] = 0;
         break;
     }
+}
+
+void MCD212::HandleRegions(const uint16_t pos)
+{
+    if(currentRegionControl >= RegionControl + 7)
+        return;
+
+    const uint16_t x = controlRegisters[currentRegionControl + 1] >> 1 & 0x1FF; // double resolution
+    if(pos >= x)
+    {
+        currentRegionControl++;
+    }
+
+    if(currentRegionControl < RegionControl)
+        return;
+
+    const uint8_t op = controlRegisters[currentRegionControl] >> 20 & 0x00000F;
+    if(op == 0)
+    {
+        currentRegionControl = RegionControl + 8;
+        return;
+    }
+
+    const uint32_t wf = controlRegisters[currentRegionControl] >> 10 & 0x00003F;
+    if((op & 0b0110) == 0b0100)
+        controlRegisters[WeightFactorForPlaneA] = wf;
+    else if((op & 0b0110) == 0b0110)
+        controlRegisters[WeightFactorForPlaneB] = wf;
+
+    const bool rf = controlRegisters[ImageCodingMethod] & 0x080000 ? currentRegionControl / 4 : controlRegisters[currentRegionControl] & 0x010000;
+    if((op & 0b1001) == 0b1000)
+        regionFlags[rf][pos] = false;
+    else if((op & 0b1001) == 0b1001)
+        regionFlags[rf][pos] = true;
 }
 
 void MCD212::DecodeMosaicLineA() // TODO

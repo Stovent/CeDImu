@@ -20,6 +20,8 @@ MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL) 
     controlRegisters{0},
     CLUT{0},
     cursorPatterns{0},
+    regionFlags{0},
+    currentRegionControl(RegionControl - 1),
     internalRegisters{0}
 {
 }
@@ -142,7 +144,7 @@ void MCD212::ExecuteDCA1()
         SetDCP1(addr + 4);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::DCA1, "Frame " + std::to_string(totalFrameCount + 1) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
+            cdi.callbacks.OnLogICADCA(ControlArea::DCA1, "Frame " + std::to_string(totalFrameCount + 1) + "  line " + std::to_string(lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
         {
@@ -267,7 +269,7 @@ void MCD212::ExecuteDCA2()
         SetDCP2(addr + 4);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::DCA2, "Frame " + std::to_string(totalFrameCount + 1) + "  line " + std::to_string (lineNumber) + ": 0x" + toHex(dca));
+            cdi.callbacks.OnLogICADCA(ControlArea::DCA2, "Frame " + std::to_string(totalFrameCount + 1) + "  line " + std::to_string(lineNumber) + ": 0x" + toHex(dca));
 
         switch(dca >> 28)
         {
