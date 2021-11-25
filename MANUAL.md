@@ -2,6 +2,12 @@
 
 This document aims to provide help and information on how to use CeDImu.
 
+The CD-i is technically only a disc format, which means any hardware that conforms to the Green Book (the CD-i specifications) can play CD-i discs. This means any manufacturer can create their own CD-i player with the hardware and software they want.
+
+CeDImu is in fact a CD-i **player** emulator, which emulates only some of the players that were manufactured, but not all of them. The consequence is that each BIOS is associated to a given hardware configuration, and the BIOS and its configuration has to be provided by the user.
+
+The list of the emulated hardware systems and the known BIOSes that work are available in the [README](https://github.com/Stovent/CeDImu/blob/master/README.md) (Compatibility section).
+
 ## Configuration
 
 To configure CeDImu, open the settings by clicking the "Options -> Settings" menu.
@@ -20,7 +26,7 @@ Click "Cancel" or close the Settings window to discard your changes.
 - Board : the board (or PCB) used by the BIOS as listed on ICDIA, or "Auto" to let CeDImu try to guess it.
 - 32 KB NVRAM : if the BIOS uses 32KB of NVRAM (see ICDIA), then this has to be checked. In "Auto" board type, CeDImu tries to detect the correct NVRAM size.
 - PAL : if checked, BIOS will be emulated in PAL video mode. If unchecked, NTSC mode is used.
-- Initial time : the initial time given to the BIOS. The given time is a [UNIX timestamp](https://en.wikipedia.org/wiki/Unix_time).
+- Initial time : the initial time given to the BIOS, in [UNIX timestamp](https://en.wikipedia.org/wiki/Unix_time) format.
   Leave it empty to use the current real-life time. Enter "0" to continue from the time saved in the NVRAM.
 
 ### Controls

@@ -1,7 +1,7 @@
 #include "IKAT.hpp"
 #include "../../CDI.hpp"
 
-static std::string getPortName(uint8_t index)
+LOG(static std::string getPortName(uint8_t index)
 {
     std::string port;
     if(index < 12)
@@ -22,7 +22,7 @@ static std::string getPortName(uint8_t index)
         port = "YCR";
 
     return port;
-}
+})
 
 namespace HLE
 {

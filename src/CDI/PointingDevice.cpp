@@ -161,6 +161,7 @@ void PointingDevice::SetAbsolutePointerLocation(const bool pd, const int x, cons
 
 void PointingDevice::SetCursorSpeed(const GamepadSpeed speed)
 {
+    std::lock_guard<std::mutex> lock(pointerMutex);
     gamepadSpeed = speed;
 }
 
