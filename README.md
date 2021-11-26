@@ -4,7 +4,7 @@
 
 ![CeDImu concept by jongg-eater](https://raw.githubusercontent.com/Stovent/CeDImu/master/resources/CeDImu-concept.png "CeDImu concept by jongg-eater")
 
-Experimental Philips CD-I emulator  
+Experimental Philips CD-I emulator
 (I use a capital `I` instead of a lower case `i` because the Green Book capitalizes it)
 
 Note: the project is still in a very early development stage, please open issues only to address problems in the existing code.
@@ -60,7 +60,7 @@ Compatible means it is capable of playing discs.
   - [ ] Export video
   - [x] Export raw video
 
-  
+
 
 - [ ] Tools
   - [x] CPU Viewer

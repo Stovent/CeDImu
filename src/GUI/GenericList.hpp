@@ -24,4 +24,3 @@ public:
 };
 
 #endif // GUI_GENERICLIST_HPP
-
