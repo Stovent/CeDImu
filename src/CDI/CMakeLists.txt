@@ -48,6 +48,7 @@ add_library(cdi ${LIBRARY_TYPE}
     cores/MCD212/DRAMInterface.cpp
     cores/MCD212/MCD212.cpp
     cores/MCD212/Registers.cpp
+    cores/MCD221/MCD221.cpp
     cores/SCC66470/DRAMInterface.cpp
     cores/SCC66470/Registers.cpp
     cores/SCC66470/Display.cpp

@@ -30,6 +30,7 @@ enum class MemoryAccessLocation
     RAM,
     VDSC,
     Slave,
+    CDIC,
     RTC,
     OutOfRange,
 };
@@ -250,6 +251,7 @@ inline const char* memoryAccessLocationToString(const MemoryAccessLocation loc)
     case MemoryAccessLocation::RAM:   return "RAM";
     case MemoryAccessLocation::VDSC:  return "VDSC";
     case MemoryAccessLocation::Slave: return "Slave";
+    case MemoryAccessLocation::CDIC:  return "CDIC";
     case MemoryAccessLocation::RTC:   return "RTC";
     case MemoryAccessLocation::OutOfRange: return "OUT OF RANGE";
     default: return "Unknown location";

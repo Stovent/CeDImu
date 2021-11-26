@@ -37,6 +37,8 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
     memoryButtonsSizer->Add(m_logVdsc, wxSizerFlags().Proportion(1));
     m_logSlave = new wxCheckBox(memoryPanel, wxID_ANY, "Slave");
     memoryButtonsSizer->Add(m_logSlave, wxSizerFlags().Proportion(1));
+    m_logCdic = new wxCheckBox(memoryPanel, wxID_ANY, "CDIC");
+    memoryButtonsSizer->Add(m_logCdic, wxSizerFlags().Proportion(1));
     m_logNvram = new wxCheckBox(memoryPanel, wxID_ANY, "NVRAM");
     memoryButtonsSizer->Add(m_logNvram, wxSizerFlags().Proportion(1));
     m_logOutOfRange = new wxCheckBox(memoryPanel, wxID_ANY, "Out of range");
@@ -111,6 +113,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
            (log.location == MemoryAccessLocation::RAM   && this->m_logRam->GetValue())   ||
            (log.location == MemoryAccessLocation::VDSC  && this->m_logVdsc->GetValue())  ||
            (log.location == MemoryAccessLocation::Slave && this->m_logSlave->GetValue()) ||
+           (log.location == MemoryAccessLocation::CDIC  && this->m_logCdic->GetValue())  ||
            (log.location == MemoryAccessLocation::RTC   && this->m_logNvram->GetValue()) ||
            (log.location == MemoryAccessLocation::OutOfRange && this->m_logOutOfRange->GetValue()))
         {

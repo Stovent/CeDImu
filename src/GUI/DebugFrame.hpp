@@ -25,6 +25,7 @@ public:
     wxCheckBox* m_logRam;
     wxCheckBox* m_logVdsc;
     wxCheckBox* m_logSlave;
+    wxCheckBox* m_logCdic;
     wxCheckBox* m_logNvram;
     wxCheckBox* m_logOutOfRange;
     GenericList* m_memoryLogsList;

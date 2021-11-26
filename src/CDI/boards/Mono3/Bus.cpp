@@ -10,10 +10,11 @@ uint8_t Mono3::GetByte(const uint32_t addr, const uint8_t flags)
         return mcd212.GetByte(addr, flags);
     }
 
-//    if(addr >= 0x300000 && addr < 0x310000) // TODO
-//    {
-//        return 0;
-//    }
+    if(addr >= 0x300000 && addr < 0x304000)
+    {
+        const uint16_t data = mcd221.GetWord(addr - 0x300000);
+        return isEven(addr) ? data >> 8 : data;
+    }
 
     if(addr >= 0x310000 && addr < 0x31001E && !isEven(addr))
     {
@@ -37,10 +38,10 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
         return mcd212.GetWord(addr, flags);
     }
 
-//    if(addr >= 0x300000 && addr < 0x310000) // TODO
-//    {
-//        return 0; // addr == 0x3025C4 ? 0xCD02 : 0;
-//    }
+    if(addr >= 0x300000 && addr < 0x304000)
+    {
+        return mcd221.GetWord(addr - 0x300000);
+    }
 
     if(addr >= 0x310000 && addr < 0x31001E)
     {
@@ -70,10 +71,15 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
         return;
     }
 
-//    if(addr >= 0x300000 && addr < 0x310000) // TODO
-//    {
-//        return;
-//    }
+    if(addr >= 0x300000 && addr < 0x304000)
+    {
+        const uint16_t word = mcd221.GetWord(addr - 0x300000);
+        if(isEven(addr))
+            mcd221.SetWord(addr - 0x300000, (word & 0x00FF) | (uint16_t)data << 8);
+        else
+            mcd221.SetWord(addr - 0x300000, (word & 0xFF00) | (uint16_t)data);
+        return;
+    }
 
     if(addr >= 0x310000 && addr < 0x31001E && !isEven(addr))
     {
@@ -100,10 +106,10 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flag
         return;
     }
 
-//    if(addr >= 0x300000 && addr < 0x310000) // TODO
-//    {
-//        return;
-//    }
+    if(addr >= 0x300000 && addr < 0x304000)
+    {
+        return mcd221.SetWord(addr - 0x300000, data);
+    }
 
     if(addr >= 0x310000 && addr < 0x31001E)
     {
