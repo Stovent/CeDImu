@@ -16,7 +16,11 @@ bool CDIDisc::Open(const std::string& filename)
     if(!disc.is_open())
         return false;
 
-    LoadFileSystem();
+    if(!LoadFileSystem())
+    {
+        Close();
+        return false;
+    }
     return true;
 }
 
@@ -111,6 +115,8 @@ bool CDIDisc::LoadFileSystem()
 
     while((Tell() % 2352) < 2072) // read the directories on the whole sector
     {
+        if(disc.fail())
+            return false;
         uint8_t nameSize = GetByte();
         if(nameSize == 0)
             break;
