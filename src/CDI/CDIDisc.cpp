@@ -21,6 +21,7 @@ bool CDIDisc::Open(const std::string& filename)
         Close();
         return false;
     }
+
     return true;
 }
 

@@ -6,7 +6,7 @@ The CD-i is technically only a disc format, which means any hardware that confor
 
 CeDImu is in fact a CD-i **player** emulator, which emulates only some of the players that were manufactured, but not all of them. The consequence is that each BIOS is associated to a given hardware configuration, and the BIOS and its configuration has to be provided by the user.
 
-The list of the emulated hardware systems and the known BIOSes that work are available in the [README](https://github.com/Stovent/CeDImu/blob/master/README.md) (Compatibility section).
+The list of the emulated hardware systems and the known BIOSes that work are available in the [README](https://github.com/Stovent/CeDImu/blob/master/README.md#compatibility) (Compatibility section).
 
 ## Configuration
 
@@ -15,7 +15,7 @@ A window will appear with all the configuration settings.
 
 The reference website is the [ICDIA player comparison](http://icdia.co.uk/players/comparison.html), which lists the configuration to be used by each type of BIOS. (The PCB column is the board type).
 
-Once you are done configuring, click "Save" to save the settings to the "CeDImu.ini" file.
+Once you are done configuring, click "Save" to save the settings to the "CeDImu.ini" file. The changes are not taken in consideration until you restart CeDImu or click "Emulation -> Reload core".
 
 Click "Cancel" or close the Settings window to discard your changes.
 
