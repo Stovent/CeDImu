@@ -1,7 +1,7 @@
 #include "PointingDevice.hpp"
 #include "cores/ISlave.hpp"
 
-PointingDevice::PointingDevice(ISlave& slv, const PointingDeviceType deviceType) :
+PointingDevice::PointingDevice(ISlave& slv, PointingDeviceType deviceType) :
     slave(slv),
     type(deviceType),
     dataPacketDelay(getDataPacketDelay(deviceType)),
@@ -92,6 +92,15 @@ void PointingDevice::SetButton2(const bool pressed)
 {
     std::lock_guard<std::mutex> lock(pointerMutex);
     pointerState.btn2 = pressed;
+}
+
+/** \brief Set both the button 1 and 2 state.
+ * \param pressed true if the buttons are pressed, false otherwise.
+ */
+void PointingDevice::SetButton12(const bool pressed)
+{
+    SetButton1(pressed);
+    SetButton2(pressed);
 }
 
 /** \brief Set pad left state.

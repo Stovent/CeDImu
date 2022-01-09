@@ -10,11 +10,11 @@ class ISlave
 {
 public:
     CDI& cdi;
-    std::unique_ptr<PointingDevice> pointingDevice;
+    PointingDevice pointingDevice;
     const uint32_t busBase;
 
     ISlave() = delete;
-    ISlave(CDI& idc, uint32_t busbase, const PointingDeviceType deviceType) : cdi(idc), pointingDevice(std::make_unique<PointingDevice>(*this, deviceType)), busBase(busbase) {}
+    ISlave(CDI& idc, uint32_t busbase, PointingDeviceType deviceType) : cdi(idc), pointingDevice(*this, deviceType), busBase(busbase) {}
     virtual ~ISlave() {}
 
     virtual void UpdatePointerState() = 0;

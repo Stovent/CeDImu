@@ -113,7 +113,7 @@ void SCC68070::Reset()
  */
 void SCC68070::Interrupt(const uint8_t vector, const uint8_t priority)
 {
-    // TODO: vectors, pins and priority.
+    // TODO: vectors and priority.
     if(priority > GetIPM())
         exceptions.push({vector, 1});
 }

@@ -27,115 +27,204 @@ LOG(static std::string getPortName(uint8_t index)
 namespace HLE
 {
 
-#define UNSET_RDIDLE(var) var &= 0x01;
-#define UNSET_WRIDLE(var) var &= 0x10;
-#define SET_RDWRIDLE(var) var = 0x11;
+enum Channels
+{
+    CHA = 0,
+    CHB,
+    CHC,
+    CHD,
+};
 
-IKAT::IKAT(CDI& idc, const bool PAL, uint32_t busbase, const PointingDeviceType deviceType) : ISlave(idc, busbase, deviceType)
+enum IKATRegisters
+{
+    CHA_WR = 0,
+    CHB_WR,
+    CHC_WR,
+    CHD_WR,
+
+    CHA_RD,
+    CHB_RD,
+    CHC_RD,
+    CHD_RD,
+
+    CHA_SR,
+    CHB_SR,
+    CHC_SR,
+    CHD_SR,
+
+    ISR,
+    IMR,
+    Mode,
+};
+
+#define UNSET_REMTY(reg) registers[reg] &= 0x01;
+#define SET_RTEMTY(reg) registers[reg] |= 0x11;
+#define CHANNEL(addr) (addr % 4)
+
+int INT_MASK[4] = {0x02, 0x08, 0x20, 0x80};
+#define SET_INT(reg) registers[ISR] |= INT_MASK[reg]; \
+                     if(registers[IMR] & INT_MASK[reg]) \
+                         cdi.board->cpu.IN2();
+
+#define DELAY_RSP(channel, rsp) { delayedRsp[channel] = &rsp; \
+                                delayedRspFrame[channel] = cdi.board->GetTotalFrameCount() + 2; }
+
+IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDeviceType deviceType)
+    : ISlave(idc, busbase, deviceType)
+    , registers{0}
+    , delayedRsp{nullptr}
+    , delayedRspFrame{0}
 {
     responseCF6[2] = PAL + 1;
 
-    for(int i = PASR; i <= PDSR; i++)
-        SET_RDWRIDLE(registers[i])
+    for(int reg = CHA_SR; reg <= CHD_SR; reg++)
+        SET_RTEMTY(reg)
 }
 
 void IKAT::UpdatePointerState()
 {
-    responsesEnd[PB] = std::copy(pointingDevice->pointerMessage.begin(), pointingDevice->pointerMessage.end(), responseB4X.begin());
-    responsesIterator[PB] = responseB4X.begin();
-    registers[ISR] |= 0x08;
-    if(registers[ICR] & 0x08)
-        cdi.board->cpu.IN2();
+    channelOut[CHB].clear();
+    channelOut[CHB].insert(channelOut[CHB].begin(), pointingDevice.pointerMessage.begin(), pointingDevice.pointerMessage.end());
+
+    UNSET_REMTY(CHB_SR)
+    SET_INT(CHB)
 }
 
 void IKAT::IncrementTime(const size_t ns)
 {
-    pointingDevice->IncrementTime(ns);
+    pointingDevice.IncrementTime(ns);
+
+    for(int channel = CHA; channel <= CHD; channel++)
+    {
+        if(delayedRsp[channel] != nullptr && delayedRspFrame[channel] == cdi.board->GetTotalFrameCount())
+        {
+            channelOut[channel].clear();
+            channelOut[channel].insert(channelOut[channel].begin(), delayedRsp[channel]->begin(), delayedRsp[channel]->end());
+
+            UNSET_REMTY(CHA_SR + channel)
+            SET_INT(channel)
+
+            delayedRsp[channel] = nullptr;
+            delayedRspFrame[channel] = 0;
+        }
+    }
 }
 
 uint8_t IKAT::GetByte(const uint8_t addr)
 {
-    if(addr >= PASR && addr <= PDSR)
+    const uint8_t channel = CHANNEL(addr);
+    if(addr >= CHA_RD && addr <= CHD_RD && channelOut[channel].size() > 0)
     {
-        for(int i = PA; i <= PD; i++)
-            if(responsesIterator[i] != responsesEnd[i] && i != PB && i != PD)
-                UNSET_RDIDLE(registers[PASR + i])
-            else
-                SET_RDWRIDLE(registers[PASR + i])
+        registers[addr] = channelOut[channel].front();
+        channelOut[channel].pop_front();
 
-        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Get", getPortName(addr), cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
-        return registers[addr];
-    }
-
-    const uint8_t reg = addr % 4;
-    if(addr >= PARD && addr <= PDRD && responsesIterator[reg] != responsesEnd[reg])
-    {
-        registers[PARD + reg] = *responsesIterator[reg]++;
+        // remove interrupt bit if the response is completely read.
+        if(channelOut[channel].size() == 0)
+        {
+            registers[ISR] &= ~(1 << (1 + 2 * channel));
+            SET_RTEMTY(CHA_SR + channel)
+        }
+        else
+            UNSET_REMTY(CHA_SR + channel)
     }
 
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
             cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Get", getPortName(addr), cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
+
     return registers[addr];
 }
 
 void IKAT::SetByte(const uint8_t addr, const uint8_t data)
 {
-    registers[addr] = data;
     LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
             cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Set", getPortName(addr), cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, data});)
 
-    switch(addr)
+    if(addr == IMR)
+        registers[addr] = data;
+    else if(addr >= CHA_WR && addr <= CHD_WR)
     {
-    case PCWR:
-        ProcessCommandC(data);
-        break;
+        registers[addr] = data;
+        channelIn[CHANNEL(addr)].push_back(data);
 
-    case PDWR:
-        ProcessCommandD(data);
-        break;
+        switch(addr)
+        {
+        case CHC_WR:
+            ProcessCommandC();
+            break;
+
+        case CHD_WR:
+            ProcessCommandD();
+            break;
+        }
     }
 }
 
-void IKAT::ProcessCommandC(uint8_t data)
+void IKAT::ProcessCommandC()
 {
-    switch(data)
+    switch(channelIn[CHC][0])
     {
     case 0xF4:
-        responsesIterator[PC] = responseCF4.begin();
-        responsesEnd[PC] = responseCF4.end();
-        UNSET_WRIDLE(registers[PCSR])
+        channelIn[CHC].clear();
+        channelOut[CHC].clear();
+        channelOut[CHC].insert(channelOut[CHC].begin(), responseCF4.begin(), responseCF4.end());
+
+        UNSET_REMTY(CHC_SR)
+        SET_INT(CHC)
         break;
 
     case 0xF6:
-        responsesIterator[PC] = responseCF6.begin();
-        responsesEnd[PC] = responseCF6.end();
-        UNSET_WRIDLE(registers[PCSR])
+        channelIn[CHC].clear();
+        channelOut[CHC].clear();
+        channelOut[CHC].insert(channelOut[CHC].begin(), responseCF6.begin(), responseCF6.end());
+
+        UNSET_REMTY(CHC_SR)
+        SET_INT(CHC)
         break;
+
+    default:
+        channelIn[CHC].clear();
     }
 }
 
-void IKAT::ProcessCommandD(uint8_t data)
+void IKAT::ProcessCommandD()
 {
-    switch(data)
+    switch(channelIn[CHD][0])
     {
+    case 0xA1:
+        if(channelIn[CHD].size() == 4)
+        {
+            channelIn[CHD].clear();
+            DELAY_RSP(CHD, responseDB0)
+        }
+        break;
+
     case 0xB0:
-        responsesIterator[PD] = responseDB0.begin();
-        responsesEnd[PD] = responseDB0.end();
-        UNSET_WRIDLE(registers[PDSR])
+        if(channelIn[CHD].size() == 4)
+        {
+            channelIn[CHD].clear();
+            DELAY_RSP(CHD, responseDB0)
+        }
         break;
 
     case 0xB1:
-        responsesIterator[PD] = responseDB1.begin();
-        responsesEnd[PD] = responseDB1.end();
-        UNSET_WRIDLE(registers[PDSR])
+        channelIn[CHD].clear();
+        channelOut[CHD].clear();
+        channelOut[CHD].insert(channelOut[CHD].begin(), responseDB1.begin(), responseDB1.end());
+
+        UNSET_REMTY(CHD_SR)
+        SET_INT(CHD)
         break;
 
     case 0xB2:
-        responsesIterator[PD] = responseDB2.begin();
-        responsesEnd[PD] = responseDB2.end();
-        UNSET_WRIDLE(registers[PDSR])
+        if(channelIn[CHD].size() == 4)
+        {
+            channelIn[CHD].clear();
+            DELAY_RSP(CHD, responseDB2)
+        }
         break;
+
+    default:
+        channelIn[CHD].clear();
     }
 }
 

@@ -39,12 +39,13 @@ public:
     std::array<uint8_t, 4> pointerMessage;
 
     PointingDevice() = delete;
-    PointingDevice(ISlave& slv, const PointingDeviceType deviceType);
+    PointingDevice(ISlave& slv, PointingDeviceType deviceType);
 
     void IncrementTime(const size_t ns);
 
     void SetButton1(const bool pressed);
     void SetButton2(const bool pressed);
+    void SetButton12(const bool pressed);
     void SetLeft(const bool pressed);
     void SetUp(const bool pressed);
     void SetRight(const bool pressed);

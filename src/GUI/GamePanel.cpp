@@ -95,40 +95,37 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     if(keyCode == Config::keyUp)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetUp(true);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetUp(true);
     }
     else if(keyCode == Config::keyRight)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetRight(true);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetRight(true);
     }
     else if(keyCode == Config::keyDown)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetDown(true);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetDown(true);
     }
     else if(keyCode == Config::keyLeft)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetLeft(true);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetLeft(true);
     }
     else if(keyCode == Config::key1)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton1(true);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetButton1(true);
     }
     else if(keyCode == Config::key2)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton2(true);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetButton2(true);
     }
     else if(keyCode == Config::key12)
     {
         if(m_cedimu.m_cdi.board)
-        {
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton1(true);
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton2(true);
-        }
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetButton12(true);
     }
     else
         event.Skip();
@@ -141,40 +138,37 @@ void GamePanel::OnKeyUp(wxKeyEvent& event)
     if(keyCode == Config::keyUp)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetUp(false);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetUp(false);
     }
     else if(keyCode == Config::keyRight)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetRight(false);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetRight(false);
     }
     else if(keyCode == Config::keyDown)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetDown(false);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetDown(false);
     }
     else if(keyCode == Config::keyLeft)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetLeft(false);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetLeft(false);
     }
     else if(keyCode == Config::key1)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton1(false);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetButton1(false);
     }
     else if(keyCode == Config::key2)
     {
         if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton2(false);
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetButton2(false);
     }
     else if(keyCode == Config::key12)
     {
         if(m_cedimu.m_cdi.board)
-        {
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton1(false);
-            m_cedimu.m_cdi.board->slave->pointingDevice->SetButton2(false);
-        }
+            m_cedimu.m_cdi.board->slave->pointingDevice.SetButton12(false);
     }
     else
         event.Skip();
