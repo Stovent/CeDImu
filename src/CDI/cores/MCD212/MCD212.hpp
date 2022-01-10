@@ -200,10 +200,11 @@ private:
     inline uint16_t GetHorizontalResolution2() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }
     inline uint16_t GetVerticalResolution() const { return GetFD() ? 240 : (GetST() ? 240 : 280); }
 
-    inline uint16_t GetTotalVerticalLines() const { return GetFD() ? 262 : 312; } // Table 5.6
-    inline uint8_t  GetVerticalRetraceLines() const { return GetFD() ? 22 : (GetST() ? 72 : 32); }
+    inline size_t GetHorizontalCycles() const { return GetCF() ? 120 : 112; } // Table 5.5
+    inline size_t GetTotalVerticalLines() const { return GetFD() ? 262 : 312; } // Table 5.6
+    inline size_t GetVerticalRetraceLines() const { return GetFD() ? 22 : (GetST() ? 72 : 32); }
 
-    inline uint32_t GetLineDisplayTime() const // as nano seconds
+    inline size_t GetLineDisplayTime() const // as nano seconds
     {
         return isPAL || !GetCF() ? 64000 : 63560;
     }

@@ -56,7 +56,7 @@ void MCD212::Reset()
 void MCD212::IncrementTime(const double ns)
 {
     timeNs += ns;
-    const uint32_t lineDisplayTime = GetLineDisplayTime();
+    const size_t lineDisplayTime = GetLineDisplayTime();
     if(timeNs >= lineDisplayTime)
     {
         ExecuteVideoLine();
@@ -71,8 +71,9 @@ void MCD212::MemorySwap()
 
 void MCD212::ExecuteICA1()
 {
+    const size_t cycles = GetHorizontalCycles() * GetVerticalRetraceLines();
     uint32_t addr = GetSM() ? (GetPA() ? 0x400 : 0x404) : 0x400;
-    for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
+    for(size_t i = 0; i < cycles; i++)
     {
         const uint32_t ica = GetLong(addr);
 
@@ -203,8 +204,9 @@ void MCD212::ExecuteDCA1()
 
 void MCD212::ExecuteICA2()
 {
+    const size_t cycles = GetHorizontalCycles() * GetVerticalRetraceLines();
     uint32_t addr = GetSM() ? (GetPA() ? 0x200400 : 0x200404) : 0x200400;
-    for(uint16_t i = 0; i < 2000; i++) // change 2000 with value in section 5.4.1
+    for(size_t i = 0; i < cycles; i++)
     {
         const uint32_t ica = GetLong(addr);
 
