@@ -7,7 +7,7 @@
 Mono3::Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void* nvram, const CDIConfig& conf) :
     Board(cdi, "Mono-III", conf),
     mcd212(cdi, vdscBios, vdscSize, conf.PAL),
-    mcd221(cdi),
+    ciap(cdi),
     nvramMaxAddress(conf.has32KBNVRAM ? 0x330000 : 0x324000)
 {
     slave = std::make_unique<HLE::IKAT>(cdi, conf.PAL, 0x310000, PointingDeviceType::Maneuvering);
@@ -33,7 +33,7 @@ void Mono3::IncrementTime(const double ns)
 {
     Board::IncrementTime(ns);
     mcd212.IncrementTime(ns);
-    mcd221.IncrementTime(ns);
+    ciap.IncrementTime(ns);
 }
 
 uint32_t Mono3::GetTotalFrameCount()

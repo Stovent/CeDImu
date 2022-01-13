@@ -5,12 +5,12 @@ class Mono3;
 
 #include "../Board.hpp"
 #include "../../cores/MCD212/MCD212.hpp"
-#include "../../cores/MCD221/MCD221.hpp"
+#include "../../HLE/CIAP/CIAP.hpp"
 
 class Mono3 : public Board
 {
     MCD212 mcd212;
-    MCD221 mcd221;
+    CIAP ciap;
     const uint32_t nvramMaxAddress;
 
 public:

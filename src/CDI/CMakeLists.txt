@@ -48,7 +48,6 @@ add_library(cdi ${LIBRARY_TYPE}
     cores/MCD212/DRAMInterface.cpp
     cores/MCD212/MCD212.cpp
     cores/MCD212/Registers.cpp
-    cores/MCD221/MCD221.cpp
     cores/SCC66470/DRAMInterface.cpp
     cores/SCC66470/Registers.cpp
     cores/SCC66470/Display.cpp
@@ -61,6 +60,7 @@ add_library(cdi ${LIBRARY_TYPE}
     cores/SCC68070/MemoryAccess.cpp
     cores/SCC68070/Peripherals.cpp
     cores/SCC68070/SCC68070.cpp
+    HLE/CIAP/CIAP.cpp
     HLE/IKAT/IKAT.cpp
     OS9/BIOS.cpp
     OS9/Stt.cpp
