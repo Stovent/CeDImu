@@ -57,12 +57,12 @@ private:
     void AND(uint8_t rhs);
     void ASR(uint8_t& reg);
     void ASR(uint16_t addr);
-    void BCLR(int bit);
+    template<int BIT> void BCLR();
     uint8_t BIT(uint8_t rhs);
     void Branch(bool condition);
-    void BRCLR(int bit);
-    void BRSET(int bit);
-    void BSET(int bit);
+    template<int BIT> void BRCLR();
+    template<int BIT> void BRSET();
+    template<int BIT> void BSET();
     void CLR(uint8_t& reg);
     void CLR(uint16_t addr);
     uint8_t CMP(uint8_t lhs, uint8_t rhs);

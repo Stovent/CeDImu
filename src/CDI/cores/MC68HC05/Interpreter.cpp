@@ -38,163 +38,163 @@ size_t MC68HC05::Interpreter()
 
     // 0x0X
     BRSET0_DIR:
-        BRSET(0);
+        BRSET<0>();
 //        LOG(fprintf(instructions, "%X\tBRSET0 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRCLR0_DIR:
-        BRCLR(0);
+        BRCLR<0>();
 //        LOG(fprintf(instructions, "%X\tBRCLR0 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRSET1_DIR:
-        BRSET(1);
+        BRSET<1>();
 //        LOG(fprintf(instructions, "%X\tBRSET1 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRCLR1_DIR:
-        BRCLR(1);
+        BRCLR<1>();
 //        LOG(fprintf(instructions, "%X\tBRCLR1 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRSET2_DIR:
-        BRSET(2);
+        BRSET<2>();
 //        LOG(fprintf(instructions, "%X\tBRSET2 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRCLR2_DIR:
-        BRCLR(2);
+        BRCLR<2>();
 //        LOG(fprintf(instructions, "%X\tBRCLR2 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRSET3_DIR:
-        BRSET(3);
+        BRSET<3>();
 //        LOG(fprintf(instructions, "%X\tBRSET3 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRCLR3_DIR:
-        BRCLR(3);
+        BRCLR<3>();
 //        LOG(fprintf(instructions, "%X\tBRCLR3 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRSET4_DIR:
-        BRSET(4);
+        BRSET<4>();
 //        LOG(fprintf(instructions, "%X\tBRSET4 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRCLR4_DIR:
-        BRCLR(4);
+        BRCLR<4>();
 //        LOG(fprintf(instructions, "%X\tBRCLR4 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRSET5_DIR:
-        BRSET(5);
+        BRSET<5>();
 //        LOG(fprintf(instructions, "%X\tBRSET5 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRCLR5_DIR:
-        BRCLR(5);
+        BRCLR<5>();
 //        LOG(fprintf(instructions, "%X\tBRCLR5 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRSET6_DIR:
-        BRSET(6);
+        BRSET<6>();
 //        LOG(fprintf(instructions, "%X\tBRSET6 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRCLR6_DIR:
-        BRCLR(6);
+        BRCLR<6>();
 //        LOG(fprintf(instructions, "%X\tBRCLR6 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRSET7_DIR:
-        BRSET(7);
+        BRSET<7>();
 //        LOG(fprintf(instructions, "%X\tBRSET7 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     BRCLR7_DIR:
-        BRCLR(7);
+        BRCLR<7>();
 //        LOG(fprintf(instructions, "%X\tBRCLR7 0x%X, %d\n", currentPC, addr, offset);)
         return 5;
 
     // 0x1X
     BSET0_DIR:
-        BSET(0);
+        BSET<0>();
 //        LOG(fprintf(instructions, "%X\tBSET0 0x%X\n", currentPC, addr);)
         return 5;
 
     BCLR0_DIR:
-        BCLR(0);
+        BCLR<0>();
 //        LOG(fprintf(instructions, "%X\tBCLR0 0x%X\n", currentPC, addr);)
         return 5;
 
     BSET1_DIR:
-        BSET(1);
+        BSET<1>();
 //        LOG(fprintf(instructions, "%X\tBSET1 0x%X\n", currentPC, addr);)
         return 5;
 
     BCLR1_DIR:
-        BCLR(1);
+        BCLR<1>();
 //        LOG(fprintf(instructions, "%X\tBCLR1 0x%X\n", currentPC, addr);)
         return 5;
 
     BSET2_DIR:
-        BSET(2);
+        BSET<2>();
 //        LOG(fprintf(instructions, "%X\tBSET2 0x%X\n", currentPC, addr);)
         return 5;
 
     BCLR2_DIR:
-        BCLR(2);
+        BCLR<2>();
 //        LOG(fprintf(instructions, "%X\tBCLR2 0x%X\n", currentPC, addr);)
         return 5;
 
     BSET3_DIR:
-        BSET(3);
+        BSET<3>();
 //        LOG(fprintf(instructions, "%X\tBSET3 0x%X\n", currentPC, addr);)
         return 5;
 
     BCLR3_DIR:
-        BCLR(3);
+        BCLR<3>();
 //        LOG(fprintf(instructions, "%X\tBCLR3 0x%X\n", currentPC, addr);)
         return 5;
 
     BSET4_DIR:
-        BSET(4);
+        BSET<4>();
 //        LOG(fprintf(instructions, "%X\tBSET4 0x%X\n", currentPC, addr);)
         return 5;
 
     BCLR4_DIR:
-        BCLR(4);
+        BCLR<4>();
 //        LOG(fprintf(instructions, "%X\tBCLR4 0x%X\n", currentPC, addr);)
         return 5;
 
     BSET5_DIR:
-        BSET(5);
+        BSET<5>();
 //        LOG(fprintf(instructions, "%X\tBSET5 0x%X\n", currentPC, addr);)
         return 5;
 
     BCLR5_DIR:
-        BCLR(5);
+        BCLR<5>();
 //        LOG(fprintf(instructions, "%X\tBCLR5 0x%X\n", currentPC, addr);)
         return 5;
 
     BSET6_DIR:
-        BSET(6);
+        BSET<6>();
 //        LOG(fprintf(instructions, "%X\tBSET6 0x%X\n", currentPC, addr);)
         return 5;
 
     BCLR6_DIR:
-        BCLR(6);
+        BCLR<6>();
 //        LOG(fprintf(instructions, "%X\tBCLR6 0x%X\n", currentPC, addr);)
         return 5;
 
     BSET7_DIR:
-        BSET(7);
+        BSET<7>();
 //        LOG(fprintf(instructions, "%X\tBSET7 0x%X\n", currentPC, addr);)
         return 5;
 
     BCLR7_DIR:
-        BCLR(7);
+        BCLR<7>();
 //        LOG(fprintf(instructions, "%X\tBCLR7 0x%X\n", currentPC, addr);)
         return 5;
 
@@ -1242,10 +1242,11 @@ void MC68HC05::ASR(uint16_t addr)
     SetMemory(addr, data);
 }
 
-void MC68HC05::BCLR(int bit)
+template<int BIT>
+void MC68HC05::BCLR()
 {
     const uint8_t addr = GetNextByte();
-    SetMemory(addr, GetMemory(addr) & ~(1 << bit));
+    SetMemory(addr, GetMemory(addr) & ~(1 << BIT));
 }
 
 uint8_t MC68HC05::BIT(uint8_t rhs)
@@ -1263,28 +1264,31 @@ void MC68HC05::Branch(bool condition)
         PC += offset;
 }
 
-void MC68HC05::BRCLR(int bit)
+template<int BIT>
+void MC68HC05::BRCLR()
 {
     const uint8_t addr = GetNextByte();
     const int8_t offset = GetNextByte();
-    CCR[C] = GetMemory(addr) & (1 << bit);
+    CCR[C] = GetMemory(addr) & (1 << BIT);
     if(!CCR[C])
         PC += offset;
 }
 
-void MC68HC05::BRSET(int bit)
+template<int BIT>
+void MC68HC05::BRSET()
 {
     const uint8_t addr = GetNextByte();
     const int8_t offset = GetNextByte();
-    CCR[C] = GetMemory(addr) & (1 << bit);
+    CCR[C] = GetMemory(addr) & (1 << BIT);
     if(CCR[C])
         PC += offset;
 }
 
-void MC68HC05::BSET(int bit)
+template<int BIT>
+void MC68HC05::BSET()
 {
     const uint8_t addr = GetNextByte();
-    SetMemory(addr, GetMemory(addr) | (1 << bit));
+    SetMemory(addr, GetMemory(addr) | (1 << BIT));
 }
 
 void MC68HC05::CLR(uint8_t& reg)
