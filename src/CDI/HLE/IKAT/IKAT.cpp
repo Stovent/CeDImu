@@ -37,15 +37,15 @@ enum Channels
 
 enum IKATRegisters
 {
-    CHA_WR = 0,
-    CHB_WR,
-    CHC_WR,
-    CHD_WR,
+    CHA_IN = 0,
+    CHB_IN,
+    CHC_IN,
+    CHD_IN,
 
-    CHA_RD,
-    CHB_RD,
-    CHC_RD,
-    CHD_RD,
+    CHA_OUT,
+    CHB_OUT,
+    CHC_OUT,
+    CHD_OUT,
 
     CHA_SR,
     CHB_SR,
@@ -113,7 +113,7 @@ void IKAT::IncrementTime(const size_t ns)
 uint8_t IKAT::GetByte(const uint8_t addr)
 {
     const uint8_t channel = CHANNEL(addr);
-    if(addr >= CHA_RD && addr <= CHD_RD && channelOut[channel].size() > 0)
+    if(addr >= CHA_OUT && addr <= CHD_OUT && channelOut[channel].size() > 0)
     {
         registers[addr] = channelOut[channel].front();
         channelOut[channel].pop_front();
@@ -141,18 +141,18 @@ void IKAT::SetByte(const uint8_t addr, const uint8_t data)
 
     if(addr == IMR)
         registers[addr] = data;
-    else if(addr >= CHA_WR && addr <= CHD_WR)
+    else if(addr >= CHA_IN && addr <= CHD_IN)
     {
         registers[addr] = data;
         channelIn[CHANNEL(addr)].push_back(data);
 
         switch(addr)
         {
-        case CHC_WR:
+        case CHC_IN:
             ProcessCommandC();
             break;
 
-        case CHD_WR:
+        case CHD_IN:
             ProcessCommandD();
             break;
         }

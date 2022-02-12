@@ -227,7 +227,7 @@ enum SCC68070Peripherals : uint32_t
     MACMH1 = 0x8000400D - Base, // Memory Address Counter Middle High 1
     MACML1 = 0x8000400E - Base, // Memory Address Counter Middle Low 1
     MACL1  = 0x8000400F - Base, // Memory Address Counter Low 1
-    CPR1   = 0x8000402B - Base, // Channel Priority Register 1
+    CPR1   = 0x8000402D - Base, // Channel Priority Register 1
 
     // DMA channel 2
     CSR2   = 0x80004040 - Base, // Channel Status Register 2
@@ -246,7 +246,7 @@ enum SCC68070Peripherals : uint32_t
     DACMH2 = 0x80004055 - Base, // Device Address Counter Middle High 2
     DACML2 = 0x80004056 - Base, // Device Address Counter Middle Low 2
     DACL2  = 0x80004057 - Base, // Device Address Counter Low 2
-    CPR2   = 0x8000406B - Base, // Channel Priority Register 2
+    CPR2   = 0x8000406D - Base, // Channel Priority Register 2
 
     MSR  = 0x80008000 - Base, // MMU Status Register
     MCR  = 0x80008001 - Base, // MMU Control Register
