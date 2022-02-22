@@ -1,5 +1,6 @@
 #include "CDI.hpp"
 #include "boards/MiniMMC/MiniMMC.hpp"
+#include "boards/Mono2/Mono2.hpp"
 #include "boards/Mono3/Mono3.hpp"
 #include "cores/M48T08/M48T08.hpp"
 #include "OS9/BIOS.hpp"
@@ -59,6 +60,10 @@ bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* n
     {
 //    case Boards::MiniMMC:
 //        board = std::make_unique<MiniMMC>(*this, vdscBios, vdscSize, config);
+//        break;
+
+//    case Boards::Mono2:
+//        board = std::make_unique<Mono2>(*this, vdscBios, vdscSize, (uint8_t*)nvram, config);
 //        break;
 
     case Boards::Mono3:
