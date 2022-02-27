@@ -6,20 +6,15 @@
 
 class MC68HC05
 {
-public:
+protected:
     MC68HC05() = delete;
+    MC68HC05(const MC68HC05&) = delete;
     MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), waitStop(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000) {}
     virtual ~MC68HC05() {}
 
-protected:
     const uint16_t memorySize;
     bool irqPin; /**< Physical state of the IRQ pin. Has to be set by the derived class. */
     bool waitStop; /**< true if a STOP or WAIT instruction is executed, reseted to false during RESET or IRQ. */
-
-    /** @brief Called by the interpreter when a STOP instruction is executed. It has to be override by the derived class. */
-    virtual void Stop() = 0;
-    /** @brief Called by the interpreter when a WAIT instruction is executed. It has to be override by the derived class. */
-    virtual void Wait() = 0;
 
     uint8_t A;
     uint8_t X;
@@ -34,17 +29,25 @@ protected:
     /** @brief Writes a byte to internal memory only. */
     virtual void SetMemory(uint16_t addr, uint8_t value) = 0;
 
-private:
-    void PushByte(uint8_t data) { SetMemory(SP--, data); if(SP < 0xC0) SP = 0xFF; }
-    uint8_t PopByte() { if(SP >= 0xFF) SP = 0xBF; return GetMemory(++SP); }
-    uint8_t GetNextByte() { return GetMemory(PC++); }
+    /** @brief Called by the interpreter when a STOP instruction is executed. It has to be override by the derived class. */
+    virtual void Stop() = 0;
+    /** @brief Called by the interpreter when a WAIT instruction is executed. It has to be override by the derived class. */
+    virtual void Wait() = 0;
 
+private:
+    // Memory Access
+    void PushByte(uint8_t data);
+    uint8_t PopByte();
+    uint8_t GetNextByte();
+
+    // Effective Address
     uint16_t EA_DIR();
     uint16_t EA_EXT();
     uint16_t EA_IX();
     uint16_t EA_IX1();
     uint16_t EA_IX2();
 
+    // Operand Access
     uint8_t IMM();
     uint8_t DIR();
     uint8_t EXT();
@@ -52,6 +55,7 @@ private:
     uint8_t IX1();
     uint8_t IX2();
 
+    // Instruction Set
     void ADC(uint8_t rhs);
     void ADD(uint8_t rhs);
     void AND(uint8_t rhs);
@@ -75,8 +79,7 @@ private:
     void INC(uint16_t addr);
     void JMP(uint16_t addr);
     void JSR(uint16_t addr);
-    void LDA(uint8_t rhs);
-    void LDX(uint8_t rhs);
+    void LDAX(uint8_t& reg, uint8_t rhs);
     void LSL(uint8_t& reg);
     void LSL(uint16_t addr);
     void LSR(uint8_t& reg);

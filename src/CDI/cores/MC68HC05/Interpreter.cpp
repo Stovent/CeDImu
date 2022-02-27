@@ -693,7 +693,7 @@ size_t MC68HC05::Interpreter()
         return 2;
 
     LDA_IMM:
-        LDA(IMM());
+        LDAX(A, IMM());
 //        LOG(fprintf(instructions, "%X\tLDA #0x%X\n", currentPC, A);)
         return 2;
 
@@ -728,7 +728,7 @@ size_t MC68HC05::Interpreter()
     }
 
     LDX_IMM:
-        LDX(IMM());
+        LDAX(X, IMM());
 //        LOG(fprintf(instructions, "%X\tLDX #0x%X\n", currentPC, X);)
         return 2;
 
@@ -764,7 +764,7 @@ size_t MC68HC05::Interpreter()
         return 3;
 
     LDA_DIR:
-        LDA(DIR());
+        LDAX(A, DIR());
 //        LOG(fprintf(instructions, "%X\tLDA 0x%X\n", currentPC, addr);)
         return 3;
 
@@ -804,7 +804,7 @@ size_t MC68HC05::Interpreter()
         return 5;
 
     LDX_DIR:
-        LDX(DIR());
+        LDAX(X, DIR());
 //        LOG(fprintf(instructions, "%X\tLDX 0x%X\n", currentPC, addr);)
         return 3;
 
@@ -845,7 +845,7 @@ size_t MC68HC05::Interpreter()
         return 4;
 
     LDA_EXT:
-        LDA(EXT());
+        LDAX(A, EXT());
 //        LOG(fprintf(instructions, "%X\tLDA 0x%X\n", currentPC, addr);)
         return 4;
 
@@ -885,7 +885,7 @@ size_t MC68HC05::Interpreter()
         return 6;
 
     LDX_EXT:
-        LDX(EXT());
+        LDAX(X, EXT());
 //        LOG(fprintf(instructions, "%X\tLDX 0x%X\n", currentPC, addr);)
         return 4;
 
@@ -926,7 +926,7 @@ size_t MC68HC05::Interpreter()
         return 5;
 
     LDA_IX2:
-        LDA(IX2());
+        LDAX(A, IX2());
 //        LOG(fprintf(instructions, "%X\tLDA 0x%X, X\n", currentPC, offset);)
         return 5;
 
@@ -966,7 +966,7 @@ size_t MC68HC05::Interpreter()
         return 7;
 
     LDX_IX2:
-        LDX(IX2());
+        LDAX(X, IX2());
 //        LOG(fprintf(instructions, "%X\tLDX 0x%X, X\n", currentPC, offset);)
         return 5;
 
@@ -1007,7 +1007,7 @@ size_t MC68HC05::Interpreter()
         return 4;
 
     LDA_IX1:
-        LDA(IX1());
+        LDAX(A, IX1());
 //        LOG(fprintf(instructions, "%X\tLDA 0x%X, X\n", currentPC, offset);)
         return 4;
 
@@ -1047,7 +1047,7 @@ size_t MC68HC05::Interpreter()
         return 6;
 
     LDX_IX1:
-        LDX(IX1());
+        LDAX(X, IX1());
 //        LOG(fprintf(instructions, "%X\tLDX 0x%X, X\n", currentPC, offset);)
         return 4;
 
@@ -1088,7 +1088,7 @@ size_t MC68HC05::Interpreter()
         return 3;
 
     LDA_IX:
-        LDA(IX());
+        LDAX(A, IX());
 //        LOG(fprintf(instructions, "%X\tLDA X\n", currentPC);)
         return 3;
 
@@ -1128,7 +1128,7 @@ size_t MC68HC05::Interpreter()
         return 5;
 
     LDX_IX:
-        LDX(IX());
+        LDAX(X, IX());
 //        LOG(fprintf(instructions, "%X\tLDX X\n", currentPC);)
         return 3;
 
@@ -1140,6 +1140,25 @@ size_t MC68HC05::Interpreter()
     unknown:
         LOG(printf("[MC68HC05] %X\tUnknwon instruction: 0x%X\n", PC - 1, opcode);)
     return 0;
+}
+
+void MC68HC05::PushByte(uint8_t data)
+{
+    SetMemory(SP--, data);
+    if(SP < 0xC0)
+        SP = 0xFF;
+}
+
+uint8_t MC68HC05::PopByte()
+{
+    if(SP >= 0xFF)
+        SP = 0xBF;
+    return GetMemory(++SP);
+}
+
+uint8_t MC68HC05::GetNextByte()
+{
+    return GetMemory(PC++);
 }
 
 uint16_t MC68HC05::EA_DIR()
@@ -1381,18 +1400,11 @@ void MC68HC05::JSR(uint16_t addr)
     JMP(addr);
 }
 
-void MC68HC05::LDA(uint8_t rhs)
+void MC68HC05::LDAX(uint8_t& reg, uint8_t rhs)
 {
-    A = rhs;
-    CCR[N] = A & 0x80;
-    CCR[Z] = A == 0;
-}
-
-void MC68HC05::LDX(uint8_t rhs)
-{
-    X = rhs;
-    CCR[N] = X & 0x80;
-    CCR[Z] = X == 0;
+    reg = rhs;
+    CCR[N] = rhs & 0x80;
+    CCR[Z] = rhs == 0;
 }
 
 void MC68HC05::LSL(uint8_t& reg)

@@ -1,8 +1,10 @@
 #include "MC68HC05i8.hpp"
 
+#include <cstring>
+
 #define SLAVE_FREQUENCY (4'000'000)
 
-MC68HC05i8::MC68HC05i8(const void* bios, uint16_t size)
+MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size)
     : MC68HC05(memory.size())
     , memory{0}
     , pendingCycles{0}
@@ -10,8 +12,8 @@ MC68HC05i8::MC68HC05i8(const void* bios, uint16_t size)
     if(size > memory.size())
         size = memory.size();
 
-    if(bios != nullptr)
-        memcpy(memory.data(), bios, size);
+    if(internalMemory != nullptr)
+        memcpy(memory.data(), internalMemory, size);
 
     Reset();
 }
@@ -61,4 +63,14 @@ void MC68HC05i8::SetMemory(const uint16_t addr, const uint8_t value)
 
     // TODO: 4.1.3 Illegal Address Reset
     printf("[MC68HC05i8] Write at %X (%d) out of range\n", addr, value);
+}
+
+void MC68HC05i8::Stop()
+{
+
+}
+
+void MC68HC05i8::Wait()
+{
+
 }
