@@ -7,28 +7,26 @@
 MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size)
     : MC68HC05(memory.size())
     , memory{0}
-    , pendingCycles{0}
+    , pendingCycles(0)
 {
-    if(size > memory.size())
-        size = memory.size();
-
     if(internalMemory != nullptr)
+    {
+        if(size > memory.size())
+            size = memory.size();
         memcpy(memory.data(), internalMemory, size);
+    }
 
     Reset();
+    // TODO:
+    // 3.1.5.2 Interrupt latch
+    // 4.1.3 Illegal Address Reset
 }
 
 void MC68HC05i8::Reset()
 {
-    A = 0;
-    X = 0;
-    PC = ((uint16_t)GetMemory(0x3FFE) << 8) | GetMemory(0x3FFF);
-    SP = 0xFF;
-    CCR |= 0xE8;
-    waitStop = false;
+    MC68HC05::Reset();
 
     pendingCycles = 0;
-    irqPin = true;
 }
 
 void MC68HC05i8::IncrementTime(double ns)
@@ -46,23 +44,29 @@ void MC68HC05i8::IncrementTime(double ns)
 uint8_t MC68HC05i8::GetMemory(const uint16_t addr)
 {
     if(addr < memory.size())
-        return memory[addr];
+        return memory[addr]; // TODO: GetIO(addr) ?
 
-    // TODO: 4.1.3 Illegal Address Reset
-    printf("[MC68HC05i8] Read at %X out of range\n", addr);
+    printf("[MC68HC05i8] Read at 0x%X out of range\n", addr);
     return 0;
 }
 
 void MC68HC05i8::SetMemory(const uint16_t addr, const uint8_t value)
 {
-    if(addr < 0x0130)
+    if(addr < 0x0040)
+        return SetIO(addr, value);
+
+    if(addr >= 0x0050 && addr < 0x0130)
     {
         memory[addr] = value;
         return;
     }
 
-    // TODO: 4.1.3 Illegal Address Reset
-    printf("[MC68HC05i8] Write at %X (%d) out of range\n", addr, value);
+    printf("[MC68HC05i8] Write at 0x%X (%d) out of range\n", addr, value);
+}
+
+void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
+{
+
 }
 
 void MC68HC05i8::Stop()

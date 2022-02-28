@@ -4,17 +4,20 @@
 #include <bitset>
 #include <cstdint>
 
+/** @class MC68HC05
+ * @brief Implements the CPU core of a MC68HC05 microcontroller.
+ */
 class MC68HC05
 {
 protected:
     MC68HC05() = delete;
     MC68HC05(const MC68HC05&) = delete;
-    MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), waitStop(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000) {}
+    explicit MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), waitStop(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000) {}
     virtual ~MC68HC05() {}
 
     const uint16_t memorySize;
     bool irqPin; /**< Physical state of the IRQ pin. Has to be set by the derived class. */
-    bool waitStop; /**< true if a STOP or WAIT instruction is executed, reseted to false during RESET or IRQ. */
+    bool waitStop; /**< true if a STOP or WAIT instruction is executed. Reseted to false by a RESET or IRQ (WAIT and STOP), or interrupts (WAIT). */
 
     uint8_t A;
     uint8_t X;
@@ -22,17 +25,18 @@ protected:
     uint16_t PC;
     std::bitset<8> CCR;
 
-    size_t Interpreter();
-
-    /** @brief Reads a byte from internal memory only. */
+    /** @brief Reads a byte from internal memory. */
     virtual uint8_t GetMemory(uint16_t addr) = 0;
-    /** @brief Writes a byte to internal memory only. */
+    /** @brief Writes a byte to internal memory. */
     virtual void SetMemory(uint16_t addr, uint8_t value) = 0;
 
-    /** @brief Called by the interpreter when a STOP instruction is executed. It has to be override by the derived class. */
+    virtual void Reset();
+    /** @brief Called by the interpreter when a STOP instruction is executed. */
     virtual void Stop() = 0;
-    /** @brief Called by the interpreter when a WAIT instruction is executed. It has to be override by the derived class. */
+    /** @brief Called by the interpreter when a WAIT instruction is executed. */
     virtual void Wait() = 0;
+
+    size_t Interpreter();
 
 private:
     // Memory Access

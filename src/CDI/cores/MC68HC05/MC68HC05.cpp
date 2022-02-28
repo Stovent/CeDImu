@@ -10,10 +10,25 @@ enum CCRBits
     H,
 };
 
-/** @brief Execute a single instruction.
+/** @brief Triggers the RESET pin.
+ *
+ * Default implementation fetches the PC from the RESET vector and sets \ref MC68HC05.waitStop to false.
+ */
+void MC68HC05::Reset()
+{
+    PC = (uint16_t)GetMemory(memorySize - 2) << 8;
+    PC |= GetMemory(memorySize - 1);
+    waitStop = false;
+}
+
+/** @brief Executes a single instruction.
+ * @return The number of cycles used to execute the instruction. 0 if in WAIT or STOP mode.
  */
 size_t MC68HC05::Interpreter()
 {
+    if(waitStop)
+        return 0;
+
     constexpr void* ITC[256] = {
         &&BRSET0_DIR, &&BRCLR0_DIR, &&BRSET1_DIR, &&BRCLR1_DIR, &&BRSET2_DIR, &&BRCLR2_DIR, &&BRSET3_DIR, &&BRCLR3_DIR, &&BRSET4_DIR, &&BRCLR4_DIR, &&BRSET5_DIR, &&BRCLR5_DIR, &&BRSET6_DIR, &&BRCLR6_DIR, &&BRSET7_DIR, &&BRCLR7_DIR, // 0x0X
         &&BSET0_DIR,  &&BCLR0_DIR,  &&BSET1_DIR,  &&BCLR1_DIR,  &&BSET2_DIR,  &&BCLR2_DIR,  &&BSET3_DIR,  &&BCLR3_DIR,  &&BSET4_DIR,  &&BCLR4_DIR,  &&BSET5_DIR,  &&BCLR5_DIR,  &&BSET6_DIR,  &&BCLR6_DIR,  &&BSET7_DIR,  &&BCLR7_DIR,  // 0x1X
