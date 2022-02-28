@@ -14,7 +14,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-s -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-s -O3 -DwxDEBUG_LEVEL=0")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 option(ENABLE_LOG "Allows CeDImu to write in files the disassembly of the CPU and the memory accesses" OFF)
