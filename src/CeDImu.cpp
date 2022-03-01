@@ -105,9 +105,11 @@ bool CeDImu::InitCDI()
         out.close();
     });
 
-    m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), Config::boardType);
-    if(!m_cdi.board)
+    if(!m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), Config::boardType))
+    {
+        wxMessageBox("Failed to load system BIOS '" + Config::systemBIOS + "': unsupported board type.");
         return false;
+    }
 
     m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
     return true;

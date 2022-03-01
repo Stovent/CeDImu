@@ -21,10 +21,14 @@ DVC support will be added when CeDImu will have a good compatibility with the ba
 
 Below are listed the known BIOSes that works in CeDImu along with their board settings. For more information, see [the ICDIA website](http://icdia.co.uk/players/comparison.html "icdia.co.uk").
 
-- CDI 210/40 (Mono-3, 8KB NVRAM)
-- CDI 470/00 (Mono-4, 8KB NVRAM)
-- CDI 470/20 (Mono-4, 8KB NVRAM)
-- CDI 490/00 (Mono-4, 32KB NVRAM)
+- CDI 210/40 (Mono-3, 8 KB NVRAM)
+- CDI 220/60 (Mono-3, 32 KB NVRAM)
+- CDI 220/80 (Mono-4, 32 KB NVRAM)
+- CDI 470/00 (Mono-4, 8 KB NVRAM)
+- CDI 470/20 (Mono-4, 8 KB NVRAM)
+- CDI 490/00 (Mono-4, 32 KB NVRAM)
+
+Some BIOSes (e.g. CDI 220/80) may not show graphics on their first boot. To boot them, let them run for around a thousand frames on the first boot so they initializes their NVRAM, then reload the emulator.
 
 ### Boards
 

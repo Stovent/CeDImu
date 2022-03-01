@@ -77,7 +77,7 @@ bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* n
         board = nullptr;
     }
 
-    return board != nullptr;
+    return (bool)board;
 }
 
 void CDI::UnloadBoard()
