@@ -7,7 +7,7 @@
 
 /** \brief Build a new SCC68070 CPU.
  *
- * \param baord The board used to access memory.
+ * \param idc Reference to the CDI context.
  * \param clockFrequency The frequency of the CPU.
  */
 SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :

@@ -7,6 +7,7 @@
 
 /** \brief Create a new empty CD-i context.
  * \param conf The configuration of the player.
+ * \param calls The user callbacks.
  */
 CDI::CDI(const CDIConfig& conf, const Callbacks& calls) : config(conf), callbacks(calls)
 {
@@ -15,13 +16,15 @@ CDI::CDI(const CDIConfig& conf, const Callbacks& calls) : config(conf), callback
 /** \brief Create a new CD-i context.
  * \param vdscBios System BIOS data.
  * \param vdscSize System BIOS data size.
+ * \param nvram NVRAM data from saved file.
  * \param brd The type of board to use.
  * \param conf The configuration of the player.
-
+ * \param calls The user callbacks.
+ *
  * See description of CDI::LoadBoard.
  * On failure, CDI::board is a nullptr. On success CDI::board is a valid pointer.
  */
-CDI::CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf) : config(conf)
+CDI::CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf, const Callbacks& calls) : config(conf), callbacks(calls)
 {
     LoadBoard(vdscBios, vdscSize, nvram, brd);
 }
@@ -35,12 +38,15 @@ CDI::~CDI()
 /** \brief Loads a new player type.
  * \param vdscBios System BIOS data.
  * \param vdscSize System BIOS data size.
+ * \param nvram NVRAM data from saved file.
  * \param boardDetect The type of board to use.
  * \return True if successful, false otherwise.
  *
  * On failure, CDI::board is a nullptr. On success CDI::board is a valid pointer.
  * If \p boardDetect is Boards::AutoDetect, then the board type will be guessed from the BIOS data.
  * It may not be accurate so always privilege providing yourself the board type.
+ *
+ * User needs to ensure the NVRAM data size corresponds to the NVRAM size in the config (or auto-detected).
  */
 bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect)
 {

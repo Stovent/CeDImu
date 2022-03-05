@@ -18,7 +18,7 @@ public:
 
     CDI(const CDI&) = delete;
     explicit CDI(const CDIConfig& conf = defaultConfig, const Callbacks& calls = Callbacks());
-    CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf = defaultConfig);
+    CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf = defaultConfig, const Callbacks& calls = Callbacks());
     ~CDI();
 
     bool LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect);

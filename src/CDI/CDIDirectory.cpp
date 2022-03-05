@@ -131,12 +131,13 @@ void CDIDirectory::Clear()
  * \return A stringstream containing the directory structure.
  *
  * The structure is designed as follow:
+ * ```
  * Dir: <name>/
  * LBN: <logical block number of the directory>
- * Then for each file inside the directory:
  *     File: <file name>
  *     Size: <file size>
  *     LBN : <logical block number of the file>
+ * ```
  */
 std::stringstream CDIDirectory::GetChildrenTree() const
 {
