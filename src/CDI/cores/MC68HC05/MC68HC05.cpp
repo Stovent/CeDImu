@@ -16,8 +16,7 @@ enum CCRBits
  */
 void MC68HC05::Reset()
 {
-    PC = (uint16_t)GetMemory(memorySize - 2) << 8;
-    PC |= GetMemory(memorySize - 1);
+    PC = (uint16_t)GetMemory(memorySize - 2) << 8 | GetMemory(memorySize - 1);
     waitStop = false;
 }
 
@@ -591,16 +590,14 @@ size_t MC68HC05::Interpreter()
         CCR = PopByte() | 0xE0;
         A = PopByte();
         X = PopByte();
-        PC = (uint16_t)PopByte() << 8;
-        PC |= PopByte();
+        PC = (uint16_t)PopByte() << 8 | PopByte();
 //        LOG(fprintf(instructions, "%X\tRTI\n", currentPC);)
         return 9;
     }
 
     RTS_INH:
     {
-        PC = (uint16_t)PopByte() << 8;
-        PC |= PopByte();
+        PC = (uint16_t)PopByte() << 8 | PopByte();
 //        LOG(fprintf(instructions, "%X\tRTS\n", currentPC);)
         return 6;
     }
@@ -613,8 +610,7 @@ size_t MC68HC05::Interpreter()
         PushByte(A);
         PushByte(CCR.to_ulong());
         CCR[I] = true;
-        PC = (uint16_t)GetMemory(memorySize - 4) << 8;
-        PC |= GetMemory(memorySize - 3);
+        PC = (uint16_t)GetMemory(memorySize - 4) << 8 | GetMemory(memorySize - 3);
 //        LOG(fprintf(instructions, "%X\tSWI\n", currentPC);)
         return 10;
     }
