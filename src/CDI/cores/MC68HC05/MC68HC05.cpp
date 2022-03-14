@@ -1,15 +1,6 @@
 #include "MC68HC05.hpp"
 #include "../../common/Callbacks.hpp"
 
-enum CCRBits
-{
-    C = 0,
-    Z,
-    N,
-    I,
-    H,
-};
-
 /** @brief Triggers the RESET pin.
  *
  * Default implementation fetches the PC from the RESET vector and sets \ref MC68HC05.waitStop to false.
@@ -224,62 +215,62 @@ size_t MC68HC05::Interpreter()
         return 3;
 
     BHI_REL:
-        Branch(!CCR[C] && !CCR[Z]);
+        Branch(!CCR[CCRC] && !CCR[CCRZ]);
 //        LOG(fprintf(instructions, "%X\tBHI %d\n", currentPC, offset);)
         return 3;
 
     BLS_REL:
-        Branch(CCR[C] || CCR[Z]);
+        Branch(CCR[CCRC] || CCR[CCRZ]);
 //        LOG(fprintf(instructions, "%X\tBLS %d\n", currentPC, offset);)
         return 3;
 
     BCC_REL:
-        Branch(!CCR[C]);
+        Branch(!CCR[CCRC]);
 //        LOG(fprintf(instructions, "%X\tBCC %d\n", currentPC, offset);)
         return 3;
 
     BCS_REL:
-        Branch(CCR[C]);
+        Branch(CCR[CCRC]);
 //        LOG(fprintf(instructions, "%X\tBLO/BCS %d\n", currentPC, offset);)
         return 3;
 
     BNE_REL:
-        Branch(!CCR[Z]);
+        Branch(!CCR[CCRZ]);
 //        LOG(fprintf(instructions, "%X\tBNE %d\n", currentPC, offset);)
         return 3;
 
     BEQ_REL:
-        Branch(CCR[Z]);
+        Branch(CCR[CCRZ]);
 //        LOG(fprintf(instructions, "%X\tBEQ %d\n", currentPC, offset);)
         return 3;
 
     BHCC_REL:
-        Branch(!CCR[H]);
+        Branch(!CCR[CCRH]);
 //        LOG(fprintf(instructions, "%X\tBHCC %d\n", currentPC, offset);)
         return 3;
 
     BHCS_REL:
-        Branch(CCR[H]);
+        Branch(CCR[CCRH]);
 //        LOG(fprintf(instructions, "%X\tBHCS %d\n", currentPC, offset);)
         return 3;
 
     BPL_REL:
-        Branch(!CCR[N]);
+        Branch(!CCR[CCRN]);
 //        LOG(fprintf(instructions, "%X\tBPL %d\n", currentPC, offset);)
         return 3;
 
     BMI_REL:
-        Branch(CCR[N]);
+        Branch(CCR[CCRN]);
 //        LOG(fprintf(instructions, "%X\tBMI %d\n", currentPC, offset);)
         return 3;
 
     BMC_REL:
-        Branch(!CCR[I]);
+        Branch(!CCR[CCRI]);
 //        LOG(fprintf(instructions, "%X\tBMC %d\n", currentPC, offset);)
         return 3;
 
     BMS_REL:
-        Branch(CCR[I]);
+        Branch(CCR[CCRI]);
 //        LOG(fprintf(instructions, "%X\tBMS %d\n", currentPC, offset);)
         return 3;
 
@@ -360,8 +351,8 @@ size_t MC68HC05::Interpreter()
         const uint16_t result = (uint16_t)X * (uint16_t)A;
         X = result >> 8;
         A = result;
-        CCR[H] = false;
-        CCR[C] = false;
+        CCR[CCRH] = false;
+        CCR[CCRC] = false;
 //        LOG(fprintf(instructions, "%X\tMUL\n", currentPC);)
         return 11;
     }
@@ -609,7 +600,7 @@ size_t MC68HC05::Interpreter()
         PushByte(X);
         PushByte(A);
         PushByte(CCR.to_ulong());
-        CCR[I] = true;
+        CCR[CCRI] = true;
         PC = (uint16_t)GetMemory(memorySize - 4) << 8 | GetMemory(memorySize - 3);
 //        LOG(fprintf(instructions, "%X\tSWI\n", currentPC);)
         return 10;
@@ -617,7 +608,7 @@ size_t MC68HC05::Interpreter()
 
     STOP_INH:
     {
-        CCR[I] = false;
+        CCR[CCRI] = false;
         waitStop = true;
         Stop();
 //        LOG(fprintf(instructions, "%X\tSTOP\n", currentPC);)
@@ -626,7 +617,7 @@ size_t MC68HC05::Interpreter()
 
     WAIT_INH:
     {
-        CCR[I] = false;
+        CCR[CCRI] = false;
         waitStop = true;
         Wait();
 //        LOG(fprintf(instructions, "%X\tWAIT\n", currentPC);)
@@ -640,22 +631,22 @@ size_t MC68HC05::Interpreter()
         return 2;
 
     CLC_INH:
-        CCR[C] = false;
+        CCR[CCRC] = false;
 //        LOG(fprintf(instructions, "%X\tCLC\n", currentPC);)
         return 2;
 
     SEC_INH:
-        CCR[C] = true;
+        CCR[CCRC] = true;
 //        LOG(fprintf(instructions, "%X\tSEC\n", currentPC);)
         return 2;
 
     CLI_INH:
-        CCR[I] = false;
+        CCR[CCRI] = false;
 //        LOG(fprintf(instructions, "%X\tCLI\n", currentPC);)
         return 2;
 
     SEI_INH:
-        CCR[I] = true;
+        CCR[CCRI] = true;
 //        LOG(fprintf(instructions, "%X\tSEI\n", currentPC);)
         return 2;
 
@@ -1232,16 +1223,16 @@ uint8_t MC68HC05::IX2()
 
 void MC68HC05::ADC(uint8_t rhs)
 {
-    ADD(rhs + CCR[C]);
+    ADD(rhs + CCR[CCRC]);
 }
 
 void MC68HC05::ADD(uint8_t rhs)
 {
     const uint8_t res = A + rhs;
-    CCR[H] = CARRY_HALF_ADD(A, rhs, res, 0x08);
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
-    CCR[C] = CARRY_HALF_ADD(A, rhs, res, 0x80);
+    CCR[CCRH] = CARRY_HALF_ADD(A, rhs, res, 0x08);
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
+    CCR[CCRC] = CARRY_HALF_ADD(A, rhs, res, 0x80);
     A = res;
 }
 
@@ -1252,23 +1243,23 @@ void MC68HC05::AND(uint8_t rhs)
 
 void MC68HC05::ASR(uint8_t& reg)
 {
-    CCR[C] = reg & 1;
+    CCR[CCRC] = reg & 1;
     const uint8_t msb = reg & 0x80;
     reg >>= 1;
     reg |= msb;
-    CCR[N] = reg & 0x80;
-    CCR[Z] = reg == 0;
+    CCR[CCRN] = reg & 0x80;
+    CCR[CCRZ] = reg == 0;
 }
 
 void MC68HC05::ASR(uint16_t addr)
 {
     uint8_t data = GetMemory(addr);
-    CCR[C] = data & 1;
+    CCR[CCRC] = data & 1;
     const uint8_t msb = data & 0x80;
     data >>= 1;
     data |= msb;
-    CCR[N] = data & 0x80;
-    CCR[Z] = data == 0;
+    CCR[CCRN] = data & 0x80;
+    CCR[CCRZ] = data == 0;
     SetMemory(addr, data);
 }
 
@@ -1282,8 +1273,8 @@ void MC68HC05::BCLR()
 uint8_t MC68HC05::BIT(uint8_t rhs)
 {
     const uint8_t res = A & rhs;
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
     return res;
 }
 
@@ -1299,8 +1290,8 @@ void MC68HC05::BRCLR()
 {
     const uint8_t addr = GetNextByte();
     const int8_t offset = GetNextByte();
-    CCR[C] = GetMemory(addr) & (1 << BIT);
-    if(!CCR[C])
+    CCR[CCRC] = GetMemory(addr) & (1 << BIT);
+    if(!CCR[CCRC])
         PC += offset;
 }
 
@@ -1309,8 +1300,8 @@ void MC68HC05::BRSET()
 {
     const uint8_t addr = GetNextByte();
     const int8_t offset = GetNextByte();
-    CCR[C] = GetMemory(addr) & (1 << BIT);
-    if(CCR[C])
+    CCR[CCRC] = GetMemory(addr) & (1 << BIT);
+    if(CCR[CCRC])
         PC += offset;
 }
 
@@ -1324,78 +1315,78 @@ void MC68HC05::BSET()
 void MC68HC05::CLR(uint8_t& reg)
 {
     reg = 0;
-    CCR[N] = false;
-    CCR[Z] = true;
+    CCR[CCRN] = false;
+    CCR[CCRZ] = true;
 }
 
 void MC68HC05::CLR(uint16_t addr)
 {
-    CCR[N] = false;
-    CCR[Z] = true;
+    CCR[CCRN] = false;
+    CCR[CCRZ] = true;
     SetMemory(addr, 0);
 }
 
 uint8_t MC68HC05::CMP(uint8_t lhs, uint8_t rhs)
 {
     const uint8_t res = lhs - rhs;
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
-    CCR[C] = CARRY_SUB(lhs, rhs, res);
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
+    CCR[CCRC] = CARRY_SUB(lhs, rhs, res);
     return res;
 }
 
 void MC68HC05::COM(uint8_t& reg)
 {
     reg = !reg;
-    CCR[N] = reg & 0x80;
-    CCR[Z] = reg == 0;
-    CCR[C] = true;
+    CCR[CCRN] = reg & 0x80;
+    CCR[CCRZ] = reg == 0;
+    CCR[CCRC] = true;
 }
 
 void MC68HC05::COM(uint16_t addr)
 {
     const uint8_t res = !GetMemory(addr);
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
-    CCR[C] = true;
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
+    CCR[CCRC] = true;
     SetMemory(addr, res);
 }
 
 void MC68HC05::DEC(uint8_t& reg)
 {
     reg--;
-    CCR[N] = reg & 0x80;
-    CCR[Z] = reg == 0;
+    CCR[CCRN] = reg & 0x80;
+    CCR[CCRZ] = reg == 0;
 }
 
 void MC68HC05::DEC(uint16_t addr)
 {
     const uint8_t res = GetMemory(addr) - 1;
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
     SetMemory(addr, res);
 }
 
 void MC68HC05::EOR(uint8_t rhs)
 {
     const uint8_t res = A ^ rhs;
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
     A = res;
 }
 
 void MC68HC05::INC(uint8_t& reg)
 {
     reg++;
-    CCR[N] = reg & 0x80;
-    CCR[Z] = reg == 0;
+    CCR[CCRN] = reg & 0x80;
+    CCR[CCRZ] = reg == 0;
 }
 
 void MC68HC05::INC(uint16_t addr)
 {
     const uint8_t res = GetMemory(addr) + 1;
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
     SetMemory(addr, res);
 }
 
@@ -1414,125 +1405,125 @@ void MC68HC05::JSR(uint16_t addr)
 void MC68HC05::LDAX(uint8_t& reg, uint8_t rhs)
 {
     reg = rhs;
-    CCR[N] = rhs & 0x80;
-    CCR[Z] = rhs == 0;
+    CCR[CCRN] = rhs & 0x80;
+    CCR[CCRZ] = rhs == 0;
 }
 
 void MC68HC05::LSL(uint8_t& reg)
 {
-    CCR[C] = reg & 0x80;
+    CCR[CCRC] = reg & 0x80;
     reg <<= 1;
-    CCR[N] = reg & 0x80;
-    CCR[Z] = reg == 0;
+    CCR[CCRN] = reg & 0x80;
+    CCR[CCRZ] = reg == 0;
 }
 
 void MC68HC05::LSL(uint16_t addr)
 {
     uint8_t data = GetMemory(addr);
-    CCR[C] = data & 0x80;
+    CCR[CCRC] = data & 0x80;
     data <<= 1;
-    CCR[N] = data & 0x80;
-    CCR[Z] = data == 0;
+    CCR[CCRN] = data & 0x80;
+    CCR[CCRZ] = data == 0;
     SetMemory(addr, data);
 }
 
 void MC68HC05::LSR(uint8_t& reg)
 {
-    CCR[C] = reg & 1;
+    CCR[CCRC] = reg & 1;
     reg >>= 1;
-    CCR[N] = false;
-    CCR[Z] = reg == 0;
+    CCR[CCRN] = false;
+    CCR[CCRZ] = reg == 0;
 }
 
 void MC68HC05::LSR(uint16_t addr)
 {
     uint8_t data = GetMemory(addr);
-    CCR[C] = data & 1;
+    CCR[CCRC] = data & 1;
     data >>= 1;
-    CCR[N] = false;
-    CCR[Z] = data == 0;
+    CCR[CCRN] = false;
+    CCR[CCRZ] = data == 0;
     SetMemory(addr, data);
 }
 
 void MC68HC05::NEG(uint8_t& reg)
 {
     reg = -reg;
-    CCR[N] = reg & 0x80;
-    CCR[Z] = reg == 0;
-    CCR[C] = reg != 0;
+    CCR[CCRN] = reg & 0x80;
+    CCR[CCRZ] = reg == 0;
+    CCR[CCRC] = reg != 0;
 }
 
 void MC68HC05::NEG(uint16_t addr)
 {
     const uint8_t res = -GetMemory(addr);
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
-    CCR[C] = res != 0;
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
+    CCR[CCRC] = res != 0;
     SetMemory(addr, res);
 }
 
 void MC68HC05::ORA(uint8_t rhs)
 {
     const uint8_t res = A | rhs;
-    CCR[N] = res & 0x80;
-    CCR[Z] = res == 0;
+    CCR[CCRN] = res & 0x80;
+    CCR[CCRZ] = res == 0;
     A = res;
 }
 
 void MC68HC05::ROL(uint8_t& reg)
 {
-    const uint8_t c = CCR[C];
-    CCR[C] = reg & 0x80;
+    const uint8_t c = CCR[CCRC];
+    CCR[CCRC] = reg & 0x80;
     reg <<= 1;
     reg |= c;
-    CCR[N] = reg & 0x80;
-    CCR[Z] = reg == 0;
+    CCR[CCRN] = reg & 0x80;
+    CCR[CCRZ] = reg == 0;
 }
 
 void MC68HC05::ROL(uint16_t addr)
 {
     uint8_t data = GetMemory(addr);
-    const uint8_t c = CCR[C];
-    CCR[C] = data & 0x80;
+    const uint8_t c = CCR[CCRC];
+    CCR[CCRC] = data & 0x80;
     data <<= 1;
     data |= c;
-    CCR[N] = data & 0x80;
-    CCR[Z] = data == 0;
+    CCR[CCRN] = data & 0x80;
+    CCR[CCRZ] = data == 0;
     SetMemory(addr, data);
 }
 
 void MC68HC05::ROR(uint8_t& reg)
 {
-    const uint8_t c = (uint8_t)CCR[C] << 7;
-    CCR[C] = reg & 1;
+    const uint8_t c = (uint8_t)CCR[CCRC] << 7;
+    CCR[CCRC] = reg & 1;
     reg >>= 1;
     reg |= c;
-    CCR[N] = reg & 0x80;
-    CCR[Z] = reg == 0;
+    CCR[CCRN] = reg & 0x80;
+    CCR[CCRZ] = reg == 0;
 }
 
 void MC68HC05::ROR(uint16_t addr)
 {
     uint8_t data = GetMemory(addr);
-    const uint8_t c = (uint8_t)CCR[C] << 7;
-    CCR[C] = data & 1;
+    const uint8_t c = (uint8_t)CCR[CCRC] << 7;
+    CCR[CCRC] = data & 1;
     data >>= 1;
     data |= c;
-    CCR[N] = data & 0x80;
-    CCR[Z] = data == 0;
+    CCR[CCRN] = data & 0x80;
+    CCR[CCRZ] = data == 0;
     SetMemory(addr, data);
 }
 
 void MC68HC05::SBC(uint8_t rhs)
 {
-    SUB(rhs + CCR[C]);
+    SUB(rhs + CCR[CCRC]);
 }
 
 void MC68HC05::STAX(uint8_t val, uint16_t addr)
 {
     SetMemory(addr, val);
-    CCR[N] = val & 0x80;
-    CCR[Z] = val == 0;
+    CCR[CCRN] = val & 0x80;
+    CCR[CCRZ] = val == 0;
 }
 
 void MC68HC05::SUB(uint8_t rhs)
@@ -1542,6 +1533,6 @@ void MC68HC05::SUB(uint8_t rhs)
 
 void MC68HC05::TST(uint8_t val)
 {
-    CCR[N] = val & 0x80;
-    CCR[Z] = val == 0;
+    CCR[CCRN] = val & 0x80;
+    CCR[CCRZ] = val == 0;
 }

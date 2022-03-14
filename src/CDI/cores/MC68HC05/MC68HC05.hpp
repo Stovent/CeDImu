@@ -9,7 +9,21 @@
  */
 class MC68HC05
 {
+public:
+    static constexpr size_t EXTERNAL_FREQUENCY = 4'000'000;
+    static constexpr size_t INTERNAL_FREQUENCY = EXTERNAL_FREQUENCY / 2;
+    static constexpr size_t TIMER_FREQUENCY = INTERNAL_FREQUENCY / 4;
+
 protected:
+    enum CCRBits
+    {
+        CCRC = 0,
+        CCRZ,
+        CCRN,
+        CCRI,
+        CCRH,
+    };
+
     MC68HC05() = delete;
     MC68HC05(const MC68HC05&) = delete;
     explicit MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), waitStop(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000) {}

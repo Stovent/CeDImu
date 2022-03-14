@@ -3,66 +3,8 @@
 
 #include <cstring>
 
-#define SLAVE_FREQUENCY (4'000'000)
-
 #define MEMSET_RANGE(beg, endIncluded, val) memset(&memory[beg], val, endIncluded - beg + 1)
 #define NIBBLE_SWAP(val) (uint8_t)(val >> 4 | val << 4)
-
-enum MC68HC05i8IORegisters
-{
-    PortAData = 0,
-    PortBData,
-    PortCData,
-    PortDData,
-    PortADataDirection,
-    PortBDataDirection,
-    PortCDataDirection,
-    PortDDataDirection,
-    CoreTimerControlStatus,
-    CoreTimerCounter,
-    PortEData = 0xC,
-    PortEDataDirection,
-    PortFData,
-    PortFDataDirection,
-    InputCaptureAHigh,
-    InputCaptureALow,
-    OutputCompareAHigh,
-    OutputCompareALow,
-    InputCaptureBHigh,
-    InputCaptureBLow,
-    CountHigh = 0x18,
-    CountLow,
-    AlternateCountHigh,
-    AlternateCountLow,
-    TimerControl,
-    TimerStatus = 0x1E,
-    PortEMode = 0x20,
-    SCI1Baud= 0x23,
-    SCI1Control1,
-    SCI1Control2,
-    SCI1Status,
-    SCI1Data,
-    SCI2Baud= 0x2B,
-    SCI2Control1,
-    SCI2Control2,
-    SCI2Status,
-    SCI2Data,
-    ChannelADataWrite,
-    ChannelBDataWrite,
-    ChannelCDataWrite,
-    ChannelDDataWrite,
-    ChannelADataRead,
-    ChannelBDataRead,
-    ChannelCDataRead,
-    ChannelDDataRead,
-    ChannelAStatus,
-    ChannelBStatus,
-    ChannelCStatus,
-    ChannelDStatus,
-    InterruptStatus,
-    InterruptMask,
-    Mode,
-};
 
 MC68HC05i8::MC68HC05i8(CDI& idc, const void* internalMemory, uint16_t size)
     : MC68HC05(memory.size())
@@ -87,6 +29,10 @@ MC68HC05i8::MC68HC05i8(CDI& idc, const void* internalMemory, uint16_t size)
     Reset();
     // TODO:
     // 3.1.5.2 Interrupt latch
+}
+
+MC68HC05i8::~MC68HC05i8()
+{
 }
 
 void MC68HC05i8::Reset()
@@ -120,7 +66,7 @@ void MC68HC05i8::IncrementTime(double ns)
 {
     if(!waitStop)
     {
-        pendingCycles += ns / SLAVE_FREQUENCY;
+        pendingCycles += ns / MC68HC05::INTERNAL_FREQUENCY;
         while(pendingCycles > 0)
         {
             PC &= 0x3FFF; // 3.1.3 The two msb are permanently set to 0.
