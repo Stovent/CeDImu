@@ -1,5 +1,4 @@
 #include "MC68HC05.hpp"
-#include "../../common/Callbacks.hpp"
 
 /** @brief Triggers the RESET pin.
  *
@@ -1140,7 +1139,7 @@ size_t MC68HC05::Interpreter()
         return 4;
 
     unknown:
-        LOG(printf("[MC68HC05] %X\tUnknwon instruction: 0x%X\n", PC - 1, opcode);)
+        printf("[MC68HC05] %X\tUnknwon instruction: 0x%X\n", PC - 1, opcode);
     return 0;
 }
 
