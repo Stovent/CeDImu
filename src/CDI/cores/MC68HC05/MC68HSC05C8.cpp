@@ -28,6 +28,10 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     }
 
     Reset();
+    memory[PortAData] = 0; // UUUUUUUU
+    memory[PortBData] = 0; // UUUUUUUU
+    memory[PortCData] = 0; // UUUUUUUU
+    memory[PortDFixedInput] = 0; // UUUUUUUU
 }
 
 MC68HSC05C8::~MC68HSC05C8()
@@ -37,10 +41,6 @@ MC68HSC05C8::~MC68HSC05C8()
 void MC68HSC05C8::Reset()
 {
     // TODO: should the undefined bits be reset anyway for determinism ?
-    memory[PortAData] = 0; // UUUUUUUU
-    memory[PortBData] = 0; // UUUUUUUU
-    memory[PortCData] = 0; // UUUUUUUU
-    memory[PortDFixedInput] = 0; // UUUUUUUU
     memory[PortADataDirection] = 0;
     memory[PortBDataDirection] = 0;
     memory[PortCDataDirection] = 0;
@@ -82,14 +82,20 @@ void MC68HSC05C8::IncrementTime(double ns)
     pendingCycles += ns / MC68HC05::INTERNAL_FREQUENCY;
     while(pendingCycles > 0)
     {
-        if(!waitStop)
+        if(!stop && !wait)
         {
             const int cycles = Interpreter();
             timerCycles += cycles;
             pendingCycles -= cycles;
         }
+        else if(wait)
+        {
+            timerCycles++;
+            pendingCycles--;
+        }
+        else
+            pendingCycles = 0;
 
-        // TODO: STOP and WAIT behaviour on timer.
         if(timerCycles >= 4)
         {
             const size_t cycles = timerCycles / 4;
@@ -99,27 +105,75 @@ void MC68HSC05C8::IncrementTime(double ns)
     }
 }
 
-void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool enabled)
+/** @brief Sets the given pin to the given state.
+ *  @param port The data port.
+ *  @param pin The pin number of the port (0-7).
+ *  @param high true if pin is high, false if low.
+ *
+ * If the pin set is configured as output by the MCU, this function does nothing.
+ */
+void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
 {
+    const uint8_t pinMask = 1 << pin;
+
     switch(port)
     {
+    case Port::PortA:
+        if(!(memory[PortADataDirection] & pinMask)) // Input
+        {
+            if(high)
+                memory[PortAData] |= pinMask;
+            else
+                memory[PortAData] &= ~pinMask;
+        }
+        break;
+
+    case Port::PortB:
+        if(!(memory[PortBDataDirection] & pinMask)) // Input
+        {
+            if(high)
+                memory[PortBData] |= pinMask;
+            else
+                memory[PortBData] &= ~pinMask;
+        }
+        break;
+
+    case Port::PortC:
+        if(!(memory[PortCDataDirection] & pinMask)) // Input
+        {
+            if(high)
+                memory[PortCData] |= pinMask;
+            else
+                memory[PortCData] &= ~pinMask;
+        }
+        break;
+
     case Port::TCAP:
-        if(((memory[TimerControl] & IEDG) && !tcapPin && enabled) || // Rising edge.
-          (!(memory[TimerControl] & IEDG) && tcapPin && !enabled)) // Falling edge.
+        if(((memory[TimerControl] & IEDG) && !tcapPin && high) || // Rising edge.
+          (!(memory[TimerControl] & IEDG) && tcapPin && !high)) // Falling edge.
         {
             memory[InputCaptureHigh] = memory[CounterHigh];
             memory[InputCaptureLow] = memory[CounterLow];
 
             memory[TimerStatus] |= ICF;
             if(memory[TimerControl] & ICIE && !CCR[CCRI])
-                ; // TODO: correctly generate interrupt.
+            {
+                wait = false; // TODO?
+                Interrupt(TIMERVector);
+            }
         }
-        tcapPin = enabled;
+        tcapPin = high;
         break;
 
     default:
         printf("[MC68HSC05C8] Wrong input pin %d", (int)port);
     }
+}
+
+void MC68HSC05C8::IRQ()
+{
+    stop = wait = false;
+    Interrupt(IRQVector);
 }
 
 uint8_t MC68HSC05C8::GetMemory(const uint16_t addr)
@@ -211,11 +265,49 @@ uint8_t MC68HSC05C8::GetIO(uint16_t addr)
     }
     }
 
+//    printf("[MC68HSC05C8] Get IO 0x%X\n", addr);
     return memory[addr];
 }
 
 void MC68HSC05C8::SetIO(uint16_t addr, uint8_t value)
 {
+    switch(addr)
+    {
+    case PortAData:
+    case PortBData:
+    case PortCData:
+    {
+        uint8_t diff = memory[addr] ^ value;
+        for(int i = 0; i < 8; i++)
+        {
+            if(diff & 1 && memory[PortADataDirection] & (1 << i)) // Bit changed and output.
+                SetOutputPin((Port)addr, i, value & 1);
+
+            diff >>= 1;
+            value >>= 1;
+        }
+        break;
+    }
+
+    case PortADataDirection:
+    case PortBDataDirection:
+    case PortCDataDirection:
+    case SerialPeripheralControl:
+    case SerialPeripheralStatus:
+    case SerialPeripheralData:
+    case SerialCommunicationsBaudRate:
+    case SerialCommunicationsControl1:
+    case SerialCommunicationsControl2:
+    case SerialCommunicationsStatus:
+    case SerialCommunicationsData:
+    case TimerControl:
+    case OutputCompareHigh:
+    case OutputCompareLow:
+        memory[addr] = value;
+        break;
+    }
+
+//    printf("[MC68HSC05C8] Set IO 0x%X: %d 0x%X\n", addr, value, value);
 }
 
 void MC68HSC05C8::Stop()
@@ -251,7 +343,7 @@ void MC68HSC05C8::IncrementTimer(size_t amount)
 
     if(interrupt)
     {
-        PC = (uint16_t)memory[0x1FF8] << 8 | memory[0x1FF9];
-        // TODO: Interrupt method to wake up the CPU in case of WAIT instruction.
+        wait = false; // TODO?
+        Interrupt(TIMERVector);
     }
 }

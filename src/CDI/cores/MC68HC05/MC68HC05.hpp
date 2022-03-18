@@ -26,12 +26,13 @@ protected:
 
     MC68HC05() = delete;
     MC68HC05(const MC68HC05&) = delete;
-    explicit MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), waitStop(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000) {}
+    explicit MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), stop(false), wait(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000) {}
     virtual ~MC68HC05() {}
 
     const uint16_t memorySize;
     bool irqPin; /**< Physical state of the IRQ pin. Has to be set by the derived class. */
-    bool waitStop; /**< true if a STOP or WAIT instruction is executed. Reseted to false by a RESET or IRQ (WAIT and STOP), or interrupts (WAIT). */
+    bool stop; /**< true if a STOP instruction has been executed. Reseted to false by a RESET or IRQ. */
+    bool wait; /**< true if a WAIT instruction has been executed. Reseted to false by a RESET, IRQ or interrupts. */
 
     uint8_t A;
     uint8_t X;
@@ -51,6 +52,7 @@ protected:
     virtual void Wait() = 0;
 
     size_t Interpreter();
+    template<bool MASKABLE = true> void Interrupt(uint16_t addr);
 
 private:
     // Memory Access
@@ -114,5 +116,27 @@ private:
     void SUB(uint8_t rhs);
     void TST(uint8_t val);
 };
+
+// Old language...
+/** @brief Generates an interrupt.
+ *  @param addr The address where to fetch the high byte of the vector.
+ *
+ * If the interrupt is maskable and interrupts are disabled, then this function does nothing.
+ */
+template<bool MASKABLE = true>
+void MC68HC05::Interrupt(uint16_t addr)
+{
+    if(MASKABLE && CCR[CCRI])
+        return; // Maskable interrupts disabled.
+
+    PushByte(PC);
+    PushByte(PC >> 8);
+    PushByte(X);
+    PushByte(A);
+    PushByte(CCR.to_ulong());
+    CCR[CCRI] = true;
+    PC = (uint16_t)GetMemory(addr) << 8;
+    PC |= GetMemory(addr + 1);
+}
 
 #endif // CDI_CORES_MC68HC05_MC68HC05_HPP

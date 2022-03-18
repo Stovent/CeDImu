@@ -12,7 +12,7 @@ class MC68HSC05C8 : protected MC68HC05
 public:
     enum class Port
     {
-        PortA,
+        PortA = 0,
         PortB,
         PortC,
         PortD,
@@ -28,8 +28,8 @@ public:
     void Reset() override;
 
     void IncrementTime(double ns);
-    void SetInputPin(Port port, size_t pin, bool enabled);
-    // TODO: IRQ.
+    void SetInputPin(Port port, size_t pin, bool high);
+    void IRQ();
 
 private:
     std::array<uint8_t, 0x2000> memory;
@@ -94,6 +94,14 @@ private:
         TOF = 0x20, // Timer Overflow Flag
         OCF = 0x40, // Output-Compare Flag
         ICF = 0x80, // Input-Capture Flag
+    };
+
+    enum InterruptVectors
+    {
+        SPIVector = 0x1FF4,
+        SCIVector = 0x1FF6,
+        TIMERVector = 0x1FF8,
+        IRQVector = 0x1FFA,
     };
 };
 

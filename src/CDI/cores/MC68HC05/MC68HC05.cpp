@@ -6,8 +6,9 @@
  */
 void MC68HC05::Reset()
 {
-    PC = (uint16_t)GetMemory(memorySize - 2) << 8 | GetMemory(memorySize - 1);
-    waitStop = false;
+    PC = (uint16_t)GetMemory(memorySize - 2) << 8;
+    PC |= GetMemory(memorySize - 1);
+    stop = wait = false;
 }
 
 /** @brief Executes a single instruction.
@@ -15,7 +16,7 @@ void MC68HC05::Reset()
  */
 size_t MC68HC05::Interpreter()
 {
-    if(waitStop)
+    if(wait || stop)
         return 0;
 
     constexpr void* ITC[256] = {
@@ -580,27 +581,23 @@ size_t MC68HC05::Interpreter()
         CCR = PopByte() | 0xE0;
         A = PopByte();
         X = PopByte();
-        PC = (uint16_t)PopByte() << 8 | PopByte();
+        PC = (uint16_t)PopByte() << 8;
+        PC |= PopByte();
 //        LOG(fprintf(instructions, "%X\tRTI\n", currentPC);)
         return 9;
     }
 
     RTS_INH:
     {
-        PC = (uint16_t)PopByte() << 8 | PopByte();
+        PC = (uint16_t)PopByte() << 8;
+        PC |= PopByte();
 //        LOG(fprintf(instructions, "%X\tRTS\n", currentPC);)
         return 6;
     }
 
     SWI_INH:
     {
-        PushByte(PC);
-        PushByte(PC >> 8);
-        PushByte(X);
-        PushByte(A);
-        PushByte(CCR.to_ulong());
-        CCR[CCRI] = true;
-        PC = (uint16_t)GetMemory(memorySize - 4) << 8 | GetMemory(memorySize - 3);
+        Interrupt<false>(memorySize - 4); // SWI is non-maskable.
 //        LOG(fprintf(instructions, "%X\tSWI\n", currentPC);)
         return 10;
     }
@@ -608,7 +605,7 @@ size_t MC68HC05::Interpreter()
     STOP_INH:
     {
         CCR[CCRI] = false;
-        waitStop = true;
+        stop = true;
         Stop();
 //        LOG(fprintf(instructions, "%X\tSTOP\n", currentPC);)
         return 2;
@@ -617,7 +614,7 @@ size_t MC68HC05::Interpreter()
     WAIT_INH:
     {
         CCR[CCRI] = false;
-        waitStop = true;
+        wait = true;
         Wait();
 //        LOG(fprintf(instructions, "%X\tWAIT\n", currentPC);)
         return 2;
@@ -1169,7 +1166,8 @@ uint16_t MC68HC05::EA_DIR()
 
 uint16_t MC68HC05::EA_EXT()
 {
-    return (uint16_t)GetNextByte() << 8 | (uint16_t)GetNextByte();
+    const uint16_t ea = (uint16_t)GetNextByte() << 8;
+    return ea | (uint16_t)GetNextByte();
 }
 
 uint16_t MC68HC05::EA_IX()

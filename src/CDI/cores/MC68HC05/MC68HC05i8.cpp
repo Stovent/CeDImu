@@ -64,7 +64,7 @@ void MC68HC05i8::Reset()
 
 void MC68HC05i8::IncrementTime(double ns)
 {
-    if(!waitStop)
+    if(!stop && !wait)
     {
         pendingCycles += ns / MC68HC05::INTERNAL_FREQUENCY;
         while(pendingCycles > 0)
