@@ -4,7 +4,11 @@
  *
  * @param internalMemory The initial memory of the MCU.
  * @param size The size of the \p internalMemory array. Should be 8KB.
- * @param outputPinCallback Called by the MCU when one of its output pin changes state.
+ * @param outputPinCallback Called by the MCU when one of its output pin changes state or to send serial data.
+ *
+ * When the port is \ref Port::SCI, this means a serial data has been send by the SCI transmitter,
+ * and the value sent is in the 2nd (size_t) parameter of the callback. This value can be 8 or 9 bits depending on the configuration.
+ * Reciprocally, to send data to the SCI receiver, use \ref Port::SCI as the port and put the data in the 2nd parameter.
  */
 MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::function<void(Port, size_t, bool)> outputPinCallback)
     : MC68HC05(memory.size())
@@ -12,6 +16,7 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     , SetOutputPin(outputPinCallback)
     , pendingCycles(0)
     , timerCycles(0)
+    , totalCycleCount(0)
     , counterLowBuffer()
     , alternateCounterLowBuffer()
     , tofAccessed(false)
@@ -19,6 +24,9 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     , icfAccessed(false)
     , outputCompareInhibited(false)
     , tcapPin(false)
+    , sciTransmit()
+    , tdrBuffer()
+    , rdrBufferRead(true)
 {
     if(internalMemory != nullptr)
     {
@@ -79,7 +87,7 @@ void MC68HSC05C8::Reset()
 
 void MC68HSC05C8::IncrementTime(double ns)
 {
-    pendingCycles += ns / MC68HC05::INTERNAL_FREQUENCY;
+    pendingCycles += ns / MC68HC05::INTERNAL_BUS_FREQUENCY;
     while(pendingCycles > 0)
     {
         if(!stop && !wait)
@@ -87,11 +95,13 @@ void MC68HSC05C8::IncrementTime(double ns)
             const int cycles = Interpreter();
             timerCycles += cycles;
             pendingCycles -= cycles;
+            totalCycleCount += cycles;
         }
         else if(wait)
         {
             timerCycles++;
             pendingCycles--;
+            totalCycleCount++;
         }
         else
             pendingCycles = 0;
@@ -102,6 +112,26 @@ void MC68HSC05C8::IncrementTime(double ns)
             timerCycles %= 4;
             IncrementTimer(cycles);
         }
+
+        if(sciTransmit)
+            if(totalCycleCount >= sciTransmit.value().second)
+            {
+                SetOutputPin(Port::SCI, sciTransmit.value().first, false);
+                sciTransmit.reset();
+
+                bool interrupt = false;
+                memory[SerialCommunicationsStatus] |= TC;
+                if(memory[SerialCommunicationsControl2] & TCIE)
+                    interrupt = true;
+
+                interrupt = interrupt || LoadSCITransmitter();
+
+                if(interrupt)
+                {
+                    wait = false;
+                    Interrupt(SCIVector);
+                }
+            }
     }
 }
 
@@ -148,6 +178,33 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
         }
         break;
 
+    case Port::PortD:
+        if(pin == 7)
+        {
+            if(high)
+                memory[PortDFixedInput] |= 0x80;
+            else
+                memory[PortDFixedInput] &= 0x7F;
+        }
+        else
+        {
+            if(pin == 0 && high && !(memory[SerialCommunicationsControl2] & RE)) // SCI receiver disabled
+                memory[PortDFixedInput] |= 0x01;
+            else
+                memory[PortDFixedInput] &= 0xFE;
+
+            if(pin == 1 && high && !(memory[SerialCommunicationsControl2] & RE)) // SCI transmitter disabled
+                memory[PortDFixedInput] |= 0x02;
+            else
+                memory[PortDFixedInput] &= 0xFD;
+
+            if(pin >= 2 && pin <= 5 && high && !(memory[SerialPeripheralControl] & SPE)) // SPI system disabled
+                memory[PortDFixedInput] |= pinMask;
+            else
+                memory[PortDFixedInput] &= ~pinMask;
+        }
+        break;
+
     case Port::TCAP:
         if(((memory[TimerControl] & IEDG) && !tcapPin && high) || // Rising edge.
           (!(memory[TimerControl] & IEDG) && tcapPin && !high)) // Falling edge.
@@ -158,11 +215,34 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
             memory[TimerStatus] |= ICF;
             if(memory[TimerControl] & ICIE && !CCR[CCRI])
             {
-                wait = false; // TODO?
+                wait = false;
                 Interrupt(TIMERVector);
             }
         }
         tcapPin = high;
+        break;
+
+    case Port::SCI:
+        if(memory[SerialCommunicationsControl2] & RE) // Receiver enabled.
+        {
+            if(rdrBufferRead)
+            {
+                memory[SerialCommunicationsData] = pin;
+                memory[SerialCommunicationsControl1] &= 0x58; // Clear R8 bit.
+                if(memory[SerialCommunicationsControl1] & 0x10) // 9 bits enable.
+                    memory[SerialCommunicationsControl1] |= pin >> 1 & 0x0080;
+
+                memory[SerialCommunicationsStatus] |= RDRF;
+            }
+            else
+                memory[SerialCommunicationsStatus] |= OR;
+
+            if(memory[SerialCommunicationsControl2] & RIE)
+            {
+                wait = false;
+                Interrupt(SCIVector);
+            }
+        }
         break;
 
     default:
@@ -174,6 +254,10 @@ void MC68HSC05C8::IRQ()
 {
     stop = wait = false;
     Interrupt(IRQVector);
+    // Here, irqPin should be set changed, but I am unsure for how long,
+    // so I let it to its default value for simplicity.
+    // In the actual hardware, it is hardwired to the CSSLAVEN signal (Chip Select Slave),
+    // so probably not a problem to let it unchanged.
 }
 
 uint8_t MC68HSC05C8::GetMemory(const uint16_t addr)
@@ -204,16 +288,18 @@ void MC68HSC05C8::SetMemory(const uint16_t addr, const uint8_t value)
 
 uint8_t MC68HSC05C8::GetIO(uint16_t addr)
 {
+//    printf("[MC68HSC05C8] Get IO 0x%X\n", addr);
     switch(addr)
     {
+    case SerialCommunicationsData:
+        rdrBufferRead = true;
+        return memory[SerialCommunicationsData];
+
     case TimerStatus:
         if(memory[TimerStatus] & TOF) tofAccessed = true; // TOF set
         if(memory[TimerStatus] & OCF) ocfAccessed = true; // OCF set
         if(memory[TimerStatus] & ICF) icfAccessed = true; // ICF set
         return memory[TimerStatus];
-
-    case InputCaptureHigh:
-        return memory[InputCaptureHigh];
 
     case InputCaptureLow:
         if(icfAccessed)
@@ -265,7 +351,6 @@ uint8_t MC68HSC05C8::GetIO(uint16_t addr)
     }
     }
 
-//    printf("[MC68HSC05C8] Get IO 0x%X\n", addr);
     return memory[addr];
 }
 
@@ -281,13 +366,21 @@ void MC68HSC05C8::SetIO(uint16_t addr, uint8_t value)
         for(int i = 0; i < 8; i++)
         {
             if(diff & 1 && memory[PortADataDirection] & (1 << i)) // Bit changed and output.
-                SetOutputPin((Port)addr, i, value & 1);
+                SetOutputPin(static_cast<Port>(addr), i, value & 1);
 
             diff >>= 1;
             value >>= 1;
         }
         break;
     }
+
+    case SerialCommunicationsData:
+        if(memory[SerialCommunicationsControl2] & TE) // Only send if transmitter enable.
+        {
+            tdrBuffer = value;
+            LoadSCITransmitter();
+        }
+        break;
 
     case PortADataDirection:
     case PortBDataDirection:
@@ -298,8 +391,6 @@ void MC68HSC05C8::SetIO(uint16_t addr, uint8_t value)
     case SerialCommunicationsBaudRate:
     case SerialCommunicationsControl1:
     case SerialCommunicationsControl2:
-    case SerialCommunicationsStatus:
-    case SerialCommunicationsData:
     case TimerControl:
     case OutputCompareHigh:
     case OutputCompareLow:
@@ -343,7 +434,43 @@ void MC68HSC05C8::IncrementTimer(size_t amount)
 
     if(interrupt)
     {
-        wait = false; // TODO?
+        wait = false;
         Interrupt(TIMERVector);
     }
+}
+
+uint64_t MC68HSC05C8::GetSCIBaudRate() const
+{
+    constexpr int PRESCALER[4] = {1, 3, 4, 13};
+    const int scp = memory[SerialCommunicationsBaudRate] >> 4 & 3;
+    const int sciPrescaler = PRESCALER[scp];
+
+    const int scr = memory[SerialCommunicationsBaudRate] & 7;
+    const int sciRate = 1 << scr;
+
+    return MC68HC05::INTERNAL_BUS_FREQUENCY / sciPrescaler / sciRate / 16; // Figure 3.24.
+}
+
+/** @brief Transfers the LDR buffer to the SCI shift register.
+ * @return true if an interrupt has to be triggered, false otherwise.
+ */
+bool MC68HSC05C8::LoadSCITransmitter()
+{
+    if(!tdrBuffer || sciTransmit)
+        return false;
+
+    uint16_t data = tdrBuffer.value();
+    tdrBuffer.reset();
+    if((memory[SerialCommunicationsControl1] & 0x50) == 0x50) // 9 bits enable and 9th bit set to 1.
+        data |= 0x100;
+
+    const uint64_t baudRate = GetSCIBaudRate();
+    const double cyclesPerBit = static_cast<double>(MC68HC05::INTERNAL_BUS_FREQUENCY) / static_cast<double>(baudRate);
+    const uint64_t bits = memory[SerialCommunicationsControl1] & 0x10 ? 11 : 10;
+    sciTransmit = {data, totalCycleCount + static_cast<uint64_t>(static_cast<double>(bits) * cyclesPerBit)};
+
+    memory[SerialCommunicationsStatus] |= TDRE;
+    if(memory[SerialCommunicationsControl2] & TIE)
+        return true;
+    return false;
 }

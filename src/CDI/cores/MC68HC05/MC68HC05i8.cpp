@@ -1,14 +1,12 @@
 #include "MC68HC05i8.hpp"
-#include "../../CDI.hpp"
 
 #include <cstring>
 
 #define MEMSET_RANGE(beg, endIncluded, val) memset(&memory[beg], val, endIncluded - beg + 1)
 #define NIBBLE_SWAP(val) (uint8_t)(val >> 4 | val << 4)
 
-MC68HC05i8::MC68HC05i8(CDI& idc, const void* internalMemory, uint16_t size)
+MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size)
     : MC68HC05(memory.size())
-    , cdi(idc)
     , memory{0}
     , pendingCycles(0)
     , channelReadMCU{{0}}
@@ -66,7 +64,7 @@ void MC68HC05i8::IncrementTime(double ns)
 {
     if(!stop && !wait)
     {
-        pendingCycles += ns / MC68HC05::INTERNAL_FREQUENCY;
+        pendingCycles += ns / MC68HC05::INTERNAL_BUS_FREQUENCY;
         while(pendingCycles > 0)
         {
             PC &= 0x3FFF; // 3.1.3 The two msb are permanently set to 0.

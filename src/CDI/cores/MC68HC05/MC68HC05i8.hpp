@@ -1,7 +1,6 @@
 #ifndef CDI_CORES_MC68HC05_MC68HC05I8_HPP
 #define CDI_CORES_MC68HC05_MC68HC05I8_HPP
 
-class CDI;
 #include "MC68HC05.hpp"
 
 #include <array>
@@ -12,7 +11,7 @@ class MC68HC05i8 : protected MC68HC05
 public:
     MC68HC05i8() = delete;
     MC68HC05i8(const MC68HC05i8&) = delete;
-    MC68HC05i8(CDI& idc, const void* internalMemory, uint16_t size);
+    MC68HC05i8(const void* internalMemory, uint16_t size);
     ~MC68HC05i8();
 
     void Reset() override;
@@ -23,7 +22,6 @@ public:
     void SetByte(uint32_t addr, uint8_t value);
 
 private:
-    CDI& cdi;
     std::array<uint8_t, 0x4000> memory;
     int pendingCycles;
 

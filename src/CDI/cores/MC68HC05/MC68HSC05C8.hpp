@@ -18,6 +18,7 @@ public:
         PortD,
         TCMP, /**< Timer Compare. Only as output. */
         TCAP, /**< Timer Capture. Only as input. */
+        SCI, /**< SCI receive/transmit. The data is the 2nd arg (pin) of the callback. */
     };
 
     MC68HSC05C8() = delete;
@@ -36,6 +37,7 @@ private:
     std::function<void(Port, size_t, bool)> SetOutputPin;
     int pendingCycles;
     int timerCycles;
+    uint64_t totalCycleCount; // Internal bus frequency
 
     uint8_t GetMemory(uint16_t addr) override;
     void SetMemory(uint16_t addr, uint8_t value) override;
@@ -54,6 +56,13 @@ private:
     bool tcapPin;
     void IncrementTimer(size_t amount);
 
+    // First is the data to send, can be 8 or 9 bits. Second is when totalCycleCount reaches this, actually send the data.
+    std::optional<std::pair<uint16_t, uint64_t>> sciTransmit;
+    std::optional<uint8_t> tdrBuffer; // Transmit Data Register buffer.
+    bool rdrBufferRead; // Receive Data Register buffer read since last write to it.
+    uint64_t GetSCIBaudRate() const;
+    bool LoadSCITransmitter();
+
     enum IORegisters
     {
         PortAData = 0,
@@ -70,7 +79,7 @@ private:
         SerialCommunicationsControl1,
         SerialCommunicationsControl2,
         SerialCommunicationsStatus,
-        SerialCommunicationsData,
+        SerialCommunicationsData, // Only stores the SCI receive byte.
         TimerControl,
         TimerStatus, // Read-only.
         InputCaptureHigh, // Read-only.
@@ -85,12 +94,36 @@ private:
 
     enum IOFlags
     {
+        // SPI Control
+        SPE  = 0x40, // SPI System Enable
+
+        // SCI Control 2
+        SBK  = 0x01, // Send Break
+        RWU  = 0x02, // Receiver Wake Up
+        RE   = 0x04, // Receiver Enable
+        TE   = 0x08, // Transmitter Enable
+        ILIE = 0x10, // IDLE Line Interrupt Enable
+        RIE  = 0x20, // Receiver Interrupt Enable
+        TCIE = 0x40, // Transmission Complete Interrupt Enable
+        TIE  = 0x80, // Transmitter Interrupt Enable
+
+        // SCI Status
+        FE   = 0x02, // Framing Error
+        NF   = 0x04, // Noise Flag
+        OR   = 0x08, // Overrun
+        IDLE = 0x10, // IDLE Line Detect
+        RDRF = 0x20, // Receive Data Register Full
+        TC   = 0x40, // Transmission Complete
+        TDRE = 0x80, // Transmit Data Register Empty
+
+        // Timer Control
         OLVL = 0x01, // Output-Compare Level
         IEDG = 0x02, // Input-Capture Edge
         TOIE = 0x20, // Timer Overflow Interrupt Enable
         OCIE = 0x40, // Output-Compare Interrupt Enable
         ICIE = 0x80, // Input-Capture Interrupt Enable
 
+        // Timer Status
         TOF = 0x20, // Timer Overflow Flag
         OCF = 0x40, // Output-Compare Flag
         ICF = 0x80, // Input-Capture Flag

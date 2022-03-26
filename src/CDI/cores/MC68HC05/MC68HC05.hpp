@@ -11,8 +11,8 @@ class MC68HC05
 {
 public:
     static constexpr size_t EXTERNAL_FREQUENCY = 4'000'000;
-    static constexpr size_t INTERNAL_FREQUENCY = EXTERNAL_FREQUENCY / 2;
-    static constexpr size_t TIMER_FREQUENCY = INTERNAL_FREQUENCY / 4;
+    static constexpr size_t INTERNAL_BUS_FREQUENCY = EXTERNAL_FREQUENCY / 2;
+    static constexpr size_t TIMER_FREQUENCY = INTERNAL_BUS_FREQUENCY / 4;
 
 protected:
     enum CCRBits

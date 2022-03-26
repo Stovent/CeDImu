@@ -2,7 +2,7 @@
 
 /** @brief Triggers the RESET pin.
  *
- * Default implementation fetches the PC from the RESET vector and sets \ref MC68HC05.waitStop to false.
+ * Default implementation fetches the PC from the RESET vector and sets \ref MC68HC05.wait and \ref MC68HC05.stop to false.
  */
 void MC68HC05::Reset()
 {
