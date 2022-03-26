@@ -6,6 +6,9 @@
  * @param size The size of the \p internalMemory array. Should be 8KB.
  * @param outputPinCallback Called by the MCU when one of its output pin changes state or to send serial data.
  *
+ * When the port is \ref Port::SPI, this means a SPI transfert has been done. The callback is called with this port by the master of the SPI,
+ * the receiver of the SPI has to send its own byte back to its master during the callback. The byte is sent in the 2nd parameter (pin).
+ *
  * When the port is \ref Port::SCI, this means a serial data has been send by the SCI transmitter,
  * and the value sent is in the 2nd (size_t) parameter of the callback. This value can be 8 or 9 bits depending on the configuration.
  * Reciprocally, to send data to the SCI receiver, use \ref Port::SCI as the port and put the data in the 2nd parameter.
@@ -17,6 +20,12 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     , pendingCycles(0)
     , timerCycles(0)
     , totalCycleCount(0)
+    , spiTransmit()
+    , spiReceiver(0)
+    , spifAccessed(false)
+    , sciTransmit()
+    , tdrBuffer()
+    , rdrBufferRead(true)
     , counterLowBuffer()
     , alternateCounterLowBuffer()
     , tofAccessed(false)
@@ -24,9 +33,6 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     , icfAccessed(false)
     , outputCompareInhibited(false)
     , tcapPin(false)
-    , sciTransmit()
-    , tdrBuffer()
-    , rdrBufferRead(true)
 {
     if(internalMemory != nullptr)
     {
@@ -40,6 +46,12 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     memory[PortBData] = 0; // UUUUUUUU
     memory[PortCData] = 0; // UUUUUUUU
     memory[PortDFixedInput] = 0; // UUUUUUUU
+    memory[SerialPeripheralData] = 0; // UUUUUUUU
+    memory[SerialCommunicationsData] = 0; // UUUUUUUU
+    memory[InputCaptureHigh] = 0; // UUUUUUUU
+    memory[InputCaptureLow] = 0; // UUUUUUUU
+    memory[OutputCompareHigh] = 0; // UUUUUUUU
+    memory[OutputCompareLow] = 0; // UUUUUUUU
 }
 
 MC68HSC05C8::~MC68HSC05C8()
@@ -48,24 +60,17 @@ MC68HSC05C8::~MC68HSC05C8()
 
 void MC68HSC05C8::Reset()
 {
-    // TODO: should the undefined bits be reset anyway for determinism ?
     memory[PortADataDirection] = 0;
     memory[PortBDataDirection] = 0;
     memory[PortCDataDirection] = 0;
-    memory[SerialPeripheralControl] = 0; // 00-0UUUU
+    memory[SerialPeripheralControl] &= 0x0F; // 00-0UUUU
     memory[SerialPeripheralStatus] = 0;
-    memory[SerialPeripheralData] = 0; // UUUUUUUU
-    memory[SerialCommunicationsBaudRate] = 0; // --00-UUU
-    memory[SerialCommunicationsControl1] = 0; // UU-UU---
+    memory[SerialCommunicationsBaudRate] &= 0x07; // --00-UUU
+    memory[SerialCommunicationsControl1] &= 0xD8; // UU-UU---
     memory[SerialCommunicationsControl2] = 0;
     memory[SerialCommunicationsStatus] = 0xC0;
-    memory[SerialCommunicationsData] = 0; // UUUUUUUU
-    memory[TimerControl] = 0; // 000000U0
-    memory[TimerStatus] = 0; // UUU00000
-    memory[InputCaptureHigh] = 0; // UUUUUUUU
-    memory[InputCaptureLow] = 0; // UUUUUUUU
-    memory[OutputCompareHigh] = 0; // UUUUUUUU
-    memory[OutputCompareLow] = 0; // UUUUUUUU
+    memory[TimerControl] &= 0x02; // 000000U0
+    memory[TimerStatus] &= 0xE0; // UUU00000
     memory[CounterHigh] = 0xFF;
     memory[CounterLow] = 0xFB;
     memory[AlternateCounterHigh] = 0xFB;
@@ -112,6 +117,20 @@ void MC68HSC05C8::IncrementTime(double ns)
             timerCycles %= 4;
             IncrementTimer(cycles);
         }
+
+        if(spiTransmit)
+            if(totalCycleCount >= spiTransmit.value().second)
+            {
+                SetOutputPin(Port::SPI, spiTransmit.value().first, false);
+                spiTransmit.reset();
+
+                memory[SerialPeripheralStatus] |= SPIF; // SPI Transfer complete.
+                if(memory[SerialPeripheralControl] & SPIE)
+                {
+                    wait = false;
+                    Interrupt(SPIVector);
+                }
+            }
 
         if(sciTransmit)
             if(totalCycleCount >= sciTransmit.value().second)
@@ -193,7 +212,7 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
             else
                 memory[PortDFixedInput] &= 0xFE;
 
-            if(pin == 1 && high && !(memory[SerialCommunicationsControl2] & RE)) // SCI transmitter disabled
+            if(pin == 1 && high && !(memory[SerialCommunicationsControl2] & TE)) // SCI transmitter disabled
                 memory[PortDFixedInput] |= 0x02;
             else
                 memory[PortDFixedInput] &= 0xFD;
@@ -220,6 +239,12 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
             }
         }
         tcapPin = high;
+        break;
+
+    case Port::SPI:
+        if(!(memory[SerialPeripheralControl] & MSTR)) // If Slave mode, send its byte too.
+            SetOutputPin(Port::SPI, memory[SerialPeripheralData], false);
+        spiReceiver = pin;
         break;
 
     case Port::SCI:
@@ -291,6 +316,23 @@ uint8_t MC68HSC05C8::GetIO(uint16_t addr)
 //    printf("[MC68HSC05C8] Get IO 0x%X\n", addr);
     switch(addr)
     {
+    case SerialPeripheralStatus:
+    {
+        if(memory[SerialPeripheralStatus] & SPIF)
+            spifAccessed = true;
+        const uint8_t data = memory[SerialPeripheralStatus];
+        memory[SerialPeripheralStatus] &= ~WCOL; // Clear WCOL on status read.
+        return data;
+    }
+
+    case SerialPeripheralData:
+        if(spifAccessed)
+        {
+            memory[SerialPeripheralStatus] &= ~SPIF;
+            spifAccessed = false;
+        }
+        return spiReceiver;
+
     case SerialCommunicationsData:
         rdrBufferRead = true;
         return memory[SerialCommunicationsData];
@@ -374,6 +416,29 @@ void MC68HSC05C8::SetIO(uint16_t addr, uint8_t value)
         break;
     }
 
+    case SerialPeripheralData:
+        if(memory[SerialPeripheralControl] & SPE) // Send if SPI is enabled.
+        {
+            if(memory[SerialPeripheralControl] & MSTR) // Master
+            {
+                if(spiTransmit) // Write Collision
+                {
+                    memory[SerialPeripheralStatus] |= WCOL;
+                }
+                else
+                {
+                    constexpr int SPR[4] = {2, 4, 16 , 32};
+                    const int spr = memory[SerialPeripheralControl] & SPR01;
+                    spiTransmit = {value, totalCycleCount + (8 * SPR[spr])};
+                }
+            }
+            else // Slave
+            {
+                memory[SerialPeripheralData] = value;
+            }
+        }
+        break;
+
     case SerialCommunicationsData:
         if(memory[SerialCommunicationsControl2] & TE) // Only send if transmitter enable.
         {
@@ -386,8 +451,6 @@ void MC68HSC05C8::SetIO(uint16_t addr, uint8_t value)
     case PortBDataDirection:
     case PortCDataDirection:
     case SerialPeripheralControl:
-    case SerialPeripheralStatus:
-    case SerialPeripheralData:
     case SerialCommunicationsBaudRate:
     case SerialCommunicationsControl1:
     case SerialCommunicationsControl2:

@@ -18,6 +18,7 @@ public:
         PortD,
         TCMP, /**< Timer Compare. Only as output. */
         TCAP, /**< Timer Capture. Only as input. */
+        SPI, /**< SPI receive.transmit. The data is the 2nd arg (pin) of the callback. */
         SCI, /**< SCI receive/transmit. The data is the 2nd arg (pin) of the callback. */
     };
 
@@ -47,6 +48,18 @@ private:
     void Stop() override;
     void Wait() override;
 
+    // First is the data to send. Second is when totalCycleCount reaches this, actually send the data.
+    std::optional<std::pair<uint8_t, uint64_t>> spiTransmit;
+    uint8_t spiReceiver; // Read buffer
+    bool spifAccessed;
+
+    // First is the data to send, can be 8 or 9 bits. Second is when totalCycleCount reaches this, actually send the data.
+    std::optional<std::pair<uint16_t, uint64_t>> sciTransmit;
+    std::optional<uint8_t> tdrBuffer; // Transmit Data Register buffer.
+    bool rdrBufferRead; // Receive Data Register buffer read since last write to it.
+    uint64_t GetSCIBaudRate() const;
+    bool LoadSCITransmitter();
+
     std::optional<uint8_t> counterLowBuffer;
     std::optional<uint8_t> alternateCounterLowBuffer;
     bool tofAccessed; // MC68HC05AG 3.14.8 cleared by accessing TSR (with TOF set) and then accessing the LSB of the free-running counter.
@@ -55,13 +68,6 @@ private:
     bool outputCompareInhibited;
     bool tcapPin;
     void IncrementTimer(size_t amount);
-
-    // First is the data to send, can be 8 or 9 bits. Second is when totalCycleCount reaches this, actually send the data.
-    std::optional<std::pair<uint16_t, uint64_t>> sciTransmit;
-    std::optional<uint8_t> tdrBuffer; // Transmit Data Register buffer.
-    bool rdrBufferRead; // Receive Data Register buffer read since last write to it.
-    uint64_t GetSCIBaudRate() const;
-    bool LoadSCITransmitter();
 
     enum IORegisters
     {
@@ -95,7 +101,14 @@ private:
     enum IOFlags
     {
         // SPI Control
-        SPE  = 0x40, // SPI System Enable
+        SPR01 = 0x03, // SPI Rate
+        MSTR  = 0x10, // SPI Master or Slave mode select
+        SPE   = 0x40, // SPI System Enable
+        SPIE  = 0x80, // SPI Interrupt Enable
+
+        // SPI Status
+        WCOL = 0x40, // Write Collision
+        SPIF = 0x80, // SPI Transfer Complete
 
         // SCI Control 2
         SBK  = 0x01, // Send Break
