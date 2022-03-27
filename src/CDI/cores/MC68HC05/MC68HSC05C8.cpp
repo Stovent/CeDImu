@@ -92,6 +92,16 @@ void MC68HSC05C8::Reset()
     MC68HC05::Reset();
 }
 
+void MC68HSC05C8::IRQ()
+{
+    stop = wait = false;
+    Interrupt(IRQVector);
+    // Here, irqPin should be changed to be set, but I am unsure for how long,
+    // so I let it to its default value for simplicity.
+    // In the actual hardware, it is hardwired to the CSSLAVEN signal (Chip Select Slave),
+    // so probably not a problem to let it unchanged.
+}
+
 void MC68HSC05C8::IncrementTime(double ns)
 {
     pendingCycles += ns / MC68HC05::INTERNAL_BUS_FREQUENCY;
@@ -226,23 +236,6 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
         }
         break;
 
-    case Port::TCAP:
-        if(((memory[TimerControl] & IEDG) && !tcapPin && high) || // Rising edge.
-          (!(memory[TimerControl] & IEDG) && tcapPin && !high)) // Falling edge.
-        {
-            memory[InputCaptureHigh] = memory[CounterHigh];
-            memory[InputCaptureLow] = memory[CounterLow];
-
-            memory[TimerStatus] |= ICF;
-            if(memory[TimerControl] & ICIE && !CCR[CCRI])
-            {
-                wait = false;
-                Interrupt(TIMERVector);
-            }
-        }
-        tcapPin = high;
-        break;
-
     case Port::SPI:
         if(!(memory[SerialPeripheralControl] & MSTR)) // If Slave mode, send its byte too.
             SetOutputPin(Port::SPI, memory[SerialPeripheralData], false);
@@ -272,19 +265,26 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
         }
         break;
 
+    case Port::TCAP:
+        if(((memory[TimerControl] & IEDG) && !tcapPin && high) || // Rising edge.
+          (!(memory[TimerControl] & IEDG) && tcapPin && !high)) // Falling edge.
+        {
+            memory[InputCaptureHigh] = memory[CounterHigh];
+            memory[InputCaptureLow] = memory[CounterLow];
+
+            memory[TimerStatus] |= ICF;
+            if(memory[TimerControl] & ICIE && !CCR[CCRI])
+            {
+                wait = false;
+                Interrupt(TIMERVector);
+            }
+        }
+        tcapPin = high;
+        break;
+
     default:
         printf("[MC68HSC05C8] Wrong input pin %d", (int)port);
     }
-}
-
-void MC68HSC05C8::IRQ()
-{
-    stop = wait = false;
-    Interrupt(IRQVector);
-    // Here, irqPin should be set changed, but I am unsure for how long,
-    // so I let it to its default value for simplicity.
-    // In the actual hardware, it is hardwired to the CSSLAVEN signal (Chip Select Slave),
-    // so probably not a problem to let it unchanged.
 }
 
 uint8_t MC68HSC05C8::GetMemory(const uint16_t addr)
@@ -481,44 +481,6 @@ void MC68HSC05C8::SetIO(uint16_t addr, uint8_t value)
 //    printf("[MC68HSC05C8] Set IO 0x%X: %d 0x%X\n", addr, value, value);
 }
 
-void MC68HSC05C8::Stop()
-{
-}
-
-void MC68HSC05C8::Wait()
-{
-}
-
-void MC68HSC05C8::IncrementTimer(size_t amount)
-{
-    uint32_t counter = (uint32_t)memory[CounterHigh] << 8 | memory[CounterLow];
-    counter += amount;
-    memory[CounterHigh] = counter >> 8;
-    memory[CounterLow] = counter;
-
-    bool interrupt = false;
-    if(counter > UINT16_MAX) // Timer overflow
-    {
-        memory[TimerStatus] |= TOF;
-        if(memory[TimerControl] & TOIE && !CCR[CCRI])
-            interrupt = true;
-    }
-
-    if(!outputCompareInhibited && memory[OutputCompareHigh] == memory[CounterHigh] && memory[OutputCompareLow] == memory[CounterLow])
-    {
-        memory[TimerStatus] |= OCF;
-        if(memory[TimerControl] & OCIE && !CCR[CCRI])
-            interrupt = true;
-        SetOutputPin(Port::TCMP, 0, memory[TimerControl] & OLVL);
-    }
-
-    if(interrupt)
-    {
-        wait = false;
-        Interrupt(TIMERVector);
-    }
-}
-
 uint64_t MC68HSC05C8::GetSCIBaudRate() const
 {
     constexpr int PRESCALER[4] = {1, 3, 4, 13};
@@ -553,4 +515,34 @@ bool MC68HSC05C8::LoadSCITransmitter()
     if(memory[SerialCommunicationsControl2] & TIE)
         return true;
     return false;
+}
+
+void MC68HSC05C8::IncrementTimer(size_t amount)
+{
+    uint32_t counter = (uint32_t)memory[CounterHigh] << 8 | memory[CounterLow];
+    counter += amount;
+    memory[CounterHigh] = counter >> 8;
+    memory[CounterLow] = counter;
+
+    bool interrupt = false;
+    if(counter > UINT16_MAX) // Timer overflow
+    {
+        memory[TimerStatus] |= TOF;
+        if(memory[TimerControl] & TOIE && !CCR[CCRI])
+            interrupt = true;
+    }
+
+    if(!outputCompareInhibited && memory[OutputCompareHigh] == memory[CounterHigh] && memory[OutputCompareLow] == memory[CounterLow])
+    {
+        memory[TimerStatus] |= OCF;
+        if(memory[TimerControl] & OCIE && !CCR[CCRI])
+            interrupt = true;
+        SetOutputPin(Port::TCMP, 0, memory[TimerControl] & OLVL);
+    }
+
+    if(interrupt)
+    {
+        wait = false;
+        Interrupt(TIMERVector);
+    }
 }

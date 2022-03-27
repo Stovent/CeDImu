@@ -47,9 +47,9 @@ protected:
 
     virtual void Reset();
     /** @brief Called by the interpreter when a STOP instruction is executed. */
-    virtual void Stop() = 0;
+    virtual void Stop() {};
     /** @brief Called by the interpreter when a WAIT instruction is executed. */
-    virtual void Wait() = 0;
+    virtual void Wait() {};
 
     size_t Interpreter();
     template<bool MASKABLE = true> void Interrupt(uint16_t addr);

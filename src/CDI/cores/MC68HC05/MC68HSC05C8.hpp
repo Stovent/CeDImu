@@ -16,10 +16,10 @@ public:
         PortB,
         PortC,
         PortD,
-        TCMP, /**< Timer Compare. Only as output. */
-        TCAP, /**< Timer Capture. Only as input. */
         SPI, /**< SPI receive.transmit. The data is the 2nd arg (pin) of the callback. */
         SCI, /**< SCI receive/transmit. The data is the 2nd arg (pin) of the callback. */
+        TCMP, /**< Timer Compare. Only as output. */
+        TCAP, /**< Timer Capture. Only as input. */
     };
 
     MC68HSC05C8() = delete;
@@ -28,10 +28,10 @@ public:
     ~MC68HSC05C8();
 
     void Reset() override;
+    void IRQ();
 
     void IncrementTime(double ns);
     void SetInputPin(Port port, size_t pin, bool high);
-    void IRQ();
 
 private:
     std::array<uint8_t, 0x2000> memory;
@@ -44,9 +44,6 @@ private:
     void SetMemory(uint16_t addr, uint8_t value) override;
     uint8_t GetIO(uint16_t addr);
     void SetIO(uint16_t addr, uint8_t value);
-
-    void Stop() override;
-    void Wait() override;
 
     // First is the data to send. Second is when totalCycleCount reaches this, actually send the data.
     std::optional<std::pair<uint8_t, uint64_t>> spiTransmit;
