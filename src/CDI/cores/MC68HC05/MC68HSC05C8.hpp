@@ -57,6 +57,8 @@ private:
     std::optional<std::pair<uint16_t, uint64_t>> sciTransmit;
     std::optional<uint8_t> tdrBuffer; // Transmit Data Register buffer.
     bool rdrBufferRead; // Receive Data Register buffer read since last write to it.
+    bool tdreTcAccessed; // To clear TDRE and TC bits of the status register.
+    bool sciStatusAccessed; // To clear the rest of the SCI status register bits.
     uint64_t GetSCIBaudRate() const;
     bool LoadSCITransmitter();
 

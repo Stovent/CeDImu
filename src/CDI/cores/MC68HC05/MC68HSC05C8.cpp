@@ -26,6 +26,8 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     , sciTransmit()
     , tdrBuffer()
     , rdrBufferRead(true)
+    , tdreTcAccessed(false)
+    , sciStatusAccessed(false)
     , counterLowBuffer()
     , alternateCounterLowBuffer()
     , tofAccessed(false)
@@ -333,8 +335,18 @@ uint8_t MC68HSC05C8::GetIO(uint16_t addr)
         }
         return spiReceiver;
 
+    case SerialCommunicationsStatus:
+        tdreTcAccessed = true;
+        sciStatusAccessed = true;
+        return memory[SerialCommunicationsStatus];
+
     case SerialCommunicationsData:
         rdrBufferRead = true;
+        if(sciStatusAccessed)
+        {
+            sciStatusAccessed = false;
+            memory[SerialCommunicationsStatus] &= TDRE | TC;
+        }
         return memory[SerialCommunicationsData];
 
     case TimerStatus:
@@ -440,6 +452,11 @@ void MC68HSC05C8::SetIO(uint16_t addr, uint8_t value)
         break;
 
     case SerialCommunicationsData:
+        if(tdreTcAccessed)
+        {
+            tdreTcAccessed = false;
+            memory[SerialCommunicationsStatus] &= ~(TDRE | TC);
+        }
         if(memory[SerialCommunicationsControl2] & TE) // Only send if transmitter enable.
         {
             tdrBuffer = value;
