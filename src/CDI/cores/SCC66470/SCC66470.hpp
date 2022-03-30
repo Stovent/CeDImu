@@ -86,7 +86,7 @@ private:
         return 41000;
     }
 
-    enum InternalRegister
+    enum InternalRegistersMemoryMap
     {
         CSRW = 0x00,
         CSRR = 0x01,

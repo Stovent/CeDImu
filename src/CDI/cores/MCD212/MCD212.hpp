@@ -163,7 +163,7 @@ private:
         return isPAL || !GetCF() ? 64000 : 63560;
     }
 
-    enum InternalRegister
+    enum InternalRegistersMemoryMap
     {
         CSR2W = 0x00,
         CSR2R = 0x01,
