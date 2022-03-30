@@ -157,33 +157,33 @@ void SCC68070::SendUARTIn(const uint8_t byte)
  * \param reg The register to set.
  * \param value The value to set the register to.
  */
-void SCC68070::SetRegister(CPURegister reg, const uint32_t value)
+void SCC68070::SetRegister(Register reg, const uint32_t value)
 {
     switch(reg)
     {
-    case CPURegister::D0: D[0] = value; break;
-    case CPURegister::D1: D[1] = value; break;
-    case CPURegister::D2: D[2] = value; break;
-    case CPURegister::D3: D[3] = value; break;
-    case CPURegister::D4: D[4] = value; break;
-    case CPURegister::D5: D[5] = value; break;
-    case CPURegister::D6: D[6] = value; break;
-    case CPURegister::D7: D[7] = value; break;
+    case Register::D0: D[0] = value; break;
+    case Register::D1: D[1] = value; break;
+    case Register::D2: D[2] = value; break;
+    case Register::D3: D[3] = value; break;
+    case Register::D4: D[4] = value; break;
+    case Register::D5: D[5] = value; break;
+    case Register::D6: D[6] = value; break;
+    case Register::D7: D[7] = value; break;
 
-    case CPURegister::A0: A(0) = value; break;
-    case CPURegister::A1: A(1) = value; break;
-    case CPURegister::A2: A(2) = value; break;
-    case CPURegister::A3: A(3) = value; break;
-    case CPURegister::A4: A(4) = value; break;
-    case CPURegister::A5: A(5) = value; break;
-    case CPURegister::A6: A(6) = value; break;
-    case CPURegister::A7: A(7) = value; break;
+    case Register::A0: A(0) = value; break;
+    case Register::A1: A(1) = value; break;
+    case Register::A2: A(2) = value; break;
+    case Register::A3: A(3) = value; break;
+    case Register::A4: A(4) = value; break;
+    case Register::A5: A(5) = value; break;
+    case Register::A6: A(6) = value; break;
+    case Register::A7: A(7) = value; break;
 
-    case CPURegister::PC: PC = value; break;
-    case CPURegister::SR: SR = value; break;
+    case Register::PC: PC = value; break;
+    case Register::SR: SR = value; break;
 
-    case CPURegister::USP: USP = A(7); break;
-    case CPURegister::SSP: SSP = A(7); break;
+    case Register::USP: USP = A(7); break;
+    case Register::SSP: SSP = A(7); break;
     }
 }
 
@@ -191,29 +191,29 @@ void SCC68070::SetRegister(CPURegister reg, const uint32_t value)
  *
  * \return A map containing the CPU registers with their name and value.
  */
-std::map<CPURegister, uint32_t> SCC68070::GetCPURegisters() const
+std::map<SCC68070::Register, uint32_t> SCC68070::GetCPURegisters() const
 {
     return {
-        {CPURegister::D0, D[0]},
-        {CPURegister::D1, D[1]},
-        {CPURegister::D2, D[2]},
-        {CPURegister::D3, D[3]},
-        {CPURegister::D4, D[4]},
-        {CPURegister::D5, D[5]},
-        {CPURegister::D6, D[6]},
-        {CPURegister::D7, D[7]},
-        {CPURegister::A0, A(0)},
-        {CPURegister::A1, A(1)},
-        {CPURegister::A2, A(2)},
-        {CPURegister::A3, A(3)},
-        {CPURegister::A4, A(4)},
-        {CPURegister::A5, A(5)},
-        {CPURegister::A6, A(6)},
-        {CPURegister::A7, A(7)},
-        {CPURegister::PC, PC},
-        {CPURegister::SR, SR},
-        {CPURegister::SSP, SSP},
-        {CPURegister::USP, USP},
+        {Register::D0, D[0]},
+        {Register::D1, D[1]},
+        {Register::D2, D[2]},
+        {Register::D3, D[3]},
+        {Register::D4, D[4]},
+        {Register::D5, D[5]},
+        {Register::D6, D[6]},
+        {Register::D7, D[7]},
+        {Register::A0, A(0)},
+        {Register::A1, A(1)},
+        {Register::A2, A(2)},
+        {Register::A3, A(3)},
+        {Register::A4, A(4)},
+        {Register::A5, A(5)},
+        {Register::A6, A(6)},
+        {Register::A7, A(7)},
+        {Register::PC, PC},
+        {Register::SR, SR},
+        {Register::SSP, SSP},
+        {Register::USP, USP},
     };
 }
 
@@ -323,8 +323,8 @@ void SCC68070::DumpCPURegisters()
     if(!cdi.callbacks.HasOnLogDisassembler())
         return;
 
-    const std::map<CPURegister, uint32_t>& regs = GetCPURegisters();
-    for(const std::pair<CPURegister, uint32_t> reg : regs)
+    const std::map<Register, uint32_t>& regs = GetCPURegisters();
+    for(const std::pair<Register, uint32_t> reg : regs)
     {
         char s[30];
         snprintf(s, 30, "%s: 0x%08X", CPURegisterToString(reg.first), reg.second);

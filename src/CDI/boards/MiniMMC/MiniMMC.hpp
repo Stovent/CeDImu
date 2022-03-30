@@ -1,8 +1,6 @@
 #ifndef CDI_BOARDS_MINIMMC_MINIMMC_HPP
 #define CDI_BOARDS_MINIMMC_MINIMMC_HPP
 
-class MiniMMC;
-
 #include "../Board.hpp"
 #include "../../cores/SCC66470/SCC66470.hpp"
 

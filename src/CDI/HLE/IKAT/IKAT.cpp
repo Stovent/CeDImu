@@ -69,7 +69,7 @@ int INT_MASK[4] = {0x02, 0x08, 0x20, 0x80};
 #define DELAY_RSP(channel, rsp) { delayedRsp[channel] = &rsp; \
                                 delayedRspFrame[channel] = cdi.board->GetTotalFrameCount() + 2; }
 
-IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDeviceType deviceType)
+IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Type deviceType)
     : ISlave(idc, busbase, deviceType)
     , registers{0}
     , delayedRsp{nullptr}

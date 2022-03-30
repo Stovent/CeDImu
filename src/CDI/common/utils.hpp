@@ -163,7 +163,7 @@ inline const void* subarrayOfArray(const void* container, size_t containerSize, 
     return nullptr;
 }
 
-#define GET_ARRAY16(array, index) ((uint16_t)array[(index)] << 8 | array[(index)+1])
-#define GET_ARRAY32(array, index) ((uint32_t)array[(index)] << 24 | array[(index)+1] << 16 | array[(index)+2] << 8 | array[(index)+3])
+#define GET_ARRAY16(array, index) ((uint16_t)array[(index)] << 8 | (uint16_t)array[(index)+1])
+#define GET_ARRAY32(array, index) ((uint32_t)array[(index)] << 24 | (uint32_t)array[(index)+1] << 16 | (uint32_t)array[(index)+2] << 8 | (uint32_t)array[(index)+3])
 
 #endif // CDI_COMMON_UTILS_HPP

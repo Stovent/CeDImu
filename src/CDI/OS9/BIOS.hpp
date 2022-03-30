@@ -1,11 +1,11 @@
 #ifndef CDI_OS9_BIOS_HPP
 #define CDI_OS9_BIOS_HPP
 
+#include "../common/types.hpp"
+
 #include <cstdint>
 #include <string>
 #include <vector>
-
-#include "../common/types.hpp"
 
 namespace OS9
 {

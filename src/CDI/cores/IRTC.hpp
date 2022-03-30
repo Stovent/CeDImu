@@ -19,6 +19,7 @@ public:
     CDI& cdi;
 
     IRTC() = delete;
+    IRTC(IRTC&) = delete;
     IRTC(CDI& idc) : cdi(idc) {}
     virtual ~IRTC() {}
 

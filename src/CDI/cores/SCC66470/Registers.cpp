@@ -2,7 +2,7 @@
 
 uint16_t SCC66470::GetCSRWRegister() const
 {
-    return internalRegisters[SCSRW];
+    return internalRegisters[CSRW];
 }
 
 uint16_t SCC66470::GetCSRRRegister() const
@@ -12,97 +12,97 @@ uint16_t SCC66470::GetCSRRRegister() const
 
 uint16_t SCC66470::GetDCRRegister() const
 {
-    return internalRegisters[SDCR];
+    return internalRegisters[DCR];
 }
 
 uint16_t SCC66470::GetVSRRegister() const
 {
-    return internalRegisters[SVSR];
+    return internalRegisters[VSR];
 }
 
 uint16_t SCC66470::GetBCRRegister() const
 {
-    return internalRegisters[SBCR];
+    return internalRegisters[BCR];
 }
 
 uint16_t SCC66470::GetDCR2Register() const
 {
-    return internalRegisters[SDCR2];
+    return internalRegisters[DCR2];
 }
 
 uint16_t SCC66470::GetDCPRegister() const
 {
-    return internalRegisters[SDCP];
+    return internalRegisters[DCP];
 }
 
 uint16_t SCC66470::GetSWMRegister() const
 {
-    return internalRegisters[SSWM];
+    return internalRegisters[SWM];
 }
 
 uint16_t SCC66470::GetSTMRegister() const
 {
-    return internalRegisters[SSTM];
+    return internalRegisters[STM];
 }
 
 uint16_t SCC66470::GetARegister() const
 {
-    return internalRegisters[SA];
+    return internalRegisters[A];
 }
 
 uint16_t SCC66470::GetBRegister() const
 {
-    return internalRegisters[SB];
+    return internalRegisters[B];
 }
 
 uint16_t SCC66470::GetPCRRegister() const
 {
-    return internalRegisters[SPCR];
+    return internalRegisters[PCR];
 }
 
 uint16_t SCC66470::GetMASKRegister() const
 {
-    return internalRegisters[SMASK];
+    return internalRegisters[MASK];
 }
 
 uint16_t SCC66470::GetSHIFTRegister() const
 {
-    return internalRegisters[SSHIFT];
+    return internalRegisters[SHIFT];
 }
 
 uint16_t SCC66470::GetINDEXRegister() const
 {
-    return internalRegisters[SINDEX];
+    return internalRegisters[INDEX];
 }
 
 uint16_t SCC66470::GetFCRegister() const
 {
-    return internalRegisters[SFCBC] & 0xFF00;
+    return internalRegisters[FCBC] & 0xFF00;
 }
 
 uint16_t SCC66470::GetBCRegister() const
 {
-    return internalRegisters[SFCBC] & 0x00FF;
+    return internalRegisters[FCBC] & 0x00FF;
 }
 
 uint16_t SCC66470::GetTCRegister() const
 {
-    return internalRegisters[STC];
+    return internalRegisters[TC];
 }
 
 bool SCC66470::GetFD() const
 {
-    return internalRegisters[SDCR] & 0x1000;
+    return internalRegisters[DCR] & 0x1000;
 }
 
 bool SCC66470::GetSS() const
 {
-    return internalRegisters[SDCR] & 0x0400;
+    return internalRegisters[DCR] & 0x0400;
 }
 
 bool SCC66470::GetST() const
 {
-    return internalRegisters[SCSRW] & 0x0002;
+    return internalRegisters[CSRW] & 0x0002;
 }
 
 std::vector<InternalRegister> SCC66470::GetInternalRegisters() const
@@ -132,5 +132,5 @@ std::vector<InternalRegister> SCC66470::GetInternalRegisters() const
 
 std::vector<InternalRegister> SCC66470::GetControlRegisters() const
 {
-    return std::vector<InternalRegister>();
+    return std::vector<::InternalRegister>();
 }

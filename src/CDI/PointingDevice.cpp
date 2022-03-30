@@ -1,7 +1,7 @@
 #include "PointingDevice.hpp"
 #include "cores/ISlave.hpp"
 
-PointingDevice::PointingDevice(ISlave& slv, PointingDeviceType deviceType) :
+PointingDevice::PointingDevice(ISlave& slv, PointingDevice::Type deviceType) :
     slave(slv),
     type(deviceType),
     dataPacketDelay(getDataPacketDelay(deviceType)),
@@ -179,16 +179,16 @@ void PointingDevice::GeneratePointerMessage()
 {
     switch(type)
     {
-    case PointingDeviceType::Absolute:
-    case PointingDeviceType::AbsoluteScreen:
+    case PointingDevice::Type::Absolute:
+    case PointingDevice::Type::AbsoluteScreen:
         pointerMessage[0] = 0x40 | pointerState.btn1 << 5 | pointerState.btn2 << 4 | (pointerState.x >> 6 & 0xF);
         pointerMessage[1] = pointerState.pd << 5 | (pointerState.y >> 6 & 0xF);
         pointerMessage[2] = pointerState.x & 0x3F;
         pointerMessage[3] = pointerState.y & 0x3F;
         break;
 
-    case PointingDeviceType::Maneuvering:
-    case PointingDeviceType::Relative:
+    case PointingDevice::Type::Maneuvering:
+    case PointingDevice::Type::Relative:
         pointerMessage[0] = 0x40 | pointerState.btn1 << 5 | pointerState.btn2 << 4 | (pointerState.y >> 4 & 0xC) | (pointerState.x >> 6 & 3);
         pointerMessage[1] = pointerState.x & 0x3F;
         pointerMessage[2] = pointerState.y & 0x3F;

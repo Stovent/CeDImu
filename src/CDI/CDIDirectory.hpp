@@ -1,8 +1,8 @@
 #ifndef CDI_CDIDIRECTORY_HPP
 #define CDI_CDIDIRECTORY_HPP
 
-#include "CDIFile.hpp"
 class CDIDisc;
+#include "CDIFile.hpp"
 
 #include <map>
 #include <string>

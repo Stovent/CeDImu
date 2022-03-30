@@ -2,7 +2,7 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
-uint16_t SCC68070::Exception(const uint8_t vectorNumber)
+uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
 {
     uint16_t calcTime = 0;
     uint16_t sr = SR;

@@ -1,56 +1,10 @@
 #ifndef CDI_CORES_MCD212_MCD212_HPP
 #define CDI_CORES_MCD212_MCD212_HPP
 
-class MCD212;
-
 #include "../VDSC.hpp"
 
 #include <array>
-#include <mutex>
 #include <vector>
-
-enum MCD212InternalRegister
-{
-    MCSR2W = 0x00,
-    MCSR2R = 0x01,
-    MDCR2  = 0x02,
-    MVSR2  = 0x04,
-    MDDR2  = 0x08,
-    MDCP2  = 0x0A,
-    MCSR1W = 0x10,
-    MCSR1R = 0x11,
-    MDCR1  = 0x12,
-    MVSR1  = 0x14,
-    MDDR1  = 0x18,
-    MDCP1  = 0x1A,
-};
-
-enum MCD212ControlRegister
-{
-    CLUTColor = 0x00,
-    ImageCodingMethod = 0x40,
-    TransparencyControl,
-    PlaneOrder,
-    CLUTBank,
-    TransparentColorForPlaneA,
-    reserved1,
-    TransparentColorForPlaneB,
-    MaskColorForPlaneA,
-    reserved2,
-    MaskColorForPlaneB,
-    DYUVAbsStartValueForPlaneA,
-    DYUVAbsStartValueForPlaneB,
-    reserved3,
-    CursorPosition,
-    CursorControl,
-    CursorPattern,
-    RegionControl,
-    BackdropColor = 0x58,
-    MosaicPixelHoldForPlaneA,
-    MosaicPixelHoldForPlaneB,
-    WeightFactorForPlaneA,
-    WeightFactorForPlaneB,
-};
 
 class MCD212 : public VDSC
 {
@@ -95,7 +49,7 @@ private:
     std::array<uint32_t, 0x80> controlRegisters;
     std::array<uint32_t, 256> CLUT;
     std::array<uint16_t, 16>  cursorPatterns;
-    std::array<std::array<bool, PLANE_MAX_WIDTH>, 2> regionFlags;
+    std::array<std::array<bool, Plane::MAX_WIDTH>, 2> regionFlags;
     uint8_t currentRegionControl;
 
     std::array<uint16_t, 32> internalRegisters;
@@ -208,6 +162,49 @@ private:
     {
         return isPAL || !GetCF() ? 64000 : 63560;
     }
+
+    enum InternalRegister
+    {
+        CSR2W = 0x00,
+        CSR2R = 0x01,
+        DCR2  = 0x02,
+        VSR2  = 0x04,
+        DDR2  = 0x08,
+        DCP2  = 0x0A,
+        CSR1W = 0x10,
+        CSR1R = 0x11,
+        DCR1  = 0x12,
+        VSR1  = 0x14,
+        DDR1  = 0x18,
+        DCP1  = 0x1A,
+    };
+
+    enum ControlRegister
+    {
+        CLUTColor = 0x00,
+        ImageCodingMethod = 0x40,
+        TransparencyControl,
+        PlaneOrder,
+        CLUTBank,
+        TransparentColorForPlaneA,
+        reserved1,
+        TransparentColorForPlaneB,
+        MaskColorForPlaneA,
+        reserved2,
+        MaskColorForPlaneB,
+        DYUVAbsStartValueForPlaneA,
+        DYUVAbsStartValueForPlaneB,
+        reserved3,
+        CursorPosition,
+        CursorControl,
+        CursorPattern,
+        RegionControl,
+        BackdropColor = 0x58,
+        MosaicPixelHoldForPlaneA,
+        MosaicPixelHoldForPlaneB,
+        WeightFactorForPlaneA,
+        WeightFactorForPlaneB,
+    };
 };
 
 #endif // CDI_CORES_MCD212_MCD212_HPP

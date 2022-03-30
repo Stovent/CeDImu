@@ -162,14 +162,14 @@ void CeDImu::WriteException(const LogSCC68070Exception& e, size_t trapIndex)
 {
     m_exceptionsOut << std::setiosflags(std::ios::left)
                     << std::setw(8) << std::hex << e.returnAddress
-                    << std::setw(12) << (e.vector == Trap0Instruction ? e.systemCall.module : "")
+                    << std::setw(12) << (e.vector == SCC68070::Trap0Instruction ? e.systemCall.module : "")
                     << std::setw(20) << e.disassembled;
 
     m_instructionsOut << std::setw(8) << std::hex << e.returnAddress
-                      << std::setw(12) << (e.vector == Trap0Instruction ? e.systemCall.module : "")
+                      << std::setw(12) << (e.vector == SCC68070::Trap0Instruction ? e.systemCall.module : "")
                       << std::setw(20) << e.disassembled;
 
-    if(e.vector == Trap0Instruction)
+    if(e.vector == SCC68070::Trap0Instruction)
     {
         m_exceptionsOut << std::dec << '[' << trapIndex << "]  "
                         << std::setw(12) << OS9::systemCallNameToString(e.systemCall.type)
@@ -186,7 +186,7 @@ void CeDImu::WriteRTE(uint32_t pc, uint16_t format, const LogSCC68070Exception& 
 {
     m_exceptionsOut << std::setiosflags(std::ios::left)
                     << std::setw(8) << std::hex << e.returnAddress
-                    << std::setw(12) << (e.vector == Trap0Instruction ? e.systemCall.module : "")
+                    << std::setw(12) << (e.vector == SCC68070::Trap0Instruction ? e.systemCall.module : "")
                     << "               RTE  "
                     << std::dec << '[' << trapIndex << "]  "
                     << std::setw(12) << OS9::systemCallNameToString(e.systemCall.type)

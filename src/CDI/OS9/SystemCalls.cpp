@@ -6,8 +6,8 @@
 namespace OS9
 {
 
-#define GETSTR(areg) (get(regs.at(CPURegister::areg)) != nullptr ? (char*)get(regs.at(CPURegister::areg)) : "")
-#define REG(reg) regs.at(CPURegister::reg)
+#define GETSTR(areg) (get(regs.at(SCC68070::Register::areg)) != nullptr ? (char*)get(regs.at(SCC68070::Register::areg)) : "")
+#define REG(reg) regs.at(SCC68070::Register::reg)
 
 std::string eventNameToString(const Event evt)
 {
@@ -33,7 +33,7 @@ std::string eventNameToString(const Event evt)
     }
 }
 
-std::string eventInputsToString(const Event evt, const std::map<CPURegister, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
+std::string eventInputsToString(const Event evt, const std::map<SCC68070::Register, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
 {
     char event[256]= {0};
     switch(evt)
@@ -59,7 +59,7 @@ std::string eventInputsToString(const Event evt, const std::map<CPURegister, uin
     return event;
 }
 
-std::string eventOutputsToString(const Event evt, const std::map<CPURegister, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
+std::string eventOutputsToString(const Event evt, const std::map<SCC68070::Register, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
 {
     char event[256]= {0};
     switch(evt)
@@ -186,7 +186,7 @@ std::string systemCallNameToString(const SystemCallType call)
     }
 }
 
-std::string systemCallInputsToString(const SystemCallType call, const std::map<CPURegister, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
+std::string systemCallInputsToString(const SystemCallType call, const std::map<SCC68070::Register, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
 {
     char args[256] = {0};
     switch(call)
@@ -289,7 +289,7 @@ std::string systemCallInputsToString(const SystemCallType call, const std::map<C
     return args;
 }
 
-std::string systemCallOutputsToString(const SystemCallType call, const std::map<CPURegister, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
+std::string systemCallOutputsToString(const SystemCallType call, const std::map<SCC68070::Register, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
 {
     char args[256] = {0};
     switch(call)

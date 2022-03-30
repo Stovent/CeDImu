@@ -11,27 +11,27 @@ uint16_t MCD212::GetCSR1RRegister() const
 
 uint16_t MCD212::GetCSR1WRegister() const
 {
-    return internalRegisters[MCSR1W];
+    return internalRegisters[CSR1W];
 }
 
 uint16_t MCD212::GetDCR1Register() const
 {
-    return internalRegisters[MDCR1];
+    return internalRegisters[DCR1];
 }
 
 uint16_t MCD212::GetVSR1Register() const
 {
-    return internalRegisters[MVSR1];
+    return internalRegisters[VSR1];
 }
 
 uint16_t MCD212::GetDDR1Register() const
 {
-    return internalRegisters[MDDR1];
+    return internalRegisters[DDR1];
 }
 
 uint16_t MCD212::GetDCP1Register() const
 {
-    return internalRegisters[MDCP1];
+    return internalRegisters[DCP1];
 }
 
 uint16_t MCD212::GetCSR2RRegister() const
@@ -41,27 +41,27 @@ uint16_t MCD212::GetCSR2RRegister() const
 
 uint16_t MCD212::GetCSR2WRegister() const
 {
-    return internalRegisters[MCSR2W];
+    return internalRegisters[CSR2W];
 }
 
 uint16_t MCD212::GetDCR2Register() const
 {
-    return internalRegisters[MDCR2];
+    return internalRegisters[DCR2];
 }
 
 uint16_t MCD212::GetVSR2Register() const
 {
-    return internalRegisters[MVSR2];
+    return internalRegisters[VSR2];
 }
 
 uint16_t MCD212::GetDDR2Register() const
 {
-    return internalRegisters[MDDR2];
+    return internalRegisters[DDR2];
 }
 
 uint16_t MCD212::GetDCP2Register() const
 {
-    return internalRegisters[MDCP2];
+    return internalRegisters[DCP2];
 }
 
 bool MCD212::GetDA() const
@@ -91,127 +91,127 @@ bool MCD212::GetBE_R() const
 
 bool MCD212::GetBE_W() const
 {
-    return internalRegisters[MCSR1W] & 0x0001;
+    return internalRegisters[CSR1W] & 0x0001;
 }
 
 bool MCD212::GetDI1() const
 {
-    return internalRegisters[MCSR1W] >> 15;
+    return internalRegisters[CSR1W] >> 15;
 }
 
 uint8_t MCD212::GetDD12() const
 {
-    return (internalRegisters[MCSR1W] & 0x0300) >> 8;
+    return (internalRegisters[CSR1W] & 0x0300) >> 8;
 }
 
 bool MCD212::GetTD() const
 {
-    return (internalRegisters[MCSR1W] & 0x0020) >> 5;
+    return (internalRegisters[CSR1W] & 0x0020) >> 5;
 }
 
 bool MCD212::GetDD() const
 {
-    return (internalRegisters[MCSR1W] & 0x0008) >> 3;
+    return (internalRegisters[CSR1W] & 0x0008) >> 3;
 }
 
 bool MCD212::GetST() const
 {
-    return (internalRegisters[MCSR1W] & 0x0002) >> 1;
+    return (internalRegisters[CSR1W] & 0x0002) >> 1;
 }
 
 bool MCD212::GetDI2() const
 {
-    return internalRegisters[MCSR2W] >> 15;
+    return internalRegisters[CSR2W] >> 15;
 }
 
 bool MCD212::GetDE() const
 {
-    return internalRegisters[MDCR1] >> 15;
+    return internalRegisters[DCR1] >> 15;
 }
 
 bool MCD212::GetCF() const
 {
-    return (internalRegisters[MDCR1] & 0x4000) >> 14;
+    return (internalRegisters[DCR1] & 0x4000) >> 14;
 }
 
 bool MCD212::GetFD() const
 {
-    return (internalRegisters[MDCR1] & 0x2000) >> 13;
+    return (internalRegisters[DCR1] & 0x2000) >> 13;
 }
 
 bool MCD212::GetSM() const
 {
-    return (internalRegisters[MDCR1] & 0x1000) >> 12;
+    return (internalRegisters[DCR1] & 0x1000) >> 12;
 }
 
 bool MCD212::GetCM1() const
 {
-    return (internalRegisters[MDCR1] & 0x0800) >> 11;
+    return (internalRegisters[DCR1] & 0x0800) >> 11;
 }
 
 bool MCD212::GetIC1() const
 {
-    return (internalRegisters[MDCR1] & 0x0200) >> 9;
+    return (internalRegisters[DCR1] & 0x0200) >> 9;
 }
 
 bool MCD212::GetDC1() const
 {
-    return (internalRegisters[MDCR1] & 0x0100) >> 8;
+    return (internalRegisters[DCR1] & 0x0100) >> 8;
 }
 
 bool MCD212::GetCM2() const
 {
-    return (internalRegisters[MDCR2] & 0x0800) >> 11;
+    return (internalRegisters[DCR2] & 0x0800) >> 11;
 }
 
 bool MCD212::GetIC2() const
 {
-    return (internalRegisters[MDCR2] & 0x0200) >> 9;
+    return (internalRegisters[DCR2] & 0x0200) >> 9;
 }
 
 bool MCD212::GetDC2() const
 {
-    return (internalRegisters[MDCR2] & 0x0100) >> 8;
+    return (internalRegisters[DCR2] & 0x0100) >> 8;
 }
 
 uint8_t MCD212::GetMF12_1() const // 2*2^MF
 {
-    return (internalRegisters[MDDR1] & 0x0C00) >> 10;
+    return (internalRegisters[DDR1] & 0x0C00) >> 10;
 }
 
 uint8_t MCD212::GetFT12_1() const
 {
-    return (internalRegisters[MDDR1] & 0x0300) >> 8;
+    return (internalRegisters[DDR1] & 0x0300) >> 8;
 }
 
 uint8_t MCD212::GetMF12_2() const
 {
-    return (internalRegisters[MDDR2] & 0x0C00) >> 10;
+    return (internalRegisters[DDR2] & 0x0C00) >> 10;
 }
 
 uint8_t MCD212::GetFT12_2() const
 {
-    return (internalRegisters[MDDR2] & 0x0300) >> 8;
+    return (internalRegisters[DDR2] & 0x0300) >> 8;
 }
 
 uint32_t MCD212::GetVSR1() const
 {
-    return (internalRegisters[MDCR1] & 0x003F) << 16 | internalRegisters[MVSR1];
+    return (internalRegisters[DCR1] & 0x003F) << 16 | internalRegisters[VSR1];
 }
 
 uint32_t MCD212::GetVSR2() const
 {
-    return (internalRegisters[MDCR2] & 0x003F) << 16 | internalRegisters[MVSR2];
+    return (internalRegisters[DCR2] & 0x003F) << 16 | internalRegisters[VSR2];
 }
 
 uint32_t MCD212::GetDCP1() const
 {
-    return (internalRegisters[MDDR1] & 0x003F) << 16 | internalRegisters[MDCP1];
+    return (internalRegisters[DDR1] & 0x003F) << 16 | internalRegisters[DCP1];
 }
 
 uint32_t MCD212::GetDCP2() const
 {
-    return (internalRegisters[MDDR2] & 0x003F) << 16 | internalRegisters[MDCP2];
+    return (internalRegisters[DDR2] & 0x003F) << 16 | internalRegisters[DCP2];
 }
 
 void MCD212::SetIT1(const bool it)
@@ -228,71 +228,71 @@ void MCD212::SetIT2(const bool it)
 
 void MCD212::SetDCP1(const uint32_t value)
 {
-    internalRegisters[MDDR1] &= 0x0F00;
-    internalRegisters[MDDR1] |= (value >> 16) & 0x3F;
-    internalRegisters[MDCP1] = value;
+    internalRegisters[DDR1] &= 0x0F00;
+    internalRegisters[DDR1] |= (value >> 16) & 0x3F;
+    internalRegisters[DCP1] = value;
 }
 
 void MCD212::SetVSR1(const uint32_t value)
 {
-    internalRegisters[MDCR1] &= 0xFB00;
-    internalRegisters[MDCR1] |= (value >> 16) & 0x3F;
-    internalRegisters[MVSR1] = value;
+    internalRegisters[DCR1] &= 0xFB00;
+    internalRegisters[DCR1] |= (value >> 16) & 0x3F;
+    internalRegisters[VSR1] = value;
 }
 
 void MCD212::SetDCP2(const uint32_t value)
 {
-    internalRegisters[MDDR2] &= 0x0F00;
-    internalRegisters[MDDR2] |= (value >> 16) & 0x3F;
-    internalRegisters[MDCP2] = value;
+    internalRegisters[DDR2] &= 0x0F00;
+    internalRegisters[DDR2] |= (value >> 16) & 0x3F;
+    internalRegisters[DCP2] = value;
 }
 
 void MCD212::SetVSR2(const uint32_t value)
 {
-    internalRegisters[MDCR2] &= 0x0B00;
-    internalRegisters[MDCR2] |= (value >> 16) & 0x3F;
-    internalRegisters[MVSR2] = value;
+    internalRegisters[DCR2] &= 0x0B00;
+    internalRegisters[DCR2] |= (value >> 16) & 0x3F;
+    internalRegisters[VSR2] = value;
 }
 
 void MCD212::ReloadDisplayParameters1(const bool CM, const uint8_t MF, const uint8_t FT)
 {
-    internalRegisters[MDCR1] &= 0xF33F;
-    internalRegisters[MDCR1] |= CM << 11;
-    internalRegisters[MDDR1] &= 0x003F;
-    internalRegisters[MDDR1] |= MF << 10;
-    internalRegisters[MDDR1] |= FT << 8;
+    internalRegisters[DCR1] &= 0xF33F;
+    internalRegisters[DCR1] |= CM << 11;
+    internalRegisters[DDR1] &= 0x003F;
+    internalRegisters[DDR1] |= MF << 10;
+    internalRegisters[DDR1] |= FT << 8;
 }
 
 void MCD212::ReloadDisplayParameters2(const bool CM, const uint8_t MF, const uint8_t FT)
 {
-    internalRegisters[MDCR2] &= 0x033F;
-    internalRegisters[MDCR2] |= CM << 11;
-    internalRegisters[MDDR2] &= 0x003F;
-    internalRegisters[MDDR2] |= MF << 10;
-    internalRegisters[MDDR2] |= FT << 8;
+    internalRegisters[DCR2] &= 0x033F;
+    internalRegisters[DCR2] |= CM << 11;
+    internalRegisters[DDR2] &= 0x003F;
+    internalRegisters[DDR2] |= MF << 10;
+    internalRegisters[DDR2] |= FT << 8;
 }
 
 std::vector<InternalRegister> MCD212::GetInternalRegisters() const
 {
-    std::vector<InternalRegister> registers;
-    registers.push_back({"CSR1R", MCSR1R + 0x4FFFE0, GetCSR1RRegister(), DisassembleCSR1RRegister()});
-    registers.push_back({"CSR2R", MCSR2R + 0x4FFFE0, GetCSR2RRegister(), DisassembleCSR2RRegister()});
-    registers.push_back({"CSR1W", MCSR1W + 0x4FFFE0, GetCSR1WRegister(), DisassembleCSR1WRegister()});
-    registers.push_back({"CSR2W", MCSR2W + 0x4FFFE0, GetCSR2WRegister(), DisassembleCSR2WRegister()});
-    registers.push_back({"DCR1",  MDCR1  + 0x4FFFE0,  GetDCR1Register(), DisassembleDCR1Register()});
-    registers.push_back({"DCR2",  MDCR2  + 0x4FFFE0,  GetDCR2Register(), DisassembleDCR2Register()});
-    registers.push_back({"DDR1",  MDDR1  + 0x4FFFE0,  GetDDR1Register(), DisassembleDDR1Register()});
-    registers.push_back({"DDR2",  MDDR2  + 0x4FFFE0,  GetDDR2Register(), DisassembleDDR2Register()});
-    registers.push_back({"VSR1",  MVSR1  + 0x4FFFE0,  GetVSR1Register(), DisassembleVSR1Register()});
-    registers.push_back({"VSR2",  MVSR2  + 0x4FFFE0,  GetVSR2Register(), DisassembleVSR2Register()});
-    registers.push_back({"DCP1",  MDCP1  + 0x4FFFE0,  GetDCP1Register(), DisassembleDCP1Register()});
-    registers.push_back({"DCP2",  MDCP2  + 0x4FFFE0,  GetDCP2Register(), DisassembleDCP2Register()});
+    std::vector<::InternalRegister> registers;
+    registers.push_back({"CSR1R", CSR1R + 0x4FFFE0, GetCSR1RRegister(), DisassembleCSR1RRegister()});
+    registers.push_back({"CSR2R", CSR2R + 0x4FFFE0, GetCSR2RRegister(), DisassembleCSR2RRegister()});
+    registers.push_back({"CSR1W", CSR1W + 0x4FFFE0, GetCSR1WRegister(), DisassembleCSR1WRegister()});
+    registers.push_back({"CSR2W", CSR2W + 0x4FFFE0, GetCSR2WRegister(), DisassembleCSR2WRegister()});
+    registers.push_back({"DCR1",  DCR1  + 0x4FFFE0,  GetDCR1Register(), DisassembleDCR1Register()});
+    registers.push_back({"DCR2",  DCR2  + 0x4FFFE0,  GetDCR2Register(), DisassembleDCR2Register()});
+    registers.push_back({"DDR1",  DDR1  + 0x4FFFE0,  GetDDR1Register(), DisassembleDDR1Register()});
+    registers.push_back({"DDR2",  DDR2  + 0x4FFFE0,  GetDDR2Register(), DisassembleDDR2Register()});
+    registers.push_back({"VSR1",  VSR1  + 0x4FFFE0,  GetVSR1Register(), DisassembleVSR1Register()});
+    registers.push_back({"VSR2",  VSR2  + 0x4FFFE0,  GetVSR2Register(), DisassembleVSR2Register()});
+    registers.push_back({"DCP1",  DCP1  + 0x4FFFE0,  GetDCP1Register(), DisassembleDCP1Register()});
+    registers.push_back({"DCP2",  DCP2  + 0x4FFFE0,  GetDCP2Register(), DisassembleDCP2Register()});
     return registers;
 }
 
 std::vector<InternalRegister> MCD212::GetControlRegisters() const
 {
-    std::vector<InternalRegister> registers;
+    std::vector<::InternalRegister> registers;
     for(uint32_t i = 0; i < 256; i++)
         registers.push_back({"CLUT Color " + std::to_string(i), i, CLUT[i]});
     registers.push_back({"Image Coding Method",              ImageCodingMethod          + 0x80, controlRegisters[ImageCodingMethod]});

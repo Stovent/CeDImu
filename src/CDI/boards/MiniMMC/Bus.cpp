@@ -28,7 +28,7 @@ uint8_t MiniMMC::GetByte(const uint32_t addr, const uint8_t flags)
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
             cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Byte", cpu.currentPC, addr, 0}); })
-    throw SCC68070Exception(BusError, 0);
+    throw SCC68070::Exception(SCC68070::BusError, 0);
 }
 
 uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
@@ -55,7 +55,7 @@ uint16_t MiniMMC::GetWord(const uint32_t addr, const uint8_t flags)
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
             cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Word", cpu.currentPC, addr, 0}); })
-    throw SCC68070Exception(BusError, 0);
+    throw SCC68070::Exception(SCC68070::BusError, 0);
 }
 
 uint32_t MiniMMC::GetLong(const uint32_t addr, const uint8_t flags)
@@ -91,7 +91,7 @@ void MiniMMC::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fla
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
             cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Byte", cpu.currentPC, addr, data}); })
-    throw SCC68070Exception(BusError, 0);
+    throw SCC68070::Exception(SCC68070::BusError, 0);
 }
 
 void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
@@ -123,7 +123,7 @@ void MiniMMC::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fl
 
     LOG(if(flags & Log) { if(cdi.callbacks.HasOnLogMemoryAccess()) \
             cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Word", cpu.currentPC, addr, data}); })
-    throw SCC68070Exception(BusError, 0);
+    throw SCC68070::Exception(SCC68070::BusError, 0);
 }
 
 void MiniMMC::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)

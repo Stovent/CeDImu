@@ -1,33 +1,10 @@
 #ifndef CDI_CORES_SCC66470_SCC66470_HPP
 #define CDI_CORES_SCC66470_SCC66470_HPP
 
-class SCC66470;
-
 #include "../VDSC.hpp"
 
-#include <mutex>
-
-enum SCC66470Registers
-{
-    SCSRW = 0x00,
-    SCSRR = 0x01,
-    SDCR  = 0x02,
-    SVSR  = 0x04,
-    SBCR  = 0x06, // LSB only
-    SDCR2 = 0x08,
-    SDCP  = 0x0A,
-    SSWM  = 0x0C, // MSB only
-    SSTM  = 0x0E, // LSB only
-
-    SA     = 0x10,
-    SB     = 0x12,
-    SPCR   = 0x14,
-    SMASK  = 0x16, // Low order nibble only
-    SSHIFT = 0x18, // bits 8-9 only
-    SINDEX = 0x1A, // bits 0-1 only
-    SFCBC  = 0x1C, // FC and BC are respectively MSB and LSB of this register.
-    STC    = 0x1E, // MSB only
-};
+#include <array>
+#include <vector>
 
 class SCC66470 : public VDSC
 {
@@ -108,6 +85,28 @@ private:
     {
         return 41000;
     }
+
+    enum InternalRegister
+    {
+        CSRW = 0x00,
+        CSRR = 0x01,
+        DCR  = 0x02,
+        VSR  = 0x04,
+        BCR  = 0x06, // LSB only
+        DCR2 = 0x08,
+        DCP  = 0x0A,
+        SWM  = 0x0C, // MSB only
+        STM  = 0x0E, // LSB only
+
+        A     = 0x10,
+        B     = 0x12,
+        PCR   = 0x14,
+        MASK  = 0x16, // Low order nibble only
+        SHIFT = 0x18, // bits 8-9 only
+        INDEX = 0x1A, // bits 0-1 only
+        FCBC  = 0x1C, // FC and BC are respectively MSB and LSB of this register.
+        TC    = 0x1E, // MSB only
+    };
 };
 
 #endif // CDI_CORES_SCC66470_SCC66470_HPP

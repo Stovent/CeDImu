@@ -86,7 +86,7 @@ void MCD212::ExecuteVideoLine()
             {
                 const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // TODO: address is in double resolution mode
                 const uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
-                Video::paste(screen.data(), screen.width, screen.height, cursorPlane.data(), CURSOR_WIDTH, CURSOR_HEIGHT, x, y);
+                Video::paste(screen.data(), screen.width, screen.height, cursorPlane.data(), Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, x, y);
             }
         }
 

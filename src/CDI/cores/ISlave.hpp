@@ -4,8 +4,6 @@
 class CDI;
 #include "../PointingDevice.hpp"
 
-#include <memory>
-
 class ISlave
 {
 public:
@@ -14,7 +12,7 @@ public:
     const uint32_t busBase;
 
     ISlave() = delete;
-    ISlave(CDI& idc, uint32_t busbase, PointingDeviceType deviceType) : cdi(idc), pointingDevice(*this, deviceType), busBase(busbase) {}
+    ISlave(CDI& idc, uint32_t busbase, PointingDevice::Type deviceType) : cdi(idc), pointingDevice(*this, deviceType), busBase(busbase) {}
     virtual ~ISlave() {}
 
     virtual void UpdatePointerState() = 0;

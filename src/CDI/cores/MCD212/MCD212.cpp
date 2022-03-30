@@ -12,11 +12,11 @@ MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL) 
     memorySwapCount(0),
     timeNs(0.0),
     memory(0x280000, 0),
-    screen(PLANE_RGB_SIZE),
+    screen(Plane::RGB_SIZE),
     planeA(),
     planeB(),
-    cursorPlane(CURSOR_ARGB_SIZE, 16, 16),
-    backgroundPlane(PLANE_MAX_HEIGHT * 4, 1, PLANE_MAX_HEIGHT),
+    cursorPlane(Plane::CURSOR_ARGB_SIZE, 16, 16),
+    backgroundPlane(Plane::MAX_HEIGHT * 4, 1, Plane::MAX_HEIGHT),
     controlRegisters{0},
     CLUT{0},
     cursorPatterns{0},
@@ -36,12 +36,12 @@ void MCD212::Reset()
     controlRegisters[CursorControl] &= 0x7F800F; // reset bit 23 (cursor disabled)
     controlRegisters[BackdropColor] = 0; // reset bits 0, 1, 2, 3 (black backdrop)
 
-    internalRegisters[MCSR1W] = 0; // DI1, DD1, DD2, TD, DD, ST, BE
-    internalRegisters[MCSR2W] = 0; // DI2
-    internalRegisters[MDCR1] &= 0x003F; // DE, CF, FD, SM, CM1, IC1, DC1
-    internalRegisters[MDCR2] &= 0x003F; // CM2, IC2, DC2
-    internalRegisters[MDDR1] &= 0x003F; // MF1, MF2, FT1, FT2
-    internalRegisters[MDDR2] &= 0x003F; // MF1, MF2, FT1, FT2
+    internalRegisters[CSR1W] = 0; // DI1, DD1, DD2, TD, DD, ST, BE
+    internalRegisters[CSR2W] = 0; // DI2
+    internalRegisters[DCR1] &= 0x003F; // DE, CF, FD, SM, CM1, IC1, DC1
+    internalRegisters[DCR2] &= 0x003F; // CM2, IC2, DC2
+    internalRegisters[DDR1] &= 0x003F; // MF1, MF2, FT1, FT2
+    internalRegisters[DDR2] &= 0x003F; // MF1, MF2, FT1, FT2
     registerCSR1R = 0;
     registerCSR2R = 0;
 

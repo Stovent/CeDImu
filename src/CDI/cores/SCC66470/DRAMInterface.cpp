@@ -34,9 +34,9 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
         {
             uint8_t data;
             if(isEven(addr))
-                data = internalRegisters[SB] >> 8;
+                data = internalRegisters[B] >> 8;
             else
-                data = internalRegisters[SB];
+                data = internalRegisters[B];
 //            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B register at 0x%06X : 0x%X\n", cdi.board->cpu.currentPC, addr, data); })
             return data;
         }
@@ -63,9 +63,9 @@ uint8_t SCC66470::GetByte(const uint32_t addr, const uint8_t flags)
         {
             uint8_t data;
             if(isEven(addr))
-                data = internalRegisters[SB] >> 8;
+                data = internalRegisters[B] >> 8;
             else
-                data = internalRegisters[SB];
+                data = internalRegisters[B];
 //            LOG(if(flags & Log) { fprintf(out_dram, "%6X\tGet register B register at 0x%06X : 0x%X\n", cdi.board->cpu.currentPC, addr, data); })
             return data;
         }

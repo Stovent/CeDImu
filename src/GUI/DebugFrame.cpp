@@ -164,11 +164,11 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
         const std::pair<size_t, LogSCC68070Exception>& log = this->m_exceptions[this->m_exceptions.size() - 1 - item];
         if(column == 0)
             return toHex(log.second.returnAddress);
-        if(column == 1 && log.second.vector == Trap0Instruction)
+        if(column == 1 && log.second.vector == SCC68070::Trap0Instruction)
             return log.second.systemCall.module;
         if(column == 2)
             return log.second.disassembled;
-        if(column == 3 && log.second.vector == Trap0Instruction)
+        if(column == 3 && log.second.vector == SCC68070::Trap0Instruction)
             return OS9::systemCallNameToString(log.second.systemCall.type);
         if(column == 4)
             return log.second.systemCall.inputs;
@@ -181,7 +181,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
     m_cedimu.m_cdi.callbacks.SetOnLogException([=] (const LogSCC68070Exception& log) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
-        const size_t trap = log.vector >= Trap0Instruction && log.vector <= Trap15Instruction ? ++m_trapCount : 0;
+        const size_t trap = log.vector >= SCC68070::Trap0Instruction && log.vector <= SCC68070::Trap15Instruction ? ++m_trapCount : 0;
         m_exceptions.push_back({trap, log});
         LOG(m_cedimu.WriteException(log, trap);)
     });
@@ -192,18 +192,18 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
         for(std::vector<std::pair<size_t, LogSCC68070Exception>>::reverse_iterator it = this->m_exceptions.rbegin();
             it != this->m_exceptions.rend(); it++)
         {
-            if(pc == it->second.returnAddress && it->second.vector == Trap0Instruction)
+            if(pc == it->second.returnAddress && it->second.vector == SCC68070::Trap0Instruction)
             {
                 size_t index = it->first;
-                const std::map<CPURegister, uint32_t> registers = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
-                const bool cc = registers.at(CPURegister::SR) & 1;
+                const std::map<SCC68070::Register, uint32_t> registers = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
+                const bool cc = registers.at(SCC68070::Register::SR) & 1;
                 char error[64] = {0};
                 std::string outputs;
                 m_updateExceptions = true;
 
                 if(cc)
                 {
-                    snprintf(error, 64, "carry=%d d1.w=%s ", cc, OS9::errorNameToString(OS9::Error(registers.at(CPURegister::D1))).c_str());
+                    snprintf(error, 64, "carry=%d d1.w=%s ", cc, OS9::errorNameToString(OS9::Error(registers.at(SCC68070::Register::D1))).c_str());
                 }
                 else
                 {

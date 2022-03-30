@@ -1,8 +1,6 @@
 #ifndef CDI_BOARDS_MONO3_MONO3_HPP
 #define CDI_BOARDS_MONO3_MONO3_HPP
 
-class Mono3;
-
 #include "../Board.hpp"
 #include "../../cores/MCD212/MCD212.hpp"
 #include "../../HLE/CIAP/CIAP.hpp"

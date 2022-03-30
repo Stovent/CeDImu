@@ -16,7 +16,7 @@ void SCC68070::Interpreter()
 
         if(exceptions.size())
         {
-            const SCC68070Exception ex = exceptions.top();
+            const Exception ex = exceptions.top();
             exceptions.pop();
             if(cdi.callbacks.HasOnLogException())
             {
@@ -27,7 +27,7 @@ void SCC68070::Interpreter()
                 cdi.callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
             }
 //            DumpCPURegisters();
-            executionCycles += Exception(ex.vector);
+            executionCycles += ProcessException(ex.vector);
         }
 
         if(stop)
@@ -46,7 +46,7 @@ void SCC68070::Interpreter()
                 }
                 executionCycles += (this->*ILUT[currentOpcode])();
             }
-            catch(const SCC68070Exception& e) {
+            catch(const Exception& e) {
                 exceptions.push(e);
             }
         }

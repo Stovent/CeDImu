@@ -191,11 +191,11 @@ void CPUViewer::UpdateRegisters()
     if(!m_cedimu.m_cdi.board)
         return;
 
-    std::map<CPURegister, uint32_t> cpuRegs = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
+    std::map<SCC68070::Register, uint32_t> cpuRegs = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
     int i = 0;
-    for(std::pair<CPURegister, uint32_t> reg : cpuRegs)
+    for(std::pair<SCC68070::Register, uint32_t> reg : cpuRegs)
     {
-        std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : reg.first == CPURegister::SR ? " : " + toBinString(reg.second, 16) : " : 0x" + toHex(reg.second);
+        std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : reg.first == SCC68070::Register::SR ? " : " + toBinString(reg.second, 16) : " : 0x" + toHex(reg.second);
         m_registers[i++]->SetValue(CPURegisterToString(reg.first) + val);
     }
 }

@@ -4,7 +4,7 @@
 
 uint8_t SCC68070::GetPeripheral(uint32_t addr)
 {
-    addr -= SCC68070Peripherals::Base;
+    addr -= Peripheral::Base;
     std::unique_lock<std::mutex> lock(uartInMutex);
 
     if(uartIn.size())
@@ -32,7 +32,7 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr)
 
 void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
 {
-    addr -= SCC68070Peripherals::Base;
+    addr -= Peripheral::Base;
 
     switch(addr)
     {
