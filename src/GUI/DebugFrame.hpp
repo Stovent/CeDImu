@@ -20,6 +20,16 @@ public:
     wxAuiManager m_auiManager;
     wxTimer m_updateTimer;
 
+    wxCheckBox* m_writeCpu;
+    wxCheckBox* m_writeBios;
+    wxCheckBox* m_writeRam;
+    wxCheckBox* m_writeVdsc;
+    wxCheckBox* m_writeSlave;
+    wxCheckBox* m_writeCdic;
+    wxCheckBox* m_writeNvram;
+    wxCheckBox* m_writeOutOfRange;
+    wxCheckBox* m_writeExceptions;
+
     wxCheckBox* m_logCpu;
     wxCheckBox* m_logBios;
     wxCheckBox* m_logRam;

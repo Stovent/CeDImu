@@ -78,7 +78,9 @@ Compatible means it is capable of playing discs.
 
 #### Build macros
 
-`ENABLE_LOG`: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback and allows CeDImu to write in files the disassembly of the CPU, the memory accesses and the exceptions and system calls (default: `OFF`).
+`ENABLE_LOG`: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback (default: `OFF`).
+
+The official build of CeDImu always enables it.
 
 ### CMake
 

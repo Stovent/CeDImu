@@ -43,9 +43,6 @@ bool CeDImu::OnInit()
     Config::loadConfig();
     m_cpuSpeed = DEFAULT_CPU_SPEED;
     m_uartOut.open("uart_out", std::ios::out | std::ios::binary);
-    LOG(m_instructionsOut.open("instructions.txt");)
-    LOG(m_exceptionsOut.open("exceptions.txt");)
-    LOG(m_memoryAccessOut.open("memory_access.txt");)
 
     new MainFrame(*this);
 
@@ -151,6 +148,9 @@ void CeDImu::DecreaseEmulationSpeed()
 
 void CeDImu::WriteInstruction(const LogInstruction& inst)
 {
+    if(!m_instructionsOut.is_open())
+        m_instructionsOut.open("instructions.txt");
+
     m_instructionsOut << std::setiosflags(std::ios::left)
                       << std::setw(8) << std::hex << inst.address
                       << std::setw(12) << inst.biosLocation
@@ -160,6 +160,12 @@ void CeDImu::WriteInstruction(const LogInstruction& inst)
 
 void CeDImu::WriteException(const LogSCC68070Exception& e, size_t trapIndex)
 {
+    if(!m_exceptionsOut.is_open())
+        m_exceptionsOut.open("exceptions.txt");
+    if(!m_instructionsOut.is_open())
+        m_instructionsOut.open("instructions.txt");
+
+
     m_exceptionsOut << std::setiosflags(std::ios::left)
                     << std::setw(8) << std::hex << e.returnAddress
                     << std::setw(12) << (e.vector == SCC68070::Trap0Instruction ? e.systemCall.module : "")
@@ -184,6 +190,9 @@ void CeDImu::WriteException(const LogSCC68070Exception& e, size_t trapIndex)
 
 void CeDImu::WriteRTE(uint32_t pc, uint16_t format, const LogSCC68070Exception& e, size_t trapIndex)
 {
+    if(!m_exceptionsOut.is_open())
+        m_exceptionsOut.open("exceptions.txt");
+
     m_exceptionsOut << std::setiosflags(std::ios::left)
                     << std::setw(8) << std::hex << e.returnAddress
                     << std::setw(12) << (e.vector == SCC68070::Trap0Instruction ? e.systemCall.module : "")
@@ -195,6 +204,9 @@ void CeDImu::WriteRTE(uint32_t pc, uint16_t format, const LogSCC68070Exception& 
 
 void CeDImu::WriteMemoryAccess(const LogMemoryAccess& log)
 {
+    if(!m_memoryAccessOut.is_open())
+        m_memoryAccessOut.open("memory_access.txt");
+
     m_memoryAccessOut << std::setiosflags(std::ios::left)
                       << std::setw(14) << memoryAccessLocationToString(log.location)
                       << std::setw(8) << std::hex << log.pc

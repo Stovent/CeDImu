@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 
 project(cdi)
 
-find_package(wxWidgets REQUIRED)
+find_package(wxWidgets REQUIRED COMPONENTS base)
 
 if(NOT wxWidgets_FOUND)
     message(FATAL_ERROR "wxWidgets not found")
@@ -17,7 +17,7 @@ if(NOT DEFINED LIBRARY_TYPE)
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -DENABLE_LOG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-s -O3")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -27,6 +27,9 @@ option(ENABLE_LOG "Allows the library to print some messages in the console and 
 if(ENABLE_LOG)
     add_definitions(-DENABLE_LOG)
 endif()
+
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipoAvailable)
 
 add_library(cdi ${LIBRARY_TYPE}
     CDI.cpp
@@ -66,6 +69,10 @@ add_library(cdi ${LIBRARY_TYPE}
     OS9/Stt.cpp
     OS9/SystemCalls.cpp
 )
+
+if(ipoAvailable)
+    set_property(TARGET cdi PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 include(${wxWidgets_USE_FILE})
 target_include_directories(cdi PRIVATE ${wxWidgets_INCLUDE_DIRS})

@@ -19,6 +19,31 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
     m_trapCount(0),
     m_updateExceptions(false)
 {
+    // Write to file
+    wxPanel* writeFilePanel = new wxPanel(this);
+    m_auiManager.AddPane(writeFilePanel, wxAuiPaneInfo().Top().Caption("Write to file").CloseButton(false).Resizable());
+    wxBoxSizer* writeFilePanelSizer = new wxBoxSizer(wxHORIZONTAL);
+    writeFilePanel->SetSizer(writeFilePanelSizer);
+
+    m_writeCpu = new wxCheckBox(writeFilePanel, wxID_ANY, "CPU");
+    writeFilePanelSizer->Add(m_writeCpu, wxSizerFlags().Proportion(1));
+    m_writeBios = new wxCheckBox(writeFilePanel, wxID_ANY, "BIOS");
+    writeFilePanelSizer->Add(m_writeBios, wxSizerFlags().Proportion(1));
+    m_writeRam = new wxCheckBox(writeFilePanel, wxID_ANY, "RAM");
+    writeFilePanelSizer->Add(m_writeRam, wxSizerFlags().Proportion(1));
+    m_writeVdsc = new wxCheckBox(writeFilePanel, wxID_ANY, "VDSC");
+    writeFilePanelSizer->Add(m_writeVdsc, wxSizerFlags().Proportion(1));
+    m_writeSlave = new wxCheckBox(writeFilePanel, wxID_ANY, "Slave");
+    writeFilePanelSizer->Add(m_writeSlave, wxSizerFlags().Proportion(1));
+    m_writeCdic = new wxCheckBox(writeFilePanel, wxID_ANY, "CDIC");
+    writeFilePanelSizer->Add(m_writeCdic, wxSizerFlags().Proportion(1));
+    m_writeNvram = new wxCheckBox(writeFilePanel, wxID_ANY, "NVRAM");
+    writeFilePanelSizer->Add(m_writeNvram, wxSizerFlags().Proportion(1));
+    m_writeOutOfRange = new wxCheckBox(writeFilePanel, wxID_ANY, "Out of range");
+    writeFilePanelSizer->Add(m_writeOutOfRange, wxSizerFlags().Proportion(1));
+    m_writeExceptions = new wxCheckBox(writeFilePanel, wxID_ANY, "Exceptions");
+    writeFilePanelSizer->Add(m_writeExceptions, wxSizerFlags().Proportion(1));
+
     // Memory logs
     wxPanel* memoryPanel = new wxPanel(this);
     m_auiManager.AddPane(memoryPanel, wxAuiPaneInfo().Center().Caption("Memory access").CloseButton(false).Floatable().Resizable());
@@ -120,7 +145,18 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
             std::lock_guard<std::mutex> lock(this->m_memoryLogsMutex);
             this->m_memoryLogs.push_back(log);
             this->m_updateMemoryLogs = true;
-            LOG(m_cedimu.WriteMemoryAccess(log);)
+        }
+
+        if((log.location == MemoryAccessLocation::CPU   && this->m_writeCpu->GetValue())   ||
+           (log.location == MemoryAccessLocation::BIOS  && this->m_writeBios->GetValue())  ||
+           (log.location == MemoryAccessLocation::RAM   && this->m_writeRam->GetValue())   ||
+           (log.location == MemoryAccessLocation::VDSC  && this->m_writeVdsc->GetValue())  ||
+           (log.location == MemoryAccessLocation::Slave && this->m_writeSlave->GetValue()) ||
+           (log.location == MemoryAccessLocation::CDIC  && this->m_writeCdic->GetValue())  ||
+           (log.location == MemoryAccessLocation::RTC   && this->m_writeNvram->GetValue()) ||
+           (log.location == MemoryAccessLocation::OutOfRange && this->m_writeOutOfRange->GetValue()))
+        {
+            m_cedimu.WriteMemoryAccess(log);
         }
     });
 
@@ -183,7 +219,9 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
         m_updateExceptions = true;
         const size_t trap = log.vector >= SCC68070::Trap0Instruction && log.vector <= SCC68070::Trap15Instruction ? ++m_trapCount : 0;
         m_exceptions.push_back({trap, log});
-        LOG(m_cedimu.WriteException(log, trap);)
+
+        if(this->m_writeExceptions->GetValue())
+            m_cedimu.WriteException(log, trap);
     });
 
     m_cedimu.m_cdi.callbacks.SetOnLogRTE([=] (uint32_t pc, uint16_t format) {
@@ -213,7 +251,9 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
                 const OS9::SystemCall syscall = {it->second.systemCall.type, "", "", cc ? std::string(error) : outputs};
                 const LogSCC68070Exception rte{it->second.vector, it->second.returnAddress, it->second.disassembled, syscall};
                 m_exceptions.push_back({index, rte});
-                LOG(m_cedimu.WriteRTE(pc, format, rte, index);)
+
+                if(this->m_writeExceptions->GetValue())
+                    m_cedimu.WriteRTE(pc, format, rte, index);
                 break;
             }
         }
