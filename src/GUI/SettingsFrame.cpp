@@ -4,6 +4,7 @@
 
 #include <wx/button.h>
 #include <wx/checkbox.h>
+#include <wx/choicebk.h>
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/hyperlink.h>
@@ -17,20 +18,20 @@
 
 #include <filesystem>
 
-#define CREATE_CONTROL_BUTTON(k, label)     wxBoxSizer* key##k##Sizer = new wxBoxSizer(wxHORIZONTAL); \
-    controlsSizer->Add(key##k##Sizer, wxSizerFlags().DoubleBorder()); \
-    wxStaticText* key##k##Text = new wxStaticText(controlsPanel, wxID_ANY, label); \
-    key##k##Sizer->Add(key##k##Text, wxSizerFlags().Border(wxRIGHT, 20).Align(wxALIGN_CENTER_VERTICAL)); \
-    wxButton* key##k##Button = new wxButton(controlsPanel, wxID_ANY, this->m_key##k ? wxAcceleratorEntry(0, m_key##k).ToString() : "", wxDefaultPosition, wxSize(100, 25)); \
-    key##k##Button->Bind(wxEVT_BUTTON, [this, key##k##Button] (wxEvent&) { \
-        key##k##Button->SetLabel("Waiting for key..."); \
-        key##k##Button->Bind(wxEVT_CHAR_HOOK, [this, key##k##Button] (wxKeyEvent& evt) { \
-            key##k##Button->Bind(wxEVT_CHAR_HOOK, [] (wxKeyEvent&) {}); \
+#define CREATE_CONTROL_BUTTON(k, label) { wxBoxSizer* keySizer = new wxBoxSizer(wxHORIZONTAL); \
+    controlsSizer->Add(keySizer, wxSizerFlags().DoubleBorder()); \
+    wxStaticText* keyText = new wxStaticText(controlsPanel, wxID_ANY, label); \
+    keySizer->Add(keyText, wxSizerFlags().Border(wxRIGHT, 20).Align(wxALIGN_CENTER_VERTICAL)); \
+    wxButton* keyButton = new wxButton(controlsPanel, wxID_ANY, this->m_key##k ? wxAcceleratorEntry(0, m_key##k).ToString() : "", wxDefaultPosition, wxSize(100, 25)); \
+    keyButton->Bind(wxEVT_BUTTON, [this, keyButton] (wxEvent&) { \
+        keyButton->SetLabel("Waiting for key..."); \
+        keyButton->Bind(wxEVT_CHAR_HOOK, [this, keyButton] (wxKeyEvent& evt) { \
+            keyButton->Bind(wxEVT_CHAR_HOOK, [] (wxKeyEvent&) {}); \
             this->m_key##k = evt.GetKeyCode(); \
-            key##k##Button->SetLabel(this->m_key##k ? wxAcceleratorEntry(0, this->m_key##k).ToString() : ""); \
+            keyButton->SetLabel(this->m_key##k ? wxAcceleratorEntry(0, this->m_key##k).ToString() : ""); \
         }); \
     }); \
-    key##k##Sizer->Add(key##k##Button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
+    keySizer->Add(keyButton, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL)); }
 
 SettingsFrame::SettingsFrame(MainFrame* parent) :
     wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(500, 450)),
@@ -49,7 +50,6 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
 
     wxAuiNotebook* notebook = new wxAuiNotebook(framePanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE);
     frameSizer->Add(notebook, wxSizerFlags().Proportion(1).Expand().Border());
-
 
     // General page
     wxPanel* generalPage = new wxPanel(notebook);
@@ -77,56 +77,81 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     discSizer->Add(discPathRow, wxSizerFlags().Expand().Border());
 
     // BIOS / Board
-    wxStaticBoxSizer* boardSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "BIOS / Board");
+    wxStaticBoxSizer* boardSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "Selected BIOS");
     generalSizer->Add(boardSizer, wxSizerFlags().Expand());
 
     wxStaticText* helperTextReload = new wxStaticText(generalPage, wxID_ANY, "After changing the BIOS / Board configuration, click\n\"Emulation -> Reload core\" to apply the new configuration.");
     boardSizer->Add(helperTextReload, wxSizerFlags().Border());
 
-    wxBoxSizer* biosPathRow = new wxBoxSizer(wxHORIZONTAL);
-    wxTextCtrl* biosPath = new wxTextCtrl(generalPage, wxID_ANY, Config::systemBIOS);
-    wxButton* biosSelect = new wxButton(generalPage, wxID_ANY, "Select system BIOS", wxDefaultPosition, wxSize(125, 0));
-    biosSelect->Bind(wxEVT_BUTTON, [this, biosPath] (wxEvent&) {
-        std::filesystem::path biosDir = biosPath->GetValue().ToStdString();
-        wxFileDialog fileDlg(this, "Select system BIOS", biosDir.parent_path().string(), "", "Binary files (*.bin;*.rom)|*.bin;*.rom|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-        if(fileDlg.ShowModal() == wxID_OK)
-            biosPath->SetValue(fileDlg.GetPath());
-    });
-    biosPathRow->Add(biosPath, wxSizerFlags().Proportion(1).Expand());
-    biosPathRow->Add(biosSelect, wxSizerFlags().Expand());
-    boardSizer->Add(biosPathRow, wxSizerFlags().Expand().Border());
+    wxChoice* biosChoice = new wxChoice(generalPage, wxID_ANY);
+    boardSizer->Add(biosChoice);
 
-    wxBoxSizer* boardTypeRow = new wxBoxSizer(wxHORIZONTAL);
-    boardSizer->Add(boardTypeRow, wxSizerFlags().Expand().Border());
-    wxStaticText* boardLabel = new wxStaticText(generalPage, wxID_ANY, "Board : ");
-    boardTypeRow->Add(boardLabel);
 
-    wxRadioButton* autoType = new wxRadioButton(generalPage, wxID_ANY, "Auto");
-    autoType->SetValue(Config::boardType == Boards::AutoDetect);
-    boardTypeRow->Add(autoType);
-    wxRadioButton* mono34RobocoType = new wxRadioButton(generalPage, wxID_ANY, "Mono 3/4/Roboco");
-    mono34RobocoType->SetValue(Config::boardType == Boards::Mono3 || Config::boardType == Boards::Mono4 || Config::boardType == Boards::Roboco);
-    boardTypeRow->Add(mono34RobocoType);
+    // NEW STUFF
+    wxPanel* biosChoicePagePanel = new wxPanel(notebook);
+    notebook->AddPage(biosChoicePagePanel, "BIOSes");
+    wxBoxSizer* biosChoicePagePanelSizer = new wxBoxSizer(wxVERTICAL);
+    biosChoicePagePanel->SetSizer(biosChoicePagePanelSizer);
 
-    wxCheckBox* has32KbNvram = new wxCheckBox(generalPage, wxID_ANY, "32KB NVRAM");
-    has32KbNvram->SetValue(Config::has32KBNVRAM);
-    boardSizer->Add(has32KbNvram, wxSizerFlags().Border());
+    wxChoicebook* choicebook = new wxChoicebook(biosChoicePagePanel, wxID_ANY);
+    biosChoicePagePanelSizer->Add(choicebook, wxSizerFlags().Border().Expand());
 
-    wxCheckBox* palCheckBox = new wxCheckBox(generalPage, wxID_ANY, "PAL");
-    palCheckBox->SetValue(Config::PAL);
-    boardSizer->Add(palCheckBox, wxSizerFlags().Border());
+    for(int i = 0; i < 5; i++)
+    {
+        wxPanel* choicePage = new wxPanel(choicebook);
+        choicebook->AddPage(choicePage, "Page " + std::to_string(i));
+        wxStaticBoxSizer* choicePageSizer = new wxStaticBoxSizer(wxVERTICAL, choicePage, "");
+        choicePage->SetSizer(choicePageSizer);
 
-    wxBoxSizer* initialTimeRow = new wxBoxSizer(wxHORIZONTAL);
-    boardSizer->Add(initialTimeRow, wxSizerFlags().Border());
-    wxTextCtrl* initialTimeText = new wxTextCtrl(generalPage, wxID_ANY, Config::initialTime);
-    initialTimeRow->Add(initialTimeText);
-    wxStaticText* initialTimeHelperText = new wxStaticText(generalPage, wxID_ANY, "Initial time (in UNIX timestamp format)");
-    initialTimeRow->Add(initialTimeHelperText);
-    wxStaticText* initialTimeHelperText2 = new wxStaticText(generalPage, wxID_ANY, "Leave empty to use the current time.");
-    boardSizer->Add(initialTimeHelperText2);
-    wxStaticText* initialTimeHelperText3 = new wxStaticText(generalPage, wxID_ANY, "0 to use the previously saved time in the nvram.");
-    boardSizer->Add(initialTimeHelperText3);
+        wxBoxSizer* biosPathRow = new wxBoxSizer(wxHORIZONTAL);
+        wxTextCtrl* biosPath = new wxTextCtrl(choicePage, wxID_ANY, Config::systemBIOS);
+        wxButton* biosSelect = new wxButton(choicePage, wxID_ANY, "Select BIOS file", wxDefaultPosition, wxSize(115, 0));
+        biosSelect->Bind(wxEVT_BUTTON, [this, biosPath] (wxEvent&) {
+            std::filesystem::path biosDir = biosPath->GetValue().ToStdString();
+            wxFileDialog fileDlg(this, "Select system BIOS", biosDir.parent_path().string(), "", "Binary files (*.bin;*.rom)|*.bin;*.rom|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+            if(fileDlg.ShowModal() == wxID_OK)
+                biosPath->SetValue(fileDlg.GetPath());
+        });
+        biosPathRow->Add(biosPath, wxSizerFlags().Proportion(1).Expand());
+        biosPathRow->Add(biosSelect, wxSizerFlags().Expand());
+        choicePageSizer->Add(biosPathRow, wxSizerFlags().Expand().Border());
 
+        wxBoxSizer* boardTypeRow = new wxBoxSizer(wxHORIZONTAL);
+        choicePageSizer->Add(boardTypeRow, wxSizerFlags().Expand().Border());
+        wxStaticText* boardLabel = new wxStaticText(choicePage, wxID_ANY, "Board : ");
+        boardTypeRow->Add(boardLabel);
+
+        wxRadioButton* autoType = new wxRadioButton(choicePage, wxID_ANY, "Auto");
+        autoType->SetValue(Config::boardType == Boards::AutoDetect);
+        boardTypeRow->Add(autoType);
+        wxRadioButton* mono34RobocoType = new wxRadioButton(choicePage, wxID_ANY, "Mono 3/4/Roboco");
+        mono34RobocoType->SetValue(Config::boardType == Boards::Mono3 || Config::boardType == Boards::Mono4 || Config::boardType == Boards::Roboco);
+        boardTypeRow->Add(mono34RobocoType);
+
+        wxCheckBox* has32KbNvram = new wxCheckBox(choicePage, wxID_ANY, "32KB NVRAM");
+        has32KbNvram->SetValue(Config::has32KBNVRAM);
+        choicePageSizer->Add(has32KbNvram, wxSizerFlags().Border());
+
+        wxCheckBox* palCheckBox = new wxCheckBox(choicePage, wxID_ANY, "PAL");
+        palCheckBox->SetValue(Config::PAL);
+        choicePageSizer->Add(palCheckBox, wxSizerFlags().Border());
+
+        wxBoxSizer* initialTimeRow = new wxBoxSizer(wxHORIZONTAL);
+        choicePageSizer->Add(initialTimeRow, wxSizerFlags().Border());
+        wxTextCtrl* initialTimeText = new wxTextCtrl(choicePage, wxID_ANY, Config::initialTime);
+        initialTimeRow->Add(initialTimeText);
+        wxStaticText* initialTimeHelperText = new wxStaticText(choicePage, wxID_ANY, "Initial time (in UNIX timestamp format)");
+        initialTimeRow->Add(initialTimeHelperText);
+        wxStaticText* initialTimeHelperText2 = new wxStaticText(choicePage, wxID_ANY, "Leave empty to use the current time.");
+        choicePageSizer->Add(initialTimeHelperText2);
+        wxStaticText* initialTimeHelperText3 = new wxStaticText(choicePage, wxID_ANY, "0 to use the previously saved time in the nvram.");
+        choicePageSizer->Add(initialTimeHelperText3);
+        wxStaticText* initialTimeHelperText4 = new wxStaticText(choicePage, wxID_ANY, "Default is 599616000 (1989/01/01 00:00:00)");
+        choicePageSizer->Add(initialTimeHelperText4);
+    }
+
+
+    // END NEW STUFF
 
 
     // Controls page
@@ -152,30 +177,30 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     buttonsPanel->SetSizer(buttonsSizer);
 
     wxButton* saveButon = new wxButton(buttonsPanel, wxID_ANY, "Save");
-    saveButon->Bind(wxEVT_BUTTON, [this, biosPath, discPath, autoType, mono34RobocoType, has32KbNvram, palCheckBox, initialTimeText] (wxEvent&) {
-        Config::systemBIOS = biosPath->GetValue();
-        Config::discDirectory = discPath->GetValue();
-        Config::PAL = palCheckBox->GetValue();
-        Config::initialTime = initialTimeText->GetValue();
-        Config::has32KBNVRAM = has32KbNvram->GetValue();
-        if(mono34RobocoType->GetValue())
-            Config::boardType = Boards::Mono3;
-        else
-            Config::boardType = Boards::AutoDetect;
-
-        Config::keyUp = this->m_keyUp;
-        Config::keyRight = this->m_keyRight;
-        Config::keyDown = this->m_keyDown;
-        Config::keyLeft = this->m_keyLeft;
-        Config::key1 = this->m_key1;
-        Config::key2 = this->m_key2;
-        Config::key12 = this->m_key12;
-
-        if(Config::saveConfig())
-            this->Close();
-        else
-            wxMessageBox("Failed to save config to file");
-    });
+//    saveButon->Bind(wxEVT_BUTTON, [this, biosPath, discPath, autoType, mono34RobocoType, has32KbNvram, palCheckBox, initialTimeText] (wxEvent&) {
+//        Config::systemBIOS = biosPath->GetValue();
+//        Config::discDirectory = discPath->GetValue();
+//        Config::PAL = palCheckBox->GetValue();
+//        Config::initialTime = initialTimeText->GetValue();
+//        Config::has32KBNVRAM = has32KbNvram->GetValue();
+//        if(mono34RobocoType->GetValue())
+//            Config::boardType = Boards::Mono3;
+//        else
+//            Config::boardType = Boards::AutoDetect;
+//
+//        Config::keyUp = this->m_keyUp;
+//        Config::keyRight = this->m_keyRight;
+//        Config::keyDown = this->m_keyDown;
+//        Config::keyLeft = this->m_keyLeft;
+//        Config::key1 = this->m_key1;
+//        Config::key2 = this->m_key2;
+//        Config::key12 = this->m_key12;
+//
+//        if(Config::saveConfig())
+//            this->Close();
+//        else
+//            wxMessageBox("Failed to save config to file");
+//    });
     buttonsSizer->Add(saveButon, wxSizerFlags().Border());
 
     wxButton* cancelButton = new wxButton(buttonsPanel, wxID_ANY, "Cancel");
