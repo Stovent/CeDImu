@@ -38,17 +38,17 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
 wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame(CeDImu& cedimu) :
-    wxFrame(NULL, wxID_ANY, "CeDImu", wxDefaultPosition, wxSize(400, 300)),
-    m_cedimu(cedimu),
-    m_updateTimer(this),
-    m_gamePanel(new GamePanel(this, m_cedimu)),
-    m_cpuViewer(nullptr),
-    m_settingsFrame(nullptr),
-    m_vdscViewer(nullptr),
-    m_debugFrame(nullptr),
-    m_oldCycleCount(0),
-    m_oldFrameCount(0)
+MainFrame::MainFrame(CeDImu& cedimu)
+    : wxFrame(NULL, wxID_ANY, "CeDImu", wxDefaultPosition, wxSize(400, 300))
+    , m_cedimu(cedimu)
+    , m_updateTimer(this)
+    , m_gamePanel(new GamePanel(this, m_cedimu))
+    , m_cpuViewer(nullptr)
+    , m_settingsFrame(nullptr)
+    , m_vdscViewer(nullptr)
+    , m_debugFrame(nullptr)
+    , m_oldCycleCount(0)
+    , m_oldFrameCount(0)
 {
     CreateMenuBar();
     CreateStatusBar(3);

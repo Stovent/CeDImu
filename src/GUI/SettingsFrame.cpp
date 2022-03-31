@@ -18,10 +18,9 @@
 
 #include <filesystem>
 
-#define CREATE_CONTROL_BUTTON(k, label) { wxBoxSizer* keySizer = new wxBoxSizer(wxHORIZONTAL); \
-    controlsSizer->Add(keySizer, wxSizerFlags().DoubleBorder()); \
+#define CREATE_CONTROL_BUTTON(k, label, side) { \
     wxStaticText* keyText = new wxStaticText(controlsPanel, wxID_ANY, label); \
-    keySizer->Add(keyText, wxSizerFlags().Border(wxRIGHT, 20).Align(wxALIGN_CENTER_VERTICAL)); \
+    (side == 0 ? nameLeftSizer : nameRightSizer)->Add(keyText, wxSizerFlags().DoubleBorder().Right()); \
     wxButton* keyButton = new wxButton(controlsPanel, wxID_ANY, this->m_key##k ? wxAcceleratorEntry(0, m_key##k).ToString() : "", wxDefaultPosition, wxSize(100, 25)); \
     keyButton->Bind(wxEVT_BUTTON, [this, keyButton] (wxEvent&) { \
         keyButton->SetLabel("Waiting for key..."); \
@@ -31,18 +30,18 @@
             keyButton->SetLabel(this->m_key##k ? wxAcceleratorEntry(0, this->m_key##k).ToString() : ""); \
         }); \
     }); \
-    keySizer->Add(keyButton, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL)); }
+    (side == 0 ? buttonsLeftSizer : buttonsRightSizer)->Add(keyButton, wxSizerFlags().Border().Expand()); }
 
-SettingsFrame::SettingsFrame(MainFrame* parent) :
-    wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(500, 450)),
-    m_mainFrame(parent),
-    m_keyUp(Config::keyUp),
-    m_keyRight(Config::keyRight),
-    m_keyDown(Config::keyDown),
-    m_keyLeft(Config::keyLeft),
-    m_key1(Config::key1),
-    m_key2(Config::key2),
-    m_key12(Config::key12)
+SettingsFrame::SettingsFrame(MainFrame* parent)
+    : wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(500, 450))
+    , m_mainFrame(parent)
+    , m_keyUp(Config::keyUp)
+    , m_keyRight(Config::keyRight)
+    , m_keyDown(Config::keyDown)
+    , m_keyLeft(Config::keyLeft)
+    , m_key1(Config::key1)
+    , m_key2(Config::key2)
+    , m_key12(Config::key12)
 {
     wxPanel* framePanel = new wxPanel(this);
     wxBoxSizer* frameSizer = new wxBoxSizer(wxVERTICAL);
@@ -77,17 +76,17 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
     discSizer->Add(discPathRow, wxSizerFlags().Expand().Border());
 
     // BIOS / Board
-    wxStaticBoxSizer* boardSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "Selected BIOS");
+    wxStaticBoxSizer* boardSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "BIOS");
     generalSizer->Add(boardSizer, wxSizerFlags().Expand());
 
-    wxStaticText* helperTextReload = new wxStaticText(generalPage, wxID_ANY, "After changing the BIOS / Board configuration, click\n\"Emulation -> Reload core\" to apply the new configuration.");
+    wxStaticText* helperTextReload = new wxStaticText(generalPage, wxID_ANY, "Select the BIOS you want to use in the drop-down list below.\nAfter changing the BIOS / Board configuration, click\n\"Emulation -> Reload core\" to apply the new configuration.");
     boardSizer->Add(helperTextReload, wxSizerFlags().Border());
 
     wxChoice* biosChoice = new wxChoice(generalPage, wxID_ANY);
-    boardSizer->Add(biosChoice);
+    boardSizer->Add(biosChoice, wxSizerFlags().Expand());
 
 
-    // NEW STUFF
+    // BIOS Config
     wxPanel* biosChoicePagePanel = new wxPanel(notebook);
     notebook->AddPage(biosChoicePagePanel, "BIOSes");
     wxBoxSizer* biosChoicePagePanelSizer = new wxBoxSizer(wxVERTICAL);
@@ -140,33 +139,40 @@ SettingsFrame::SettingsFrame(MainFrame* parent) :
         choicePageSizer->Add(initialTimeRow, wxSizerFlags().Border());
         wxTextCtrl* initialTimeText = new wxTextCtrl(choicePage, wxID_ANY, Config::initialTime);
         initialTimeRow->Add(initialTimeText);
-        wxStaticText* initialTimeHelperText = new wxStaticText(choicePage, wxID_ANY, "Initial time (in UNIX timestamp format)");
+        wxStaticText* initialTimeHelperText = new wxStaticText(choicePage, wxID_ANY, "Initial time (in UNIX timestamp format).");
         initialTimeRow->Add(initialTimeHelperText);
         wxStaticText* initialTimeHelperText2 = new wxStaticText(choicePage, wxID_ANY, "Leave empty to use the current time.");
         choicePageSizer->Add(initialTimeHelperText2);
         wxStaticText* initialTimeHelperText3 = new wxStaticText(choicePage, wxID_ANY, "0 to use the previously saved time in the nvram.");
         choicePageSizer->Add(initialTimeHelperText3);
-        wxStaticText* initialTimeHelperText4 = new wxStaticText(choicePage, wxID_ANY, "Default is 599616000 (1989/01/01 00:00:00)");
+        wxStaticText* initialTimeHelperText4 = new wxStaticText(choicePage, wxID_ANY, "Default is 599616000 (1989/01/01 00:00:00).");
         choicePageSizer->Add(initialTimeHelperText4);
     }
 
-
-    // END NEW STUFF
 
 
     // Controls page
     wxPanel* controlsPanel = new wxPanel(notebook);
     notebook->AddPage(controlsPanel, "Controls");
-    wxStaticBoxSizer* controlsSizer = new wxStaticBoxSizer(wxVERTICAL, controlsPanel, "Gamepad");
+    wxStaticBoxSizer* controlsSizer = new wxStaticBoxSizer(wxHORIZONTAL, controlsPanel, "Gamepad");
     controlsPanel->SetSizer(controlsSizer);
 
-    CREATE_CONTROL_BUTTON(Up, "Up")
-    CREATE_CONTROL_BUTTON(Right, "Right")
-    CREATE_CONTROL_BUTTON(Down, "Down")
-    CREATE_CONTROL_BUTTON(Left, "Left")
-    CREATE_CONTROL_BUTTON(1, "Button 1")
-    CREATE_CONTROL_BUTTON(2, "Button 2")
-    CREATE_CONTROL_BUTTON(12, "Button 1+2")
+    wxBoxSizer* nameLeftSizer = new wxBoxSizer(wxVERTICAL);
+    controlsSizer->Add(nameLeftSizer, wxSizerFlags().Expand());
+    wxBoxSizer* buttonsLeftSizer = new wxBoxSizer(wxVERTICAL);
+    controlsSizer->Add(buttonsLeftSizer, wxSizerFlags().Expand());
+    wxBoxSizer* nameRightSizer = new wxBoxSizer(wxVERTICAL);
+    controlsSizer->Add(nameRightSizer, wxSizerFlags().Expand());
+    wxBoxSizer* buttonsRightSizer = new wxBoxSizer(wxVERTICAL);
+    controlsSizer->Add(buttonsRightSizer, wxSizerFlags().Expand());
+
+    CREATE_CONTROL_BUTTON(Up, "Up", 0)
+    CREATE_CONTROL_BUTTON(Right, "Right", 0)
+    CREATE_CONTROL_BUTTON(Down, "Down", 0)
+    CREATE_CONTROL_BUTTON(Left, "Left", 0)
+    CREATE_CONTROL_BUTTON(1, "Button 1", 1)
+    CREATE_CONTROL_BUTTON(2, "Button 2", 1)
+    CREATE_CONTROL_BUTTON(12, "Button 1+2", 1)
 
 
 

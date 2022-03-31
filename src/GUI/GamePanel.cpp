@@ -13,12 +13,12 @@ wxBEGIN_EVENT_TABLE(GamePanel, wxPanel)
     EVT_KEY_UP(GamePanel::OnKeyUp)
 wxEND_EVENT_TABLE()
 
-GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu) :
-    wxPanel(parent),
-    m_mainFrame(parent),
-    m_cedimu(cedimu),
-    m_screen(0, 0),
-    m_stopOnNextFrame(false)
+GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu)
+    : wxPanel(parent)
+    , m_mainFrame(parent)
+    , m_cedimu(cedimu)
+    , m_screen(0, 0)
+    , m_stopOnNextFrame(false)
 {
     SetDoubleBuffered(true);
 

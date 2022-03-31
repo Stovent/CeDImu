@@ -9,15 +9,15 @@ wxBEGIN_EVENT_TABLE(DebugFrame, wxFrame)
     EVT_TIMER(wxID_ANY, DebugFrame::UpdateManager)
 wxEND_EVENT_TABLE()
 
-DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu) :
-    wxFrame(mainFrame, wxID_ANY, "Debug", wxDefaultPosition, wxSize(600, 500)),
-    m_cedimu(cedimu),
-    m_mainFrame(mainFrame),
-    m_auiManager(this),
-    m_updateTimer(this, wxID_ANY),
-    m_updateMemoryLogs(false),
-    m_trapCount(0),
-    m_updateExceptions(false)
+DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
+    : wxFrame(mainFrame, wxID_ANY, "Debug", wxDefaultPosition, wxSize(600, 500))
+    , m_cedimu(cedimu)
+    , m_mainFrame(mainFrame)
+    , m_auiManager(this)
+    , m_updateTimer(this, wxID_ANY)
+    , m_updateMemoryLogs(false)
+    , m_trapCount(0)
+    , m_updateExceptions(false)
 {
     // Write to file
     wxPanel* writeFilePanel = new wxPanel(this);

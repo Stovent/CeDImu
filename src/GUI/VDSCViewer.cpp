@@ -15,13 +15,13 @@ wxBEGIN_EVENT_TABLE(VDSCViewer, wxFrame)
     EVT_TIMER(wxID_ANY, VDSCViewer::UpdateNotebook)
 wxEND_EVENT_TABLE()
 
-VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
-    wxFrame(mainFrame, wxID_ANY, "VDSC Viewer", wxDefaultPosition, wxSize(800, 600)),
-    m_cedimu(cedimu),
-    m_mainFrame(mainFrame),
-    m_updateTimer(this),
-    m_flushIcadca(false),
-    m_updateLists(false)
+VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
+    : wxFrame(mainFrame, wxID_ANY, "VDSC Viewer", wxDefaultPosition, wxSize(800, 600))
+    , m_cedimu(cedimu)
+    , m_mainFrame(mainFrame)
+    , m_updateTimer(this)
+    , m_flushIcadca(false)
+    , m_updateLists(false)
 {
     wxBoxSizer* frameSizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(frameSizer);

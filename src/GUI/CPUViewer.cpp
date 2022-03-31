@@ -9,15 +9,15 @@ wxBEGIN_EVENT_TABLE(CPUViewer, wxFrame)
     EVT_TIMER(wxID_ANY, CPUViewer::UpdateManager)
 wxEND_EVENT_TABLE()
 
-CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu) :
-    wxFrame(mainFrame, wxID_ANY, "CPU Viewer", wxDefaultPosition, wxSize(800, 550)),
-    m_cedimu(cedimu),
-    m_mainFrame(mainFrame),
-    m_auiManager(this),
-    m_updateTimer(this, wxID_ANY),
-    m_updateManager(false),
-    m_flushInstructions(false),
-    m_lastByte(0)
+CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
+    : wxFrame(mainFrame, wxID_ANY, "CPU Viewer", wxDefaultPosition, wxSize(800, 550))
+    , m_cedimu(cedimu)
+    , m_mainFrame(mainFrame)
+    , m_auiManager(this)
+    , m_updateTimer(this, wxID_ANY)
+    , m_updateManager(false)
+    , m_flushInstructions(false)
+    , m_lastByte(0)
 {
     // Internal registers
     m_internalList = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_HRULES | wxLC_VRULES);
