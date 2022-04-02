@@ -1,5 +1,4 @@
 #include "CeDImu.hpp"
-#include "Config.hpp"
 #include "GUI/MainFrame.hpp"
 #include "CDI/CDI.hpp"
 #include "CDI/OS9/SystemCalls.hpp"
@@ -46,8 +45,6 @@ bool CeDImu::OnInit()
 
     new MainFrame(*this);
 
-    InitCDI();
-
     return true;
 }
 
@@ -57,13 +54,13 @@ int CeDImu::OnExit()
     return 0;
 }
 
-bool CeDImu::InitCDI()
+bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
 {
-    std::ifstream biosFile(Config::systemBIOS, std::ios::binary | std::ios::in);
+    std::ifstream biosFile(biosConfig.filePath, std::ios::binary | std::ios::in);
     if(!biosFile)
     {
-        std::cerr << "Failed to open system BIOS '" << Config::systemBIOS << "'" << std::endl;
-        wxMessageBox("Failed to open system BIOS '" + Config::systemBIOS + "'. Please check the BIOS path in the settings.");
+        std::cerr << "Failed to open system BIOS '" << biosConfig.filePath << "'" << std::endl;
+        wxMessageBox("Failed to open system BIOS '" + biosConfig.filePath + "'. Please check the BIOS path in the settings.");
         return false;
     }
 
@@ -75,7 +72,7 @@ bool CeDImu::InitCDI()
     biosFile.read((char*)bios.get(), biosSize);
 
     std::unique_ptr<uint8_t[]> nvram = nullptr;
-    m_biosName = std::filesystem::path(Config::systemBIOS).filename().string();
+    m_biosName = std::filesystem::path(biosConfig.filePath).filename().string();
     std::ifstream nvramFile("nvram_" + m_biosName + ".bin");
     if(nvramFile)
     {
@@ -89,12 +86,12 @@ bool CeDImu::InitCDI()
         std::cout << "Warning: no NVRAM file associated with the system BIOS used" << std::endl;
 
     std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
-    m_cdi.config.has32KBNVRAM = Config::has32KBNVRAM;
-    m_cdi.config.PAL = Config::PAL;
-    if(Config::initialTime.size() == 0)
+    m_cdi.config.has32KBNVRAM = biosConfig.has32KBNVRAM;
+    m_cdi.config.PAL = biosConfig.PAL;
+    if(biosConfig.initialTime.size() == 0)
         m_cdi.config.initialTime = time(NULL);
     else
-        m_cdi.config.initialTime = stoi(Config::initialTime);
+        m_cdi.config.initialTime = stoi(biosConfig.initialTime);
 
     m_cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {
         std::ofstream out("nvram_" + m_biosName + ".bin", std::ios::out | std::ios::binary);
@@ -102,9 +99,9 @@ bool CeDImu::InitCDI()
         out.close();
     });
 
-    if(!m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), Config::boardType))
+    if(!m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), biosConfig.boardType))
     {
-        wxMessageBox("Failed to load system BIOS '" + Config::systemBIOS + "': unsupported board type.");
+        wxMessageBox("Failed to load system BIOS '" + biosConfig.filePath + "': unsupported board type.");
         return false;
     }
 

@@ -3,19 +3,28 @@
 
 #include "CDI/common/types.hpp"
 
+#include <ctime>
 #include <string>
+#include <vector>
 
 namespace Config
 {
+
+struct BiosConfig
+{
+    std::string name;
+    std::string filePath;
+    std::string initialTime;
+    bool PAL;
+    bool has32KBNVRAM;
+    Boards boardType;
+};
+
 // Disc
 extern std::string discDirectory;
 
-// Board
-extern std::string systemBIOS;
-extern Boards boardType;
-extern bool has32KBNVRAM;
-extern std::string initialTime;
-extern bool PAL;
+// BIOSes
+extern std::vector<BiosConfig> bioses;
 
 // Controls
 extern int keyUp;

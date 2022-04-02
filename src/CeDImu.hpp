@@ -1,6 +1,7 @@
 #ifndef CEDIMU_HPP
 #define CEDIMU_HPP
 
+#include "Config.hpp"
 #include "CDI/CDI.hpp"
 
 #include <wx/app.h>
@@ -26,7 +27,7 @@ public:
     virtual bool OnInit() override;
     virtual int OnExit() override;
 
-    bool InitCDI();
+    bool InitCDI(const Config::BiosConfig& biosConfig);
     void StartEmulation();
     void StopEmulation();
     void IncreaseEmulationSpeed();

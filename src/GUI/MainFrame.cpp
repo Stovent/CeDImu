@@ -42,6 +42,10 @@ MainFrame::MainFrame(CeDImu& cedimu)
     : wxFrame(NULL, wxID_ANY, "CeDImu", wxDefaultPosition, wxSize(400, 300))
     , m_cedimu(cedimu)
     , m_updateTimer(this)
+    , m_fileMenu(nullptr)
+    , m_startBiosMenuItem(nullptr)
+    , m_reloadCoreMenuItem(nullptr)
+    , m_pauseMenuItem(nullptr)
     , m_gamePanel(new GamePanel(this, m_cedimu))
     , m_cpuViewer(nullptr)
     , m_settingsFrame(nullptr)
@@ -49,6 +53,7 @@ MainFrame::MainFrame(CeDImu& cedimu)
     , m_debugFrame(nullptr)
     , m_oldCycleCount(0)
     , m_oldFrameCount(0)
+    , m_biosIndex(-1)
 {
     CreateMenuBar();
     CreateStatusBar(3);
@@ -61,14 +66,15 @@ void MainFrame::CreateMenuBar()
 {
     wxMenuBar* menuBar = new wxMenuBar();
 
-    wxMenu* fileMenu = new wxMenu();
-    fileMenu->Append(IDMainFrameOnOpenDisc, "Open disc\tCtrl+O");
-    fileMenu->Append(IDMainFrameOnCloseDisc, "Close disc\tCtrl+C");
-    fileMenu->AppendSeparator();
-    fileMenu->Append(IDMainFrameOnScreenshot, "Take screenshot\tCtrl+Shift+S", "Save to file the current frame");
-    fileMenu->AppendSeparator();
-    fileMenu->Append(wxID_EXIT, "Close", "Closes CeDImu");
-    menuBar->Append(fileMenu, "File");
+    m_fileMenu = new wxMenu();
+    CreateBiosMenu();
+    m_fileMenu->Append(IDMainFrameOnOpenDisc, "Open disc\tCtrl+O");
+    m_fileMenu->Append(IDMainFrameOnCloseDisc, "Close disc\tCtrl+C");
+    m_fileMenu->AppendSeparator();
+    m_fileMenu->Append(IDMainFrameOnScreenshot, "Take screenshot\tCtrl+Shift+S", "Save to file the current frame");
+    m_fileMenu->AppendSeparator();
+    m_fileMenu->Append(wxID_EXIT, "Close", "Closes CeDImu");
+    menuBar->Append(m_fileMenu, "File");
 
     wxMenu* emulationMenu = new wxMenu();
     m_pauseMenuItem = emulationMenu->AppendCheckItem(IDMainFrameOnPause, "Pause\tPause", "Pause or resume emulation");
@@ -77,7 +83,8 @@ void MainFrame::CreateMenuBar()
     emulationMenu->Append(IDMainFrameOnFrameAdvance, "Frame advance\tF", "Start emulation until the end of the next frame");
     emulationMenu->Append(IDMainFrameOnIncreaseSpeed, "Increase Speed", "Increase the emulation speed");
     emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed", "Decrease the emulation speed");
-    emulationMenu->Append(IDMainFrameOnReloadCore, "Reload core\tCtrl+R");
+    m_reloadCoreMenuItem = emulationMenu->Append(IDMainFrameOnReloadCore, "Reload core\tCtrl+R");
+    m_reloadCoreMenuItem->Enable(false);
     emulationMenu->Append(IDMainFrameOnResizeView, "Resize View");
     menuBar->Append(emulationMenu, "Emulation");
 
@@ -100,6 +107,27 @@ void MainFrame::CreateMenuBar()
     menuBar->Append(optionsMenu, "Options");
 
     SetMenuBar(menuBar);
+}
+
+void MainFrame::CreateBiosMenu()
+{
+    if(m_startBiosMenuItem)
+    {
+        m_fileMenu->Destroy(m_startBiosMenuItem);
+        m_startBiosMenuItem = nullptr;
+    }
+
+    wxMenu* startBiosMenu = new wxMenu();
+
+    int i = -1;
+    for(const Config::BiosConfig& biosEntry : Config::bioses)
+    {
+        startBiosMenu->Append(IDMainFrameBiosMenuBaseIndex + ++i, biosEntry.name);
+    }
+
+    if(i >= 0)
+        startBiosMenu->Bind(wxEVT_MENU, &MainFrame::OnStartBios, this, IDMainFrameBiosMenuBaseIndex, IDMainFrameBiosMenuBaseIndex + i);
+    m_startBiosMenuItem = m_fileMenu->Prepend(wxID_ANY, "Start BIOS", startBiosMenu);
 }
 
 void MainFrame::UpdateTitle()
@@ -133,6 +161,28 @@ void MainFrame::UpdateUI(wxTimerEvent&)
 {
     UpdateTitle();
     UpdateStatusBar();
+}
+
+void MainFrame::OnStartBios(wxCommandEvent& event)
+{
+    const int index = event.GetId() - IDMainFrameBiosMenuBaseIndex;
+    const Config::BiosConfig& biosConfig = Config::bioses[index];
+
+    if(m_cedimu.InitCDI(biosConfig))
+    {
+        m_gamePanel->Reset();
+        if(!m_pauseMenuItem->IsChecked())
+            m_cedimu.StartEmulation();
+        m_biosIndex = index;
+        m_reloadCoreMenuItem->Enable(true);
+        SetStatusText("BIOS " + biosConfig.name + " loaded");
+    }
+    else
+    {
+        m_biosIndex = -1;
+        m_reloadCoreMenuItem->Enable(false);
+        SetStatusText("Failed to load " + biosConfig.name + " BIOS");
+    }
 }
 
 void MainFrame::OnOpenDisc(wxCommandEvent&)
@@ -228,7 +278,9 @@ void MainFrame::OnDecreaseSpeed(wxCommandEvent&)
 
 void MainFrame::OnReloadCore(wxCommandEvent&)
 {
-    if(m_cedimu.InitCDI())
+    const Config::BiosConfig& biosConfig = Config::bioses[m_biosIndex];
+
+    if(m_cedimu.InitCDI(biosConfig))
     {
         m_gamePanel->Reset();
         if(!m_pauseMenuItem->IsChecked())
@@ -236,7 +288,10 @@ void MainFrame::OnReloadCore(wxCommandEvent&)
         SetStatusText("Core reloaded");
     }
     else
+    {
+        m_reloadCoreMenuItem->Enable(false);
         SetStatusText("Failed to reload core");
+    }
 }
 
 void MainFrame::OnResizeView(wxCommandEvent&)

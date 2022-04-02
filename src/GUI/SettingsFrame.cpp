@@ -33,7 +33,7 @@
     (side == 0 ? buttonsLeftSizer : buttonsRightSizer)->Add(keyButton, wxSizerFlags().Border().Expand()); }
 
 SettingsFrame::SettingsFrame(MainFrame* parent)
-    : wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(500, 450))
+    : wxFrame(parent, wxID_ANY, "Settings", wxDefaultPosition, wxSize(500, 650))
     , m_mainFrame(parent)
     , m_keyUp(Config::keyUp)
     , m_keyRight(Config::keyRight)
@@ -59,6 +59,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
     wxHyperlinkCtrl* helperLink = new wxHyperlinkCtrl(generalPage, wxID_ANY, "See the MANUAL for more information", "https://github.com/Stovent/CeDImu/blob/master/MANUAL.md");
     generalSizer->Add(helperLink, wxSizerFlags().Border());
 
+
     // Disc path
     wxStaticBoxSizer* discSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "Disc");
     generalSizer->Add(discSizer, wxSizerFlags().Expand());
@@ -75,35 +76,38 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
     discPathRow->Add(discSelect, wxSizerFlags().Expand());
     discSizer->Add(discPathRow, wxSizerFlags().Expand().Border());
 
-    // BIOS / Board
-    wxStaticBoxSizer* boardSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "BIOS");
+
+    // BIOSes
+    wxStaticBoxSizer* boardSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "BIOSes");
     generalSizer->Add(boardSizer, wxSizerFlags().Expand());
 
-    wxStaticText* helperTextReload = new wxStaticText(generalPage, wxID_ANY, "Select the BIOS you want to use in the drop-down list below.\nAfter changing the BIOS / Board configuration, click\n\"Emulation -> Reload core\" to apply the new configuration.");
+    wxStaticText* helperTextReload = new wxStaticText(generalPage, wxID_ANY, "After changing the BIOS / Board configuration, click\n\"Emulation -> Reload core\" to apply the new configuration.");
     boardSizer->Add(helperTextReload, wxSizerFlags().Border());
-
-    wxChoice* biosChoice = new wxChoice(generalPage, wxID_ANY);
-    boardSizer->Add(biosChoice, wxSizerFlags().Expand());
 
 
     // BIOS Config
-    wxPanel* biosChoicePagePanel = new wxPanel(notebook);
-    notebook->AddPage(biosChoicePagePanel, "BIOSes");
-    wxBoxSizer* biosChoicePagePanelSizer = new wxBoxSizer(wxVERTICAL);
-    biosChoicePagePanel->SetSizer(biosChoicePagePanelSizer);
+    wxStaticBoxSizer* biosChoicePagePanelSizer = new wxStaticBoxSizer(wxVERTICAL, generalPage, "BIOS Configuration");
+    boardSizer->Add(biosChoicePagePanelSizer, wxSizerFlags().Border().Expand().Proportion(1));
 
-    wxChoicebook* choicebook = new wxChoicebook(biosChoicePagePanel, wxID_ANY);
+    wxChoicebook* choicebook = new wxChoicebook(generalPage, wxID_ANY);
     biosChoicePagePanelSizer->Add(choicebook, wxSizerFlags().Border().Expand());
 
-    for(int i = 0; i < 5; i++)
+    for(const Config::BiosConfig& biosEntry : Config::bioses)
     {
         wxPanel* choicePage = new wxPanel(choicebook);
-        choicebook->AddPage(choicePage, "Page " + std::to_string(i));
-        wxStaticBoxSizer* choicePageSizer = new wxStaticBoxSizer(wxVERTICAL, choicePage, "");
+        choicebook->AddPage(choicePage, biosEntry.name);
+        wxBoxSizer* choicePageSizer = new wxBoxSizer(wxVERTICAL);
         choicePage->SetSizer(choicePageSizer);
 
+        wxBoxSizer* biosNameRow = new wxBoxSizer(wxHORIZONTAL);
+        choicePageSizer->Add(biosNameRow, wxSizerFlags().Expand().Border());
+        wxTextCtrl* biosNameText = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.name);
+        biosNameRow->Add(biosNameText, wxSizerFlags().Proportion(1));
+        wxStaticText* biosNameHelperText = new wxStaticText(choicePage, wxID_ANY, "Configuration name.");
+        biosNameRow->Add(biosNameHelperText, wxSizerFlags().Proportion(0));
+
         wxBoxSizer* biosPathRow = new wxBoxSizer(wxHORIZONTAL);
-        wxTextCtrl* biosPath = new wxTextCtrl(choicePage, wxID_ANY, Config::systemBIOS);
+        wxTextCtrl* biosPath = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.filePath);
         wxButton* biosSelect = new wxButton(choicePage, wxID_ANY, "Select BIOS file", wxDefaultPosition, wxSize(115, 0));
         biosSelect->Bind(wxEVT_BUTTON, [this, biosPath] (wxEvent&) {
             std::filesystem::path biosDir = biosPath->GetValue().ToStdString();
@@ -121,23 +125,23 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         boardTypeRow->Add(boardLabel);
 
         wxRadioButton* autoType = new wxRadioButton(choicePage, wxID_ANY, "Auto");
-        autoType->SetValue(Config::boardType == Boards::AutoDetect);
+        autoType->SetValue(biosEntry.boardType == Boards::AutoDetect);
         boardTypeRow->Add(autoType);
         wxRadioButton* mono34RobocoType = new wxRadioButton(choicePage, wxID_ANY, "Mono 3/4/Roboco");
-        mono34RobocoType->SetValue(Config::boardType == Boards::Mono3 || Config::boardType == Boards::Mono4 || Config::boardType == Boards::Roboco);
+        mono34RobocoType->SetValue(biosEntry.boardType == Boards::Mono3 || biosEntry.boardType == Boards::Mono4 || biosEntry.boardType == Boards::Roboco);
         boardTypeRow->Add(mono34RobocoType);
 
         wxCheckBox* has32KbNvram = new wxCheckBox(choicePage, wxID_ANY, "32KB NVRAM");
-        has32KbNvram->SetValue(Config::has32KBNVRAM);
+        has32KbNvram->SetValue(biosEntry.has32KBNVRAM);
         choicePageSizer->Add(has32KbNvram, wxSizerFlags().Border());
 
         wxCheckBox* palCheckBox = new wxCheckBox(choicePage, wxID_ANY, "PAL");
-        palCheckBox->SetValue(Config::PAL);
+        palCheckBox->SetValue(biosEntry.PAL);
         choicePageSizer->Add(palCheckBox, wxSizerFlags().Border());
 
         wxBoxSizer* initialTimeRow = new wxBoxSizer(wxHORIZONTAL);
         choicePageSizer->Add(initialTimeRow, wxSizerFlags().Border());
-        wxTextCtrl* initialTimeText = new wxTextCtrl(choicePage, wxID_ANY, Config::initialTime);
+        wxTextCtrl* initialTimeText = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.initialTime);
         initialTimeRow->Add(initialTimeText);
         wxStaticText* initialTimeHelperText = new wxStaticText(choicePage, wxID_ANY, "Initial time (in UNIX timestamp format).");
         initialTimeRow->Add(initialTimeHelperText);
@@ -221,5 +225,6 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
 
 SettingsFrame::~SettingsFrame()
 {
+    m_mainFrame->CreateBiosMenu();
     m_mainFrame->m_settingsFrame = nullptr;
 }

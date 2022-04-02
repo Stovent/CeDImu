@@ -1,4 +1,5 @@
 #include "Config.hpp"
+#include "CDI/cores/IRTC.hpp"
 
 #include <fstream>
 
@@ -8,11 +9,14 @@ namespace Config
 std::string discDirectory = "";
 
 // Board
-std::string systemBIOS = "";
-Boards boardType = Boards::AutoDetect;
-bool has32KBNVRAM = false;
-std::string initialTime = "599616000"; // empty for current time, 0 for previous time, non-0 for any time.
-bool PAL = false;
+std::vector<BiosConfig> bioses = {BiosConfig {
+    .name = "Default BIOS",
+    .filePath = "",
+    .initialTime = std::to_string(IRTC::defaultTime),
+    .PAL = false,
+    .has32KBNVRAM = false,
+    .boardType = Boards::AutoDetect,
+}};
 
 // Controls
 int keyUp = 0;
@@ -44,19 +48,7 @@ bool loadConfig()
         if((pos = line.find('=')) != std::string::npos)
         {
             std::string key(line.substr(0, pos)), value(line.substr(pos + 1));
-            if(key == "systemBIOS")
-                systemBIOS = value;
-            else if(key == "discDirectory")
-                discDirectory = value;
-            else if(key == "boardType")
-                boardType = Boards(stoi(value));
-            else if(key == "has32KBNVRAM")
-                has32KBNVRAM = stoi(value);
-            else if(key == "initialTime")
-                initialTime = value;
-            else if(key == "PAL")
-                PAL = stoi(value);
-            else if(key == "keyUp")
+            if(key == "keyUp")
                 keyUp = stoi(value);
             else if(key == "keyRight")
                 keyRight = stoi(value);
@@ -91,11 +83,6 @@ bool saveConfig()
     out << "discDirectory=" << discDirectory << std::endl;
 
     out << "[Board]" << std::endl;
-    out << "systemBIOS=" << systemBIOS << std::endl;
-    out << "boardType=" << (int)boardType << std::endl;
-    out << "has32KBNVRAM=" << has32KBNVRAM << std::endl;
-    out << "initialTime=" << initialTime << std::endl;
-    out << "PAL=" << PAL << std::endl;
 
     out << "[Controls]" << std::endl;
     out << "keyUp=" << keyUp << std::endl;

@@ -23,6 +23,7 @@ enum
     IDMainFrameOnVDSCViewer,
     IDMainFrameOnDebugFrame,
     IDMainFrameOnSettings,
+    IDMainFrameBiosMenuBaseIndex, // Must always be the last in this list.
 };
 
 #endif // GUI_ENUMS_HPP

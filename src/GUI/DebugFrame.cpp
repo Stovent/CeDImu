@@ -227,8 +227,8 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
     m_cedimu.m_cdi.callbacks.SetOnLogRTE([=] (uint32_t pc, uint16_t format) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
-        for(std::vector<std::pair<size_t, LogSCC68070Exception>>::reverse_iterator it = this->m_exceptions.rbegin();
-            it != this->m_exceptions.rend(); it++)
+        for(std::vector<std::pair<size_t, LogSCC68070Exception>>::const_reverse_iterator it = this->m_exceptions.crbegin();
+            it != this->m_exceptions.crend(); it++)
         {
             if(pc == it->second.returnAddress && it->second.vector == SCC68070::Trap0Instruction)
             {
