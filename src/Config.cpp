@@ -11,10 +11,11 @@ std::string discDirectory = "";
 // Board
 std::vector<BiosConfig> bioses = {BiosConfig {
     .name = "Default BIOS",
-    .filePath = "",
+    .biosFilePath = "",
+    .nvramFileName = "",
     .initialTime = std::to_string(IRTC::defaultTime),
     .PAL = false,
-    .has32KBNVRAM = false,
+    .has32KbNvram = false,
     .boardType = Boards::AutoDetect,
 }};
 

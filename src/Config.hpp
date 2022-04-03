@@ -13,10 +13,11 @@ namespace Config
 struct BiosConfig
 {
     std::string name;
-    std::string filePath;
+    std::string biosFilePath;
+    std::string nvramFileName;
     std::string initialTime;
     bool PAL;
-    bool has32KBNVRAM;
+    bool has32KbNvram;
     Boards boardType;
 };
 

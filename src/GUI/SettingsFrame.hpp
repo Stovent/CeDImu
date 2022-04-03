@@ -3,12 +3,29 @@
 
 class MainFrame;
 
+#include <wx/checkbox.h>
 #include <wx/frame.h>
+#include <wx/radiobut.h>
+#include <wx/textctrl.h>
+
+struct BiosWidgets
+{
+    wxTextCtrl* name;
+    wxTextCtrl* biosPath;
+    wxTextCtrl* nvramFileName;
+    wxRadioButton* boardAuto;
+    wxRadioButton* boardMono34Roboco;
+    wxCheckBox* has32KbNvram;
+    wxCheckBox* pal;
+    wxTextCtrl* initialTime;
+};
 
 class SettingsFrame : public wxFrame
 {
 public:
     MainFrame* m_mainFrame;
+
+    std::vector<BiosWidgets> m_biosWidgets;
 
     int m_keyUp;
     int m_keyRight;

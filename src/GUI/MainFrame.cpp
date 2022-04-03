@@ -67,7 +67,6 @@ void MainFrame::CreateMenuBar()
     wxMenuBar* menuBar = new wxMenuBar();
 
     m_fileMenu = new wxMenu();
-    CreateBiosMenu();
     m_fileMenu->Append(IDMainFrameOnOpenDisc, "Open disc\tCtrl+O");
     m_fileMenu->Append(IDMainFrameOnCloseDisc, "Close disc\tCtrl+C");
     m_fileMenu->AppendSeparator();
@@ -106,6 +105,7 @@ void MainFrame::CreateMenuBar()
     optionsMenu->Append(wxID_ABOUT, "About");
     menuBar->Append(optionsMenu, "Options");
 
+    CreateBiosMenu();
     SetMenuBar(menuBar);
 }
 
@@ -128,6 +128,7 @@ void MainFrame::CreateBiosMenu()
     if(i >= 0)
         startBiosMenu->Bind(wxEVT_MENU, &MainFrame::OnStartBios, this, IDMainFrameBiosMenuBaseIndex, IDMainFrameBiosMenuBaseIndex + i);
     m_startBiosMenuItem = m_fileMenu->Prepend(wxID_ANY, "Start BIOS", startBiosMenu);
+    m_reloadCoreMenuItem->Enable(false); // In case the currently loaded BIOS is deleted from the settings.
 }
 
 void MainFrame::UpdateTitle()

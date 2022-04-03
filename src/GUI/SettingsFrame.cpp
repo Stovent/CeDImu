@@ -3,15 +3,12 @@
 #include "../Config.hpp"
 
 #include <wx/button.h>
-#include <wx/checkbox.h>
 #include <wx/choicebk.h>
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/hyperlink.h>
 #include <wx/msgdlg.h>
 #include <wx/panel.h>
-#include <wx/radiobut.h>
-#include <wx/textctrl.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/aui/auibook.h>
@@ -107,7 +104,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         biosNameRow->Add(biosNameHelperText, wxSizerFlags().Proportion(0));
 
         wxBoxSizer* biosPathRow = new wxBoxSizer(wxHORIZONTAL);
-        wxTextCtrl* biosPath = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.filePath);
+        wxTextCtrl* biosPath = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.biosFilePath);
         wxButton* biosSelect = new wxButton(choicePage, wxID_ANY, "Select BIOS file", wxDefaultPosition, wxSize(115, 0));
         biosSelect->Bind(wxEVT_BUTTON, [this, biosPath] (wxEvent&) {
             std::filesystem::path biosDir = biosPath->GetValue().ToStdString();
@@ -118,6 +115,13 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         biosPathRow->Add(biosPath, wxSizerFlags().Proportion(1).Expand());
         biosPathRow->Add(biosSelect, wxSizerFlags().Expand());
         choicePageSizer->Add(biosPathRow, wxSizerFlags().Expand().Border());
+
+        wxBoxSizer* nvramFileNameRow = new wxBoxSizer(wxHORIZONTAL);
+        wxTextCtrl* nvramFileName = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.nvramFileName);
+        wxStaticText* nvramFileNameText = new wxStaticText(choicePage, wxID_ANY, "Associated NVRAM filename.");
+        nvramFileNameRow->Add(nvramFileName, wxSizerFlags().Proportion(1).Expand());
+        nvramFileNameRow->Add(nvramFileNameText, wxSizerFlags().Expand());
+        choicePageSizer->Add(nvramFileNameRow, wxSizerFlags().Expand().Border());
 
         wxBoxSizer* boardTypeRow = new wxBoxSizer(wxHORIZONTAL);
         choicePageSizer->Add(boardTypeRow, wxSizerFlags().Expand().Border());
@@ -132,7 +136,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         boardTypeRow->Add(mono34RobocoType);
 
         wxCheckBox* has32KbNvram = new wxCheckBox(choicePage, wxID_ANY, "32KB NVRAM");
-        has32KbNvram->SetValue(biosEntry.has32KBNVRAM);
+        has32KbNvram->SetValue(biosEntry.has32KbNvram);
         choicePageSizer->Add(has32KbNvram, wxSizerFlags().Border());
 
         wxCheckBox* palCheckBox = new wxCheckBox(choicePage, wxID_ANY, "PAL");
@@ -151,6 +155,8 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         choicePageSizer->Add(initialTimeHelperText3);
         wxStaticText* initialTimeHelperText4 = new wxStaticText(choicePage, wxID_ANY, "Default is 599616000 (1989/01/01 00:00:00).");
         choicePageSizer->Add(initialTimeHelperText4);
+
+        m_biosWidgets.push_back({biosNameText, biosPath, nvramFileName, autoType, mono34RobocoType, has32KbNvram, palCheckBox, initialTimeText});
     }
 
 
@@ -187,30 +193,43 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
     buttonsPanel->SetSizer(buttonsSizer);
 
     wxButton* saveButon = new wxButton(buttonsPanel, wxID_ANY, "Save");
-//    saveButon->Bind(wxEVT_BUTTON, [this, biosPath, discPath, autoType, mono34RobocoType, has32KbNvram, palCheckBox, initialTimeText] (wxEvent&) {
-//        Config::systemBIOS = biosPath->GetValue();
-//        Config::discDirectory = discPath->GetValue();
-//        Config::PAL = palCheckBox->GetValue();
-//        Config::initialTime = initialTimeText->GetValue();
-//        Config::has32KBNVRAM = has32KbNvram->GetValue();
-//        if(mono34RobocoType->GetValue())
-//            Config::boardType = Boards::Mono3;
-//        else
-//            Config::boardType = Boards::AutoDetect;
-//
-//        Config::keyUp = this->m_keyUp;
-//        Config::keyRight = this->m_keyRight;
-//        Config::keyDown = this->m_keyDown;
-//        Config::keyLeft = this->m_keyLeft;
-//        Config::key1 = this->m_key1;
-//        Config::key2 = this->m_key2;
-//        Config::key12 = this->m_key12;
-//
-//        if(Config::saveConfig())
-//            this->Close();
-//        else
-//            wxMessageBox("Failed to save config to file");
-//    });
+    saveButon->Bind(wxEVT_BUTTON, [this, discPath] (wxEvent&) {
+        Config::discDirectory = discPath->GetValue();
+
+        Config::bioses.clear();
+        for(const BiosWidgets& bios : this->m_biosWidgets)
+        {
+            Boards board = Boards::AutoDetect;
+            if(bios.boardMono34Roboco->GetValue())
+                board = Boards::Mono3;
+
+            Config::bioses.push_back(Config::BiosConfig {
+                .name = bios.name->GetValue().ToStdString(),
+                .biosFilePath = bios.biosPath->GetValue().ToStdString(),
+                .nvramFileName = bios.nvramFileName->GetValue().ToStdString(),
+                .initialTime = bios.initialTime->GetValue().ToStdString(),
+                .PAL = bios.pal->GetValue(),
+                .has32KbNvram = bios.has32KbNvram->GetValue(),
+                .boardType = board,
+            });
+        }
+
+        Config::keyUp = this->m_keyUp;
+        Config::keyRight = this->m_keyRight;
+        Config::keyDown = this->m_keyDown;
+        Config::keyLeft = this->m_keyLeft;
+        Config::key1 = this->m_key1;
+        Config::key2 = this->m_key2;
+        Config::key12 = this->m_key12;
+
+        if(Config::saveConfig())
+        {
+            m_mainFrame->CreateBiosMenu();
+            this->Close();
+        }
+        else
+            wxMessageBox("Failed to save config to file");
+    });
     buttonsSizer->Add(saveButon, wxSizerFlags().Border());
 
     wxButton* cancelButton = new wxButton(buttonsPanel, wxID_ANY, "Cancel");
@@ -225,6 +244,5 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
 
 SettingsFrame::~SettingsFrame()
 {
-    m_mainFrame->CreateBiosMenu();
     m_mainFrame->m_settingsFrame = nullptr;
 }
