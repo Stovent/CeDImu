@@ -5,10 +5,12 @@
 #define MEMSET_RANGE(beg, endIncluded, val) memset(&memory[beg], val, endIncluded - beg + 1)
 #define NIBBLE_SWAP(val) (uint8_t)(val >> 4 | val << 4)
 
-MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size)
+MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<void(Port, size_t, bool)> outputPinCallback)
     : MC68HC05(memory.size())
     , memory{0}
+    , SetOutputPin(outputPinCallback)
     , pendingCycles(0)
+    , totalCycleCount(0)
     , channelReadMCU{{0}}
     , channelWriteMCU{{0}}
     , channelStatusMCU{0} // TODO: init status
@@ -25,6 +27,11 @@ MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size)
     }
 
     Reset();
+    MEMSET_RANGE(PortAData, PortDData, 0);
+    memory[PortEData] = 0;
+    memory[PortFData] = 0;
+    MEMSET_RANGE(InputCaptureAHigh, AlternateCounterLow, 0);
+    MEMSET_RANGE(ChannelADataWrite, ChannelDDataRead, 0);
     // TODO:
     // 3.1.5.2 Interrupt latch
 }
@@ -62,33 +69,107 @@ void MC68HC05i8::Reset()
 
 void MC68HC05i8::IncrementTime(double ns)
 {
-    if(!stop && !wait)
+    pendingCycles += ns / MC68HC05::INTERNAL_BUS_FREQUENCY;
+    while(pendingCycles > 0)
     {
-        pendingCycles += ns / MC68HC05::INTERNAL_BUS_FREQUENCY;
-        while(pendingCycles > 0)
+        if(!stop && !wait)
         {
-            PC &= 0x3FFF; // 3.1.3 The two msb are permanently set to 0.
-            if(PC < 0x0050 || (PC >= 0x0130 && PC < 0x2000)) // 4.1.3 Illegal Address Reset
-                Reset();
-            pendingCycles -= Interpreter();
+            const int cycles = Interpreter();
+            pendingCycles -= cycles;
+            totalCycleCount += cycles;
         }
+        else if(wait)
+        {
+            pendingCycles--;
+            totalCycleCount++;
+        }
+        else
+            pendingCycles = 0;
     }
 }
 
-uint8_t MC68HC05i8::GetByte(uint32_t addr)
+void MC68HC05i8::SetInputPin(Port port, size_t pin, bool high)
 {
-    return 0;
-}
+    const uint8_t pinMask = 1 << pin;
 
-void MC68HC05i8::SetByte(uint32_t addr, uint8_t value)
-{
+    switch(port)
+    {
+    case Port::PortA:
+        if(!(memory[PortADataDirection] & pinMask)) // Input
+        {
+            if(high)
+                memory[PortAData] |= pinMask;
+            else
+                memory[PortAData] &= ~pinMask;
+        }
+        break;
 
+    case Port::PortB:
+        if(!(memory[PortBDataDirection] & pinMask)) // Input
+        {
+            if(high)
+                memory[PortBData] |= pinMask;
+            else
+                memory[PortBData] &= ~pinMask;
+        }
+        break;
+
+    case Port::PortC:
+        if(!(memory[PortCDataDirection] & pinMask)) // Input
+        {
+            if(high)
+                memory[PortCData] |= pinMask;
+            else
+                memory[PortCData] &= ~pinMask;
+        }
+        break;
+
+    case Port::PortD:
+        if(!(memory[PortDDataDirection] & pinMask)) // Input
+        {
+            if(high)
+                memory[PortDData] |= pinMask;
+            else
+                memory[PortDData] &= ~pinMask;
+        }
+        break;
+
+    case Port::PortE:
+        if(pin >= 4 && pin < 7)
+        {
+            if(!(memory[PortEDataDirection] & pinMask) && !(memory[PortEMode] & (1 << pin))) // Input
+            {
+                if(high)
+                    memory[PortEData] |= pinMask;
+                else
+                    memory[PortEData] &= ~pinMask;
+            }
+            break;
+        }
+        break;
+
+    case Port::PortF:
+        if(!(memory[PortFDataDirection] & pinMask) && pin < 2) // Input
+        {
+            if(high)
+                memory[PortFData] |= pinMask;
+            else
+                memory[PortFData] &= ~pinMask;
+        }
+        break;
+
+    default:
+        printf("[MC68HC05i8] Wrong input pin %d", (int)port);
+    }
 }
 
 uint8_t MC68HC05i8::GetMemory(const uint16_t addr)
 {
+    if(addr < 0x0040)
+        return GetIO(addr);
+
     if(addr < memory.size())
-        return memory[addr]; // TODO: GetIO(addr) ?
+        return memory[addr];
 
     printf("[MC68HC05i8] Read at 0x%X out of range\n", addr);
     return 0;
@@ -108,17 +189,12 @@ void MC68HC05i8::SetMemory(const uint16_t addr, const uint8_t value)
     printf("[MC68HC05i8] Write at 0x%X (%d) out of range\n", addr, value);
 }
 
+uint8_t MC68HC05i8::GetIO(uint16_t addr)
+{
+    return 0;
+}
+
 void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
-{
-
-}
-
-void MC68HC05i8::Stop()
-{
-
-}
-
-void MC68HC05i8::Wait()
 {
 
 }
