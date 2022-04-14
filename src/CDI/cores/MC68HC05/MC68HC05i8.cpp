@@ -135,9 +135,22 @@ void MC68HC05i8::SetInputPin(Port port, size_t pin, bool high)
         break;
 
     case Port::PortE:
-        if(pin >= 4 && pin < 7)
+        if(pin <= 3)
         {
-            if(!(memory[PortEDataDirection] & pinMask) && !(memory[PortEMode] & (1 << pin))) // Input
+            const uint8_t reg = pin <= 1 ? memory[SCI1Control2] : memory[SCI2Control2];
+            const uint8_t bit = pin == 0 || pin == 2 ? RE : TE;
+
+            if(!(reg & bit)) // SCI disabled for this pin.
+            {
+                if(high)
+                    memory[PortEData] |= pinMask;
+                else
+                    memory[PortEData] &= ~pinMask;
+            }
+        }
+        else if(pin <= 7)
+        {
+            if(!(memory[PortEDataDirection] & pinMask) && !(memory[PortEMode] & (1 << pin))) // Input and IO pin.
             {
                 if(high)
                     memory[PortEData] |= pinMask;
@@ -191,10 +204,52 @@ void MC68HC05i8::SetMemory(const uint16_t addr, const uint8_t value)
 
 uint8_t MC68HC05i8::GetIO(uint16_t addr)
 {
-    return 0;
+    return memory[addr];
 }
 
 void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
 {
+    switch(addr)
+    {
+    case PortAData:
+    case PortBData:
+    case PortCData:
+    case PortDData:
+    case PortEData:
+    case PortFData:
+    {
+        uint8_t dirReg;
+        int regLen;
+        Port port;
+        if(addr == PortEData)
+        {
+            dirReg = memory[PortEDataDirection];
+            regLen = 8;
+            port = Port::PortE;
+        }
+        else if(addr == PortFData)
+        {
+            dirReg = memory[PortFDataDirection];
+            regLen = 2;
+            port = Port::PortF;
+        }
+        else
+        {
+            dirReg = memory[PortADataDirection + addr];
+            regLen = 8;
+            port = static_cast<Port>(addr);
+        }
 
+        uint8_t diff = memory[addr] ^ value;
+        for(int i = 0; i < regLen; i++)
+        {
+            if(diff & 1 && dirReg & (1 << i)) // Bit changed and output.
+                SetOutputPin(port, i, value & 1);
+
+            diff >>= 1;
+            value >>= 1;
+        }
+        break;
+    }
+    }
 }

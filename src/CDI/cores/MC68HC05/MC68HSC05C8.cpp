@@ -419,7 +419,7 @@ void MC68HSC05C8::SetIO(uint16_t addr, uint8_t value)
         uint8_t diff = memory[addr] ^ value;
         for(int i = 0; i < 8; i++)
         {
-            if(diff & 1 && memory[PortADataDirection] & (1 << i)) // Bit changed and output.
+            if(diff & 1 && memory[PortADataDirection + addr] & (1 << i)) // Bit changed and output.
                 SetOutputPin(static_cast<Port>(addr), i, value & 1);
 
             diff >>= 1;

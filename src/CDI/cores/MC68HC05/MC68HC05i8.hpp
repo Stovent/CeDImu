@@ -109,6 +109,13 @@ private:
         InterruptMask,
         Mode,
     };
+
+    enum IOFlags
+    {
+        // Serial Communications Control Register
+        RE = 0x04,
+        TE = 0x08,
+    };
 };
 
 #endif // CDI_CORES_MC68HC05_MC68HC05I8_HPP
