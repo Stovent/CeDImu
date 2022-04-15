@@ -10,7 +10,10 @@ MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<
     , memory{0}
     , SetOutputPin(outputPinCallback)
     , pendingCycles(0)
+    , timerCycles(0)
     , totalCycleCount(0)
+    , sci1([this] (uint16_t data) { SetOutputPin(Port::SCI1, data, false); })
+    , sci2([this] (uint16_t data) { SetOutputPin(Port::SCI2, data, false); })
     , channelReadMCU{{0}}
     , channelWriteMCU{{0}}
     , channelStatusMCU{0} // TODO: init status
@@ -45,6 +48,10 @@ void MC68HC05i8::Reset()
     MC68HC05::Reset();
 
     pendingCycles = 0;
+    timerCycles = 0;
+
+    sci1.Reset();
+    sci2.Reset();
 
     MEMSET_RANGE(PortADataDirection, CoreTimerCounter, 0);
     memory[CoreTimerControlStatus] = 0x03;
@@ -74,17 +81,36 @@ void MC68HC05i8::IncrementTime(double ns)
     {
         if(!stop && !wait)
         {
-            const int cycles = Interpreter();
+            PC &= 0x3FFF; // 3.1.3 The two msb are permanently set to 0.
+            if(PC < 0x0050 || (PC >= 0x0130 && PC < 0x2000)) // 4.1.3 Illegal Address Reset
+                Reset();
+
+            const size_t cycles = Interpreter();
             pendingCycles -= cycles;
+            timerCycles += cycles;
             totalCycleCount += cycles;
         }
         else if(wait)
         {
             pendingCycles--;
+            timerCycles++;
             totalCycleCount++;
         }
         else
             pendingCycles = 0;
+
+        if(timerCycles >= 4)
+        {
+            const size_t cycles = timerCycles / 4;
+            timerCycles %= 4;
+            const bool sci1Int = sci1.AdvanceCycles(cycles);
+            const bool sci2Int = sci2.AdvanceCycles(cycles);
+
+            if(sci1Int)
+                Interrupt(SCI1Vector);
+            else if(sci2Int) // Vector priority.
+                Interrupt(SCI2Vector);
+        }
     }
 }
 
@@ -171,6 +197,16 @@ void MC68HC05i8::SetInputPin(Port port, size_t pin, bool high)
         }
         break;
 
+    case Port::SCI1:
+        if(sci1.ReceiveData(pin))
+            Interrupt(SCI1Vector);
+        break;
+
+    case Port::SCI2:
+        if(sci2.ReceiveData(pin))
+            Interrupt(SCI2Vector);
+        break;
+
     default:
         printf("[MC68HC05i8] Wrong input pin %d", (int)port);
     }
@@ -204,6 +240,39 @@ void MC68HC05i8::SetMemory(const uint16_t addr, const uint8_t value)
 
 uint8_t MC68HC05i8::GetIO(uint16_t addr)
 {
+    switch(addr)
+    {
+    case SCI1Baud:
+        return sci1.baudRegister;
+
+    case SCI1Control1:
+        return sci1.controlRegister1;
+
+    case SCI1Control2:
+        return sci1.controlRegister2;
+
+    case SCI1Status:
+        return sci1.GetStatusRegister();
+
+    case SCI1Data:
+        return sci1.GetDataRegister();
+
+    case SCI2Baud:
+        return sci2.baudRegister;
+
+    case SCI2Control1:
+        return sci2.controlRegister1;
+
+    case SCI2Control2:
+        return sci2.controlRegister2;
+
+    case SCI2Status:
+        return sci2.GetStatusRegister();
+
+    case SCI2Data:
+        return sci2.GetDataRegister();
+    }
+
     return memory[addr];
 }
 
@@ -251,5 +320,42 @@ void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
         }
         break;
     }
+
+    case SCI1Baud:
+        sci1.baudRegister = value;
+        break;
+
+    case SCI1Control1:
+        sci1.controlRegister1 = value;
+        break;
+
+    case SCI1Control2:
+        sci1.controlRegister2 = value;
+        break;
+
+    case SCI1Data:
+        if(sci1.SetDataRegister(value))
+            Interrupt(SCI1Vector);
+        break;
+
+    case SCI2Baud:
+        sci2.baudRegister = value;
+        break;
+
+    case SCI2Control1:
+        sci2.controlRegister1 = value;
+        break;
+
+    case SCI2Control2:
+        sci2.controlRegister2 = value;
+        break;
+
+    case SCI2Data:
+        if(sci2.SetDataRegister(value))
+            Interrupt(SCI2Vector);
+        break;
+
+    default:
+        memory[addr] = value;
     }
 }

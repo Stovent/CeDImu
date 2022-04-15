@@ -2,6 +2,7 @@
 #define CDI_CORES_MC68HC05_MC68HC05I8_HPP
 
 #include "MC68HC05.hpp"
+#include "SCI.hpp"
 
 #include <array>
 #include <deque>
@@ -39,7 +40,11 @@ private:
     std::array<uint8_t, 0x4000> memory;
     std::function<void(Port, size_t, bool)> SetOutputPin;
     int pendingCycles;
+    int timerCycles;
     uint64_t totalCycleCount; // Internal bus frequency
+
+    SCI sci1;
+    SCI sci2;
 
     std::deque<uint8_t> channelReadMCU[4];
     std::deque<uint8_t> channelWriteMCU[4];
@@ -115,6 +120,16 @@ private:
         // Serial Communications Control Register
         RE = 0x04,
         TE = 0x08,
+    };
+
+    enum InterruptVectors : uint16_t
+    {
+        SCI2Vector   = 0x3FF0,
+        SCI1Vector   = 0x3FF2,
+        TIMERVector  = 0x3FF4,
+        M68KVector   = 0x3FF6,
+        CTIMERVector = 0x3FF8,
+        IRQVector    = 0x3FFA,
     };
 };
 

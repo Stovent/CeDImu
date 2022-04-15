@@ -248,6 +248,7 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
             if(rdrBufferRead)
             {
                 memory[SerialCommunicationsData] = pin;
+                rdrBufferRead = false;
                 memory[SerialCommunicationsControl1] &= 0x58; // Clear R8 bit.
                 if(memory[SerialCommunicationsControl1] & 0x10) // 9 bits enable.
                     memory[SerialCommunicationsControl1] |= pin >> 1 & 0x0080;

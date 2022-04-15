@@ -141,7 +141,7 @@ private:
         ICF = 0x80, // Input-Capture Flag
     };
 
-    enum InterruptVectors
+    enum InterruptVectors : uint16_t
     {
         SPIVector = 0x1FF4,
         SCIVector = 0x1FF6,
