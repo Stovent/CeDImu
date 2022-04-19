@@ -26,6 +26,7 @@ public:
         TC   = 0x40,
         TDRE = 0x80,
     };
+
     uint8_t controlRegister1;
     uint8_t controlRegister2;
     uint8_t baudRegister;

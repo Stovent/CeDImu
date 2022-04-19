@@ -2,6 +2,7 @@
 #define CDI_CORES_MC68HC05_MC68HC05I8_HPP
 
 #include "MC68HC05.hpp"
+#include "ProgrammableTimer.hpp"
 #include "SCI.hpp"
 
 #include <array>
@@ -43,6 +44,8 @@ private:
     int timerCycles;
     uint64_t totalCycleCount; // Internal bus frequency
 
+    ProgrammableTimer programmableTimer;
+
     SCI sci1;
     SCI sci2;
 
@@ -77,12 +80,12 @@ private:
         PortFDataDirection,
         InputCaptureAHigh,
         InputCaptureALow,
-        OutputCompareAHigh,
-        OutputCompareALow,
+        OutputCompareHigh,
+        OutputCompareLow,
         InputCaptureBHigh,
         InputCaptureBLow,
-        CountHigh = 0x18,
-        CountLow,
+        CounterHigh = 0x18,
+        CounterLow,
         AlternateCounterHigh,
         AlternateCounterLow,
         TimerControl,

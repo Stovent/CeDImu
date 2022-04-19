@@ -12,6 +12,7 @@ MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<
     , pendingCycles(0)
     , timerCycles(0)
     , totalCycleCount(0)
+    , programmableTimer([this] (bool outputHigh) { SetOutputPin(Port::TCMP, 0, outputHigh); })
     , sci1([this] (uint16_t data) { SetOutputPin(Port::SCI1, data, false); })
     , sci2([this] (uint16_t data) { SetOutputPin(Port::SCI2, data, false); })
     , channelReadMCU{{0}}
@@ -79,21 +80,23 @@ void MC68HC05i8::IncrementTime(double ns)
     pendingCycles += ns / MC68HC05::INTERNAL_BUS_FREQUENCY;
     while(pendingCycles > 0)
     {
+        size_t cycles = 0;
+
         if(!stop && !wait)
         {
             PC &= 0x3FFF; // 3.1.3 The two msb are permanently set to 0.
             if(PC < 0x0050 || (PC >= 0x0130 && PC < 0x2000)) // 4.1.3 Illegal Address Reset
                 Reset();
 
-            const size_t cycles = Interpreter();
+            cycles += Interpreter();
             pendingCycles -= cycles;
             timerCycles += cycles;
             totalCycleCount += cycles;
         }
         else if(wait)
         {
+            // 7.3 Timer stops during wait.
             pendingCycles--;
-            timerCycles++;
             totalCycleCount++;
         }
         else
@@ -101,16 +104,18 @@ void MC68HC05i8::IncrementTime(double ns)
 
         if(timerCycles >= 4)
         {
-            const size_t cycles = timerCycles / 4;
+            const size_t tcycles = timerCycles / 4;
             timerCycles %= 4;
-            const bool sci1Int = sci1.AdvanceCycles(cycles);
-            const bool sci2Int = sci2.AdvanceCycles(cycles);
-
-            if(sci1Int)
-                Interrupt(SCI1Vector);
-            else if(sci2Int) // Vector priority.
-                Interrupt(SCI2Vector);
+            programmableTimer.AdvanceCycles(tcycles);
         }
+
+
+        const bool sci1Int = sci1.AdvanceCycles(cycles);
+        const bool sci2Int = sci2.AdvanceCycles(cycles);
+        if(sci1Int)
+            Interrupt(SCI1Vector);
+        else if(sci2Int) // Vector priority.
+            Interrupt(SCI2Vector);
     }
 }
 
@@ -242,6 +247,42 @@ uint8_t MC68HC05i8::GetIO(uint16_t addr)
 {
     switch(addr)
     {
+    case InputCaptureAHigh:
+        return programmableTimer.GetInputCaptureAHighRegister();
+
+    case InputCaptureALow:
+        return programmableTimer.GetInputCaptureALowRegister();
+
+    case OutputCompareHigh:
+        return programmableTimer.GetOutputCompareHighRegister();
+
+    case OutputCompareLow:
+        return programmableTimer.GetOutputCompareLowRegister();
+
+    case InputCaptureBHigh:
+        return programmableTimer.GetInputCaptureBHighRegister();
+
+    case InputCaptureBLow:
+        return programmableTimer.GetInputCaptureBLowRegister();
+
+    case CounterHigh:
+        return programmableTimer.GetCounterHighRegister();
+
+    case CounterLow:
+        return programmableTimer.GetCounterLowRegister();
+
+    case AlternateCounterHigh:
+        return programmableTimer.GetAlternateCounterHighRegister();
+
+    case AlternateCounterLow:
+        return programmableTimer.GetAlternateCounterLowRegister();
+
+    case TimerControl:
+        return programmableTimer.controlRegister;
+
+    case TimerStatus:
+        return programmableTimer.GetStatusRegister();
+
     case SCI1Baud:
         return sci1.baudRegister;
 
@@ -320,6 +361,16 @@ void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
         }
         break;
     }
+
+    case OutputCompareHigh:
+        return programmableTimer.SetOutputCompareHighRegister(value);
+
+    case OutputCompareLow:
+        return programmableTimer.SetOutputCompareLowRegister(value);
+
+    case TimerControl:
+        programmableTimer.controlRegister = value;
+        break;
 
     case SCI1Baud:
         sci1.baudRegister = value;
