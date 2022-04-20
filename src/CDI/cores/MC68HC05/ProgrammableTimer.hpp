@@ -32,22 +32,22 @@ public:
     explicit ProgrammableTimer(std::function<void(bool)> outputCompareCallback);
 
     void Reset();
-    bool AdvanceCycles(size_t cycles);
+    [[nodiscard]] bool AdvanceCycles(size_t cycles);
 
-    bool SetTCAPA(bool high);
-    bool SetTCAPB(bool high);
+    [[nodiscard]] bool SetTCAPA(bool high);
+    [[nodiscard]] bool SetTCAPB(bool high);
 
-    uint8_t GetCounterHighRegister();
-    uint8_t GetCounterLowRegister();
-    uint8_t GetAlternateCounterHighRegister();
-    uint8_t GetAlternateCounterLowRegister();
-    uint8_t GetInputCaptureAHighRegister();
-    uint8_t GetInputCaptureALowRegister();
-    uint8_t GetInputCaptureBHighRegister();
-    uint8_t GetInputCaptureBLowRegister();
-    uint8_t GetOutputCompareHighRegister();
-    uint8_t GetOutputCompareLowRegister();
-    uint8_t GetStatusRegister();
+    [[nodiscard]] uint8_t GetCounterHighRegister();
+    [[nodiscard]] uint8_t GetCounterLowRegister();
+    [[nodiscard]] uint8_t GetAlternateCounterHighRegister();
+    [[nodiscard]] uint8_t GetAlternateCounterLowRegister();
+    [[nodiscard]] uint8_t GetInputCaptureAHighRegister();
+    [[nodiscard]] uint8_t GetInputCaptureALowRegister();
+    [[nodiscard]] uint8_t GetInputCaptureBHighRegister();
+    [[nodiscard]] uint8_t GetInputCaptureBLowRegister();
+    [[nodiscard]] uint8_t GetOutputCompareHighRegister();
+    [[nodiscard]] uint8_t GetOutputCompareLowRegister();
+    [[nodiscard]] uint8_t GetStatusRegister();
 
     void SetOutputCompareHighRegister(uint8_t value);
     void SetOutputCompareLowRegister(uint8_t value);

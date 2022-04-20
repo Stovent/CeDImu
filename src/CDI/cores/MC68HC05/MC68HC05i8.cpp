@@ -12,6 +12,7 @@ MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<
     , pendingCycles(0)
     , timerCycles(0)
     , totalCycleCount(0)
+    , coreTimer()
     , programmableTimer([this] (bool outputHigh) { SetOutputPin(Port::TCMP, 0, outputHigh); })
     , sci1([this] (uint16_t data) { SetOutputPin(Port::SCI1, data, false); })
     , sci2([this] (uint16_t data) { SetOutputPin(Port::SCI2, data, false); })
@@ -51,6 +52,8 @@ void MC68HC05i8::Reset()
     pendingCycles = 0;
     timerCycles = 0;
 
+    coreTimer.Reset();
+    programmableTimer.Reset();
     sci1.Reset();
     sci2.Reset();
 
@@ -106,7 +109,21 @@ void MC68HC05i8::IncrementTime(double ns)
         {
             const size_t tcycles = timerCycles / 4;
             timerCycles %= 4;
-            programmableTimer.AdvanceCycles(tcycles);
+
+            if(programmableTimer.AdvanceCycles(tcycles))
+                Interrupt(TIMERVector);
+
+            std::pair<bool, bool> intReset = coreTimer.AdvanceCycles(tcycles);// TODO: Vector priority.
+            if(intReset.second)
+            {
+                Reset();
+                return;
+            }
+            else if(intReset.first)
+            {
+                wait = false;
+                Interrupt(CTIMERVector);
+            }
         }
 
 
@@ -240,6 +257,12 @@ void MC68HC05i8::SetMemory(const uint16_t addr, const uint8_t value)
         return;
     }
 
+    if(addr == 0x3FF0 && !(value & 1)) // 8.2 Clear COP timer.
+    {
+        coreTimer.ClearCOP();
+        return;
+    }
+
     printf("[MC68HC05i8] Write at 0x%X (%d) out of range\n", addr, value);
 }
 
@@ -247,6 +270,12 @@ uint8_t MC68HC05i8::GetIO(uint16_t addr)
 {
     switch(addr)
     {
+    case CoreTimerControlStatus:
+        return coreTimer.GetControlStatusRegister();
+
+    case CoreTimerCounter:
+        return coreTimer.GetCounterRegister();
+
     case InputCaptureAHigh:
         return programmableTimer.GetInputCaptureAHighRegister();
 
@@ -361,6 +390,9 @@ void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
         }
         break;
     }
+
+    case CoreTimerControlStatus:
+        return coreTimer.SetControlStatusRegister(value);
 
     case OutputCompareHigh:
         return programmableTimer.SetOutputCompareHighRegister(value);

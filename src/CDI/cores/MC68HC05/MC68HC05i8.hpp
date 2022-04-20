@@ -1,6 +1,7 @@
 #ifndef CDI_CORES_MC68HC05_MC68HC05I8_HPP
 #define CDI_CORES_MC68HC05_MC68HC05I8_HPP
 
+#include "CoreTimer.hpp"
 #include "MC68HC05.hpp"
 #include "ProgrammableTimer.hpp"
 #include "SCI.hpp"
@@ -44,6 +45,7 @@ private:
     int timerCycles;
     uint64_t totalCycleCount; // Internal bus frequency
 
+    CoreTimer coreTimer;
     ProgrammableTimer programmableTimer;
 
     SCI sci1;
