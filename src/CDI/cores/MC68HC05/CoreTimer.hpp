@@ -15,7 +15,7 @@ public:
         CTOF  = 0x80,
     };
 
-    explicit CoreTimer();
+    CoreTimer();
 
     void Reset();
     [[nodiscard]] std::pair<bool, bool> AdvanceCycles(size_t cycles);

@@ -3,7 +3,6 @@
 #include <cstring>
 
 #define MEMSET_RANGE(beg, endIncluded, val) memset(&memory[beg], val, endIncluded - beg + 1)
-#define NIBBLE_SWAP(val) (uint8_t)(val >> 4 | val << 4)
 
 MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<void(Port, size_t, bool)> outputPinCallback)
     : MC68HC05(memory.size())
@@ -13,16 +12,10 @@ MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<
     , timerCycles(0)
     , totalCycleCount(0)
     , coreTimer()
+    , m68000Interface()
     , programmableTimer([this] (bool outputHigh) { SetOutputPin(Port::TCMP, 0, outputHigh); })
     , sci1([this] (uint16_t data) { SetOutputPin(Port::SCI1, data, false); })
     , sci2([this] (uint16_t data) { SetOutputPin(Port::SCI2, data, false); })
-    , channelReadMCU{{0}}
-    , channelWriteMCU{{0}}
-    , channelStatusMCU{0} // TODO: init status
-    , interruptStatus(0)
-    , interruptMask(0)
-    , modeMCU(0)
-    , modeHost(0)
 {
     if(internalMemory != nullptr)
     {
@@ -53,27 +46,15 @@ void MC68HC05i8::Reset()
     timerCycles = 0;
 
     coreTimer.Reset();
+    m68000Interface.Reset();
     programmableTimer.Reset();
     sci1.Reset();
     sci2.Reset();
 
     MEMSET_RANGE(PortADataDirection, CoreTimerCounter, 0);
-    memory[CoreTimerControlStatus] = 0x03;
     memory[PortEDataDirection] = 0;
     memory[PortFDataDirection] = 0;
-    memory[TimerControl] &= 0x06;
-    memory[TimerStatus] &= 0xE0;
     memory[PortEMode] = 0;
-    memory[SCI1Baud] &= 0x07;
-    memory[SCI1Control1] &= 0xC0;
-    memory[SCI1Control2] = 0;
-    memory[SCI1Status] = 0xC0;
-    memory[SCI1Data] = 0;
-    memory[SCI2Baud] &= 0x07;
-    memory[SCI2Control1] &= 0xC0;
-    memory[SCI2Control2] = 0;
-    memory[SCI2Status] = 0xC0;
-    memory[SCI2Data] = 0;
     MEMSET_RANGE(ChannelAStatus, ChannelDStatus, 0x11);
     MEMSET_RANGE(InterruptStatus, Mode, 0);
 }
@@ -185,8 +166,8 @@ void MC68HC05i8::SetInputPin(Port port, size_t pin, bool high)
     case Port::PortE:
         if(pin <= 3)
         {
-            const uint8_t reg = pin <= 1 ? memory[SCI1Control2] : memory[SCI2Control2];
-            const uint8_t bit = pin == 0 || pin == 2 ? RE : TE;
+            const uint8_t reg = pin <= 1 ? sci1.controlRegister2 : sci2.controlRegister2;
+            const uint8_t bit = pin == 0 || pin == 2 ? SCI::RE : SCI::TE;
 
             if(!(reg & bit)) // SCI disabled for this pin.
             {
@@ -231,6 +212,84 @@ void MC68HC05i8::SetInputPin(Port port, size_t pin, bool high)
 
     default:
         printf("[MC68HC05i8] Wrong input pin %d", (int)port);
+    }
+}
+
+uint8_t MC68HC05i8::GetByte(uint32_t addr)
+{
+    switch(addr) // Table 10-2
+    {
+    case 4:
+        return m68000Interface.PopByteHost(M68000Interface::ChannelA);
+
+    case 5:
+        return m68000Interface.PopByteHost(M68000Interface::ChannelB);
+
+    case 6:
+        return m68000Interface.PopByteHost(M68000Interface::ChannelC);
+
+    case 7:
+        return m68000Interface.PopByteHost(M68000Interface::ChannelD);
+
+    case 8:
+        return m68000Interface.GetStatusHost(M68000Interface::ChannelA);
+
+    case 9:
+        return m68000Interface.GetStatusHost(M68000Interface::ChannelB);
+
+    case 0xA:
+        return m68000Interface.GetStatusHost(M68000Interface::ChannelC);
+
+    case 0xB:
+        return m68000Interface.GetStatusHost(M68000Interface::ChannelD);
+
+    case 0xC:
+        return m68000Interface.GetInterruptStatusHost();
+
+    case 0xD:
+        return m68000Interface.GetInterruptMaskHost();
+
+    case 0xE:
+        return m68000Interface.GetModeHost();
+    }
+
+    return 0;
+}
+
+/** @brief Writes a byte at the given address on the M68000 interface.
+ * @return true if an interrupt to the CPU has to be triggered, false otherwise.
+ */
+void MC68HC05i8::SetByte(uint32_t addr, uint8_t data)
+{
+    switch(addr) // Table 10-2
+    {
+    case 0:
+        if(m68000Interface.PushByteHost(M68000Interface::ChannelA, data))
+            Interrupt(M68KVector);
+        break;
+
+    case 1:
+        if(m68000Interface.PushByteHost(M68000Interface::ChannelB, data))
+            Interrupt(M68KVector);
+        break;
+
+    case 2:
+        if(m68000Interface.PushByteHost(M68000Interface::ChannelC, data))
+            Interrupt(M68KVector);
+        break;
+
+    case 3:
+        if(m68000Interface.PushByteHost(M68000Interface::ChannelD, data))
+            Interrupt(M68KVector);
+        break;
+
+    case 0xD:
+        m68000Interface.SetInterruptMaskHost(data);
+        break;
+
+    case 0xE:
+        m68000Interface.SetModeHost(data);
+        break;
     }
 }
 
@@ -341,6 +400,39 @@ uint8_t MC68HC05i8::GetIO(uint16_t addr)
 
     case SCI2Data:
         return sci2.GetDataRegister();
+
+    case ChannelADataRead:
+        return m68000Interface.PopByteMCU(M68000Interface::ChannelA);
+
+    case ChannelBDataRead:
+        return m68000Interface.PopByteMCU(M68000Interface::ChannelB);
+
+    case ChannelCDataRead:
+        return m68000Interface.PopByteMCU(M68000Interface::ChannelC);
+
+    case ChannelDDataRead:
+        return m68000Interface.PopByteMCU(M68000Interface::ChannelD);
+
+    case ChannelAStatus:
+        return m68000Interface.GetStatusMCU(M68000Interface::ChannelA);
+
+    case ChannelBStatus:
+        return m68000Interface.GetStatusMCU(M68000Interface::ChannelB);
+
+    case ChannelCStatus:
+        return m68000Interface.GetStatusMCU(M68000Interface::ChannelC);
+
+    case ChannelDStatus:
+        return m68000Interface.GetStatusMCU(M68000Interface::ChannelD);
+
+    case InterruptStatus:
+        return m68000Interface.GetInterruptStatusMCU();
+
+    case InterruptMask:
+        return m68000Interface.GetInterruptMaskMCU();
+
+    case Mode:
+        return m68000Interface.modeMCU;
     }
 
     return memory[addr];
@@ -436,6 +528,34 @@ void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
     case SCI2Data:
         if(sci2.SetDataRegister(value))
             Interrupt(SCI2Vector);
+        break;
+
+    case ChannelADataWrite:
+        if(m68000Interface.PushByteMCU(M68000Interface::ChannelA, value))
+            SetOutputPin(Port::M68KInterface, 0, false);
+        break;
+
+    case ChannelBDataWrite:
+        if(m68000Interface.PushByteMCU(M68000Interface::ChannelB, value))
+            SetOutputPin(Port::M68KInterface, 0, false);
+        break;
+
+    case ChannelCDataWrite:
+        if(m68000Interface.PushByteMCU(M68000Interface::ChannelC, value))
+            SetOutputPin(Port::M68KInterface, 0, false);
+        break;
+
+    case ChannelDDataWrite:
+        if(m68000Interface.PushByteMCU(M68000Interface::ChannelD, value))
+            SetOutputPin(Port::M68KInterface, 0, false);
+        break;
+
+    case InterruptMask:
+        m68000Interface.SetInterruptMaskMCU(value);
+        break;
+
+    case Mode:
+        m68000Interface.modeMCU = value;
         break;
 
     default:

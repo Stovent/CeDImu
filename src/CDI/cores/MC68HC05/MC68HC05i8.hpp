@@ -2,6 +2,7 @@
 #define CDI_CORES_MC68HC05_MC68HC05I8_HPP
 
 #include "CoreTimer.hpp"
+#include "M68000Interface.hpp"
 #include "MC68HC05.hpp"
 #include "ProgrammableTimer.hpp"
 #include "SCI.hpp"
@@ -26,6 +27,7 @@ public:
         TCMP, /**< Timer Compare. Only as output. */
         TCAP1, /**< Timer Capture 1. Only as input. */
         TCAP2, /**< Timer Capture 2. Only as input. */
+        M68KInterface, /**< Used when an interrupt to the CPU has to be triggered. */
     };
 
     MC68HC05i8() = delete;
@@ -38,6 +40,9 @@ public:
     void IncrementTime(double ns);
     void SetInputPin(Port port, size_t pin, bool high);
 
+    uint8_t GetByte(uint32_t addr);
+    void SetByte(uint32_t addr, uint8_t data);
+
 private:
     std::array<uint8_t, 0x4000> memory;
     std::function<void(Port, size_t, bool)> SetOutputPin;
@@ -46,18 +51,10 @@ private:
     uint64_t totalCycleCount; // Internal bus frequency
 
     CoreTimer coreTimer;
+    M68000Interface m68000Interface;
     ProgrammableTimer programmableTimer;
-
     SCI sci1;
     SCI sci2;
-
-    std::deque<uint8_t> channelReadMCU[4];
-    std::deque<uint8_t> channelWriteMCU[4];
-    uint8_t channelStatusMCU[4];
-    uint8_t interruptStatus;
-    uint8_t interruptMask;
-    uint8_t modeMCU;
-    uint8_t modeHost;
 
     uint8_t GetMemory(uint16_t addr) override;
     void SetMemory(uint16_t addr, uint8_t value) override;
@@ -118,13 +115,6 @@ private:
         InterruptStatus,
         InterruptMask,
         Mode,
-    };
-
-    enum IOFlags
-    {
-        // Serial Communications Control Register
-        RE = 0x04,
-        TE = 0x08,
     };
 
     enum InterruptVectors : uint16_t
