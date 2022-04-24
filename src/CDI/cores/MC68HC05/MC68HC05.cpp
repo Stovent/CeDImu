@@ -38,6 +38,13 @@ size_t MC68HC05::Interpreter()
         &&SUB_IX,     &&CMP_IX,     &&SBC_IX,     &&CPX_IX,     &&AND_IX,     &&BIT_IX,     &&LDA_IX,     &&STA_IX,     &&EOR_IX,     &&ADC_IX,     &&ORA_IX,     &&ADD_IX,     &&JMP_IX,     &&JSR_IX,     &&LDX_IX,     &&STX_IX,     // 0xFX
     };
 
+    if(!CCR[CCRI] && !maskableInterrupts.empty())
+    {
+        const std::set<uint16_t, std::greater<uint16_t>>::iterator it = maskableInterrupts.begin();
+        ProcessInterrupt(*it);
+        maskableInterrupts.erase(it);
+    }
+
     const uint8_t opcode = GetNextByte();
     goto *ITC[opcode];
 
@@ -597,7 +604,7 @@ size_t MC68HC05::Interpreter()
 
     SWI_INH:
     {
-        Interrupt<false>(memorySize - 4); // SWI is non-maskable.
+        ProcessInterrupt(memorySize - 4); // SWI is non-maskable.
 //        LOG(fprintf(instructions, "%X\tSWI\n", currentPC);)
         return 10;
     }
@@ -1138,6 +1145,26 @@ size_t MC68HC05::Interpreter()
     unknown:
         printf("[MC68HC05] %X\tUnknwon instruction: 0x%X\n", PC - 1, opcode);
     return 0;
+}
+
+void MC68HC05::RequestInterrupt(uint16_t addr)
+{
+    maskableInterrupts.insert(addr);
+}
+
+/** @brief Processes an interrupt.
+ *  @param addr The address where to fetch the high byte of the vector.
+ */
+void MC68HC05::ProcessInterrupt(uint16_t addr)
+{
+    PushByte(PC);
+    PushByte(PC >> 8);
+    PushByte(X);
+    PushByte(A);
+    PushByte(CCR.to_ulong());
+    CCR[CCRI] = true;
+    PC = (uint16_t)GetMemory(addr) << 8;
+    PC |= GetMemory(addr + 1);
 }
 
 void MC68HC05::PushByte(uint8_t data)

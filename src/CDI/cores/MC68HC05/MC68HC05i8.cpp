@@ -34,10 +34,6 @@ MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<
     // 3.1.5.2 Interrupt latch
 }
 
-MC68HC05i8::~MC68HC05i8()
-{
-}
-
 void MC68HC05i8::Reset()
 {
     MC68HC05::Reset();
@@ -57,6 +53,13 @@ void MC68HC05i8::Reset()
     memory[PortEMode] = 0;
     MEMSET_RANGE(ChannelAStatus, ChannelDStatus, 0x11);
     MEMSET_RANGE(InterruptStatus, Mode, 0);
+}
+
+void MC68HC05i8::IRQ()
+{
+    stop = wait = false;
+    RequestInterrupt(IRQVector);
+    // Same remark as MC68HSC05C8.
 }
 
 void MC68HC05i8::IncrementTime(double ns)
@@ -92,9 +95,9 @@ void MC68HC05i8::IncrementTime(double ns)
             timerCycles %= 4;
 
             if(programmableTimer.AdvanceCycles(tcycles))
-                Interrupt(TIMERVector);
+                RequestInterrupt(TIMERVector);
 
-            std::pair<bool, bool> intReset = coreTimer.AdvanceCycles(tcycles);// TODO: Vector priority.
+            std::pair<bool, bool> intReset = coreTimer.AdvanceCycles(tcycles);
             if(intReset.second)
             {
                 Reset();
@@ -103,17 +106,14 @@ void MC68HC05i8::IncrementTime(double ns)
             else if(intReset.first)
             {
                 wait = false;
-                Interrupt(CTIMERVector);
+                RequestInterrupt(CTIMERVector);
             }
         }
 
-
-        const bool sci1Int = sci1.AdvanceCycles(cycles);
-        const bool sci2Int = sci2.AdvanceCycles(cycles);
-        if(sci1Int)
-            Interrupt(SCI1Vector);
-        else if(sci2Int) // Vector priority.
-            Interrupt(SCI2Vector);
+        if(sci1.AdvanceCycles(cycles))
+            RequestInterrupt(SCI1Vector);
+        if(sci2.AdvanceCycles(cycles))
+            RequestInterrupt(SCI2Vector);
     }
 }
 
@@ -202,12 +202,12 @@ void MC68HC05i8::SetInputPin(Port port, size_t pin, bool high)
 
     case Port::SCI1:
         if(sci1.ReceiveData(pin))
-            Interrupt(SCI1Vector);
+            RequestInterrupt(SCI1Vector);
         break;
 
     case Port::SCI2:
         if(sci2.ReceiveData(pin))
-            Interrupt(SCI2Vector);
+            RequestInterrupt(SCI2Vector);
         break;
 
     default:
@@ -262,22 +262,22 @@ void MC68HC05i8::SetByte(uint32_t addr, uint8_t data)
     {
     case 0:
         if(m68000Interface.PushByteHost(M68000Interface::ChannelA, data))
-            Interrupt(M68KVector);
+            RequestInterrupt(M68KVector);
         break;
 
     case 1:
         if(m68000Interface.PushByteHost(M68000Interface::ChannelB, data))
-            Interrupt(M68KVector);
+            RequestInterrupt(M68KVector);
         break;
 
     case 2:
         if(m68000Interface.PushByteHost(M68000Interface::ChannelC, data))
-            Interrupt(M68KVector);
+            RequestInterrupt(M68KVector);
         break;
 
     case 3:
         if(m68000Interface.PushByteHost(M68000Interface::ChannelD, data))
-            Interrupt(M68KVector);
+            RequestInterrupt(M68KVector);
         break;
 
     case 0xD:
@@ -507,7 +507,7 @@ void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
 
     case SCI1Data:
         if(sci1.SetDataRegister(value))
-            Interrupt(SCI1Vector);
+            RequestInterrupt(SCI1Vector);
         break;
 
     case SCI2Baud:
@@ -524,7 +524,7 @@ void MC68HC05i8::SetIO(uint16_t addr, uint8_t value)
 
     case SCI2Data:
         if(sci2.SetDataRegister(value))
-            Interrupt(SCI2Vector);
+            RequestInterrupt(SCI2Vector);
         break;
 
     case ChannelADataWrite:

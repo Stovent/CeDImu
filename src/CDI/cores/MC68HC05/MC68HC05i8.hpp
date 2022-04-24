@@ -33,9 +33,9 @@ public:
     MC68HC05i8() = delete;
     MC68HC05i8(const MC68HC05i8&) = delete;
     MC68HC05i8(const void* internalMemory, uint16_t size, std::function<void(Port, size_t, bool)> outputPinCallback = [] (Port, size_t, bool) {});
-    ~MC68HC05i8();
 
     void Reset() override;
+    void IRQ();
 
     void IncrementTime(double ns);
     void SetInputPin(Port port, size_t pin, bool high);

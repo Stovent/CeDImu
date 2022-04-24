@@ -95,7 +95,7 @@ void MC68HSC05C8::Reset()
 void MC68HSC05C8::IRQ()
 {
     stop = wait = false;
-    Interrupt(IRQVector);
+    RequestInterrupt(IRQVector);
     // Here, irqPin should be changed to be set, but I am unsure for how long,
     // so I let it to its default value for simplicity.
     // In the actual hardware, it is hardwired to the CSSLAVEN signal (Chip Select Slave),
@@ -140,7 +140,7 @@ void MC68HSC05C8::IncrementTime(double ns)
                 if(memory[SerialPeripheralControl] & SPIE)
                 {
                     wait = false;
-                    Interrupt(SPIVector);
+                    RequestInterrupt(SPIVector);
                 }
             }
 
@@ -160,7 +160,7 @@ void MC68HSC05C8::IncrementTime(double ns)
                 if(interrupt)
                 {
                     wait = false;
-                    Interrupt(SCIVector);
+                    RequestInterrupt(SCIVector);
                 }
             }
     }
@@ -261,7 +261,7 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
             if(memory[SerialCommunicationsControl2] & RIE)
             {
                 wait = false;
-                Interrupt(SCIVector);
+                RequestInterrupt(SCIVector);
             }
         }
         break;
@@ -277,7 +277,7 @@ void MC68HSC05C8::SetInputPin(Port port, size_t pin, bool high)
             if(memory[TimerControl] & ICIE && !CCR[CCRI])
             {
                 wait = false;
-                Interrupt(TIMERVector);
+                RequestInterrupt(TIMERVector);
             }
         }
         tcapPin = high;
@@ -544,6 +544,6 @@ void MC68HSC05C8::IncrementTimer(size_t amount)
     if(interrupt)
     {
         wait = false;
-        Interrupt(TIMERVector);
+        RequestInterrupt(TIMERVector);
     }
 }

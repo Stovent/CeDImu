@@ -3,6 +3,7 @@
 
 #include <bitset>
 #include <cstdint>
+#include <set>
 
 /** @class MC68HC05
  * @brief Implements the CPU core of a MC68HC05 microcontroller.
@@ -26,7 +27,7 @@ protected:
 
     MC68HC05() = delete;
     MC68HC05(const MC68HC05&) = delete;
-    explicit MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), stop(false), wait(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000) {}
+    explicit MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), stop(false), wait(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000), maskableInterrupts() {}
     virtual ~MC68HC05() {}
 
     const uint16_t memorySize;
@@ -52,9 +53,13 @@ protected:
     virtual void Wait() {};
 
     size_t Interpreter();
-    template<bool MASKABLE = true> void Interrupt(uint16_t addr);
+    void RequestInterrupt(uint16_t addr);
 
 private:
+    // Interrupts
+    std::set<uint16_t, std::greater<uint16_t>> maskableInterrupts;
+    void ProcessInterrupt(uint16_t addr);
+
     // Memory Access
     void PushByte(uint8_t data);
     uint8_t PopByte();
@@ -116,27 +121,5 @@ private:
     void SUB(uint8_t rhs);
     void TST(uint8_t val);
 };
-
-// Old language...
-/** @brief Generates an interrupt.
- *  @param addr The address where to fetch the high byte of the vector.
- *
- * If the interrupt is maskable and interrupts are disabled, then this function does nothing.
- */
-template<bool MASKABLE = true>
-void MC68HC05::Interrupt(uint16_t addr)
-{
-    if(MASKABLE && CCR[CCRI])
-        return; // Maskable interrupts disabled.
-
-    PushByte(PC);
-    PushByte(PC >> 8);
-    PushByte(X);
-    PushByte(A);
-    PushByte(CCR.to_ulong());
-    CCR[CCRI] = true;
-    PC = (uint16_t)GetMemory(addr) << 8;
-    PC |= GetMemory(addr + 1);
-}
 
 #endif // CDI_CORES_MC68HC05_MC68HC05_HPP
