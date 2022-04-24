@@ -256,9 +256,6 @@ uint8_t MC68HC05i8::GetByte(uint32_t addr)
     return 0;
 }
 
-/** @brief Writes a byte at the given address on the M68000 interface.
- * @return true if an interrupt to the CPU has to be triggered, false otherwise.
- */
 void MC68HC05i8::SetByte(uint32_t addr, uint8_t data)
 {
     switch(addr) // Table 10-2
