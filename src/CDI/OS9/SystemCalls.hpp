@@ -3,6 +3,11 @@
 
 #include "../cores/SCC68070/SCC68070.hpp"
 
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <string>
+
 namespace OS9
 {
 
