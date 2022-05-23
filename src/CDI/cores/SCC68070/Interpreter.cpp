@@ -9,15 +9,28 @@ void SCC68070::Interpreter()
 {
     isRunning = true;
     std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
+    std::priority_queue<Exception> unprocessedExceptions; // Used to store the interrupts that can't be processed because their priority is too low.
 
     do
     {
         size_t executionCycles = 0;
 
-        if(exceptions.size())
+        while(exceptions.size())
         {
             const Exception ex = exceptions.top();
             exceptions.pop();
+
+            if((ex.vector >= Level1ExternalInterruptAutovector && ex.vector <= Level7ExternalInterruptAutovector) ||
+               (ex.vector >= Level1OnChipInterruptAutovector && ex.vector <= Level7OnChipInterruptAutovector))
+            {
+                const uint8_t level = ex.vector & 0x7;
+                if(level <= GetIPM())
+                {
+                    unprocessedExceptions.push(ex);
+                    continue;
+                }
+            }
+
             if(cdi.callbacks.HasOnLogException())
             {
                 const uint32_t returnAddress = ex.vector == 32 || ex.vector == 45 || ex.vector == 47 ? PC + 2 : PC;
@@ -28,6 +41,11 @@ void SCC68070::Interpreter()
             }
 //            DumpCPURegisters();
             executionCycles += ProcessException(ex.vector);
+        }
+        while(unprocessedExceptions.size())
+        {
+            exceptions.push(unprocessedExceptions.top());
+            unprocessedExceptions.pop();
         }
 
         if(stop)

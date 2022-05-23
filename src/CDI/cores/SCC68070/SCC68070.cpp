@@ -100,22 +100,18 @@ void SCC68070::Stop(const bool wait)
  */
 void SCC68070::Reset()
 {
-    while(exceptions.size()) // clear it
-        exceptions.pop();
-    exceptions.push({ResetSSPPC, -1}); // use -1 to put it at the top
+    CLEAR_PRIORITY_QUEUE(exceptions)
+    PushException(ResetSSPPC);
     SR |= 0x0700;
     RESET_INTERNAL()
 }
 
-/** \brief Trigger interrupt processing.
- * \param vector The vector number of the interrupt.
- * \param priority The priority level of the interrupt.
+/** \brief Requests the CPU to process the given exception.
+ * \param vector The vector number of the exception.
  */
-void SCC68070::Interrupt(const uint8_t vector, const uint8_t priority)
+void SCC68070::PushException(const uint8_t vector)
 {
-    // TODO: vectors and priority.
-    if(priority > GetIPM())
-        exceptions.push({vector, 1});
+    exceptions.emplace(vector);
 }
 
 /** \brief Trigger interrupt with LIR1 level.
@@ -124,7 +120,7 @@ void SCC68070::INT1()
 {
     const uint8_t level = internal[LIR] >> 4 & 0x07;
     if(level)
-        Interrupt(Level1OnChipInterruptAutovector - 1 + level, level);
+        PushException(Level1OnChipInterruptAutovector - 1 + level);
 }
 
 /** \brief Trigger interrupt with LIR2 level.
@@ -133,14 +129,14 @@ void SCC68070::INT2()
 {
     const uint8_t level = internal[LIR] & 0x07;
     if(level)
-        Interrupt(Level1OnChipInterruptAutovector - 1 + level, level);
+        PushException(Level1OnChipInterruptAutovector - 1 + level);
 }
 
 /** \brief Trigger level 2 external interrupt vector.
  */
 void SCC68070::IN2()
 {
-    Interrupt(Level2ExternalInterruptAutovector, 2);
+    PushException(Level2ExternalInterruptAutovector);
 }
 
 /** \brief Send a byte through UART.

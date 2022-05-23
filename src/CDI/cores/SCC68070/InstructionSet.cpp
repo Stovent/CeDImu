@@ -72,7 +72,7 @@ uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
 
 uint16_t SCC68070::UnknownInstruction()
 {
-    exceptions.push({IllegalInstruction, 1});
+    PushException(IllegalInstruction);
     return 0;
 }
 
@@ -579,7 +579,7 @@ uint16_t SCC68070::ANDISR()
 
     if(!GetS())
     {
-        exceptions.push({PrivilegeViolation, 1});
+        PushException(PrivilegeViolation);
         return 0;
     }
 
@@ -896,7 +896,7 @@ uint16_t SCC68070::CHK()
     const int16_t  data = D[reg] & 0x0000FFFF;
     if(data < 0 || data > bound)
     {
-        exceptions.push({CHKInstruction, 2});
+        PushException(CHKInstruction);
         if(data < 0)
             SetN();
         else if(data > bound)
@@ -1105,17 +1105,18 @@ uint16_t SCC68070::DIVS()
     const uint8_t    reg = currentOpcode >> 9 & 0x0007;
     const uint8_t eamode = currentOpcode >> 3 & 0x0007;
     const uint8_t  eareg = currentOpcode & 0x0007;
-    uint16_t calcTime = 169; // LMAO
+    uint16_t calcTime = 0; // LMAO
 
     const int16_t src = GetWord(eamode, eareg, calcTime);
     if(src == 0)
     {
-        exceptions.push({ZeroDivide, 2});
-        return 7; // Arbitrary
+        PushException(ZeroDivide);
+        return calcTime;
     }
 
     const int32_t dst = D[reg];
     const int32_t q = dst / src;
+    calcTime += 169; // LMAO
 
     if(q < INT16_MIN || q > INT16_MAX)
     {
@@ -1140,16 +1141,18 @@ uint16_t SCC68070::DIVU()
     const uint8_t    reg = currentOpcode >> 9 & 0x0007;
     const uint8_t eamode = currentOpcode >> 3 & 0x0007;
     const uint8_t  eareg = currentOpcode & 0x0007;
-    uint16_t calcTime = 130;
+    uint16_t calcTime = 0;
 
     const uint16_t src = GetWord(eamode, eareg, calcTime);
     if(src == 0)
     {
-        exceptions.push({ZeroDivide, 2});
-        return 7; // Arbitrary
+        PushException(ZeroDivide);
+        return calcTime;
     }
 
     const uint32_t q = D[reg] / src;
+    calcTime += 130;
+
     if(q > UINT16_MAX)
     {
         SetV();
@@ -1295,7 +1298,7 @@ uint16_t SCC68070::EORISR()
 
     if(!GetS())
     {
-        exceptions.push({PrivilegeViolation, 1});
+        PushException(PrivilegeViolation);
         return 0;
     }
 
@@ -1358,7 +1361,7 @@ uint16_t SCC68070::EXT()
 
 uint16_t SCC68070::ILLEGAL()
 {
-    exceptions.push({IllegalInstruction, 1});
+    PushException(IllegalInstruction);
     return 0;
 }
 
@@ -1585,7 +1588,7 @@ uint16_t SCC68070::MOVESR()
 
     if(!GetS())
     {
-        exceptions.push({PrivilegeViolation, 1});
+        PushException(PrivilegeViolation);
         return 0;
     }
 
@@ -1600,7 +1603,7 @@ uint16_t SCC68070::MOVEUSP()
 
     if(!GetS())
     {
-        exceptions.push({PrivilegeViolation, 1});
+        PushException(PrivilegeViolation);
         return 0;
     }
 
@@ -2134,7 +2137,7 @@ uint16_t SCC68070::ORISR()
 
     if(!GetS())
     {
-        exceptions.push({PrivilegeViolation, 1});
+        PushException(PrivilegeViolation);
         return 0;
     }
 
@@ -2161,7 +2164,7 @@ uint16_t SCC68070::RESET()
 {
     if(!GetS())
     {
-        exceptions.push({PrivilegeViolation, 1});
+        PushException(PrivilegeViolation);
         return 0;
     }
 
@@ -2351,7 +2354,7 @@ uint16_t SCC68070::RTE()
 {
     if(!GetS())
     {
-        exceptions.push({PrivilegeViolation, 1});
+        PushException(PrivilegeViolation);
         return 0;
     }
 
@@ -2368,7 +2371,7 @@ uint16_t SCC68070::RTE()
     }
     else if((format & 0xF000) != 0) // Format error
     {
-        exceptions.push({FormatError, 2});
+        PushException(FormatError);
     }
 
     if(cdi.callbacks.HasOnLogRTE())
@@ -2452,7 +2455,7 @@ uint16_t SCC68070::STOP() // TODO: correctly implement it.
 
     if(!GetS())
     {
-        exceptions.push({PrivilegeViolation, 1});
+        PushException(PrivilegeViolation);
         return 0;
     }
 
@@ -2844,7 +2847,7 @@ uint16_t SCC68070::TAS()
 uint16_t SCC68070::TRAP()
 {
     const uint8_t vector = currentOpcode & 0x000F;
-    exceptions.push({uint8_t(vector + 32), 2, PeekNextWord()});
+    PushException(vector + Trap0Instruction);
     return 0;
 }
 
@@ -2853,7 +2856,7 @@ uint16_t SCC68070::TRAPV()
     if(!GetV())
         return 10;
 
-    exceptions.push({TRAPVInstruction, 2});
+    PushException(TRAPVInstruction);
     return 0;
 }
 

@@ -93,20 +93,37 @@ public:
         Level5OnChipInterruptAutovector,
         Level6OnChipInterruptAutovector,
         Level7OnChipInterruptAutovector,
+        UserInterrupt,
     };
 
     struct Exception
     {
         uint8_t vector;
-        int8_t group;
+        uint8_t priority; /**< Group and priority merged. */
         uint16_t data;
+
         Exception() = delete;
         Exception(const Exception&) = default;
-        Exception(const uint8_t vec, const int8_t grp, const uint16_t d = 0) : vector(vec), group(grp), data(d) {}
+        explicit Exception(const uint8_t vec, const uint16_t d = 0) : vector(vec), priority(GetPriority(vec)), data(d) {}
 
-        bool operator>(const Exception& other) const
+        bool operator<(const Exception& other) const
         {
-            return this->group > other.group;
+            return this->priority < other.priority;
+        }
+
+    private:
+        static constexpr uint8_t GetPriority(const uint8_t vec)
+        {
+            if(vec == ResetSSPPC) return 0;
+            if(vec == AddressError) return 1;
+            if(vec == BusError) return 2;
+            if(vec == Trace) return 3;
+            if((vec >= SpuriousInterrupt && vec <= Level7ExternalInterruptAutovector) ||
+               (vec >= Level1OnChipInterruptAutovector && vec <= Level7OnChipInterruptAutovector) ||
+               vec >= UserInterrupt) return 4;
+            if(vec == IllegalInstruction) return 5;
+            if(vec == PrivilegeViolation) return 6;
+            return 7; // Instruction exceptions.
         }
     };
 
@@ -265,9 +282,9 @@ private:
     uint8_t GetIPM() const; // Interrupt Priority Mask
 
     // Exceptions
-    std::priority_queue<Exception, std::vector<Exception>, std::greater<Exception>> exceptions;
+    std::priority_queue<Exception> exceptions;
 
-    void Interrupt(const uint8_t vector, const uint8_t priority);
+    void PushException(const uint8_t vector);
     uint16_t ProcessException(const uint8_t vectorNumber);
     static std::string exceptionVectorToString(uint8_t vector);
 
@@ -570,6 +587,7 @@ inline const char* CPURegisterToString(const SCC68070::Register reg)
 #define UNSET_RX_READY() internal[USR] &= ~0x01;
 
 #define RESET_INTERNAL() internal = {0}; SET_TX_READY()
+#define CLEAR_PRIORITY_QUEUE(queue) while(queue.size()) queue.pop();
 
 #define SR_UPPER_MASK (0xA700)
 
