@@ -17,6 +17,7 @@ jobs:
         run: |
           cmake ..
           make -j$(nproc --all)
+          chmod +x CeDImu
       - uses: actions/upload-artifact@v3.1.0
         with:
           name: CeDImu-ubuntu-x86_64
