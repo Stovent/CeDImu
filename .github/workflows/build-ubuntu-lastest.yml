@@ -3,20 +3,21 @@ name: Build Ubuntu lastest
 on: [push]
 
 jobs:
-    test-job:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2.4.2
-            - run: |
-                sudo apt update
-                sudo apt install cmake libwxgtk3.0-gtk3-dev
-                mkdir ${{github.workspace}}/build
-            - name: Build
-                working-directory: ${{github.workspace}}/build
-                run: |
-                    cmake ..
-                    make -j$(nproc --all)
-            - uses: actions/upload-artifact@v3.1.0
-                with:
-                    name: CeDImu-ubuntu-x86_64
-                    path: ${{github.workspace}}/build/CeDImu
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.4.2
+      - name: Set up
+        run: |
+          sudo apt update
+          sudo apt install cmake libwxgtk3.0-gtk3-dev
+          mkdir ${{github.workspace}}/build
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        run: |
+          cmake ..
+          make -j$(nproc --all)
+      - uses: actions/upload-artifact@v3.1.0
+        with:
+          name: CeDImu-ubuntu-x86_64
+          path: ${{github.workspace}}/build/CeDImu
