@@ -149,8 +149,8 @@ public:
     void IN2();
     void SendUARTIn(const uint8_t byte);
 
-    void SetRegister(Register reg, const uint32_t value);
-    std::map<Register, uint32_t> GetCPURegisters() const;
+    const Registers* CPURegisters() const;
+    Registers* CPURegisters();
     std::vector<InternalRegister> GetInternalRegisters() const;
 
 private:
@@ -251,14 +251,14 @@ private:
     std::array<uint8_t, Peripheral::Size> internal;
 
     // Direct Memory Access
-    friend GetSetResult get_byte(uint32_t);
-    friend GetSetResult get_word(uint32_t);
-    friend GetSetResult get_long(uint32_t);
-    friend GetSetResult set_byte(uint32_t, uint8_t);
-    friend GetSetResult set_word(uint32_t, uint16_t);
-    friend GetSetResult set_long(uint32_t, uint32_t);
-    friend void reset_instruction();
-    friend void disassembler(uint32_t, const char*);
+    friend GetSetResult get_byte(uint32_t, void*);
+    friend GetSetResult get_word(uint32_t, void*);
+    friend GetSetResult get_long(uint32_t, void*);
+    friend GetSetResult set_byte(uint32_t, uint8_t, void*);
+    friend GetSetResult set_word(uint32_t, uint16_t, void*);
+    friend GetSetResult set_long(uint32_t, uint32_t, void*);
+    friend void reset_instruction(void*);
+    friend void disassembler(uint32_t, const char*, void*);
 
     uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
     uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);

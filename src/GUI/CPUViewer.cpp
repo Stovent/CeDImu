@@ -197,13 +197,41 @@ void CPUViewer::UpdateRegisters()
     if(!m_cedimu.m_cdi)
         return;
 
-    std::map<SCC68070::Register, uint32_t> cpuRegs = m_cedimu.m_cdi->m_cpu.GetCPURegisters();
-    int i = 0;
-    for(std::pair<SCC68070::Register, uint32_t> reg : cpuRegs)
+    const Registers* cpuRegs = m_cedimu.m_cdi->m_cpu.CPURegisters();
+    size_t reg = 0;
+
+    for(int i = 0; i < 8; i++)
     {
-        std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : reg.first == SCC68070::Register::SR ? " : " + toBinString(reg.second, 16) : " : 0x" + toHex(reg.second);
-        m_registers[i++]->SetValue(CPURegisterToString(reg.first) + val);
+        char str[64] = {0};
+        snprintf(str, 64, "D%d : %d", i, cpuRegs->d[i]);
+        m_registers[reg++]->SetValue(str);
     }
+
+    for(int i = 0; i < 8; i++)
+    {
+        char str[64] = {0};
+        if(i < 7)
+            snprintf(str, 64, "A%d : 0x%X", i, cpuRegs->a[i]);
+        else
+            if(cpuRegs->sr.s)
+                snprintf(str, 64, "A%d : 0x%X", i, cpuRegs->ssp);
+            else
+                snprintf(str, 64, "A%d : 0x%X", i, cpuRegs->usp);
+
+        m_registers[reg++]->SetValue(str);
+    }
+
+    m_registers[reg++]->SetValue("PC : " + toHex(cpuRegs->pc));
+    m_registers[reg++]->SetValue("SR : " + std::to_string(cpuRegs->sr.t) + " "
+                                        + std::to_string(cpuRegs->sr.s) + " "
+                                        + std::to_string(cpuRegs->sr.interrupt_mask) + " "
+                                        + std::to_string(cpuRegs->sr.x) + " "
+                                        + std::to_string(cpuRegs->sr.n) + " "
+                                        + std::to_string(cpuRegs->sr.z) + " "
+                                        + std::to_string(cpuRegs->sr.v) + " "
+                                        + std::to_string(cpuRegs->sr.c));
+    m_registers[reg++]->SetValue("SSP : " + toHex(cpuRegs->ssp));
+    m_registers[reg++]->SetValue("USP : " + toHex(cpuRegs->usp));
 }
 
 void CPUViewer::UpdateUART()

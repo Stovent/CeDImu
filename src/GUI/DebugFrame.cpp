@@ -230,22 +230,21 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
             if(pc == it->second.returnAddress && it->second.vector == SCC68070::Trap0Instruction)
             {
                 size_t index = it->first;
-                const std::map<SCC68070::Register, uint32_t> registers = m_cedimu.m_cdi->m_cpu.GetCPURegisters();
-                const bool cc = registers.at(SCC68070::Register::SR) & 1;
+                const Registers* registers = m_cedimu.m_cdi->m_cpu.CPURegisters();
                 char error[64] = {0};
                 std::string outputs;
                 m_updateExceptions = true;
 
-                if(cc)
+                if(registers->sr.c)
                 {
-                    snprintf(error, 64, "carry=%d d1.w=%s ", cc, OS9::errorNameToString(OS9::Error(registers.at(SCC68070::Register::D1))).c_str());
+                    snprintf(error, 64, "carry=1 d1.w=%s ", OS9::errorNameToString(OS9::Error(registers->d[1])).c_str());
                 }
                 else
                 {
                     outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [&] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi->GetPointer(addr); });
                 }
 
-                const OS9::SystemCall syscall = {it->second.systemCall.type, "", "", cc ? std::string(error) : outputs};
+                const OS9::SystemCall syscall = {it->second.systemCall.type, "", "", registers->sr.c ? std::string(error) : outputs};
                 const LogSCC68070Exception rte{it->second.vector, it->second.returnAddress, it->second.disassembled, syscall};
                 m_exceptions.push_back({index, rte});
 

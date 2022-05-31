@@ -6,10 +6,9 @@
 #include <functional>
 #include <iterator>
 
-SCC68070* self;
-
-GetSetResult get_byte(uint32_t addr)
+GetSetResult get_byte(uint32_t addr, void* user_data)
 {
+    SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         return GetSetResult{
             .data = self->GetByte(addr),
@@ -18,13 +17,14 @@ GetSetResult get_byte(uint32_t addr)
     } catch(SCC68070::Exception& ex) {
         return GetSetResult{
             .data = 0,
-            .exception = 2,
+            .exception = ex.vector,
         };
     }
 }
 
-GetSetResult get_word(uint32_t addr)
+GetSetResult get_word(uint32_t addr, void* user_data)
 {
+    SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         return GetSetResult{
             .data = self->GetWord(addr),
@@ -33,13 +33,14 @@ GetSetResult get_word(uint32_t addr)
     } catch(SCC68070::Exception& ex) {
         return GetSetResult{
             .data = 0,
-            .exception = 2,
+            .exception = ex.vector,
         };
     }
 }
 
-GetSetResult get_long(uint32_t addr)
+GetSetResult get_long(uint32_t addr, void* user_data)
 {
+    SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         return GetSetResult{
             .data = self->GetLong(addr),
@@ -48,48 +49,53 @@ GetSetResult get_long(uint32_t addr)
     } catch(SCC68070::Exception& ex) {
         return GetSetResult{
             .data = 0,
-            .exception = 2,
+            .exception = ex.vector,
         };
     }
 }
 
-GetSetResult set_byte(uint32_t addr, uint8_t data)
+GetSetResult set_byte(uint32_t addr, uint8_t data, void* user_data)
 {
+    SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         self->SetByte(addr, data);
         return GetSetResult {0, 0};
-    } catch(SCC68070::Exception&) {
-        return GetSetResult {0, 2};
+    } catch(SCC68070::Exception& ex) {
+        return GetSetResult {0, ex.vector};
     }
 }
 
-GetSetResult set_word(uint32_t addr, uint16_t data)
+GetSetResult set_word(uint32_t addr, uint16_t data, void* user_data)
 {
+    SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         self->SetWord(addr, data);
         return GetSetResult {0, 0};
-    } catch(SCC68070::Exception&) {
-        return GetSetResult {0, 2};
+    } catch(SCC68070::Exception& ex) {
+        return GetSetResult {0, ex.vector};
     }
 }
 
-GetSetResult set_long(uint32_t addr, uint32_t data)
+GetSetResult set_long(uint32_t addr, uint32_t data, void* user_data)
 {
+    SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         self->SetLong(addr, data);
         return GetSetResult {0, 0};
-    } catch(SCC68070::Exception&) {
-        return GetSetResult {0, 2};
+    } catch(SCC68070::Exception& ex) {
+        return GetSetResult {0, ex.vector};
     }
 }
 
-void reset_instruction()
+void reset_instruction(void* user_data)
 {
+    SCC68070* self = static_cast<SCC68070*>(user_data);
     self->ResetOperation();
 }
 
-void disassembler(uint32_t pc, const char* inst)
+void disassembler(uint32_t pc, const char* inst, void* user_data)
 {
+    SCC68070* self = static_cast<SCC68070*>(user_data);
     if(self->cdi.m_callbacks.HasOnLogDisassembler())
     {
         const std::string moduleName = self->cdi.GetBIOS().GetModuleNameAt(pc - self->cdi.GetBIOS().m_base);
@@ -114,6 +120,7 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
         .set_long = set_long,
         .reset_instruction = reset_instruction,
         .disassembler = disassembler,
+        .user_data = this,
     },
     cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
     speedDelay(cycleDelay),
@@ -123,7 +130,6 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
     loop = isRunning = false;
     timerCounter = totalCycleCount = 0;
     currentPC = 0;
-    self = this;
 
     m68000 = m68000_new();
     m68000_enable_disassembler(m68000, true);
@@ -241,22 +247,20 @@ void SCC68070::SendUARTIn(const uint8_t byte)
     uartIn.push_back(byte);
 }
 
-/** \brief Set the value of a CPU register.
- *
- * \param reg The register to set.
- * \param value The value to set the register to.
+/** \brief Get the CPU registers through a const pointer.
+ * \return A pointer to the CPU registers.
  */
-void SCC68070::SetRegister(Register reg, const uint32_t value)
+const Registers* SCC68070::CPURegisters() const
 {
+    return m68000_registers(m68000);
 }
 
-/** \brief Get the CPU registers.
- *
- * \return A map containing the CPU registers with their name and value.
+/** \brief Get the CPU registers through a mutable pointer.
+ * \return A pointer to the CPU registers.
  */
-std::map<SCC68070::Register, uint32_t> SCC68070::GetCPURegisters() const
+Registers* SCC68070::CPURegisters()
 {
-    return {};
+    return m68000_registers(m68000);
 }
 
 /** \brief Get the internal registers.

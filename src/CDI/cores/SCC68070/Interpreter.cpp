@@ -25,7 +25,7 @@ void SCC68070::Interpreter()
                 {
                     const uint32_t returnAddress = 0;
                     const OS9::SystemCallType syscallType = OS9::SystemCallType(m68000_peek_next_word(m68000, &m68000Callbacks).data);
-                    const std::string inputs = res.exception == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->cdi.GetPointer(addr); }) : "";
+                    const std::string inputs = res.exception == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, CPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->cdi.GetPointer(addr); }) : "";
                     const OS9::SystemCall syscall = {syscallType, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOSBaseAddress()), inputs, ""};
                     cdi.m_callbacks.OnLogException({res.exception, returnAddress, exceptionVectorToString(res.exception), syscall});
                 }

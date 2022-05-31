@@ -6,8 +6,8 @@
 namespace OS9
 {
 
-#define GETSTR(areg) (get(regs.at(SCC68070::Register::areg)) != nullptr ? (char*)get(regs.at(SCC68070::Register::areg)) : "")
-#define REG(reg) regs.at(SCC68070::Register::reg)
+#define GETSTR(areg) (get(regs->a[areg]) != nullptr ? (char*)get(regs->a[areg]) : "")
+#define REG(reg) regs->reg
 
 std::string eventNameToString(const Event evt)
 {
@@ -33,53 +33,53 @@ std::string eventNameToString(const Event evt)
     }
 }
 
-std::string eventInputsToString(const Event evt, const std::map<SCC68070::Register, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
+std::string eventInputsToString(const Event evt, const Registers* regs, const std::function<const uint8_t*(const uint32_t)>& get)
 {
     char event[256]= {0};
     switch(evt)
     {
-    case Event::Ev_Link:  snprintf(event, 256, "(a0).s=\"%s\"", GETSTR(A0)); break;
-    case Event::Ev_UnLnk: snprintf(event, 256, "d0.l=%d", REG(D0)); break;
-    case Event::Ev_Creat: snprintf(event, 256, "(a0).s=\"%s\" d0.l=%d d2.w=%hd d3.w=%hd", GETSTR(A0), REG(D0), REG(D2), REG(D3)); break;
-    case Event::Ev_Delet: snprintf(event, 256, "(a0).s=\"%s\"", GETSTR(A0)); break;
-    case Event::Ev_Wait:  snprintf(event, 256, "d0.l=%d d2.l=%d d3.l=%d", REG(D0), REG(D2), REG(D3)); break;
-    case Event::Ev_WaitR: snprintf(event, 256, "d0.l=%d d2.l=%d d3.l=%d", REG(D0), REG(D2), REG(D3)); break;
-    case Event::Ev_Read:  snprintf(event, 256, "d0.l=%d", REG(D0)); break;
-    case Event::Ev_Info:  snprintf(event, 256, "a0=0x%X d0.l=%d", REG(A0), REG(D0)); break;
-    case Event::Ev_Signl: snprintf(event, 256, "d0.l=%d", REG(D0)); break;
-    case Event::Ev_Signl_Ev_All: snprintf(event, 256, "d0.l=%d", REG(D0)); break;
-    case Event::Ev_Pulse: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
-    case Event::Ev_Pulse_Ev_All: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
-    case Event::Ev_Set:   snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
-    case Event::Ev_Set_Ev_All: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
-    case Event::Ev_SetR:  snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
-    case Event::Ev_SetR_Ev_All: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
+    case Event::Ev_Link:  snprintf(event, 256, "(a0).s=\"%s\"", GETSTR(0)); break;
+    case Event::Ev_UnLnk: snprintf(event, 256, "d0.l=%d", REG(d[0])); break;
+    case Event::Ev_Creat: snprintf(event, 256, "(a0).s=\"%s\" d0.l=%d d2.w=%hd d3.w=%hd", GETSTR(0), REG(d[0]), REG(d[2]), REG(d[3])); break;
+    case Event::Ev_Delet: snprintf(event, 256, "(a0).s=\"%s\"", GETSTR(0)); break;
+    case Event::Ev_Wait:  snprintf(event, 256, "d0.l=%d d2.l=%d d3.l=%d", REG(d[0]), REG(d[2]), REG(d[3])); break;
+    case Event::Ev_WaitR: snprintf(event, 256, "d0.l=%d d2.l=%d d3.l=%d", REG(d[0]), REG(d[2]), REG(d[3])); break;
+    case Event::Ev_Read:  snprintf(event, 256, "d0.l=%d", REG(d[0])); break;
+    case Event::Ev_Info:  snprintf(event, 256, "a0=0x%X d0.l=%d", REG(a[0]), REG(d[0])); break;
+    case Event::Ev_Signl: snprintf(event, 256, "d0.l=%d", REG(d[0])); break;
+    case Event::Ev_Signl_Ev_All: snprintf(event, 256, "d0.l=%d", REG(d[0])); break;
+    case Event::Ev_Pulse: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(d[0]), REG(d[2])); break;
+    case Event::Ev_Pulse_Ev_All: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(d[0]), REG(d[2])); break;
+    case Event::Ev_Set:   snprintf(event, 256, "d0.l=%d d2.l=%d", REG(d[0]), REG(d[2])); break;
+    case Event::Ev_Set_Ev_All: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(d[0]), REG(d[2])); break;
+    case Event::Ev_SetR:  snprintf(event, 256, "d0.l=%d d2.l=%d", REG(d[0]), REG(d[2])); break;
+    case Event::Ev_SetR_Ev_All: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(d[0]), REG(d[2])); break;
     default: snprintf(event, 256, "Unknown event %d", (int)evt); break;
     }
     return event;
 }
 
-std::string eventOutputsToString(const Event evt, const std::map<SCC68070::Register, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
+std::string eventOutputsToString(const Event evt, const Registers* regs, const std::function<const uint8_t*(const uint32_t)>& get)
 {
     char event[256]= {0};
     switch(evt)
     {
-    case Event::Ev_Link:  snprintf(event, 256, "(a0).s=\"%s\" d0.l=%d", GETSTR(A0), REG(D0)); break;
+    case Event::Ev_Link:  snprintf(event, 256, "(a0).s=\"%s\" d0.l=%d", GETSTR(0), REG(d[0])); break;
     case Event::Ev_UnLnk: return "";
-    case Event::Ev_Creat: snprintf(event, 256, "(a0).s=\"%s\" d0.l=%d", GETSTR(A0), REG(D0)); break;
-    case Event::Ev_Delet: snprintf(event, 256, "(a0).s=\"%s\"", GETSTR(A0)); break;
-    case Event::Ev_Wait:  snprintf(event, 256, "d1.l=%d", REG(D1)); break;
-    case Event::Ev_WaitR: snprintf(event, 256, "d1.l=%d d2.l=%d d3.l=%d", REG(D1), REG(D2), REG(D3)); break;
-    case Event::Ev_Read:  snprintf(event, 256, "d1.l=%d", REG(D1)); break;
-    case Event::Ev_Info:  snprintf(event, 256, "d0.l=%d a0=%d", REG(D0), REG(A0)); break;
+    case Event::Ev_Creat: snprintf(event, 256, "(a0).s=\"%s\" d0.l=%d", GETSTR(0), REG(d[0])); break;
+    case Event::Ev_Delet: snprintf(event, 256, "(a0).s=\"%s\"", GETSTR(0)); break;
+    case Event::Ev_Wait:  snprintf(event, 256, "d1.l=%d", REG(d[1])); break;
+    case Event::Ev_WaitR: snprintf(event, 256, "d1.l=%d d2.l=%d d3.l=%d", REG(d[1]), REG(d[2]), REG(d[3])); break;
+    case Event::Ev_Read:  snprintf(event, 256, "d1.l=%d", REG(d[1])); break;
+    case Event::Ev_Info:  snprintf(event, 256, "d0.l=%d a0=%d", REG(d[0]), REG(a[0])); break;
     case Event::Ev_Signl: return "";
     case Event::Ev_Signl_Ev_All: return "";
     case Event::Ev_Pulse: return "";
     case Event::Ev_Pulse_Ev_All: return "";
-    case Event::Ev_Set:   snprintf(event, 256, "d1.l=%d", REG(D1)); break;
-    case Event::Ev_Set_Ev_All: snprintf(event, 256, "d1.l=%d", REG(D1)); break;
-    case Event::Ev_SetR:  snprintf(event, 256, "d1.l=%d", REG(D1)); break;
-    case Event::Ev_SetR_Ev_All: snprintf(event, 256, "d1.l=%d", REG(D1)); break;
+    case Event::Ev_Set:   snprintf(event, 256, "d1.l=%d", REG(d[1])); break;
+    case Event::Ev_Set_Ev_All: snprintf(event, 256, "d1.l=%d", REG(d[1])); break;
+    case Event::Ev_SetR:  snprintf(event, 256, "d1.l=%d", REG(d[1])); break;
+    case Event::Ev_SetR_Ev_All: snprintf(event, 256, "d1.l=%d", REG(d[1])); break;
     default: snprintf(event, 256, "Unknown event %d", (int)evt); break;
     }
     return event;
@@ -186,205 +186,205 @@ std::string systemCallNameToString(const SystemCallType call)
     }
 }
 
-std::string systemCallInputsToString(const SystemCallType call, const std::map<SCC68070::Register, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
+std::string systemCallInputsToString(const SystemCallType call, const Registers* regs, const std::function<const uint8_t*(const uint32_t)>& get)
 {
     char args[256] = {0};
     switch(call)
     {
-    case SystemCallType::F_Link:    snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(A0), REG(D0)); break;
-    case SystemCallType::F_Load:    snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd d1.l=%d", GETSTR(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::F_UnLink:  snprintf(args, 256, "a2=0x%X", REG(A2)); break;
-    case SystemCallType::F_Fork:    snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X d0.w=%hd d1.l=%d d2.l=%d d3.w=%hd d4.w=%hd", GETSTR(A0), REG(A1), REG(D0), REG(D1), REG(D2), REG(D3), REG(D4)); break;
+    case SystemCallType::F_Link:    snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(0), REG(d[0])); break;
+    case SystemCallType::F_Load:    snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd d1.l=%d", GETSTR(0), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_UnLink:  snprintf(args, 256, "a2=0x%X", REG(a[2])); break;
+    case SystemCallType::F_Fork:    snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X d0.w=%hd d1.l=%d d2.l=%d d3.w=%hd d4.w=%hd", GETSTR(0), REG(a[1]), REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3]), REG(d[4])); break;
     case SystemCallType::F_Wait:    return "";
-    case SystemCallType::F_Chain:   snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X d0.w=%hd d1.l=%d d2.l=%d d3.w=%hd d4.w=%hd", GETSTR(A0), REG(A1), REG(D0), REG(D1), REG(D2), REG(D3), REG(D4)); break;
-    case SystemCallType::F_Exit:    snprintf(args, 256, "d1.w=%hd", REG(D1)); break;
-    case SystemCallType::F_Mem:     snprintf(args, 256, "d0.l=%d", REG(D0)); break;
-    case SystemCallType::F_Send:    snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(D0), REG(D1)); break;
-    case SystemCallType::F_Icpt:    snprintf(args, 256, "a0=0x%X a6=0x%X", REG(A0), REG(A6)); break;
-    case SystemCallType::F_Sleep:   snprintf(args, 256, "d0.l=%d", REG(D0)); break;
-    case SystemCallType::F_SSpd:    snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
+    case SystemCallType::F_Chain:   snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X d0.w=%hd d1.l=%d d2.l=%d d3.w=%hd d4.w=%hd", GETSTR(0), REG(a[1]), REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3]), REG(d[4])); break;
+    case SystemCallType::F_Exit:    snprintf(args, 256, "d1.w=%hd", REG(d[1])); break;
+    case SystemCallType::F_Mem:     snprintf(args, 256, "d0.l=%d", REG(d[0])); break;
+    case SystemCallType::F_Send:    snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_Icpt:    snprintf(args, 256, "a0=0x%X a6=0x%X", REG(a[0]), REG(a[6])); break;
+    case SystemCallType::F_Sleep:   snprintf(args, 256, "d0.l=%d", REG(d[0])); break;
+    case SystemCallType::F_SSpd:    snprintf(args, 256, "d0.w=%hd", REG(d[0])); break;
     case SystemCallType::F_ID:      return "";
-    case SystemCallType::F_SPrior:  snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(D0), REG(D1)); break;
-    case SystemCallType::F_STrap:   snprintf(args, 256, "a0=0x%X a1=0x%X", REG(A0), REG(A1)); break;
-    case SystemCallType::F_PErr:    snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(D0), REG(D1)); break;
-    case SystemCallType::F_PrsNam:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(A0)); break;
-    case SystemCallType::F_CmpNam:  snprintf(args, 256, "(a0).s=\"%s\" (a1).s=\"%s\" d1.w=%hd }", GETSTR(A0), GETSTR(A1), REG(D1)); break;
-    case SystemCallType::F_SchBit:  snprintf(args, 256, "a0=0x%X a1=0x%X d0.w=%hd d1.w=%hd", REG(A0), REG(A1), REG(D0), REG(D1)); break;
-    case SystemCallType::F_AllBit:  snprintf(args, 256, "a0=0x%X d0.w=%hd d1.w=%hd", REG(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::F_DelBit:  snprintf(args, 256, "a0=0x%X d0.w=%hd d1.w=%hd", REG(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::F_Time:    snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
-    case SystemCallType::F_STime:   snprintf(args, 256, "d0.l=0x%X d1.l=0x%X", REG(D0), REG(D1)); break;
-    case SystemCallType::F_CRC:     snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=0x%X", REG(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::F_GPrDsc:  snprintf(args, 256, "a0=0x%X d0.w=%hd d1.w=%hd", REG(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::F_GBlkMp:  snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=%d", REG(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::F_GModDr:  snprintf(args, 256, "a0=0x%X d1.l=%d", REG(A0), REG(D1)); break;
-    case SystemCallType::F_CpyMem:  snprintf(args, 256, "a0=0x%X a1=0x%X d0.w=%hd d1.l=%d", REG(A0), REG(A1), REG(D0), REG(D1)); break;
-    case SystemCallType::F_SUser:   snprintf(args, 256, "d1.l=%d", REG(D1)); break;
-    case SystemCallType::F_UnLoad:  snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(A0), REG(D0)); break;
+    case SystemCallType::F_SPrior:  snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_STrap:   snprintf(args, 256, "a0=0x%X a1=0x%X", REG(a[0]), REG(a[1])); break;
+    case SystemCallType::F_PErr:    snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_PrsNam:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(0)); break;
+    case SystemCallType::F_CmpNam:  snprintf(args, 256, "(a0).s=\"%s\" (a1).s=\"%s\" d1.w=%hd }", GETSTR(0), GETSTR(1), REG(d[1])); break;
+    case SystemCallType::F_SchBit:  snprintf(args, 256, "a0=0x%X a1=0x%X d0.w=%hd d1.w=%hd", REG(a[0]), REG(a[1]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_AllBit:  snprintf(args, 256, "a0=0x%X d0.w=%hd d1.w=%hd", REG(a[0]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_DelBit:  snprintf(args, 256, "a0=0x%X d0.w=%hd d1.w=%hd", REG(a[0]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_Time:    snprintf(args, 256, "d0.w=%hd", REG(d[0])); break;
+    case SystemCallType::F_STime:   snprintf(args, 256, "d0.l=0x%X d1.l=0x%X", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_CRC:     snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=0x%X", REG(a[0]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_GPrDsc:  snprintf(args, 256, "a0=0x%X d0.w=%hd d1.w=%hd", REG(a[0]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_GBlkMp:  snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=%d", REG(a[0]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_GModDr:  snprintf(args, 256, "a0=0x%X d1.l=%d", REG(a[0]), REG(d[1])); break;
+    case SystemCallType::F_CpyMem:  snprintf(args, 256, "a0=0x%X a1=0x%X d0.w=%hd d1.l=%d", REG(a[0]), REG(a[1]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_SUser:   snprintf(args, 256, "d1.l=%d", REG(d[1])); break;
+    case SystemCallType::F_UnLoad:  snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(0), REG(d[0])); break;
     case SystemCallType::F_RTE:     return "";
-    case SystemCallType::F_GPrDBT:  snprintf(args, 256, "a0=0x%X d1.l=%d", REG(A0), REG(D1)); break;
-    case SystemCallType::F_Julian:  snprintf(args, 256, "d0.l=0x%X d1.l=0x%X", REG(D0), REG(D1)); break;
-    case SystemCallType::F_TLink:   snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd d1.l=%d", GETSTR(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::F_DFork:   snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X d0.w=%hd d1.l=%d d2.l=%d d3.w=%hd d4.w=%hd", GETSTR(A0), REG(A1), REG(A2), REG(D0), REG(D1), REG(D2), REG(D3), REG(D4)); break;
-    case SystemCallType::F_DExec:   snprintf(args, 256, "d0.w=%hd d1.l=%d d2.w=%hd a0=0x%X", REG(D0), REG(D1), REG(D2), REG(A0)); break;
-    case SystemCallType::F_DExit:   snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
-    case SystemCallType::F_DatMod:  snprintf(args, 256, "(a0).s=\"%s\" d0.l=%d d1.w=%hd d2.w=%hd d3.w=%hd d4.l=%d", GETSTR(A0), REG(D0), REG(D1), REG(D2), REG(D3), REG(D4)); break;
-    case SystemCallType::F_SetCRC:  snprintf(args, 256, "a0=0x%X", REG(A0)); break;
-    case SystemCallType::F_SetSys:  snprintf(args, 256, "d0.w=%hd d1.l=%d d2.l=%d", REG(D0), REG(D1), REG(D2)); break;
-    case SystemCallType::F_SRqMem:  snprintf(args, 256, "d0.l=%d", REG(D0)); break;
-    case SystemCallType::F_SRtMem:  snprintf(args, 256, "a2=0x%X d0.l=%d", REG(A2), REG(D0)); break;
-    case SystemCallType::F_IRQ:     snprintf(args, 256, "a0=0x%X a2=0x%X a3:0x%X d0.b=%hhd d1.b=%hhd", REG(A0), REG(A2), REG(A3), REG(D0), REG(D1)); break;
-    case SystemCallType::F_IOQu:    snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
-    case SystemCallType::F_AProc:   snprintf(args, 256, "a0=0x%X", REG(A0)); break;
+    case SystemCallType::F_GPrDBT:  snprintf(args, 256, "a0=0x%X d1.l=%d", REG(a[0]), REG(d[1])); break;
+    case SystemCallType::F_Julian:  snprintf(args, 256, "d0.l=0x%X d1.l=0x%X", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_TLink:   snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd d1.l=%d", GETSTR(0), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_DFork:   snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X d0.w=%hd d1.l=%d d2.l=%d d3.w=%hd d4.w=%hd", GETSTR(0), REG(a[1]), REG(a[2]), REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3]), REG(d[4])); break;
+    case SystemCallType::F_DExec:   snprintf(args, 256, "d0.w=%hd d1.l=%d d2.w=%hd a0=0x%X", REG(d[0]), REG(d[1]), REG(d[2]), REG(a[0])); break;
+    case SystemCallType::F_DExit:   snprintf(args, 256, "d0.w=%hd", REG(d[0])); break;
+    case SystemCallType::F_DatMod:  snprintf(args, 256, "(a0).s=\"%s\" d0.l=%d d1.w=%hd d2.w=%hd d3.w=%hd d4.l=%d", GETSTR(0), REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3]), REG(d[4])); break;
+    case SystemCallType::F_SetCRC:  snprintf(args, 256, "a0=0x%X", REG(a[0])); break;
+    case SystemCallType::F_SetSys:  snprintf(args, 256, "d0.w=%hd d1.l=%d d2.l=%d", REG(d[0]), REG(d[1]), REG(d[2])); break;
+    case SystemCallType::F_SRqMem:  snprintf(args, 256, "d0.l=%d", REG(d[0])); break;
+    case SystemCallType::F_SRtMem:  snprintf(args, 256, "a2=0x%X d0.l=%d", REG(a[2]), REG(d[0])); break;
+    case SystemCallType::F_IRQ:     snprintf(args, 256, "a0=0x%X a2=0x%X a3:0x%X d0.b=%hhd d1.b=%hhd", REG(a[0]), REG(a[2]), REG(a[3]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_IOQu:    snprintf(args, 256, "d0.w=%hd", REG(d[0])); break;
+    case SystemCallType::F_AProc:   snprintf(args, 256, "a0=0x%X", REG(a[0])); break;
     case SystemCallType::F_NProc:   return "";
-    case SystemCallType::F_VModul:  snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=%d", REG(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::F_FindPD:  snprintf(args, 256, "a0=0x%X d0.w=%hd", REG(A0), REG(D0)); break;
-    case SystemCallType::F_AllPD:   snprintf(args, 256, "a0=0x%X", REG(A0)); break;
-    case SystemCallType::F_RetPD:   snprintf(args, 256, "a0=0x%X d0.w=%hd", REG(A0), REG(D0)); break;
-    case SystemCallType::F_SSvc:    snprintf(args, 256, "a1=0x%X a3=0x%X", REG(A1), REG(A3)); break;
-    case SystemCallType::F_IODel:   snprintf(args, 256, "a0=0x%X", REG(A0)); break;
+    case SystemCallType::F_VModul:  snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=%d", REG(a[0]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_FindPD:  snprintf(args, 256, "a0=0x%X d0.w=%hd", REG(a[0]), REG(d[0])); break;
+    case SystemCallType::F_AllPD:   snprintf(args, 256, "a0=0x%X", REG(a[0])); break;
+    case SystemCallType::F_RetPD:   snprintf(args, 256, "a0=0x%X d0.w=%hd", REG(a[0]), REG(d[0])); break;
+    case SystemCallType::F_SSvc:    snprintf(args, 256, "a1=0x%X a3=0x%X", REG(a[1]), REG(a[3])); break;
+    case SystemCallType::F_IODel:   snprintf(args, 256, "a0=0x%X", REG(a[0])); break;
     case SystemCallType::F_GProcP:  snprintf(args, 256, "d0.w"); break;
-    case SystemCallType::F_Move:    snprintf(args, 256, "a0=0x%X a2=0x%X d2.l=%d", REG(A0), REG(A2), REG(D2)); break;
+    case SystemCallType::F_Move:    snprintf(args, 256, "a0=0x%X a2=0x%X d2.l=%d", REG(a[0]), REG(a[2]), REG(d[2])); break;
     case SystemCallType::F_AllRAM:  return "xxx";
     case SystemCallType::F_Permit:  return "";
     case SystemCallType::F_Protect: return "";
     case SystemCallType::F_AllTsk:  return "";
     case SystemCallType::F_DelTsk:  return "";
     case SystemCallType::F_AllPrc:  return "";
-    case SystemCallType::F_DelPrc:  snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
+    case SystemCallType::F_DelPrc:  snprintf(args, 256, "d0.w=%hd", REG(d[0])); break;
     case SystemCallType::F_FModul:  return "xxx";
     case SystemCallType::F_SysDbg:  return "";
-    case SystemCallType::F_Event:   snprintf(args, 256, "d1.w=%hd (%s) %s", REG(D1), eventNameToString(Event(REG(D1))).c_str(), eventInputsToString(Event(REG(D1)), regs, get).c_str()); break;
-    case SystemCallType::F_Gregor:  snprintf(args, 256, "d0.l=%d d1.l=%d", REG(D0), REG(D1)); break;
-    case SystemCallType::F_SysID:   snprintf(args, 256, "a0=0x%X a1=0x%X a2=0x%X a3=0x%X d0.l=%d", REG(A0), REG(A1), REG(A2), REG(A3), REG(D0)); break;
-    case SystemCallType::F_Alarm:   snprintf(args, 256, "a0=0x%X d0.l=%d d1.w=%hd d2.l=%d d3.l=%d d4.l=%d", REG(A0), REG(D0), REG(D1), REG(D2), REG(D3), REG(D4)); break;
-    case SystemCallType::F_SigMask: snprintf(args, 256, "d0.l=%d d1.l=%d", REG(D0), REG(D1)); break;
-    case SystemCallType::F_ChkMem:  snprintf(args, 256, "a2=0x%X d0.l=%d d1.b=%hhd", REG(A2), REG(D0), REG(D1)); break;
-    case SystemCallType::F_UAcct:   snprintf(args, 256, "d0.w=%hd a0=0x%X", REG(D0), REG(A0)); break;
-    case SystemCallType::F_CCtl:    snprintf(args, 256, "d0.l=%d", REG(D0)); break;
-    case SystemCallType::F_GSPUMp:  snprintf(args, 256, "a0=0x%X d0.w=%hd d2.l=%d", REG(A0), REG(D0), REG(D2)); break;
-    case SystemCallType::F_SRqCMem: snprintf(args, 256, "d0.l=%d d1.l=%d", REG(D0), REG(D1)); break;
+    case SystemCallType::F_Event:   snprintf(args, 256, "d1.w=%hd (%s) %s", REG(d[1]), eventNameToString(Event(REG(d[1]))).c_str(), eventInputsToString(Event(REG(d[1])), regs, get).c_str()); break;
+    case SystemCallType::F_Gregor:  snprintf(args, 256, "d0.l=%d d1.l=%d", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_SysID:   snprintf(args, 256, "a0=0x%X a1=0x%X a2=0x%X a3=0x%X d0.l=%d", REG(a[0]), REG(a[1]), REG(a[2]), REG(a[3]), REG(d[0])); break;
+    case SystemCallType::F_Alarm:   snprintf(args, 256, "a0=0x%X d0.l=%d d1.w=%hd d2.l=%d d3.l=%d d4.l=%d", REG(a[0]), REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3]), REG(d[4])); break;
+    case SystemCallType::F_SigMask: snprintf(args, 256, "d0.l=%d d1.l=%d", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_ChkMem:  snprintf(args, 256, "a2=0x%X d0.l=%d d1.b=%hhd", REG(a[2]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_UAcct:   snprintf(args, 256, "d0.w=%hd a0=0x%X", REG(d[0]), REG(a[0])); break;
+    case SystemCallType::F_CCtl:    snprintf(args, 256, "d0.l=%d", REG(d[0])); break;
+    case SystemCallType::F_GSPUMp:  snprintf(args, 256, "a0=0x%X d0.w=%hd d2.l=%d", REG(a[0]), REG(d[0]), REG(d[2])); break;
+    case SystemCallType::F_SRqCMem: snprintf(args, 256, "d0.l=%d d1.l=%d", REG(d[0]), REG(d[1])); break;
     case SystemCallType::F_POSK:    return "xxx";
-    case SystemCallType::F_Panic:   snprintf(args, 256, "d0.l=%d", REG(D0)); break;
+    case SystemCallType::F_Panic:   snprintf(args, 256, "d0.l=%d", REG(d[0])); break;
     case SystemCallType::F_MBuf:    return "xxx";
-    case SystemCallType::F_Trans:   snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=%d", REG(A0), REG(D0), REG(D1)); break;
-    case SystemCallType::I_Attach:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd", GETSTR(A0), REG(D0)); break;
-    case SystemCallType::I_Detach:  snprintf(args, 256, "a2=0x%X", REG(A2)); break;
-    case SystemCallType::I_Dup:     snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
-    case SystemCallType::I_Create:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd d1.w=%hd d2.l=%d", GETSTR(A0), REG(D0), REG(D1), REG(D2)); break;
-    case SystemCallType::I_Open:    snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd", GETSTR(A0), REG(D0)); break;
-    case SystemCallType::I_MakDir:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd d1.w=%hd d2.l=%d", GETSTR(A0), REG(D0), REG(D1), REG(D2)); break;
-    case SystemCallType::I_ChgDir:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd", GETSTR(A0), REG(D0)); break;
-    case SystemCallType::I_Delete:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd", GETSTR(A0), REG(D0)); break;
-    case SystemCallType::I_Seek:    snprintf(args, 256, "d0.w=%hd d1.l=%d", REG(D0), REG(D1)); break;
-    case SystemCallType::I_Read:    snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
-    case SystemCallType::I_Write:   snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
-    case SystemCallType::I_ReadLn:  snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
-    case SystemCallType::I_WritLn:  snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
-    case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd (%s) d2.w=%hd d3.l=%d a0=0x%X", REG(D0), REG(D1), sttFunctionToString(SttFunction(REG(D1))).c_str(), REG(D2), REG(D3), REG(A0)); break;
-    case SystemCallType::I_SetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd (%s) d2.l=%d d3.w=%hd d4.l=%d a0=0x%X a1=0x%X", REG(D0), REG(D1), sttFunctionToString(SttFunction(REG(D1))).c_str(), REG(D2), REG(D3), REG(D4), REG(A0), REG(A1)); break;
-    case SystemCallType::I_Close:   snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
+    case SystemCallType::F_Trans:   snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=%d", REG(a[0]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::I_Attach:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd", GETSTR(0), REG(d[0])); break;
+    case SystemCallType::I_Detach:  snprintf(args, 256, "a2=0x%X", REG(a[2])); break;
+    case SystemCallType::I_Dup:     snprintf(args, 256, "d0.w=%hd", REG(d[0])); break;
+    case SystemCallType::I_Create:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd d1.w=%hd d2.l=%d", GETSTR(0), REG(d[0]), REG(d[1]), REG(d[2])); break;
+    case SystemCallType::I_Open:    snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd", GETSTR(0), REG(d[0])); break;
+    case SystemCallType::I_MakDir:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd d1.w=%hd d2.l=%d", GETSTR(0), REG(d[0]), REG(d[1]), REG(d[2])); break;
+    case SystemCallType::I_ChgDir:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd", GETSTR(0), REG(d[0])); break;
+    case SystemCallType::I_Delete:  snprintf(args, 256, "(a0).s=\"%s\" d0.b=%hhd", GETSTR(0), REG(d[0])); break;
+    case SystemCallType::I_Seek:    snprintf(args, 256, "d0.w=%hd d1.l=%d", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::I_Read:    snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(d[0]), REG(d[1]), REG(a[0])); break;
+    case SystemCallType::I_Write:   snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(d[0]), REG(d[1]), REG(a[0])); break;
+    case SystemCallType::I_ReadLn:  snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(d[0]), REG(d[1]), REG(a[0])); break;
+    case SystemCallType::I_WritLn:  snprintf(args, 256, "d0.w=%hd d1.l=%d a0=0x%X", REG(d[0]), REG(d[1]), REG(a[0])); break;
+    case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd (%s) d2.w=%hd d3.l=%d a0=0x%X", REG(d[0]), REG(d[1]), sttFunctionToString(SttFunction(REG(d[1]))).c_str(), REG(d[2]), REG(d[3]), REG(a[0])); break;
+    case SystemCallType::I_SetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd (%s) d2.l=%d d3.w=%hd d4.l=%d a0=0x%X a1=0x%X", REG(d[0]), REG(d[1]), sttFunctionToString(SttFunction(REG(d[1]))).c_str(), REG(d[2]), REG(d[3]), REG(d[4]), REG(a[0]), REG(a[1])); break;
+    case SystemCallType::I_Close:   snprintf(args, 256, "d0.w=%hd", REG(d[0])); break;
     default: snprintf(args, 256, "Unknown system call %d", (int)call);
     }
     return args;
 }
 
-std::string systemCallOutputsToString(const SystemCallType call, const std::map<SCC68070::Register, uint32_t>& regs, const std::function<const uint8_t*(const uint32_t)>& get)
+std::string systemCallOutputsToString(const SystemCallType call, const Registers* regs, const std::function<const uint8_t*(const uint32_t)>& get)
 {
     char args[256] = {0};
     switch(call)
     {
-    case SystemCallType::F_Link:    snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X d0.w=%hd d1.w=%hd", GETSTR(A0), REG(A1), REG(A2), REG(D0), REG(D1)); break;
-    case SystemCallType::F_Load:    snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X d0.w=%hd d1.w=%hd", GETSTR(A0), REG(A1), REG(A2), REG(D0), REG(D1)); break;
+    case SystemCallType::F_Link:    snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X d0.w=%hd d1.w=%hd", GETSTR(0), REG(a[1]), REG(a[2]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_Load:    snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X d0.w=%hd d1.w=%hd", GETSTR(0), REG(a[1]), REG(a[2]), REG(d[0]), REG(d[1])); break;
     case SystemCallType::F_UnLink:  return "";
-    case SystemCallType::F_Fork:    snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(A0), REG(D0)); break;
-    case SystemCallType::F_Wait:    snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(D0), REG(D1)); break;
+    case SystemCallType::F_Fork:    snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(0), REG(d[0])); break;
+    case SystemCallType::F_Wait:    snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(d[0]), REG(d[1])); break;
     case SystemCallType::F_Chain:   return "";
     case SystemCallType::F_Exit:    return "";
-    case SystemCallType::F_Mem:     snprintf(args, 256, "a1=0x%X d0.l=%d", REG(A1), REG(D0)); break;
+    case SystemCallType::F_Mem:     snprintf(args, 256, "a1=0x%X d0.l=%d", REG(a[1]), REG(d[0])); break;
     case SystemCallType::F_Send:    return "";
     case SystemCallType::F_Icpt:    return "";
-    case SystemCallType::F_Sleep:   snprintf(args, 256, "d0.l=%d", REG(D0)); break;
+    case SystemCallType::F_Sleep:   snprintf(args, 256, "d0.l=%d", REG(d[0])); break;
     case SystemCallType::F_SSpd:    return "";
-    case SystemCallType::F_ID:      snprintf(args, 256, "d0.w=%hd d1.l=%d d2.w=%hd", REG(D0), REG(D1), REG(D2)); break;
+    case SystemCallType::F_ID:      snprintf(args, 256, "d0.w=%hd d1.l=%d d2.w=%hd", REG(d[0]), REG(d[1]), REG(d[2])); break;
     case SystemCallType::F_SPrior:  return "";
     case SystemCallType::F_STrap:   return "";
     case SystemCallType::F_PErr:    return "";
-    case SystemCallType::F_PrsNam:  snprintf(args, 256, "a0=\"%s\" a1=0x%X d0.b='%c' d1.w=%hd", GETSTR(A0), REG(A1), REG(D0), REG(D1)); break;
-    case SystemCallType::F_CmpNam:  snprintf(args, 256, "carry=%d", REG(SR) & 1); break;
-    case SystemCallType::F_SchBit:  snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(D0), REG(D1)); break;
+    case SystemCallType::F_PrsNam:  snprintf(args, 256, "a0=\"%s\" a1=0x%X d0.b='%c' d1.w=%hd", GETSTR(0), REG(a[1]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_CmpNam:  snprintf(args, 256, "carry=%d", REG(sr).c); break;
+    case SystemCallType::F_SchBit:  snprintf(args, 256, "d0.w=%hd d1.w=%hd", REG(d[0]), REG(d[1])); break;
     case SystemCallType::F_AllBit:  return "";
     case SystemCallType::F_DelBit:  return "";
-    case SystemCallType::F_Time:    snprintf(args, 256, "d0.l=%d d1.l=%d d2.w=%hd d3.l=%d", REG(D0), REG(D1), REG(D2), REG(D3)); break;
+    case SystemCallType::F_Time:    snprintf(args, 256, "d0.l=%d d1.l=%d d2.w=%hd d3.l=%d", REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3])); break;
     case SystemCallType::F_STime:   return "";
-    case SystemCallType::F_CRC:     snprintf(args, 256, "d1.l=0x%X", REG(D1)); break;
+    case SystemCallType::F_CRC:     snprintf(args, 256, "d1.l=0x%X", REG(d[1])); break;
     case SystemCallType::F_GPrDsc:  return "";
-    case SystemCallType::F_GBlkMp:  snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=%d d2.l=%d d3.l=%d", REG(A0), REG(D0), REG(D1), REG(D2), REG(D3)); break;
-    case SystemCallType::F_GModDr:  snprintf(args, 256, "d1.l=%d", REG(D1)); break;
+    case SystemCallType::F_GBlkMp:  snprintf(args, 256, "a0=0x%X d0.l=%d d1.l=%d d2.l=%d d3.l=%d", REG(a[0]), REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3])); break;
+    case SystemCallType::F_GModDr:  snprintf(args, 256, "d1.l=%d", REG(d[1])); break;
     case SystemCallType::F_CpyMem:  return "";
     case SystemCallType::F_SUser:   return "";
-    case SystemCallType::F_UnLoad:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(A0)); break;
+    case SystemCallType::F_UnLoad:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(0)); break;
     case SystemCallType::F_RTE:     return "";
-    case SystemCallType::F_GPrDBT:  snprintf(args, 256, "d1.l=%d", REG(D1)); break;
-    case SystemCallType::F_Julian:  snprintf(args, 256, "d0.l=%d d1.l=%d", REG(D0), REG(D1)); break;
-    case SystemCallType::F_TLink:   snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X", GETSTR(A0), REG(A0), REG(A1)); break;
-    case SystemCallType::F_DFork:   snprintf(args, 256, "(a0).s=\"%s\" a2=0x%X d0.w=%hd", GETSTR(A0), REG(A2), REG(D0)); break;
-    case SystemCallType::F_DExec:   snprintf(args, 256, "d0.l=%d d1.l=%d d2.w=%hd d3.w=%hd d4.l=%d d5.w=%hd", REG(D0), REG(D1), REG(D2), REG(D3), REG(D4), REG(D5)); break;
+    case SystemCallType::F_GPrDBT:  snprintf(args, 256, "d1.l=%d", REG(d[1])); break;
+    case SystemCallType::F_Julian:  snprintf(args, 256, "d0.l=%d d1.l=%d", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_TLink:   snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X", GETSTR(0), REG(a[0]), REG(a[1])); break;
+    case SystemCallType::F_DFork:   snprintf(args, 256, "(a0).s=\"%s\" a2=0x%X d0.w=%hd", GETSTR(0), REG(a[2]), REG(d[0])); break;
+    case SystemCallType::F_DExec:   snprintf(args, 256, "d0.l=%d d1.l=%d d2.w=%hd d3.w=%hd d4.l=%d d5.w=%hd", REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3]), REG(d[4]), REG(d[5])); break;
     case SystemCallType::F_DExit:   return "";
-    case SystemCallType::F_DatMod:  snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X d0.w=%hd d1.w=%hd", GETSTR(A0), REG(A1), REG(A2), REG(D0), REG(D1)); break;
+    case SystemCallType::F_DatMod:  snprintf(args, 256, "(a0).s=\"%s\" a1=0x%X a2=0x%X d0.w=%hd d1.w=%hd", GETSTR(0), REG(a[1]), REG(a[2]), REG(d[0]), REG(d[1])); break;
     case SystemCallType::F_SetCRC:  return "";
-    case SystemCallType::F_SetSys:  snprintf(args, 256, "d2.l=%d", REG(D2)); break;
-    case SystemCallType::F_SRqMem:  snprintf(args, 256, "d0.l=%d a2=0x%X", REG(D0), REG(A2)); break;
+    case SystemCallType::F_SetSys:  snprintf(args, 256, "d2.l=%d", REG(d[2])); break;
+    case SystemCallType::F_SRqMem:  snprintf(args, 256, "d0.l=%d a2=0x%X", REG(d[0]), REG(a[2])); break;
     case SystemCallType::F_SRtMem:  return "";
     case SystemCallType::F_IRQ:     return "";
     case SystemCallType::F_IOQu:    return "";
     case SystemCallType::F_AProc:   return "";
     case SystemCallType::F_NProc:   return "";
-    case SystemCallType::F_VModul:  snprintf(args, 256, "a2=0x%X", REG(A2)); break;
-    case SystemCallType::F_FindPD:  snprintf(args, 256, "a1=0x%X", REG(A1)); break;
-    case SystemCallType::F_AllPD:   snprintf(args, 256, "a1=0x%X d0.w=%hd", REG(A1), REG(D0)); break;
+    case SystemCallType::F_VModul:  snprintf(args, 256, "a2=0x%X", REG(a[2])); break;
+    case SystemCallType::F_FindPD:  snprintf(args, 256, "a1=0x%X", REG(a[1])); break;
+    case SystemCallType::F_AllPD:   snprintf(args, 256, "a1=0x%X d0.w=%hd", REG(a[1]), REG(d[0])); break;
     case SystemCallType::F_RetPD:   return "";
     case SystemCallType::F_SSvc:    return "";
     case SystemCallType::F_IODel:   return "";
-    case SystemCallType::F_GProcP:  snprintf(args, 256, "a1=0x%X", REG(A1)); break;
+    case SystemCallType::F_GProcP:  snprintf(args, 256, "a1=0x%X", REG(a[1])); break;
     case SystemCallType::F_Move:    return "";
     case SystemCallType::F_AllRAM:  return "xxx";
-    case SystemCallType::F_Permit:  snprintf(args, 256, "a2=0x%X d0.l=%d d1.b=%hhd", REG(A2), REG(D0), REG(D1)); break;
-    case SystemCallType::F_Protect: snprintf(args, 256, "a2=0x%X d0.l=%d d1.b=%hhd", REG(A2), REG(D0), REG(D1)); break;
+    case SystemCallType::F_Permit:  snprintf(args, 256, "a2=0x%X d0.l=%d d1.b=%hhd", REG(a[2]), REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_Protect: snprintf(args, 256, "a2=0x%X d0.l=%d d1.b=%hhd", REG(a[2]), REG(d[0]), REG(d[1])); break;
     case SystemCallType::F_AllTsk:  return "";
     case SystemCallType::F_DelTsk:  return "";
-    case SystemCallType::F_AllPrc:  snprintf(args, 256, "a2=0x%X", REG(A2)); break;
+    case SystemCallType::F_AllPrc:  snprintf(args, 256, "a2=0x%X", REG(a[2])); break;
     case SystemCallType::F_DelPrc:  return "";
     case SystemCallType::F_FModul:  return "xxx";
     case SystemCallType::F_SysDbg:  return "";
-    case SystemCallType::F_Event:   snprintf(args, 256, "%s", eventOutputsToString(Event(REG(D1)), regs, get).c_str()); break;
-    case SystemCallType::F_Gregor:  snprintf(args, 256, "d0.l=0x%X d1.l=0x%X", REG(D0), REG(D1)); break;
-    case SystemCallType::F_SysID:   snprintf(args, 256, "(a0).s=\"%s\" (a1).s=\"%s\" a2=0x%X a3=0x%X d0.l=%d d1.l=%d d2.l=%d d3.l=%d d4.l=%d d5.l=%d d6.l=%d d7.l=%d", GETSTR(A0), GETSTR(A1), REG(A2), REG(A3), REG(D0), REG(D1), REG(D2), REG(D3), REG(D4), REG(D5), REG(D6), REG(D7)); break;
-    case SystemCallType::F_Alarm:   snprintf(args, 256, "d0.l=%d", REG(D0)); break;
+    case SystemCallType::F_Event:   snprintf(args, 256, "%s", eventOutputsToString(Event(REG(d[1])), regs, get).c_str()); break;
+    case SystemCallType::F_Gregor:  snprintf(args, 256, "d0.l=0x%X d1.l=0x%X", REG(d[0]), REG(d[1])); break;
+    case SystemCallType::F_SysID:   snprintf(args, 256, "(a0).s=\"%s\" (a1).s=\"%s\" a2=0x%X a3=0x%X d0.l=%d d1.l=%d d2.l=%d d3.l=%d d4.l=%d d5.l=%d d6.l=%d d7.l=%d", GETSTR(0), GETSTR(1), REG(a[2]), REG(a[3]), REG(d[0]), REG(d[1]), REG(d[2]), REG(d[3]), REG(d[4]), REG(d[5]), REG(d[6]), REG(d[7])); break;
+    case SystemCallType::F_Alarm:   snprintf(args, 256, "d0.l=%d", REG(d[0])); break;
     case SystemCallType::F_SigMask: return "";
     case SystemCallType::F_ChkMem:  return "";
     case SystemCallType::F_UAcct:   return "";
     case SystemCallType::F_CCtl:    return "";
-    case SystemCallType::F_GSPUMp:  snprintf(args, 256, "a0=0x%X d2.l=%d", REG(A0), REG(D2)); break;
-    case SystemCallType::F_SRqCMem: snprintf(args, 256, "a2=0x%X d0.l=%d", REG(A2), REG(D0)); break;
+    case SystemCallType::F_GSPUMp:  snprintf(args, 256, "a0=0x%X d2.l=%d", REG(a[0]), REG(d[2])); break;
+    case SystemCallType::F_SRqCMem: snprintf(args, 256, "a2=0x%X d0.l=%d", REG(a[2]), REG(d[0])); break;
     case SystemCallType::F_POSK:    return "xxx";
     case SystemCallType::F_Panic:   return "";
     case SystemCallType::F_MBuf:    return "xxx";
-    case SystemCallType::F_Trans:   snprintf(args, 256, "a0=0x%X d0.l=%d", REG(A0), REG(D0)); break;
-    case SystemCallType::I_Attach:  snprintf(args, 256, "a2=0x%X", REG(A2)); break;
+    case SystemCallType::F_Trans:   snprintf(args, 256, "a0=0x%X d0.l=%d", REG(a[0]), REG(d[0])); break;
+    case SystemCallType::I_Attach:  snprintf(args, 256, "a2=0x%X", REG(a[2])); break;
     case SystemCallType::I_Detach:  return "";
-    case SystemCallType::I_Dup:     snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
-    case SystemCallType::I_Create:  snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(A0), REG(D0)); break;
-    case SystemCallType::I_Open:    snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(A0), REG(D0)); break;
-    case SystemCallType::I_MakDir:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(A0)); break;
-    case SystemCallType::I_ChgDir:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(A0)); break;
-    case SystemCallType::I_Delete:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(A0)); break;
+    case SystemCallType::I_Dup:     snprintf(args, 256, "d0.w=%hd", REG(d[0])); break;
+    case SystemCallType::I_Create:  snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(0), REG(d[0])); break;
+    case SystemCallType::I_Open:    snprintf(args, 256, "(a0).s=\"%s\" d0.w=%hd", GETSTR(0), REG(d[0])); break;
+    case SystemCallType::I_MakDir:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(0)); break;
+    case SystemCallType::I_ChgDir:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(0)); break;
+    case SystemCallType::I_Delete:  snprintf(args, 256, "(a0).s=\"%s\"", GETSTR(0)); break;
     case SystemCallType::I_Seek:    return "";
-    case SystemCallType::I_Read:    snprintf(args, 256, "d1.l=%d", REG(D1)); break;
-    case SystemCallType::I_Write:   snprintf(args, 256, "d1.l=%d", REG(D1)); break;
-    case SystemCallType::I_ReadLn:  snprintf(args, 256, "d1.l=%d", REG(D1)); break;
-    case SystemCallType::I_WritLn:  snprintf(args, 256, "d1.l=%d", REG(D1)); break;
-    case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.l=%d d1.l=%d d2.l=%d", REG(D0), REG(D1), REG(D2)); break;
+    case SystemCallType::I_Read:    snprintf(args, 256, "d1.l=%d", REG(d[1])); break;
+    case SystemCallType::I_Write:   snprintf(args, 256, "d1.l=%d", REG(d[1])); break;
+    case SystemCallType::I_ReadLn:  snprintf(args, 256, "d1.l=%d", REG(d[1])); break;
+    case SystemCallType::I_WritLn:  snprintf(args, 256, "d1.l=%d", REG(d[1])); break;
+    case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.l=%d d1.l=%d d2.l=%d", REG(d[0]), REG(d[1]), REG(d[2])); break;
     case SystemCallType::I_SetStt:  return "";
     case SystemCallType::I_Close:   return "";
     default: snprintf(args, 256, "Unknown system call %d", (int)call);
