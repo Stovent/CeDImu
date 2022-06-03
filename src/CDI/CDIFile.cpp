@@ -18,15 +18,15 @@ static constexpr Video::ImageCodingMethod codingLookUp[16] = {
     ICM(OFF), ICM(OFF), ICM(OFF), ICM(OFF),
 };
 
-CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos) :
-    disc(cdidisc),
-    LBN(lbn),
-    size(filesize),
-    nameSize(namesize),
-    name(filename),
-    attributes(attr),
-    number(filenumber),
-    parent(parentRelpos)
+CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos)
+    : LBN(lbn)
+    , size(filesize)
+    , nameSize(namesize)
+    , name(filename)
+    , attributes(attr)
+    , number(filenumber)
+    , parent(parentRelpos)
+    , disc(cdidisc)
 {}
 
 static std::string getAudioLevel(const bool bps, const uint32_t fs)

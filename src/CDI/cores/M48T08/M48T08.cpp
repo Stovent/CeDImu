@@ -25,9 +25,10 @@ enum M48T08Registers
  *
  * If \p initialTime is 0, then time will continue from the time stored in the initial state at the 8 last bytes.
  */
-M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state) :
-    IRTC(idc),
-    internalClock{initialTime, 0.0}
+M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state)
+    : IRTC(idc)
+    , internalClock{initialTime, 0.0}
+    , sram()
 {
     if(state)
     {

@@ -10,20 +10,34 @@
  * \param idc Reference to the CDI context.
  * \param clockFrequency The frequency of the CPU.
  */
-SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
-    cdi(idc),
-    cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
-    speedDelay(cycleDelay),
-    timerDelay(cycleDelay * 96),
-    internal{0},
-    D{0}, A_{0},
-    ILUT(std::make_unique<ILUTFunctionPointer[]>(UINT16_MAX + 1)),
-    DLUT(std::make_unique<DLUTFunctionPointer[]>(UINT16_MAX + 1))
+SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
+    : currentPC(0)
+    , totalCycleCount(0)
+    , breakpoints{}
+    , cdi(idc)
+    , executionThread()
+    , uartInMutex()
+    , uartIn{}
+    , loop(false)
+    , stop(false)
+    , isRunning(false)
+    , cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
+    , speedDelay(cycleDelay)
+    , timerDelay(cycleDelay * 96)
+    , timerCounter(0)
+    , internal{0}
+    , currentOpcode(0)
+    , lastAddress(0)
+    , D{0}
+    , A_{0}
+    , PC(0)
+    , SR(0)
+    , USP(0)
+    , SSP(0)
+    , exceptions{}
+    , ILUT(std::make_unique<ILUTFunctionPointer[]>(UINT16_MAX + 1))
+    , DLUT(std::make_unique<DLUTFunctionPointer[]>(UINT16_MAX + 1))
 {
-    loop = stop = isRunning = false;
-    timerCounter = totalCycleCount = 0;
-    currentPC = currentOpcode = lastAddress = PC = SR = USP = SSP = 0;
-
     GenerateInstructionSet();
 }
 

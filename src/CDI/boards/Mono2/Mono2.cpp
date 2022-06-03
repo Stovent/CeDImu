@@ -4,10 +4,10 @@
 #include "../../cores/DS1216/DS1216.hpp"
 #include "../../cores/M48T08/M48T08.hpp"
 
-Mono2::Mono2(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void* nvram, const CDIConfig& conf) :
-    Board(cdi, "Mono-II", conf),
-    mcd212(cdi, vdscBios, vdscSize, conf.PAL),
-    nvramMaxAddress(conf.has32KBNVRAM ? 0x330000 : 0x324000)
+Mono2::Mono2(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void* nvram, const CDIConfig& conf)
+    : Board(cdi, "Mono-II", conf)
+    , mcd212(cdi, vdscBios, vdscSize, conf.PAL)
+    , nvramMaxAddress(conf.has32KBNVRAM ? 0x330000 : 0x324000)
 {
     slave = std::make_unique<HLE::IKAT>(cdi, conf.PAL, 0x310000, PointingDevice::Type::Maneuvering);
     if(conf.has32KBNVRAM)

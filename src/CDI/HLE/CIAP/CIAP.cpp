@@ -27,9 +27,9 @@ enum CIAPRegisters
     DLOAD    = 0x25FE,
 };
 
-CIAP::CIAP(CDI& idc) :
-    cdi(idc),
-    registers{0}
+CIAP::CIAP(CDI& idc)
+    : cdi(idc)
+    , registers{0}
 {
     registers[ID >> 1] = 0xCD02;
 }

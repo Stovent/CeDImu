@@ -49,6 +49,30 @@ enum SubmodeBits : uint8_t
 
 class CDIDisc
 {
+public:
+    std::string mainModule;
+    std::string gameName;
+
+    CDIDisc() : mainModule(), gameName(), disc(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
+    CDIDisc(const CDIDisc&) = delete;
+    CDIDisc(const CDIDisc&&) = delete;
+
+    bool Open(const std::string& filename);
+    bool IsOpen() const;
+    void Close();
+    bool Good();
+    DiscTime GetTime();
+
+    CDIFile* GetFile(std::string path);
+
+    bool ExportAudio(const std::string& path);
+    bool ExportFiles(const std::string& path);
+    void ExportFileSystem(const std::string& path);
+    bool ExportVideo(const std::string& path);
+    bool ExportRawVideo(const std::string& path);
+    void ExportSectorsInfo(const std::string& path);
+
+private:
     friend CDIFile;
     friend CDIDirectory;
 
@@ -75,29 +99,6 @@ class CDIDisc
 
     inline bool IsEmptySector() const { return !(subheader.submode & cdiany) && !subheader.channelNumber && !subheader.codingInformation; };
     inline uint16_t GetSectorDataSize() const { return (subheader.submode & cdiform) ? 2324 : 2048; }
-
-public:
-    std::string mainModule;
-    std::string gameName;
-
-    CDIDisc() : disc(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
-    CDIDisc(const CDIDisc&) = delete;
-    CDIDisc(const CDIDisc&&) = delete;
-
-    bool Open(const std::string& filename);
-    bool IsOpen() const;
-    void Close();
-    bool Good();
-    DiscTime GetTime();
-
-    CDIFile* GetFile(std::string path);
-
-    bool ExportAudio(const std::string& path);
-    bool ExportFiles(const std::string& path);
-    void ExportFileSystem(const std::string& path);
-    bool ExportVideo(const std::string& path);
-    bool ExportRawVideo(const std::string& path);
-    void ExportSectorsInfo(const std::string& path);
 };
 
 #endif // CDI_CDIDISC_HPP

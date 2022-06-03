@@ -9,9 +9,6 @@ class CDIDisc;
 
 class CDIDirectory
 {
-    std::map<std::string, CDIFile> files;
-    std::map<std::string, CDIDirectory> subdirectories;
-
 public:
     const uint8_t nameSize;
     const std::string name;
@@ -31,6 +28,10 @@ public:
     void ExportFiles(std::string basePath) const;
     void ExportVideo(std::string basePath) const;
     void ExportRawVideo(std::string basePath) const;
+
+private:
+    std::map<std::string, CDIFile> files;
+    std::map<std::string, CDIDirectory> subdirectories;
 };
 
 #endif // CDI_CDIDIRECTORY_HPP

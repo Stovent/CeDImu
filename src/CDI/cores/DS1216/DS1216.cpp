@@ -17,8 +17,16 @@ enum DS1216Clock
     Year,
 };
 
-static constexpr std::array<bool, 64> matchPattern =
-{0,1,0,1,1,1,0,0, 1,0,1,0,0,0,1,1, 0,0,1,1,1,0,1,0, 1,1,0,0,0,1,0,1, 0,1,0,1,1,1,0,0, 1,0,1,0,0,0,1,1, 0,0,1,1,1,0,1,0, 1,1,0,0,0,1,0,1};
+static constexpr std::array<bool, 64> matchPattern = {
+    0,1,0,1,1,1,0,0,
+    1,0,1,0,0,0,1,1,
+    0,0,1,1,1,0,1,0,
+    1,1,0,0,0,1,0,1,
+    0,1,0,1,1,1,0,0,
+    1,0,1,0,0,0,1,1,
+    0,0,1,1,1,0,1,0,
+    1,1,0,0,0,1,0,1,
+};
 
 /** \brief Constructs a new timekeeper.
  * \param idc A reference to the CDI context.
@@ -28,12 +36,13 @@ static constexpr std::array<bool, 64> matchPattern =
  * If \p initialTime is 0, then time will continue from the time stored in the initial state at the 8 last bytes.
  * If \p initialTime is 0 and \p state is a nullptr, then initial time will be IRTC::defaultTime.
  */
-DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state) :
-    IRTC(idc),
-    internalClock{initialTime, 0.0},
-    clock{0},
-    patternCount(-1),
-    pattern(64)
+DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state)
+    : IRTC(idc)
+    , internalClock{initialTime, 0.0}
+    , clock{0}
+    , sram{}
+    , patternCount(-1)
+    , pattern(64)
 {
     if(state)
     {

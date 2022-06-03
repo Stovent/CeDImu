@@ -9,7 +9,11 @@
  * \param conf The configuration of the player.
  * \param calls The user callbacks.
  */
-CDI::CDI(const CDIConfig& conf, const Callbacks& calls) : config(conf), callbacks(calls)
+CDI::CDI(const CDIConfig& conf, const Callbacks& calls)
+    : config(conf)
+    , disc()
+    , board()
+    , callbacks(calls)
 {
 }
 
@@ -24,7 +28,11 @@ CDI::CDI(const CDIConfig& conf, const Callbacks& calls) : config(conf), callback
  * See description of CDI::LoadBoard.
  * On failure, CDI::board is a nullptr. On success CDI::board is a valid pointer.
  */
-CDI::CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf, const Callbacks& calls) : config(conf), callbacks(calls)
+CDI::CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf, const Callbacks& calls)
+    : config(conf)
+    , disc()
+    , board()
+    , callbacks(calls)
 {
     LoadBoard(vdscBios, vdscSize, nvram, brd);
 }

@@ -13,7 +13,7 @@ public:
     CDI& cdi;
 
     CIAP() = delete;
-    CIAP(CDI& idc);
+    explicit CIAP(CDI& idc);
 
     void IncrementTime(const double ns);
 

@@ -71,54 +71,77 @@ struct LogSCC68070Exception
  */
 class Callbacks
 {
-    std::mutex onLogDisassemblerMutex;
+    std::mutex onLogDisassemblerMutex{};
     std::function<void(const LogInstruction&)> onLogDisassemblerCallback;
 
-    std::mutex onUARTOutMutex;
+    std::mutex onUARTOutMutex{};
     std::function<void(uint8_t)> onUARTOutCallback;
 
-    std::mutex onFrameCompletedMutex;
+    std::mutex onFrameCompletedMutex{};
     std::function<void(const Plane&)> onFrameCompletedCallback;
 
-    std::mutex onSaveNVRAMMutex;
+    std::mutex onSaveNVRAMMutex{};
     std::function<void(const void* data, size_t)> onSaveNVRAMCallback;
 
-    std::mutex onLogICADCAMutex;
+    std::mutex onLogICADCAMutex{};
     std::function<void(ControlArea, LogICADCA)> onLogICADCACallback;
 
-    std::mutex onLogMemoryAccessMutex;
+    std::mutex onLogMemoryAccessMutex{};
     std::function<void(const LogMemoryAccess&)> onLogMemoryAccessCallback;
 
-    std::mutex onLogExceptionMutex;
+    std::mutex onLogExceptionMutex{};
     std::function<void(const LogSCC68070Exception&)> onLogExceptionCallback;
 
-    std::mutex onLogRTEMutex;
+    std::mutex onLogRTEMutex{};
     std::function<void(uint32_t, uint16_t)> onLogRTECallback; /**< The parameter is the PC value pulled from the stack. */
 
 public:
     explicit Callbacks(const std::function<void(const LogInstruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
                        const std::function<void(const Plane&)>& frameCompleted = nullptr,
+                       const std::function<void(const void* data, size_t)>& saveNVRAM = nullptr,
                        const std::function<void(ControlArea, LogICADCA)>& icadca = nullptr,
                        const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr,
                        const std::function<void(const LogSCC68070Exception&)>& logException = nullptr,
-                       const std::function<void(uint32_t, uint16_t)>& logRTE = nullptr) :
-       onLogDisassemblerCallback(disassembler),
-       onUARTOutCallback(uartOut),
-       onFrameCompletedCallback(frameCompleted),
-       onLogICADCACallback(icadca),
-       onLogMemoryAccessCallback(memoryAccess),
-       onLogExceptionCallback(logException),
-       onLogRTECallback(logRTE)
+                       const std::function<void(uint32_t, uint16_t)>& logRTE = nullptr)
+       : onLogDisassemblerMutex()
+       , onLogDisassemblerCallback(disassembler)
+       , onUARTOutMutex()
+       , onUARTOutCallback(uartOut)
+       , onFrameCompletedMutex()
+       , onFrameCompletedCallback(frameCompleted)
+       , onSaveNVRAMMutex()
+       , onSaveNVRAMCallback(saveNVRAM)
+       , onLogICADCAMutex()
+       , onLogICADCACallback(icadca)
+       , onLogMemoryAccessMutex()
+       , onLogMemoryAccessCallback(memoryAccess)
+       , onLogExceptionMutex()
+       , onLogExceptionCallback(logException)
+       , onLogRTEMutex()
+       , onLogRTECallback(logRTE)
    {}
 
-   Callbacks(const Callbacks& other) :
-       onLogDisassemblerCallback(other.onLogDisassemblerCallback),
-       onUARTOutCallback(other.onUARTOutCallback),
-       onFrameCompletedCallback(other.onFrameCompletedCallback),
-       onLogICADCACallback(other.onLogICADCACallback),
-       onLogMemoryAccessCallback(other.onLogMemoryAccessCallback)
+   Callbacks(const Callbacks& other)
+       : onLogDisassemblerMutex()
+       , onLogDisassemblerCallback(other.onLogDisassemblerCallback)
+       , onUARTOutMutex()
+       , onUARTOutCallback(other.onUARTOutCallback)
+       , onFrameCompletedMutex()
+       , onFrameCompletedCallback(other.onFrameCompletedCallback)
+       , onSaveNVRAMMutex()
+       , onSaveNVRAMCallback(other.onSaveNVRAMCallback)
+       , onLogICADCAMutex()
+       , onLogICADCACallback(other.onLogICADCACallback)
+       , onLogMemoryAccessMutex()
+       , onLogMemoryAccessCallback(other.onLogMemoryAccessCallback)
+       , onLogExceptionMutex()
+       , onLogExceptionCallback(other.onLogExceptionCallback)
+       , onLogRTEMutex()
+       , onLogRTECallback(other.onLogRTECallback)
    {}
+
+   Callbacks(Callbacks&&) = default;
 
     bool HasOnLogDisassembler()
     {

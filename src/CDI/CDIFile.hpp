@@ -7,8 +7,6 @@ class CDIDisc;
 
 class CDIFile
 {
-    CDIDisc& disc;
-
 public:
     const uint32_t LBN;
     const uint32_t size;
@@ -26,6 +24,9 @@ public:
     void ExportVideo(const std::string& directoryPath);
     void ExportRawVideo(const std::string& directoryPath);
     uint8_t* GetContent(uint32_t& size);
+
+private:
+    CDIDisc& disc;
 };
 
 #endif // CDI_CDIFILE_HPP

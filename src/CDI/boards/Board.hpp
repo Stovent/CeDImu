@@ -21,7 +21,7 @@ public:
     std::unique_ptr<ISlave> slave;
     std::unique_ptr<IRTC> timekeeper;
 
-    Board(CDI& idc, const std::string& name, const CDIConfig& conf) : name(name), cdi(idc), cpu(idc, conf.PAL ? SCC68070::PAL_FREQUENCY : SCC68070::NTSC_FREQUENCY) {}
+    Board(CDI& idc, const std::string& name, const CDIConfig& conf) : name(name), cdi(idc), cpu(idc, conf.PAL ? SCC68070::PAL_FREQUENCY : SCC68070::NTSC_FREQUENCY), slave(), timekeeper() {}
     virtual ~Board() {  }
     virtual void Reset(const bool resetCPU) = 0;
     virtual void IncrementTime(const double ns) { slave->IncrementTime(ns); timekeeper->IncrementClock(ns); }

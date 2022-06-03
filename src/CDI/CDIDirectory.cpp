@@ -5,12 +5,14 @@
 
 #include <string>
 
-CDIDirectory::CDIDirectory(uint8_t namesize, std::string dirName, uint32_t lbn, uint16_t parent, uint16_t offset) :
-    nameSize(namesize),
-    name(dirName),
-    LBN(lbn),
-    parentDirectory(parent),
-    relOffset(offset)
+CDIDirectory::CDIDirectory(uint8_t namesize, std::string dirName, uint32_t lbn, uint16_t parent, uint16_t offset)
+    : nameSize(namesize)
+    , name(dirName)
+    , LBN(lbn)
+    , parentDirectory(parent)
+    , relOffset(offset)
+    , files()
+    , subdirectories()
 {
 }
 

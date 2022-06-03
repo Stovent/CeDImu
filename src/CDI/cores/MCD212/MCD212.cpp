@@ -6,23 +6,27 @@
 #include <algorithm>
 #include <cstring>
 
-MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL) :
-    VDSC(idc, bios, size, 0x400000),
-    isPAL(PAL),
-    memorySwapCount(0),
-    timeNs(0.0),
-    memory(0x280000, 0),
-    screen(Plane::RGB_SIZE),
-    planeA(),
-    planeB(),
-    cursorPlane(Plane::CURSOR_ARGB_SIZE, 16, 16),
-    backgroundPlane(Plane::MAX_HEIGHT * 4, 1, Plane::MAX_HEIGHT),
-    controlRegisters{0},
-    CLUT{0},
-    cursorPatterns{0},
-    regionFlags{0},
-    currentRegionControl(RegionControl - 1),
-    internalRegisters{0}
+MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL)
+    : VDSC(idc, bios, size, 0x400000)
+    , isPAL(PAL)
+    , memorySwapCount(0)
+    , timeNs(0.0)
+    , memory(0x280000, 0)
+    , screen(Plane::RGB_SIZE)
+    , planeA()
+    , planeB()
+    , cursorPlane(Plane::CURSOR_ARGB_SIZE, 16, 16)
+    , backgroundPlane(Plane::MAX_HEIGHT * 4, 1, Plane::MAX_HEIGHT)
+    , controlRegisters{0}
+    , CLUT{0}
+    , cursorPatterns{0}
+    , regionFlags{0}
+    , currentRegionControl(RegionControl - 1)
+    , internalRegisters{0}
+    , registerCSR1R(0)
+    , registerCSR2R(0)
+    , lineNumber(0)
+    , verticalLines(0)
 {
 }
 

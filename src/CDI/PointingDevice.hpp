@@ -27,7 +27,7 @@ public:
     ISlave& slave;
     const Type type;
     const size_t dataPacketDelay;
-    std::array<uint8_t, 4> pointerMessage;
+    std::array<uint8_t, 4> pointerMessage{};
 
     PointingDevice() = delete;
     PointingDevice(ISlave& slv, Type deviceType);
@@ -58,7 +58,7 @@ private:
     size_t consecutiveCursorPackets; // Ranges from 1 to 8.
     GamepadSpeed gamepadSpeed;
 
-    std::mutex pointerMutex;
+    std::mutex pointerMutex{};
     PointerState pointerState = {false, false, false, 0, 0};
     PointerState lastPointerState = {false, false, false, 0, 0};
     bool padLeft = false;

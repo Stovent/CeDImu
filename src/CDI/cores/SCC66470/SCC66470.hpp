@@ -9,7 +9,9 @@
 class SCC66470 : public VDSC
 {
 public:
-    explicit SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32_t size);
+    SCC66470() = delete;
+    SCC66470(const SCC66470&) = delete;
+    SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32_t size);
     virtual ~SCC66470();
 
     virtual void Reset() override;
@@ -33,6 +35,7 @@ public:
     virtual const Plane& GetCursor() const override;
 
 private:
+    const bool isMaster;
     std::vector<uint8_t> memory;
     uint8_t memorySwapCount;
     uint16_t lineNumber; // starts at 0
@@ -40,8 +43,6 @@ private:
     std::array<uint16_t, 0x20> internalRegisters;
     uint8_t registerCSR;
     uint16_t registerB;
-
-    const bool isMaster;
 
     Plane screen;
     Plane planeA;
