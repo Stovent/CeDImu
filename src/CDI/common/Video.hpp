@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 namespace Video
 {
@@ -26,6 +27,36 @@ enum class ImageCodingMethod
     CLUT4,
     DYUV,
     RGB555,
+};
+
+enum class ControlArea
+{
+    ICA1,
+    DCA1,
+    ICA2,
+    DCA2,
+};
+
+/** \struct Plane
+ * \brief Represent a video plane.
+ */
+struct Plane : public std::vector<uint8_t>
+{
+    static constexpr size_t MAX_WIDTH     = 768;
+    static constexpr size_t MAX_HEIGHT    = 560;
+    static constexpr size_t CURSOR_WIDTH  = 16;
+    static constexpr size_t CURSOR_HEIGHT = 16;
+
+    static constexpr size_t RGB_SIZE   = MAX_WIDTH * MAX_HEIGHT * 3;
+    static constexpr size_t ARGB_SIZE  = MAX_WIDTH * MAX_HEIGHT * 4;
+    static constexpr size_t CURSOR_ARGB_SIZE = CURSOR_WIDTH * CURSOR_HEIGHT * 4;
+
+    uint16_t width; /**< Width of the plane. */
+    uint16_t height; /**< Height of the plane. */
+
+    explicit Plane(const size_t sz = ARGB_SIZE, uint16_t w = 0, uint16_t h = 0) : std::vector<uint8_t>(sz, 0), width(w), height(h) {}
+    const uint8_t* operator()(size_t line, size_t pixelSize) const { return data() + line * width * pixelSize; }
+    uint8_t* operator()(size_t line, size_t pixelSize) { return data() + line * width * pixelSize; }
 };
 
 extern const uint8_t dequantizer[16];

@@ -7,16 +7,18 @@
 #include <cstring>
 
 MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL)
-    : VDSC(idc, bios, size, 0x400000)
+    : BIOS(bios, size, 0x400000)
+    , totalFrameCount(0)
+    , cdi(idc)
     , isPAL(PAL)
     , memorySwapCount(0)
     , timeNs(0.0)
     , memory(0x280000, 0)
-    , screen(Plane::RGB_SIZE)
+    , screen(Video::Plane::RGB_SIZE)
     , planeA()
     , planeB()
-    , cursorPlane(Plane::CURSOR_ARGB_SIZE, 16, 16)
-    , backgroundPlane(Plane::MAX_HEIGHT * 4, 1, Plane::MAX_HEIGHT)
+    , cursorPlane(Video::Plane::CURSOR_ARGB_SIZE, 16, 16)
+    , backgroundPlane(Video::Plane::MAX_HEIGHT * 4, 1, Video::Plane::MAX_HEIGHT)
     , controlRegisters{0}
     , CLUT{0}
     , cursorPatterns{0}
@@ -82,7 +84,7 @@ void MCD212::ExecuteICA1()
         const uint32_t ica = GetLong(addr);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
+            cdi.callbacks.OnLogICADCA(Video::ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
         addr += 4;
 
         switch(ica >> 28)
@@ -149,7 +151,7 @@ void MCD212::ExecuteDCA1()
         SetDCP1(addr + 4);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::DCA1, { totalFrameCount + 1, lineNumber, dca });
+            cdi.callbacks.OnLogICADCA(Video::ControlArea::DCA1, { totalFrameCount + 1, lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -215,7 +217,7 @@ void MCD212::ExecuteICA2()
         const uint32_t ica = GetLong(addr);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::ICA2, { totalFrameCount + 1, 0, ica });
+            cdi.callbacks.OnLogICADCA(Video::ControlArea::ICA2, { totalFrameCount + 1, 0, ica });
         addr += 4;
 
         switch(ica >> 28)
@@ -275,7 +277,7 @@ void MCD212::ExecuteDCA2()
         SetDCP2(addr + 4);
 
         if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(ControlArea::DCA2, { totalFrameCount + 1, lineNumber, dca });
+            cdi.callbacks.OnLogICADCA(Video::ControlArea::DCA2, { totalFrameCount + 1, lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -335,27 +337,27 @@ RAMBank MCD212::GetRAMBank2() const
     return {&memory[0x200000], 0x200000, 0x80000};
 }
 
-const Plane& MCD212::GetScreen() const
+const Video::Plane& MCD212::GetScreen() const
 {
     return screen;
 }
 
-const Plane& MCD212::GetPlaneA() const
+const Video::Plane& MCD212::GetPlaneA() const
 {
     return planeA;
 }
 
-const Plane& MCD212::GetPlaneB() const
+const Video::Plane& MCD212::GetPlaneB() const
 {
     return planeB;
 }
 
-const Plane& MCD212::GetBackground() const
+const Video::Plane& MCD212::GetBackground() const
 {
     return backgroundPlane;
 }
 
-const Plane& MCD212::GetCursor() const
+const Video::Plane& MCD212::GetCursor() const
 {
     return cursorPlane;
 }

@@ -1,38 +1,45 @@
 #ifndef CDI_CORES_SCC66470_SCC66470_HPP
 #define CDI_CORES_SCC66470_SCC66470_HPP
 
-#include "../VDSC.hpp"
+class CDI;
+#include "../../common/types.hpp"
+#include "../../common/Video.hpp"
+#include "../../OS9/BIOS.hpp"
 
 #include <array>
 #include <vector>
 
-class SCC66470 : public VDSC
+class SCC66470
 {
 public:
+    CDI& cdi;
+    OS9::BIOS BIOS;
+    uint32_t totalFrameCount;
+
     SCC66470() = delete;
     SCC66470(const SCC66470&) = delete;
     SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32_t size);
-    virtual ~SCC66470();
+    ~SCC66470();
 
-    virtual void Reset() override;
-    virtual void IncrementTime(const double ns) override;
+    void Reset();
+    void IncrementTime(const double ns);
 
-    virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
-    virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
+    uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
+    uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);
 
-    virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) override;
-    virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
+    void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger);
+    void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger);
 
-    virtual RAMBank GetRAMBank1() const override;
-    virtual RAMBank GetRAMBank2() const override;
+    RAMBank GetRAMBank1() const;
+    RAMBank GetRAMBank2() const;
 
-    virtual std::vector<InternalRegister> GetInternalRegisters() const override;
-    virtual std::vector<InternalRegister> GetControlRegisters() const override;
-    virtual const Plane& GetScreen() const override;
-    virtual const Plane& GetPlaneA() const override;
-    virtual const Plane& GetPlaneB() const override;
-    virtual const Plane& GetBackground() const override;
-    virtual const Plane& GetCursor() const override;
+    std::vector<InternalRegister> GetInternalRegisters() const;
+    std::vector<InternalRegister> GetControlRegisters() const;
+    const Video::Plane& GetScreen() const;
+    const Video::Plane& GetPlaneA() const;
+    const Video::Plane& GetPlaneB() const;
+    const Video::Plane& GetBackground() const;
+    const Video::Plane& GetCursor() const;
 
 private:
     const bool isMaster;
@@ -44,11 +51,11 @@ private:
     uint8_t registerCSR;
     uint16_t registerB;
 
-    Plane screen;
-    Plane planeA;
-    Plane planeB;
-    Plane cursorPlane;
-    Plane backgroundPlane;
+    Video::Plane screen;
+    Video::Plane planeA;
+    Video::Plane planeB;
+    Video::Plane cursorPlane;
+    Video::Plane backgroundPlane;
 
     void MemorySwap();
     uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);

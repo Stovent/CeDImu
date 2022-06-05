@@ -22,7 +22,7 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu) :
 {
     SetDoubleBuffered(true);
 
-    m_cedimu.m_cdi.callbacks.SetOnFrameCompleted([this] (const Plane& plane) {
+    m_cedimu.m_cdi.callbacks.SetOnFrameCompleted([this] (const Video::Plane& plane) {
         if(m_mainFrame->m_cpuViewer)
             m_mainFrame->m_cpuViewer->m_flushInstructions = true;
 

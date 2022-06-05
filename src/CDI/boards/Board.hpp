@@ -4,10 +4,11 @@
 class CDI;
 #include "../CDIConfig.hpp"
 #include "../common/types.hpp"
+#include "../common/Video.hpp"
 #include "../cores/IRTC.hpp"
 #include "../cores/ISlave.hpp"
-#include "../cores/VDSC.hpp"
 #include "../cores/SCC68070/SCC68070.hpp"
+#include "../OS9/BIOS.hpp"
 
 #include <memory>
 
@@ -60,11 +61,11 @@ public:
 
     virtual std::vector<InternalRegister> GetInternalRegisters() = 0;
     virtual std::vector<InternalRegister> GetControlRegisters() = 0;
-    virtual const Plane& GetScreen() = 0;
-    virtual const Plane& GetPlaneA() = 0;
-    virtual const Plane& GetPlaneB() = 0;
-    virtual const Plane& GetBackground() = 0;
-    virtual const Plane& GetCursor() = 0;
+    virtual const Video::Plane& GetScreen() = 0;
+    virtual const Video::Plane& GetPlaneA() = 0;
+    virtual const Video::Plane& GetPlaneB() = 0;
+    virtual const Video::Plane& GetBackground() = 0;
+    virtual const Video::Plane& GetCursor() = 0;
 };
 
 #endif // CDI_BOARDS_BOARD_HPP

@@ -1,55 +1,62 @@
 #ifndef CDI_CORES_MCD212_MCD212_HPP
 #define CDI_CORES_MCD212_MCD212_HPP
 
-#include "../VDSC.hpp"
+class CDI;
+#include "../../common/types.hpp"
+#include "../../common/Video.hpp"
+#include "../../OS9/BIOS.hpp"
 
 #include <array>
 #include <vector>
 
-class MCD212 : public VDSC
+class MCD212
 {
 public:
+    OS9::BIOS BIOS;
+    uint32_t totalFrameCount;
+
     MCD212() = delete;
     explicit MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL);
-    virtual ~MCD212();
+    ~MCD212();
 
-    virtual void Reset() override;
-    virtual void IncrementTime(const double ns) override;
+    void Reset();
+    void IncrementTime(const double ns);
 
-    virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
-    virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger) override;
+    uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
+    uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);
 
-    virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger) override;
-    virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger) override;
+    void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger);
+    void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger);
 
-    virtual RAMBank GetRAMBank1() const override;
-    virtual RAMBank GetRAMBank2() const override;
+    RAMBank GetRAMBank1() const;
+    RAMBank GetRAMBank2() const;
 
-    virtual std::vector<InternalRegister> GetInternalRegisters() const override;
-    virtual std::vector<InternalRegister> GetControlRegisters() const override;
-    virtual const Plane& GetScreen() const override;
-    virtual const Plane& GetPlaneA() const override;
-    virtual const Plane& GetPlaneB() const override;
-    virtual const Plane& GetBackground() const override;
-    virtual const Plane& GetCursor() const override;
+    std::vector<InternalRegister> GetInternalRegisters() const;
+    std::vector<InternalRegister> GetControlRegisters() const;
+    const Video::Plane& GetScreen() const;
+    const Video::Plane& GetPlaneA() const;
+    const Video::Plane& GetPlaneB() const;
+    const Video::Plane& GetBackground() const;
+    const Video::Plane& GetCursor() const;
 
 private:
+    CDI& cdi;
     const bool isPAL;
     uint8_t memorySwapCount;
     double timeNs; // time counter in nano seconds.
 
     std::vector<uint8_t> memory;
 
-    Plane screen;
-    Plane planeA;
-    Plane planeB;
-    Plane cursorPlane;
-    Plane backgroundPlane;
+    Video::Plane screen;
+    Video::Plane planeA;
+    Video::Plane planeB;
+    Video::Plane cursorPlane;
+    Video::Plane backgroundPlane;
 
     std::array<uint32_t, 0x80> controlRegisters;
     std::array<uint32_t, 256> CLUT;
     std::array<uint16_t, 16>  cursorPatterns;
-    std::array<std::array<bool, Plane::MAX_WIDTH>, 2> regionFlags;
+    std::array<std::array<bool, Video::Plane::MAX_WIDTH>, 2> regionFlags;
     uint8_t currentRegionControl;
 
     std::array<uint16_t, 32> internalRegisters;

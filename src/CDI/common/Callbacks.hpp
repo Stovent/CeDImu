@@ -1,8 +1,8 @@
 #ifndef CDI_COMMON_CALLBACKS_HPP
 #define CDI_COMMON_CALLBACKS_HPP
 
+#include "Video.hpp"
 #include "../cores/SCC68070/SCC68070.hpp"
-#include "../cores/VDSC.hpp"
 #include "../OS9/SystemCalls.hpp"
 
 #include <functional>
@@ -78,13 +78,13 @@ class Callbacks
     std::function<void(uint8_t)> onUARTOutCallback;
 
     std::mutex onFrameCompletedMutex{};
-    std::function<void(const Plane&)> onFrameCompletedCallback;
+    std::function<void(const Video::Plane&)> onFrameCompletedCallback;
 
     std::mutex onSaveNVRAMMutex{};
     std::function<void(const void* data, size_t)> onSaveNVRAMCallback;
 
     std::mutex onLogICADCAMutex{};
-    std::function<void(ControlArea, LogICADCA)> onLogICADCACallback;
+    std::function<void(Video::ControlArea, LogICADCA)> onLogICADCACallback;
 
     std::mutex onLogMemoryAccessMutex{};
     std::function<void(const LogMemoryAccess&)> onLogMemoryAccessCallback;
@@ -98,9 +98,9 @@ class Callbacks
 public:
     explicit Callbacks(const std::function<void(const LogInstruction&)>& disassembler = nullptr,
                        const std::function<void(uint8_t)>& uartOut = nullptr,
-                       const std::function<void(const Plane&)>& frameCompleted = nullptr,
+                       const std::function<void(const Video::Plane&)>& frameCompleted = nullptr,
                        const std::function<void(const void* data, size_t)>& saveNVRAM = nullptr,
-                       const std::function<void(ControlArea, LogICADCA)>& icadca = nullptr,
+                       const std::function<void(Video::ControlArea, LogICADCA)>& icadca = nullptr,
                        const std::function<void(const LogMemoryAccess&)>& memoryAccess = nullptr,
                        const std::function<void(const LogSCC68070Exception&)>& logException = nullptr,
                        const std::function<void(uint32_t, uint16_t)>& logRTE = nullptr)
@@ -172,12 +172,12 @@ public:
             onUARTOutCallback(arg);
     }
 
-    void SetOnFrameCompleted(const std::function<void(const Plane&)>& callback)
+    void SetOnFrameCompleted(const std::function<void(const Video::Plane&)>& callback)
     {
         std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
         onFrameCompletedCallback = callback;
     }
-    void OnFrameCompleted(const Plane& plane)
+    void OnFrameCompleted(const Video::Plane& plane)
     {
         std::lock_guard<std::mutex> lock(onFrameCompletedMutex);
         if(onFrameCompletedCallback)
@@ -201,12 +201,12 @@ public:
         std::lock_guard<std::mutex> lock(onLogICADCAMutex);
         return (bool)onLogICADCACallback;
     }
-    void SetOnLogICADCA(const std::function<void(ControlArea, LogICADCA)>& callback)
+    void SetOnLogICADCA(const std::function<void(Video::ControlArea, LogICADCA)>& callback)
     {
         std::lock_guard<std::mutex> lock(onLogICADCAMutex);
         onLogICADCACallback = callback;
     }
-    void OnLogICADCA(ControlArea area, LogICADCA inst)
+    void OnLogICADCA(Video::ControlArea area, LogICADCA inst)
     {
         std::lock_guard<std::mutex> lock(onLogICADCAMutex);
         if(onLogICADCACallback)

@@ -71,27 +71,27 @@ RAMBank MiniMMC::GetRAMBank2() const
     return slaveVDSC.GetRAMBank2();
 }
 
-const Plane& MiniMMC::GetScreen()
+const Video::Plane& MiniMMC::GetScreen()
 {
     return masterVDSC.GetScreen();
 }
 
-const Plane& MiniMMC::GetPlaneA()
+const Video::Plane& MiniMMC::GetPlaneA()
 {
     return masterVDSC.GetPlaneA();
 }
 
-const Plane& MiniMMC::GetPlaneB()
+const Video::Plane& MiniMMC::GetPlaneB()
 {
     return masterVDSC.GetPlaneB();
 }
 
-const Plane& MiniMMC::GetBackground()
+const Video::Plane& MiniMMC::GetBackground()
 {
     return masterVDSC.GetBackground();
 }
 
-const Plane& MiniMMC::GetCursor()
+const Video::Plane& MiniMMC::GetCursor()
 {
     return masterVDSC.GetCursor();
 }

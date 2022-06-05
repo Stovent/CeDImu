@@ -69,27 +69,27 @@ RAMBank Mono2::GetRAMBank2() const
     return mcd212.GetRAMBank2();
 }
 
-const Plane& Mono2::GetScreen()
+const Video::Plane& Mono2::GetScreen()
 {
     return mcd212.GetScreen();
 }
 
-const Plane& Mono2::GetPlaneA()
+const Video::Plane& Mono2::GetPlaneA()
 {
     return mcd212.GetPlaneA();
 }
 
-const Plane& Mono2::GetPlaneB()
+const Video::Plane& Mono2::GetPlaneB()
 {
     return mcd212.GetPlaneB();
 }
 
-const Plane& Mono2::GetBackground()
+const Video::Plane& Mono2::GetBackground()
 {
     return mcd212.GetBackground();
 }
 
-const Plane& Mono2::GetCursor()
+const Video::Plane& Mono2::GetCursor()
 {
     return mcd212.GetCursor();
 }

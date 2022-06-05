@@ -31,4 +31,11 @@ struct InternalRegister
     std::string disassembledValue;
 };
 
+struct RAMBank
+{
+    const uint8_t* data;
+    uint32_t base;
+    uint32_t size;
+};
+
 #endif // CDI_COMMON_TYPES_HPP

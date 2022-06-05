@@ -34,11 +34,11 @@ public:
 
     virtual std::vector<InternalRegister> GetInternalRegisters() override;
     virtual std::vector<InternalRegister> GetControlRegisters() override;
-    virtual const Plane& GetScreen() override;
-    virtual const Plane& GetPlaneA() override;
-    virtual const Plane& GetPlaneB() override;
-    virtual const Plane& GetBackground() override;
-    virtual const Plane& GetCursor() override;
+    virtual const Video::Plane& GetScreen() override;
+    virtual const Video::Plane& GetPlaneA() override;
+    virtual const Video::Plane& GetPlaneB() override;
+    virtual const Video::Plane& GetBackground() override;
+    virtual const Video::Plane& GetCursor() override;
 };
 
 #endif // CDI_BOARDS_MONO2_MONO2_HPP

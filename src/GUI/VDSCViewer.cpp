@@ -317,7 +317,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
     Show();
     m_updateTimer.Start(16);
 
-    m_cedimu.m_cdi.callbacks.SetOnLogICADCA([=] (ControlArea area, LogICADCA inst) {
+    m_cedimu.m_cdi.callbacks.SetOnLogICADCA([=] (Video::ControlArea area, LogICADCA inst) {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(this->m_flushIcadca)
         {
@@ -330,16 +330,16 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu) :
 
         switch(area)
         {
-            case ControlArea::DCA1:
+            case Video::ControlArea::DCA1:
                 this->m_dca1.push_back(inst);
                 break;
-            case ControlArea::ICA1:
+            case Video::ControlArea::ICA1:
                 this->m_ica1.push_back(inst);
                 break;
-            case ControlArea::DCA2:
+            case Video::ControlArea::DCA2:
                 this->m_dca2.push_back(inst);
                 break;
-            case ControlArea::ICA2:
+            case Video::ControlArea::ICA2:
                 this->m_ica2.push_back(inst);
                 break;
         }
@@ -444,7 +444,7 @@ void VDSCViewer::UpdatePanels()
         return;
 
     std::lock_guard<std::mutex> lock2(m_imgMutex);
-    const Plane& planeA = m_cedimu.m_cdi.board->GetPlaneA();
+    const Video::Plane& planeA = m_cedimu.m_cdi.board->GetPlaneA();
     m_imgPlaneA.Create(planeA.width, planeA.height);
     if(m_imgPlaneA.IsOk())
     {
@@ -457,7 +457,7 @@ void VDSCViewer::UpdatePanels()
         dc.DrawBitmap(wxBitmap(m_imgPlaneA.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
     }
 
-    const Plane& planeB = m_cedimu.m_cdi.board->GetPlaneB();
+    const Video::Plane& planeB = m_cedimu.m_cdi.board->GetPlaneB();
     m_imgPlaneB.Create(planeB.width, planeB.height);
     if(m_imgPlaneB.IsOk())
     {
@@ -470,7 +470,7 @@ void VDSCViewer::UpdatePanels()
         dc.DrawBitmap(wxBitmap(m_imgPlaneB.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
     }
 
-    const Plane& cursor = m_cedimu.m_cdi.board->GetCursor();
+    const Video::Plane& cursor = m_cedimu.m_cdi.board->GetCursor();
     m_imgCursor.Create(cursor.width, cursor.height);
     if(m_imgCursor.IsOk())
     {
@@ -482,7 +482,7 @@ void VDSCViewer::UpdatePanels()
         dc.DrawBitmap(wxBitmap(m_imgCursor), 0, 0);
     }
 
-    const Plane& backgd = m_cedimu.m_cdi.board->GetBackground();
+    const Video::Plane& backgd = m_cedimu.m_cdi.board->GetBackground();
     m_imgBackgd.Create(backgd.width, backgd.height);
     if(m_imgBackgd.IsOk())
     {
