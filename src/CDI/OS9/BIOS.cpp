@@ -45,10 +45,11 @@ ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
  * \param sz The size of the BIOS data.
  * \param bs The base address of the BIOS in the memory map.
  */
-BIOS::BIOS(const void* bios, const uint32_t sz, const uint32_t bs) :
-    base(bs),
-    size(sz),
-    memory((uint8_t*)bios, (uint8_t*)bios + size)
+BIOS::BIOS(const void* bios, const uint32_t sz, const uint32_t bs)
+    : base(bs)
+    , size(sz)
+    , modules()
+    , memory((uint8_t*)bios, (uint8_t*)bios + size)
 {
     LoadModules();
 }

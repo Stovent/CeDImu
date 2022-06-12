@@ -54,6 +54,8 @@ public:
     std::vector<ModuleHeader> modules; /**< OS9 modules inside the BIOS. */
 
     BIOS() = delete;
+    BIOS(const BIOS&) = default;
+    BIOS(BIOS&&) = default;
     BIOS(const void* bios, const uint32_t sz, const uint32_t bs);
     ~BIOS();
 

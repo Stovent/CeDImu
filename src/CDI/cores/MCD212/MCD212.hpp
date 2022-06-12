@@ -86,7 +86,7 @@ private:
     void ExecuteDCA2();
 
     void MemorySwap();
-    uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger);
+    uint32_t GetLong(const uint32_t addr);
 
     // internal registers
     uint16_t GetCSR1RRegister() const;
