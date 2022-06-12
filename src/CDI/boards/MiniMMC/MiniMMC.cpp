@@ -23,11 +23,11 @@ void MiniMMC::Reset(const bool resetCPU)
         cpu.Reset();
 }
 
-void MiniMMC::IncrementTime(const double ns)
+void MiniMMC::IncrementTime(const Cycles& c)
 {
-    Board::IncrementTime(ns);
-    masterVDSC.IncrementTime(ns);
-    slaveVDSC.IncrementTime(ns);
+    Board::IncrementTime(c);
+    masterVDSC.IncrementTime(c);
+    slaveVDSC.IncrementTime(c);
 }
 
 uint32_t MiniMMC::GetTotalFrameCount()

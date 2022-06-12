@@ -16,7 +16,7 @@ public:
     virtual ~ISlave() {}
 
     virtual void UpdatePointerState() = 0;
-    virtual void IncrementTime(const size_t ns) = 0;
+    virtual void IncrementTime(const Cycles& c) = 0;
 
     virtual uint8_t GetByte(const uint8_t addr) = 0;
     virtual void SetByte(const uint8_t addr, const uint8_t data) = 0;

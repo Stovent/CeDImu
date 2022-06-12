@@ -2,6 +2,7 @@
 #define CDI_CORES_MCD212_MCD212_HPP
 
 class CDI;
+#include "../../common/Cycles.hpp"
 #include "../../common/types.hpp"
 #include "../../common/Video.hpp"
 #include "../../OS9/BIOS.hpp"
@@ -20,7 +21,7 @@ public:
     ~MCD212();
 
     void Reset();
-    void IncrementTime(const double ns);
+    void IncrementTime(const Cycles& c);
 
     uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
     uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);
@@ -43,7 +44,8 @@ private:
     CDI& cdi;
     const bool isPAL;
     uint8_t memorySwapCount;
-    double timeNs; // time counter in nano seconds.
+    uint64_t previousHSYNC;
+    Cycles cycles;
 
     std::vector<uint8_t> memory;
 
@@ -164,11 +166,7 @@ private:
     inline size_t GetHorizontalCycles() const { return GetCF() ? 120 : 112; } // Table 5.5
     inline size_t GetTotalVerticalLines() const { return GetFD() ? 262 : 312; } // Table 5.6
     inline size_t GetVerticalRetraceLines() const { return GetFD() ? 22 : (GetST() ? 72 : 32); }
-
-    inline size_t GetLineDisplayTime() const // as nano seconds
-    {
-        return isPAL || !GetCF() ? 64000 : 63560;
-    }
+    inline uint64_t GetHSYNCCycles() const { return GetCF() ? 1920 : 1792; } // 5.3 Timing.
 
     enum InternalRegistersMemoryMap
     {

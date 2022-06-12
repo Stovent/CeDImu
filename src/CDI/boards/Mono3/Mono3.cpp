@@ -1,5 +1,6 @@
 #include "Mono3.hpp"
 #include "../../common/Callbacks.hpp"
+#include "../../common/Cycles.hpp"
 #include "../../HLE/IKAT/IKAT.hpp"
 #include "../../cores/DS1216/DS1216.hpp"
 #include "../../cores/M48T08/M48T08.hpp"
@@ -29,11 +30,11 @@ void Mono3::Reset(const bool resetCPU)
         cpu.Reset();
 }
 
-void Mono3::IncrementTime(const double ns)
+void Mono3::IncrementTime(const Cycles& c)
 {
-    Board::IncrementTime(ns);
-    mcd212.IncrementTime(ns);
-    ciap.IncrementTime(ns);
+    Board::IncrementTime(c);
+    mcd212.IncrementTime(c);
+    ciap.IncrementTime(c);
 }
 
 uint32_t Mono3::GetTotalFrameCount()

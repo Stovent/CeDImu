@@ -12,7 +12,8 @@ MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL)
     , cdi(idc)
     , isPAL(PAL)
     , memorySwapCount(0)
-    , timeNs(0.0)
+    , previousHSYNC(0)
+    , cycles(30'000'000)
     , memory(0x280000, 0)
     , screen(Video::Plane::RGB_SIZE)
     , planeA()
@@ -55,18 +56,19 @@ void MCD212::Reset()
 
     verticalLines = 0;
     lineNumber = 0;
-    timeNs = 0.0;
+    previousHSYNC = 0;
+    cycles.Reset();
     MemorySwap();
 }
 
-void MCD212::IncrementTime(const double ns)
+void MCD212::IncrementTime(const Cycles& c)
 {
-    timeNs += ns;
-    const size_t lineDisplayTime = GetLineDisplayTime();
-    if(timeNs >= lineDisplayTime)
+    cycles += c;
+    const uint64_t hsync = GetHSYNCCycles();
+    if(cycles - previousHSYNC >= hsync)
     {
+        previousHSYNC += hsync;
         ExecuteVideoLine();
-        timeNs -= lineDisplayTime;
     }
 }
 

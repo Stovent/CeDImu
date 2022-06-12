@@ -2,15 +2,10 @@
 #define CDI_CORES_IRTC_HPP
 
 class CDI;
+#include "../common/Cycles.hpp"
 
 #include <cstdint>
 #include <ctime>
-
-struct Clock
-{
-    std::time_t sec;
-    double nsec;
-};
 
 class IRTC
 {
@@ -20,10 +15,10 @@ public:
 
     IRTC() = delete;
     IRTC(IRTC&) = delete;
-    IRTC(CDI& idc) : cdi(idc) {}
+    explicit IRTC(CDI& idc) : cdi(idc) {}
     virtual ~IRTC() {}
 
-    virtual void IncrementClock(const double ns) = 0;
+    virtual void IncrementClock(const Cycles& c) = 0;
 
     virtual uint8_t GetByte(const uint16_t addr) = 0;
     virtual void SetByte(const uint16_t addr, const uint8_t data) = 0;

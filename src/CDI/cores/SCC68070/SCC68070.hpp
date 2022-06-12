@@ -2,6 +2,7 @@
 #define CDI_CORES_SCC68070_SCC68070_HPP
 
 class CDI;
+#include "../../common/Cycles.hpp"
 #include "../../common/types.hpp"
 
 #include <array>
@@ -244,10 +245,11 @@ private:
 
     void DumpCPURegisters();
 
-    const double cycleDelay; // Time between two clock cycles in nanoseconds
+    const uint64_t cpuFrequency;
+    const double cycleDelay; // Time between two clock cycles in nanoseconds.
     double speedDelay; // used for emulation speed.
-    const double timerDelay;
-    double timerCounter; // Counts the nanosconds when incrementing the timer.
+    uint64_t previousTimer; // The previous number of cycles for the timer.
+    Cycles timerCycles; // Counts the cycles when incrementing the timer.
 
     std::array<uint8_t, Peripheral::Size> internal;
     uint16_t currentOpcode;
@@ -329,7 +331,7 @@ private:
     // Peripherals
     uint8_t GetPeripheral(uint32_t addr);
     void SetPeripheral(uint32_t addr, const uint8_t data);
-    void IncrementTimer(const double ns);
+    void IncrementTimer(const Cycles& c);
 
     // Conditional Tests
     bool T() const;

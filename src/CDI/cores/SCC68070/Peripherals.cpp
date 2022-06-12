@@ -76,14 +76,14 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
     }
 }
 
-void SCC68070::IncrementTimer(const double ns)
+void SCC68070::IncrementTimer(const Cycles& c)
 {
-    timerCounter += ns;
-    const uint8_t priority = internal[PICR1] & 0x07;
-    while(timerCounter >= timerDelay)
+    timerCycles += c;
+    while(timerCycles - previousTimer >= 96) // Clock circuitry increment every 96 CPU cycles.
     {
-        timerCounter -= timerDelay;
+        previousTimer += 96;
         uint16_t T0 = (uint16_t)internal[T0H] << 8 | internal[T0L];
+        const uint8_t priority = internal[PICR1] & 0x07;
 
         if(T0 == 0xFFFF)
         {

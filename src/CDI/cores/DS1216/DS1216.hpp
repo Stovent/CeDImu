@@ -14,13 +14,13 @@ public:
     explicit DS1216(CDI& idc, std::time_t initialTime = 0, const uint8_t* state = nullptr);
     ~DS1216();
 
-    void IncrementClock(const double ns) override;
+    void IncrementClock(const Cycles& c) override;
 
     uint8_t GetByte(const uint16_t addr) override;
     void SetByte(const uint16_t addr, const uint8_t data) override;
 
 private:
-    Clock internalClock;
+    Cycles internalClock;
     std::array<uint8_t, 8> clock;
     std::array<uint8_t, 0x8000> sram; // 32KB
 

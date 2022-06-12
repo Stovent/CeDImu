@@ -15,13 +15,13 @@ public:
     explicit M48T08(CDI& idc, std::time_t initialTime = 0, const uint8_t* state = nullptr);
     ~M48T08();
 
-    void IncrementClock(const double ns) override;
+    void IncrementClock(const Cycles& c) override;
 
     uint8_t GetByte(const uint16_t addr) override;
     void SetByte(const uint16_t addr, const uint8_t data) override;
 
 private:
-    Clock internalClock;
+    Cycles internalClock;
     std::array<uint8_t, 0x2000> sram;
 
     void ClockToSRAM();

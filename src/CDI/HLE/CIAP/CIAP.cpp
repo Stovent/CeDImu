@@ -34,7 +34,7 @@ CIAP::CIAP(CDI& idc)
     registers[ID >> 1] = 0xCD02;
 }
 
-void CIAP::IncrementTime(const double ns)
+void CIAP::IncrementTime(const Cycles& c)
 {
     registers[ISR_221 >> 1] = 9; // Data interrupt.
 }

@@ -13,7 +13,7 @@ public:
     MiniMMC(CDI& cdi, const void* bios, const uint32_t size, const CDIConfig& conf);
     virtual ~MiniMMC();
     virtual void Reset(const bool resetCPU) override;
-    virtual void IncrementTime(const double ns) override;
+    virtual void IncrementTime(const Cycles& c) override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;

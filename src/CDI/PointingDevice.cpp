@@ -1,29 +1,27 @@
 #include "PointingDevice.hpp"
 #include "cores/ISlave.hpp"
 
-PointingDevice::PointingDevice(ISlave& slv, PointingDevice::Type deviceType) :
-    slave(slv),
-    type(deviceType),
-    dataPacketDelay(getDataPacketDelay(deviceType)),
-    timer(0),
-    consecutiveCursorPackets(0),
-    gamepadSpeed(GamepadSpeed::N)
+PointingDevice::PointingDevice(ISlave& slv, PointingDevice::Type deviceType)
+    : slave(slv)
+    , type(deviceType)
+    , cycles(getDataPacketFrequency(deviceType))
+    , consecutiveCursorPackets(0)
+    , gamepadSpeed(GamepadSpeed::N)
 {}
 
-
-void PointingDevice::IncrementTime(const size_t ns)
+void PointingDevice::IncrementTime(const Cycles& c)
 {
-    timer += ns;
+    const uint64_t previousCycles = cycles;
+    cycles += c;
 
-    if(timer >= dataPacketDelay)
+    if(cycles - previousCycles > 0)
     {
-        timer -= dataPacketDelay;
         std::lock_guard<std::mutex> lock(pointerMutex);
         bool update = false;
 
         if(!padLeft && !padUp && !padRight && !padDown)
             consecutiveCursorPackets = 0;
-        else
+        else if(consecutiveCursorPackets < 8)
             consecutiveCursorPackets++;
 
         int speed = getCursorSpeed(gamepadSpeed, consecutiveCursorPackets);

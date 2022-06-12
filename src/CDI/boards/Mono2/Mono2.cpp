@@ -28,10 +28,10 @@ void Mono2::Reset(const bool resetCPU)
         cpu.Reset();
 }
 
-void Mono2::IncrementTime(const double ns)
+void Mono2::IncrementTime(const Cycles& c)
 {
-    Board::IncrementTime(ns);
-    mcd212.IncrementTime(ns);
+    Board::IncrementTime(c);
+    mcd212.IncrementTime(c);
 }
 
 uint32_t Mono2::GetTotalFrameCount()

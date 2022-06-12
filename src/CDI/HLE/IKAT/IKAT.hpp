@@ -19,7 +19,7 @@ public:
     IKAT& operator=(const IKAT&) = delete;
 
     virtual void UpdatePointerState() override;
-    virtual void IncrementTime(const size_t ns) override;
+    virtual void IncrementTime(const Cycles& c) override;
 
     virtual uint8_t GetByte(const uint8_t addr) override;
     virtual void SetByte(const uint8_t addr, const uint8_t data) override;

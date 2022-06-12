@@ -2,6 +2,7 @@
 #define CDI_CORES_SCC66470_SCC66470_HPP
 
 class CDI;
+#include "../../common/Cycles.hpp"
 #include "../../common/types.hpp"
 #include "../../common/Video.hpp"
 #include "../../OS9/BIOS.hpp"
@@ -22,7 +23,7 @@ public:
     ~SCC66470();
 
     void Reset();
-    void IncrementTime(const double ns);
+    void IncrementTime(const Cycles& c);
 
     uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
     uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);

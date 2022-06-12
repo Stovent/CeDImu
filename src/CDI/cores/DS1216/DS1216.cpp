@@ -18,14 +18,14 @@ enum DS1216Clock
 };
 
 static constexpr std::array<bool, 64> matchPattern = {
-    0,1,0,1,1,1,0,0,
-    1,0,1,0,0,0,1,1,
-    0,0,1,1,1,0,1,0,
-    1,1,0,0,0,1,0,1,
-    0,1,0,1,1,1,0,0,
-    1,0,1,0,0,0,1,1,
-    0,0,1,1,1,0,1,0,
-    1,1,0,0,0,1,0,1,
+    0, 1, 0, 1, 1, 1, 0, 0,
+    1, 0, 1, 0, 0, 0, 1, 1,
+    0, 0, 1, 1, 1, 0, 1, 0,
+    1, 1, 0, 0, 0, 1, 0, 1,
+    0, 1, 0, 1, 1, 1, 0, 0,
+    1, 0, 1, 0, 0, 0, 1, 1,
+    0, 0, 1, 1, 1, 0, 1, 0,
+    1, 1, 0, 0, 0, 1, 0, 1,
 };
 
 /** \brief Constructs a new timekeeper.
@@ -38,7 +38,7 @@ static constexpr std::array<bool, 64> matchPattern = {
  */
 DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state)
     : IRTC(idc)
-    , internalClock{initialTime, 0.0}
+    , internalClock(100)
     , clock{0}
     , sram{}
     , patternCount(-1)
@@ -61,7 +61,7 @@ DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state)
         if(initialTime == 0)
             initialTime = IRTC::defaultTime;
 
-        internalClock.sec = initialTime;
+//        internalClock.sec = initialTime;
         ClockToSRAM();
     }
 }
@@ -86,33 +86,33 @@ void DS1216::ClockToSRAM()
     if(patternCount >= 0) // Do not change SRAM clock when it is being read.
         return;
 
-    const std::tm* gmt = std::gmtime(&internalClock.sec);
-    uint8_t hour = byteToPBCD(gmt->tm_hour);
-    if(clock[Hour] & 0x80) // 12h format
-    {
-        int h = gmt->tm_hour;
-        if(h >= 12) // PM
-        {
-            hour = 0xA0;
-            if(h > 12)
-                h -= 12;
-        }
-        else // AM
-        {
-            hour = 0x80;
-            h = h == 0 ? 12 : h;
-        }
-        hour |= byteToPBCD(h);
-    }
-
-    clock[Hundredths] = (int)(internalClock.nsec / 10'000'000.0);
-    clock[Seconds] = byteToPBCD(gmt->tm_sec);
-    clock[Minutes] = byteToPBCD(gmt->tm_min);
-    clock[Hour]    = hour;
-    clock[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (clock[Day] & 0x30);
-    clock[Date]    = byteToPBCD(gmt->tm_mday);
-    clock[Month]   = byteToPBCD(gmt->tm_mon + 1);
-    clock[Year]    = byteToPBCD(gmt->tm_year);
+//    const std::tm* gmt = std::gmtime(&internalClock.sec);
+//    uint8_t hour = byteToPBCD(gmt->tm_hour);
+//    if(clock[Hour] & 0x80) // 12h format
+//    {
+//        int h = gmt->tm_hour;
+//        if(h >= 12) // PM
+//        {
+//            hour = 0xA0;
+//            if(h > 12)
+//                h -= 12;
+//        }
+//        else // AM
+//        {
+//            hour = 0x80;
+//            h = h == 0 ? 12 : h;
+//        }
+//        hour |= byteToPBCD(h);
+//    }
+//
+//    clock[Hundredths] = (int)(internalClock.nsec / 10'000'000.0);
+//    clock[Seconds] = byteToPBCD(gmt->tm_sec);
+//    clock[Minutes] = byteToPBCD(gmt->tm_min);
+//    clock[Hour]    = hour;
+//    clock[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (clock[Day] & 0x30);
+//    clock[Date]    = byteToPBCD(gmt->tm_mday);
+//    clock[Month]   = byteToPBCD(gmt->tm_mon + 1);
+//    clock[Year]    = byteToPBCD(gmt->tm_year);
 }
 
 /** \brief Move the SRAM clock into the internal clock.
@@ -143,8 +143,8 @@ void DS1216::SRAMToClock()
     gmt.tm_mon  = PBCDToByte(clock[Month]) - 1;
     gmt.tm_year = PBCDToByte(clock[Year]); if(gmt.tm_year < 70) gmt.tm_year += 100;
     gmt.tm_isdst = 0;
-    internalClock.sec = std::mktime(&gmt);
-    internalClock.nsec = PBCDToByte(clock[Hundredths]) * 10'000'000.0;
+//    internalClock.sec = std::mktime(&gmt);
+//    internalClock.nsec = PBCDToByte(clock[Hundredths]) * 10'000'000.0;
 }
 
 void DS1216::PushPattern(const bool bit)
@@ -166,17 +166,12 @@ void DS1216::IncrementClockAccess()
     }
 }
 
-void DS1216::IncrementClock(const double ns)
+void DS1216::IncrementClock(const Cycles& c)
 {
     if(clock[Day] & 0x20) // OSC bit
         return;
 
-    internalClock.nsec += ns;
-    while(internalClock.nsec >= 1'000'000'000.0)
-    {
-        internalClock.sec++;
-        internalClock.nsec -= 1'000'000'000.0;
-    }
+    internalClock += c;
 }
 
 uint8_t DS1216::GetByte(const uint16_t addr)

@@ -71,9 +71,9 @@ void SCC68070::Interpreter()
 
         totalCycleCount += executionCycles;
 
-        const double ns = executionCycles * cycleDelay;
-        IncrementTimer(ns);
-        cdi.board->IncrementTime(ns);
+        const Cycles cycles(cpuFrequency, executionCycles);
+        IncrementTimer(cycles);
+        cdi.board->IncrementTime(cycles);
 
         if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
             loop = false;

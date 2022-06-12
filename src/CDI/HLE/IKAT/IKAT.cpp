@@ -90,9 +90,9 @@ void IKAT::UpdatePointerState()
     SET_INT(CHB)
 }
 
-void IKAT::IncrementTime(const size_t ns)
+void IKAT::IncrementTime(const Cycles& c)
 {
-    pointingDevice.IncrementTime(ns);
+    pointingDevice.IncrementTime(c);
 
     for(int channel = CHA; channel <= CHD; channel++)
     {

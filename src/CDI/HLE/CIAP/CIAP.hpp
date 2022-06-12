@@ -2,6 +2,7 @@
 #define CDI_HLE_CIAP_CIAP_HPP
 
 class CDI;
+#include "../../common/Cycles.hpp"
 #include "../../common/types.hpp"
 
 #include <array>
@@ -15,7 +16,7 @@ public:
     CIAP() = delete;
     explicit CIAP(CDI& idc);
 
-    void IncrementTime(const double ns);
+    void IncrementTime(const Cycles& c);
 
     uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);
 

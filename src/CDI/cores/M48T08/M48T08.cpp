@@ -27,7 +27,7 @@ enum M48T08Registers
  */
 M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state)
     : IRTC(idc)
-    , internalClock{initialTime, 0.0}
+    , internalClock(1)
     , sram()
 {
     if(state)
@@ -46,7 +46,7 @@ M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state)
         if(initialTime == 0)
             initialTime = IRTC::defaultTime;
 
-        internalClock.sec = initialTime;
+//        internalClock.sec = initialTime;
         ClockToSRAM();
     }
     sram[Control] = 0;
@@ -69,14 +69,14 @@ void M48T08::ClockToSRAM()
     if(sram[Control] & 0xC0)
         return;
 
-    const std::tm* gmt = std::gmtime(&internalClock.sec);
-    sram[Seconds] = byteToPBCD(gmt->tm_sec) | (sram[Seconds] & 0x80);
-    sram[Minutes] = byteToPBCD(gmt->tm_min);
-    sram[Hours]   = byteToPBCD(gmt->tm_hour);
-    sram[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (sram[Day] & 0x40); // TODO: verify that 1 = monday, 0 = sunday, etc.
-    sram[Date]    = byteToPBCD(gmt->tm_mday);
-    sram[Month]   = byteToPBCD(gmt->tm_mon + 1);
-    sram[Year]    = byteToPBCD(gmt->tm_year);
+//    const std::tm* gmt = std::gmtime(&internalClock.sec);
+//    sram[Seconds] = byteToPBCD(gmt->tm_sec) | (sram[Seconds] & 0x80);
+//    sram[Minutes] = byteToPBCD(gmt->tm_min);
+//    sram[Hours]   = byteToPBCD(gmt->tm_hour);
+//    sram[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (sram[Day] & 0x40); // TODO: verify that 1 = monday, 0 = sunday, etc.
+//    sram[Date]    = byteToPBCD(gmt->tm_mday);
+//    sram[Month]   = byteToPBCD(gmt->tm_mon + 1);
+//    sram[Year]    = byteToPBCD(gmt->tm_year);
 }
 
 /** \brief Move the SRAM clock into the internal clock.
@@ -91,8 +91,8 @@ void M48T08::SRAMToClock()
     gmt.tm_mon  = PBCDToByte(sram[Month]) - 1;
     gmt.tm_year = PBCDToByte(sram[Year]); gmt.tm_year += (gmt.tm_year >= 70 ? 0 : 100);
     gmt.tm_isdst = 0;
-    internalClock.sec = std::mktime(&gmt);
-    internalClock.nsec = 0.0;
+//    internalClock.sec = std::mktime(&gmt);
+//    internalClock.nsec = 0.0;
 }
 
 /** \brief Increment the internal clock.
@@ -101,16 +101,15 @@ void M48T08::SRAMToClock()
  *
  * Increment only occurs if the STOP bit is not set.
  */
-void M48T08::IncrementClock(const double ns)
+void M48T08::IncrementClock(const Cycles& c)
 {
     if(sram[Seconds] & 0x80) // STOP bit
         return;
 
-    internalClock.nsec += ns;
-    while(internalClock.nsec >= 1'000'000'000.0)
+    const uint64_t previousCycles = internalClock;
+    internalClock += c;
+    if(internalClock - previousCycles > 0)
     {
-        internalClock.sec++;
-        internalClock.nsec -= 1'000'000'000.0;
         ClockToSRAM();
     }
 }

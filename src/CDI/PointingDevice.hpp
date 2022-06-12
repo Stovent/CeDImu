@@ -2,6 +2,7 @@
 #define CDI_POINTINGDEVICE_HPP
 
 class ISlave;
+#include "common/Cycles.hpp"
 
 #include <array>
 #include <mutex>
@@ -26,13 +27,12 @@ public:
 
     ISlave& slave;
     const Type type;
-    const size_t dataPacketDelay;
     std::array<uint8_t, 4> pointerMessage{};
 
     PointingDevice() = delete;
     PointingDevice(ISlave& slv, Type deviceType);
 
-    void IncrementTime(const size_t ns);
+    void IncrementTime(const Cycles& c);
 
     void SetButton1(const bool pressed);
     void SetButton2(const bool pressed);
@@ -54,7 +54,7 @@ private:
         int y;     /**< relative y offset or absolute y location */
     };
 
-    size_t timer;
+    Cycles cycles;
     size_t consecutiveCursorPackets; // Ranges from 1 to 8.
     GamepadSpeed gamepadSpeed;
 
@@ -69,11 +69,13 @@ private:
     void GeneratePointerMessage();
 };
 
-inline size_t getDataPacketDelay(PointingDevice::Type type)
+/** \brief Returns the number of packets that can be sent per second.
+ */
+inline size_t getDataPacketFrequency(PointingDevice::Type type)
 {
     if(type == PointingDevice::Type::Absolute || type == PointingDevice::Type::AbsoluteScreen)
-        return 33'333'333;
-    return 25'000'000;
+        return 30;
+    return 40;
 }
 
 // Gamepad cursor acceleration measured with an oscilloscope:
@@ -84,9 +86,9 @@ inline int getCursorSpeed(PointingDevice::GamepadSpeed speed, size_t cursorPacke
 {
     switch(speed)
     {
-        case PointingDevice::GamepadSpeed::N:  return cursorPacketIndex >= 8 ? 8 : cursorPacketIndex + (cursorPacketIndex & 1);
+        case PointingDevice::GamepadSpeed::N:  return cursorPacketIndex + (cursorPacketIndex & 1);
         case PointingDevice::GamepadSpeed::I:  return 1;
-        case PointingDevice::GamepadSpeed::II: return cursorPacketIndex >= 8 ? 16 : 2 * cursorPacketIndex;
+        case PointingDevice::GamepadSpeed::II: return 2 * cursorPacketIndex;
     }
     return 0;
 }
