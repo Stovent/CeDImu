@@ -21,11 +21,24 @@ public:
     void SetByte(const uint16_t addr, const uint8_t data) override;
 
 private:
-    Cycles internalClock;
+    Cycles cycles;
+    std::time_t internalClock;
     std::array<uint8_t, 0x2000> sram;
 
     void ClockToSRAM();
     void SRAMToClock();
+
+    enum M48T08Registers
+    {
+        Control = 0x1FF8,
+        Seconds,
+        Minutes,
+        Hours,
+        Day,
+        Date,
+        Month,
+        Year,
+    };
 };
 
 #endif // CDI_CORES_M48T08_M48T08_HPP

@@ -5,18 +5,6 @@
 #include <algorithm>
 #include <cstring>
 
-enum DS1216Clock
-{
-    Hundredths,
-    Seconds,
-    Minutes,
-    Hour,
-    Day,
-    Date,
-    Month,
-    Year,
-};
-
 static constexpr std::array<bool, 64> matchPattern = {
     0, 1, 0, 1, 1, 1, 0, 0,
     1, 0, 1, 0, 0, 0, 1, 1,
@@ -38,16 +26,18 @@ static constexpr std::array<bool, 64> matchPattern = {
  */
 DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state)
     : IRTC(idc)
-    , internalClock(100)
-    , clock{0}
+    , cycles(100)
+    , internalClock(initialTime)
+    , internalHundredths(0)
+    , clock{}
     , sram{}
     , patternCount(-1)
     , pattern(64)
 {
     if(state)
     {
-        std::copy(state, &state[0x8000], sram.begin());
-        std::copy(&state[0x8000], &state[0x8008], clock.begin());
+        std::copy(state, &state[sram.size()], sram.begin());
+        std::copy(&state[sram.size()], &state[0x8008], clock.begin());
         if(initialTime)
             ClockToSRAM();
         else
@@ -61,7 +51,7 @@ DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state)
         if(initialTime == 0)
             initialTime = IRTC::defaultTime;
 
-//        internalClock.sec = initialTime;
+        internalClock = initialTime;
         ClockToSRAM();
     }
 }
@@ -72,11 +62,12 @@ DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state)
 DS1216::~DS1216()
 {
     ClockToSRAM();
-    uint8_t nv[0x8008];
+    const size_t NVSIZE = sram.size() + 8;
+    uint8_t nv[NVSIZE];
     memcpy(nv, sram.data(), sram.size());
-    memcpy(&nv[0x8000], clock.data(), 8);
+    memcpy(&nv[sram.size()], clock.data(), 8);
 
-    cdi.callbacks.OnSaveNVRAM(nv, 0x8008);
+    cdi.callbacks.OnSaveNVRAM(nv, NVSIZE);
 }
 
 /** \brief Move the internal clock to SRAM.
@@ -86,33 +77,33 @@ void DS1216::ClockToSRAM()
     if(patternCount >= 0) // Do not change SRAM clock when it is being read.
         return;
 
-//    const std::tm* gmt = std::gmtime(&internalClock.sec);
-//    uint8_t hour = byteToPBCD(gmt->tm_hour);
-//    if(clock[Hour] & 0x80) // 12h format
-//    {
-//        int h = gmt->tm_hour;
-//        if(h >= 12) // PM
-//        {
-//            hour = 0xA0;
-//            if(h > 12)
-//                h -= 12;
-//        }
-//        else // AM
-//        {
-//            hour = 0x80;
-//            h = h == 0 ? 12 : h;
-//        }
-//        hour |= byteToPBCD(h);
-//    }
-//
-//    clock[Hundredths] = (int)(internalClock.nsec / 10'000'000.0);
-//    clock[Seconds] = byteToPBCD(gmt->tm_sec);
-//    clock[Minutes] = byteToPBCD(gmt->tm_min);
-//    clock[Hour]    = hour;
-//    clock[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (clock[Day] & 0x30);
-//    clock[Date]    = byteToPBCD(gmt->tm_mday);
-//    clock[Month]   = byteToPBCD(gmt->tm_mon + 1);
-//    clock[Year]    = byteToPBCD(gmt->tm_year);
+    const std::tm* gmt = std::gmtime(&internalClock);
+    uint8_t hour = byteToPBCD(gmt->tm_hour);
+    if(clock[Hour] & 0x80) // 12h format
+    {
+        int h = gmt->tm_hour;
+        if(h >= 12) // PM
+        {
+            hour = 0xA0;
+            if(h > 12)
+                h -= 12;
+        }
+        else // AM
+        {
+            hour = 0x80;
+            h = h == 0 ? 12 : h;
+        }
+        hour |= byteToPBCD(h);
+    }
+
+    clock[Hundredths] = byteToPBCD(internalHundredths);
+    clock[Seconds] = byteToPBCD(gmt->tm_sec);
+    clock[Minutes] = byteToPBCD(gmt->tm_min);
+    clock[Hour]    = hour;
+    clock[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (clock[Day] & 0x30);
+    clock[Date]    = byteToPBCD(gmt->tm_mday);
+    clock[Month]   = byteToPBCD(gmt->tm_mon + 1);
+    clock[Year]    = byteToPBCD(gmt->tm_year);
 }
 
 /** \brief Move the SRAM clock into the internal clock.
@@ -143,8 +134,8 @@ void DS1216::SRAMToClock()
     gmt.tm_mon  = PBCDToByte(clock[Month]) - 1;
     gmt.tm_year = PBCDToByte(clock[Year]); if(gmt.tm_year < 70) gmt.tm_year += 100;
     gmt.tm_isdst = 0;
-//    internalClock.sec = std::mktime(&gmt);
-//    internalClock.nsec = PBCDToByte(clock[Hundredths]) * 10'000'000.0;
+    internalClock = std::mktime(&gmt);
+    internalHundredths = PBCDToByte(clock[Hundredths]);
 }
 
 void DS1216::PushPattern(const bool bit)
@@ -171,7 +162,19 @@ void DS1216::IncrementClock(const Cycles& c)
     if(clock[Day] & 0x20) // OSC bit
         return;
 
-    internalClock += c;
+    const uint64_t previousCycles = cycles;
+    cycles += c;
+    const uint64_t diff = cycles - previousCycles;
+    if(diff > 0)
+    {
+        internalHundredths += diff;
+        while(internalHundredths >= 100)
+        {
+            internalHundredths -= 100;
+            internalClock++;
+        }
+        ClockToSRAM();
+    }
 }
 
 uint8_t DS1216::GetByte(const uint16_t addr)

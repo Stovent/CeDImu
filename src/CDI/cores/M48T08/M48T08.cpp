@@ -6,18 +6,6 @@
 #include <cstring>
 #include <fstream>
 
-enum M48T08Registers
-{
-    Control = 0x1FF8,
-    Seconds,
-    Minutes,
-    Hours,
-    Day,
-    Date,
-    Month,
-    Year,
-};
-
 /** \brief Construct a new M48T08 timekeeper.
  * \param idc A reference to the CDI context.
  * \param initialTime The timestamp to be used as the initial time.
@@ -27,16 +15,18 @@ enum M48T08Registers
  */
 M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state)
     : IRTC(idc)
-    , internalClock(1)
-    , sram()
+    , cycles(1)
+    , internalClock(initialTime)
+    , sram{}
 {
-    if(state)
+    if(state != nullptr)
     {
         std::copy(state, &state[sram.size()], sram.begin());
         if(initialTime)
             ClockToSRAM();
         else
             SRAMToClock();
+        sram[Control] = 0;
     }
     else
     {
@@ -46,10 +36,9 @@ M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state)
         if(initialTime == 0)
             initialTime = IRTC::defaultTime;
 
-//        internalClock.sec = initialTime;
+        internalClock = initialTime;
         ClockToSRAM();
     }
-    sram[Control] = 0;
 }
 
 /** \brief Destroy the timekeeper.
@@ -69,14 +58,14 @@ void M48T08::ClockToSRAM()
     if(sram[Control] & 0xC0)
         return;
 
-//    const std::tm* gmt = std::gmtime(&internalClock.sec);
-//    sram[Seconds] = byteToPBCD(gmt->tm_sec) | (sram[Seconds] & 0x80);
-//    sram[Minutes] = byteToPBCD(gmt->tm_min);
-//    sram[Hours]   = byteToPBCD(gmt->tm_hour);
-//    sram[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (sram[Day] & 0x40); // TODO: verify that 1 = monday, 0 = sunday, etc.
-//    sram[Date]    = byteToPBCD(gmt->tm_mday);
-//    sram[Month]   = byteToPBCD(gmt->tm_mon + 1);
-//    sram[Year]    = byteToPBCD(gmt->tm_year);
+    const std::tm* gmt = std::gmtime(&internalClock);
+    sram[Seconds] = byteToPBCD(gmt->tm_sec) | (sram[Seconds] & 0x80);
+    sram[Minutes] = byteToPBCD(gmt->tm_min);
+    sram[Hours]   = byteToPBCD(gmt->tm_hour);
+    sram[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (sram[Day] & 0x40); // TODO: verify that 1 = monday, 0 = sunday, etc.
+    sram[Date]    = byteToPBCD(gmt->tm_mday);
+    sram[Month]   = byteToPBCD(gmt->tm_mon + 1);
+    sram[Year]    = byteToPBCD(gmt->tm_year);
 }
 
 /** \brief Move the SRAM clock into the internal clock.
@@ -91,8 +80,7 @@ void M48T08::SRAMToClock()
     gmt.tm_mon  = PBCDToByte(sram[Month]) - 1;
     gmt.tm_year = PBCDToByte(sram[Year]); gmt.tm_year += (gmt.tm_year >= 70 ? 0 : 100);
     gmt.tm_isdst = 0;
-//    internalClock.sec = std::mktime(&gmt);
-//    internalClock.nsec = 0.0;
+    internalClock = std::mktime(&gmt);
 }
 
 /** \brief Increment the internal clock.
@@ -106,10 +94,12 @@ void M48T08::IncrementClock(const Cycles& c)
     if(sram[Seconds] & 0x80) // STOP bit
         return;
 
-    const uint64_t previousCycles = internalClock;
-    internalClock += c;
-    if(internalClock - previousCycles > 0)
+    const uint64_t previousCycles = cycles;
+    cycles += c;
+    const uint64_t diff = cycles - previousCycles;
+    if(diff > 0)
     {
+        internalClock += diff;
         ClockToSRAM();
     }
 }

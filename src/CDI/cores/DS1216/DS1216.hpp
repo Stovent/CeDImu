@@ -20,7 +20,9 @@ public:
     void SetByte(const uint16_t addr, const uint8_t data) override;
 
 private:
-    Cycles internalClock;
+    Cycles cycles;
+    std::time_t internalClock;
+    size_t internalHundredths;
     std::array<uint8_t, 8> clock;
     std::array<uint8_t, 0x8000> sram; // 32KB
 
@@ -32,6 +34,18 @@ private:
 
     void PushPattern(const bool bit);
     void IncrementClockAccess();
+
+    enum DS1216Clock
+    {
+        Hundredths,
+        Seconds,
+        Minutes,
+        Hour,
+        Day,
+        Date,
+        Month,
+        Year,
+    };
 };
 
 #endif // CDI_CORES_DS1216_DS1216_HPP
