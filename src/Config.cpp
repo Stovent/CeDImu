@@ -14,9 +14,18 @@ std::vector<BiosConfig> bioses = {BiosConfig {
     .biosFilePath = "",
     .nvramFileName = "",
     .initialTime = std::to_string(IRTC::defaultTime),
+    .boardType = Boards::AutoDetect,
+    .PAL = true,
+    .has32KbNvram = false,
+},
+BiosConfig {
+    .name = "Default BIOS 2",
+    .biosFilePath = "",
+    .nvramFileName = "",
+    .initialTime = std::to_string(IRTC::defaultTime),
+    .boardType = Boards::AutoDetect,
     .PAL = false,
     .has32KbNvram = false,
-    .boardType = Boards::AutoDetect,
 }};
 
 // Controls

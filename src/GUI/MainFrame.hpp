@@ -1,16 +1,16 @@
 #ifndef GUI_MAINFRAME_HPP
 #define GUI_MAINFRAME_HPP
 
-#include <wx/frame.h>
-#include <wx/menuitem.h>
-#include <wx/timer.h>
-
 class CeDImu;
 class CPUViewer;
 class DebugFrame;
 class GamePanel;
 class SettingsFrame;
 class VDSCViewer;
+
+#include <wx/frame.h>
+#include <wx/menuitem.h>
+#include <wx/timer.h>
 
 class MainFrame : public wxFrame
 {

@@ -16,9 +16,9 @@ struct BiosConfig
     std::string biosFilePath;
     std::string nvramFileName;
     std::string initialTime;
+    Boards boardType;
     bool PAL;
     bool has32KbNvram;
-    Boards boardType;
 };
 
 // Disc

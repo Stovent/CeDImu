@@ -23,6 +23,22 @@ enum class Boards
     Fail,
 };
 
+inline const char* BoardsToString(Boards b) noexcept
+{
+    switch(b)
+    {
+    case Boards::AutoDetect: return "Auto Detect";
+    case Boards::MiniMMC: return "MiniMMC";
+    case Boards::Mono1: return "Mono1";
+    case Boards::Mono2: return "Mono2";
+    case Boards::Mono3: return "Mono3";
+    case Boards::Mono4: return "Mono4";
+    case Boards::Roboco: return "Roboco";
+    case Boards::Fail: return "Fail";
+    }
+    return "Invalid board type";
+}
+
 struct InternalRegister
 {
     std::string name;
