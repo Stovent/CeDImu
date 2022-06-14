@@ -198,19 +198,16 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
             return "";
 
         const std::pair<size_t, LogSCC68070Exception>& log = this->m_exceptions[this->m_exceptions.size() - 1 - item];
-        if(column == 0)
-            return toHex(log.second.returnAddress);
-        if(column == 1 && log.second.vector == SCC68070::Trap0Instruction)
-            return log.second.systemCall.module;
-        if(column == 2)
-            return log.second.disassembled;
-        if(column == 3 && log.second.vector == SCC68070::Trap0Instruction)
-            return OS9::systemCallNameToString(log.second.systemCall.type);
-        if(column == 4)
-            return log.second.systemCall.inputs;
-        if(column == 5)
-            return log.second.systemCall.outputs;
-        return "";
+        switch(column)
+        {
+        case 0: return toHex(log.second.returnAddress);
+        case 1: return log.second.vector == SCC68070::Trap0Instruction ? log.second.systemCall.module : "";
+        case 2: return log.second.disassembled;
+        case 3: return log.second.vector == SCC68070::Trap0Instruction ? OS9::systemCallNameToString(log.second.systemCall.type) : "";
+        case 4: return log.second.systemCall.inputs;
+        case 5: return log.second.systemCall.outputs;
+        default: return "";
+        }
     });
     m_auiManager.AddPane(m_exceptionsList, wxAuiPaneInfo().Bottom().Caption("Exceptions stack").CloseButton(false).Floatable().Resizable());
 

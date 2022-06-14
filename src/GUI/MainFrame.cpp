@@ -111,7 +111,7 @@ void MainFrame::CreateMenuBar()
 
 void MainFrame::CreateBiosMenu()
 {
-    if(m_startBiosMenuItem)
+    if(m_startBiosMenuItem != nullptr)
     {
         m_fileMenu->Destroy(m_startBiosMenuItem);
         m_startBiosMenuItem = nullptr;
@@ -205,7 +205,7 @@ void MainFrame::OnScreenshot(wxCommandEvent&)
     if(!m_cedimu.m_cdi.board)
         return;
 
-    bool isRunning = !m_pauseMenuItem->IsChecked();
+    const bool isRunning = !m_pauseMenuItem->IsChecked();
     if(isRunning)
         m_cedimu.StopEmulation();
 
@@ -234,7 +234,7 @@ void MainFrame::OnPause(wxCommandEvent&)
     if(m_pauseMenuItem->IsChecked())
     {
         m_cedimu.StopEmulation();
-        if(m_vdscViewer)
+        if(m_vdscViewer != nullptr)
             m_vdscViewer->m_updateLists = true;
     }
     else

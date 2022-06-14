@@ -214,7 +214,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(!this->m_cedimu.m_cdi.board)
             return;
 
-        bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
+        const bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
         if(isRunning)
             this->m_cedimu.StopEmulation();
         uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
@@ -241,7 +241,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(!this->m_cedimu.m_cdi.board)
             return;
 
-        bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
+        const bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
         if(isRunning)
             this->m_cedimu.StopEmulation();
         uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
@@ -268,7 +268,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(!this->m_cedimu.m_cdi.board)
             return;
 
-        bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
+        const bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
         if(isRunning)
             this->m_cedimu.StopEmulation();
         uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
@@ -295,7 +295,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(!this->m_cedimu.m_cdi.board)
             return;
 
-        bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
+        const bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
         if(isRunning)
             this->m_cedimu.StopEmulation();
         uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();

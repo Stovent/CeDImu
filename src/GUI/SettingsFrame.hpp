@@ -8,6 +8,8 @@ class MainFrame;
 #include <wx/radiobut.h>
 #include <wx/textctrl.h>
 
+#include <vector>
+
 struct BiosWidgets
 {
     wxTextCtrl* name;

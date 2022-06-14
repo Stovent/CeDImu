@@ -100,7 +100,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         choicePageSizer->Add(biosNameRow, wxSizerFlags().Expand().Border());
         wxTextCtrl* biosNameText = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.name);
         biosNameRow->Add(biosNameText, wxSizerFlags().Proportion(1));
-        wxStaticText* biosNameHelperText = new wxStaticText(choicePage, wxID_ANY, "Configuration name.");
+        wxStaticText* biosNameHelperText = new wxStaticText(choicePage, wxID_ANY, "Configuration name");
         biosNameRow->Add(biosNameHelperText, wxSizerFlags().Proportion(0));
 
         wxBoxSizer* biosPathRow = new wxBoxSizer(wxHORIZONTAL);
@@ -118,7 +118,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
 
         wxBoxSizer* nvramFileNameRow = new wxBoxSizer(wxHORIZONTAL);
         wxTextCtrl* nvramFileName = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.nvramFileName);
-        wxStaticText* nvramFileNameText = new wxStaticText(choicePage, wxID_ANY, "Associated NVRAM filename.");
+        wxStaticText* nvramFileNameText = new wxStaticText(choicePage, wxID_ANY, "Associated NVRAM filename");
         nvramFileNameRow->Add(nvramFileName, wxSizerFlags().Proportion(1).Expand());
         nvramFileNameRow->Add(nvramFileNameText, wxSizerFlags().Expand());
         choicePageSizer->Add(nvramFileNameRow, wxSizerFlags().Expand().Border());
@@ -147,7 +147,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         choicePageSizer->Add(initialTimeRow, wxSizerFlags().Border());
         wxTextCtrl* initialTimeText = new wxTextCtrl(choicePage, wxID_ANY, biosEntry.initialTime);
         initialTimeRow->Add(initialTimeText);
-        wxStaticText* initialTimeHelperText = new wxStaticText(choicePage, wxID_ANY, "Initial time (in UNIX timestamp format).");
+        wxStaticText* initialTimeHelperText = new wxStaticText(choicePage, wxID_ANY, "Initial time (in UNIX timestamp format)");
         initialTimeRow->Add(initialTimeHelperText);
         wxStaticText* initialTimeHelperText2 = new wxStaticText(choicePage, wxID_ANY, "Leave empty to use the current time.");
         choicePageSizer->Add(initialTimeHelperText2);

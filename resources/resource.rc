@@ -1,1 +1,2 @@
+#include <wx/msw/wx.rc>
 MAINICON ICON "CeDImu-v3.ico"

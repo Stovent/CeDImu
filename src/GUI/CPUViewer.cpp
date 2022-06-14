@@ -74,13 +74,13 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(item >= (long)this->m_instructions.size())
             return "";
         const LogInstruction& inst = this->m_instructions[item];
-        if(column == 0)
-            return toHex(inst.address);
-        if(column == 1)
-            return inst.biosLocation;
-        if(column == 2)
-            return inst.instruction;
-        return "";
+        switch(column)
+        {
+        case 0: return toHex(inst.address);
+        case 1: return inst.biosLocation;
+        case 2: return inst.instruction;
+        default: return "";
+        }
     });
     m_auiManager.AddPane(m_disassemblerList, wxAuiPaneInfo().Center().Caption("Disassembler").CloseButton(false).Floatable().Resizable());
 
