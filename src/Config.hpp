@@ -21,6 +21,8 @@ struct BiosConfig
     bool has32KbNvram;
 };
 
+extern const BiosConfig defaultBiosConfig;
+
 // Disc
 extern std::string discDirectory;
 

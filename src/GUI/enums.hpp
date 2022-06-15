@@ -23,6 +23,9 @@ enum
     IDMainFrameOnVDSCViewer,
     IDMainFrameOnDebugFrame,
     IDMainFrameOnSettings,
+    IDSettingsFrameOnNewConfig,
+    IDSettingsFrameOnDeleteConfig,
+    IDSettingsFrameOnSelectBios,
     IDMainFrameBiosMenuBaseIndex, // Must always be the last in this list.
 };
 

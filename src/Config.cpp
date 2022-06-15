@@ -5,6 +5,16 @@
 
 namespace Config
 {
+const BiosConfig defaultBiosConfig {
+    .name = "BIOS config",
+    .biosFilePath = "",
+    .nvramFileName = "",
+    .initialTime = std::to_string(IRTC::defaultTime),
+    .boardType = Boards::AutoDetect,
+    .PAL = false,
+    .has32KbNvram = false,
+};
+
 // Disc
 std::string discDirectory = "";
 
@@ -58,7 +68,9 @@ bool loadConfig()
         if((pos = line.find('=')) != std::string::npos)
         {
             std::string key(line.substr(0, pos)), value(line.substr(pos + 1));
-            if(key == "keyUp")
+            if(key == "discDirectory")
+                discDirectory = value;
+            else if(key == "keyUp")
                 keyUp = stoi(value);
             else if(key == "keyRight")
                 keyRight = stoi(value);
