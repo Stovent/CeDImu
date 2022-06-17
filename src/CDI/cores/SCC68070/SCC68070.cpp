@@ -109,9 +109,13 @@ void disassembler(uint32_t pc, const char* inst, void* user_data)
  * \param idc Reference to the CDI context.
  * \param clockFrequency The frequency of the CPU.
  */
-SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
-    cdi(idc),
-    m68000Callbacks{
+SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
+    : currentPC(0)
+    , totalCycleCount(0)
+    , cdi(idc)
+    , executionThread()
+    , m68000(m68000_new())
+    , m68000Callbacks{
         .get_byte = get_byte,
         .get_word = get_word,
         .get_long = get_long,
@@ -119,20 +123,18 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency) :
         .set_word = set_word,
         .set_long = set_long,
         .reset_instruction = reset_instruction,
-        .disassembler = disassembler,
         .user_data = this,
-    },
-    cycleDelay((1.0L / clockFrequency) * 1'000'000'000),
-    speedDelay(cycleDelay),
-    timerDelay(cycleDelay * 96),
-    internal{0}
+    }
+    , uartInMutex()
+    , uartIn{}
+    , loop(false)
+    , isRunning(false)
+    , cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
+    , speedDelay(cycleDelay)
+    , timerDelay(cycleDelay * 96)
+    , timerCounter(0.0)
+    , internal{0}
 {
-    loop = isRunning = false;
-    timerCounter = totalCycleCount = 0;
-    currentPC = 0;
-
-    m68000 = m68000_new();
-    m68000_enable_disassembler(m68000, true);
 }
 
 /** \brief Destroy the CPU. Stops and wait for the emulation thread to stop if it is running.
