@@ -47,83 +47,13 @@ public:
         USP,
     };
 
-    enum ExceptionVector : uint8_t
-    {
-        ResetSSPPC = 0,
-        BusError = 2,
-        AddressError,
-        IllegalInstruction,
-        ZeroDivide,
-        CHKInstruction,
-        TRAPVInstruction,
-        PrivilegeViolation,
-        Trace,
-        Line0101Emulator,
-        Line1111Emulator,
-        FormatError = 14,
-        UninitializedInterrupt,
-        SpuriousInterrupt = 24,
-        Level1ExternalInterruptAutovector,
-        Level2ExternalInterruptAutovector,
-        Level3ExternalInterruptAutovector,
-        Level4ExternalInterruptAutovector,
-        Level5ExternalInterruptAutovector,
-        Level6ExternalInterruptAutovector,
-        Level7ExternalInterruptAutovector,
-        Trap0Instruction,
-        Trap1Instruction,
-        Trap2Instruction,
-        Trap3Instruction,
-        Trap4Instruction,
-        Trap5Instruction,
-        Trap6Instruction,
-        Trap7Instruction,
-        Trap8Instruction,
-        Trap9Instruction,
-        Trap10Instruction,
-        Trap11Instruction,
-        Trap12Instruction,
-        Trap13Instruction,
-        Trap14Instruction,
-        Trap15Instruction,
-        Level1OnChipInterruptAutovector = 57,
-        Level2OnChipInterruptAutovector,
-        Level3OnChipInterruptAutovector,
-        Level4OnChipInterruptAutovector,
-        Level5OnChipInterruptAutovector,
-        Level6OnChipInterruptAutovector,
-        Level7OnChipInterruptAutovector,
-        UserInterrupt,
-    };
-
     struct Exception
     {
         uint8_t vector;
-        uint8_t priority; /**< Group and priority merged. */
-        uint16_t data;
 
         Exception() = delete;
-        explicit Exception(const uint8_t vec, const uint16_t d = 0) : vector(vec), priority(GetPriority(vec)), data(d) {}
-
-        bool operator<(const Exception& other) const
-        {
-            return this->priority < other.priority;
-        }
-
-    private:
-        static constexpr uint8_t GetPriority(const uint8_t vec)
-        {
-            if(vec == ResetSSPPC) return 0;
-            if(vec == AddressError) return 1;
-            if(vec == BusError) return 2;
-            if(vec == Trace) return 3;
-            if((vec >= SpuriousInterrupt && vec <= Level7ExternalInterruptAutovector) ||
-               (vec >= Level1OnChipInterruptAutovector && vec <= Level7OnChipInterruptAutovector) ||
-               vec >= UserInterrupt) return 4;
-            if(vec == IllegalInstruction) return 5;
-            if(vec == PrivilegeViolation) return 6;
-            return 7; // Instruction exceptions.
-        }
+        Exception(const Exception&) = default;
+        explicit Exception(uint8_t vec) : vector(vec) {}
     };
 
     uint32_t currentPC;

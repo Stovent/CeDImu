@@ -13,7 +13,7 @@ void SCC68070::Interpreter()
 
     do
     {
-        ExceptionResult res = m68000_interpreter_exception(m68000, &m68000Callbacks);
+        const ExceptionResult res = m68000_interpreter_exception(m68000, &m68000Callbacks);
         const size_t executionCycles = res.cycles ? res.cycles : 25; // Stop mode returns 0.
         totalCycleCount += executionCycles;
 
@@ -31,7 +31,7 @@ void SCC68070::Interpreter()
                 }
             }
 
-            m68000_exception(m68000, res.exception);
+            m68000_exception(m68000, static_cast<Vector>(res.exception));
         }
 
         const double ns = executionCycles * cycleDelay;

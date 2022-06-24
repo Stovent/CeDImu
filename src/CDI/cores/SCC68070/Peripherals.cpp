@@ -91,7 +91,7 @@ void SCC68070::IncrementTimer(const double ns)
             internal[T0H] = internal[RRH];
             internal[T0L] = internal[RRL];
             if(priority)
-                m68000_exception(m68000, Level1OnChipInterruptAutovector - 1 + priority);
+                m68000_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + priority));
         }
         else
         {
@@ -108,7 +108,7 @@ void SCC68070::IncrementTimer(const double ns)
             {
                 internal[TSR] |= 0x10;
                 if(priority)
-                    m68000_exception(m68000, Level1OnChipInterruptAutovector - 1 + priority);
+                    m68000_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + priority));
             }
             else if((internal[TCR] & 0x30) == 0x30)
                 internal[TSR] &= 0xEE; // Event-counter mode resets OV bit
@@ -131,7 +131,7 @@ void SCC68070::IncrementTimer(const double ns)
             {
                 internal[TSR] |= 0x02;
                 if(priority)
-                    m68000_exception(m68000, Level1OnChipInterruptAutovector - 1 + priority);
+                    m68000_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + priority));
             }
             else if((internal[TCR] & 0x03) == 0x03)
                 internal[TSR] &= 0xFC; // Event-counter mode resets OV bit

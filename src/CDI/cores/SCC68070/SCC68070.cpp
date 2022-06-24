@@ -93,17 +93,6 @@ void reset_instruction(void* user_data)
     self->ResetOperation();
 }
 
-void disassembler(uint32_t pc, const char* inst, void* user_data)
-{
-    SCC68070* self = static_cast<SCC68070*>(user_data);
-    if(self->cdi.m_callbacks.HasOnLogDisassembler())
-    {
-        const std::string moduleName = self->cdi.GetBIOS().GetModuleNameAt(pc - self->cdi.GetBIOS().m_base);
-        const LogInstruction instLog = {pc, moduleName, inst};
-        self->cdi.m_callbacks.OnLogDisassembler(instLog);
-    }
-}
-
 /** \brief Build a new SCC68070 CPU.
  *
  * \param idc Reference to the CDI context.
@@ -211,7 +200,7 @@ void SCC68070::Stop(const bool wait)
  */
 void SCC68070::Reset()
 {
-    m68000_exception(m68000, ResetSSPPC);
+    m68000_exception(m68000, ResetSspPc);
     RESET_INTERNAL()
 }
 
@@ -221,7 +210,7 @@ void SCC68070::INT1()
 {
     const uint8_t level = internal[LIR] >> 4 & 0x07;
     if(level)
-        m68000_exception(m68000, Level1OnChipInterruptAutovector - 1 + level);
+        m68000_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + level));
 }
 
 /** \brief Trigger interrupt with LIR2 level.
@@ -230,14 +219,14 @@ void SCC68070::INT2()
 {
     const uint8_t level = internal[LIR] & 0x07;
     if(level)
-        m68000_exception(m68000, Level1OnChipInterruptAutovector - 1 + level);
+        m68000_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + level));
 }
 
 /** \brief Trigger level 2 external interrupt vector.
  */
 void SCC68070::IN2()
 {
-    m68000_exception(m68000, Level2ExternalInterruptAutovector);
+    m68000_exception(m68000, Vector::Level2Interrupt);
 }
 
 /** \brief Send a byte through UART.
