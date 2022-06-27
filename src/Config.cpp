@@ -31,7 +31,7 @@ int key1 = 0;
 int key2 = 0;
 int key12 = 0;
 
-/** \brief Loads the emulator configuration from a file. "CeDImu.ini".
+/** \brief Loads the emulator configuration from the config file managed by wxWidgets.
  *
  * \return true on success, false if something goes wrong.
  *
