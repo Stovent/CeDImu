@@ -4,6 +4,7 @@
 class MainFrame;
 #include "../Config.hpp"
 
+#include <wx/button.h>
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/frame.h>
@@ -25,6 +26,7 @@ public:
     int m_lastSelection;
     wxListBox* m_biosList;
     wxTextCtrl* m_biosPath;
+    wxButton* m_biosSelect;
     wxTextCtrl* m_nvramFileName;
     wxChoice* m_boardChoice;
     wxCheckBox* m_palCheckBox;
@@ -51,6 +53,7 @@ public:
 private:
     void LoadSelection();
     void SaveSelection();
+    void CheckControls();
 
     wxDECLARE_EVENT_TABLE();
 };

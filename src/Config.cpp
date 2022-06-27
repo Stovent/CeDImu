@@ -1,10 +1,11 @@
 #include "Config.hpp"
 #include "CDI/cores/IRTC.hpp"
 
-#include <fstream>
+#include <wx/fileconf.h>
 
 namespace Config
 {
+
 const BiosConfig defaultBiosConfig {
     .name = "BIOS config",
     .biosFilePath = "",
@@ -19,24 +20,7 @@ const BiosConfig defaultBiosConfig {
 std::string discDirectory = "";
 
 // Board
-std::vector<BiosConfig> bioses = {BiosConfig {
-    .name = "Default BIOS",
-    .biosFilePath = "",
-    .nvramFileName = "",
-    .initialTime = std::to_string(IRTC::defaultTime),
-    .boardType = Boards::AutoDetect,
-    .PAL = true,
-    .has32KbNvram = false,
-},
-BiosConfig {
-    .name = "Default BIOS 2",
-    .biosFilePath = "",
-    .nvramFileName = "",
-    .initialTime = std::to_string(IRTC::defaultTime),
-    .boardType = Boards::AutoDetect,
-    .PAL = false,
-    .has32KbNvram = false,
-}};
+std::vector<BiosConfig> bioses{};
 
 // Controls
 int keyUp = 0;
@@ -47,76 +31,108 @@ int key1 = 0;
 int key2 = 0;
 int key12 = 0;
 
-/** \brief Loads the emulator configuration from a file named "CeDImu.ini".
+/** \brief Loads the emulator configuration from a file. "CeDImu.ini".
  *
- * \return false if the file could not be opened, true otherwise.
+ * \return true on success, false if something goes wrong.
  *
- * The file should be in the same folder as the emulator.
  * If the file cannot be opened, the emulator will use the default configuration.
+ * On Windows the location is "AppData/Roaming/CeDImu.ini". On Linux it is "~/.CeDImu".
  */
 bool loadConfig()
 {
-    std::ifstream in("CeDImu.ini");
-    if(!in.is_open())
-        return false;
+    wxFileConfig conf("CeDImu");
+    wxString str;
 
-    std::string line;
-    while(in.good())
+    if(!conf.Read("/disc/discPath", &str)) return false;
+    discDirectory = str.ToStdString();
+
+    conf.SetPath("/gamepad");
+    if(!conf.Read("keyUp", &keyUp)) return false;
+    if(!conf.Read("keyRight", &keyRight)) return false;
+    if(!conf.Read("keyDown", &keyDown)) return false;
+    if(!conf.Read("keyLeft", &keyLeft)) return false;
+    if(!conf.Read("key1", &key1)) return false;
+    if(!conf.Read("key2", &key2)) return false;
+    if(!conf.Read("key12", &key12)) return false;
+
+    conf.SetPath("/bios");
+    long lIndexGroup;
+    bool hasGroup = conf.GetFirstGroup(str, lIndexGroup);
+    while(hasGroup)
     {
-        std::getline(in, line);
-        size_t pos;
-        if((pos = line.find('=')) != std::string::npos)
-        {
-            std::string key(line.substr(0, pos)), value(line.substr(pos + 1));
-            if(key == "discDirectory")
-                discDirectory = value;
-            else if(key == "keyUp")
-                keyUp = stoi(value);
-            else if(key == "keyRight")
-                keyRight = stoi(value);
-            else if(key == "keyDown")
-                keyDown = stoi(value);
-            else if(key == "keyLeft")
-                keyLeft = stoi(value);
-            else if(key == "key1")
-                key1 = stoi(value);
-            else if(key == "key2")
-                key2 = stoi(value);
-            else if(key == "key12")
-                key12 = stoi(value);
-        }
+        bioses.push_back(defaultBiosConfig); // Adds a new config entry.
+
+        hasGroup = conf.GetNextGroup(str, lIndexGroup);
     }
 
-    in.close();
+    size_t index = 0;
+    for(BiosConfig& entry : bioses)
+    {
+        conf.SetPath("/bios/" + std::to_string(index++));
+
+        if(!conf.Read("name", &str)) return false;
+        entry.name = str.ToStdString();
+
+        if(!conf.Read("biosFilePath", &str)) return false;
+        entry.biosFilePath = str.ToStdString();
+
+        if(!conf.Read("nvramFileName", &str)) return false;
+        entry.nvramFileName = str.ToStdString();
+
+        if(!conf.Read("initialTime", &str)) return false;
+        entry.initialTime = str.ToStdString();
+
+        int val;
+        if(!conf.Read("boardType", &val)) return false;
+        entry.boardType = static_cast<Boards>(val);
+
+        if(!conf.Read("PAL", &val)) return false;
+        entry.PAL = val;
+
+        if(!conf.Read("has32KbNvram", &val)) return false;
+        entry.has32KbNvram = val;
+    }
+
     return true;
 }
 
-/** \brief Save the emulator configuration in a file named "CeDImu.ini".
+/** \brief Save the emulator configuration in a file.
  *
- * \return false if the file could not be written, true otherwise.
+ * \return true on success, false if something goes wrong.
+
+ * On Windows the location is "AppData/Roaming/CeDImu.ini". On Linux it is "~/.CeDImu".
  */
 bool saveConfig()
 {
-    std::ofstream out("CeDImu.ini");
-    if(!out.is_open())
-        return false;
+    wxFileConfig conf("CeDImu");
+    conf.DeleteAll();
 
-    out << "[Disc]" << std::endl;
-    out << "discDirectory=" << discDirectory << std::endl;
+    if(!conf.Write("/disc/discPath", wxString(discDirectory))) return false;
 
-    out << "[Board]" << std::endl;
+    conf.SetPath("/gamepad");
+    if(!conf.Write("keyUp", keyUp)) return false;
+    if(!conf.Write("keyRight", keyRight)) return false;
+    if(!conf.Write("keyDown", keyDown)) return false;
+    if(!conf.Write("keyLeft", keyLeft)) return false;
+    if(!conf.Write("key1", key1)) return false;
+    if(!conf.Write("key2", key2)) return false;
+    if(!conf.Write("key12", key12)) return false;
 
-    out << "[Controls]" << std::endl;
-    out << "keyUp=" << keyUp << std::endl;
-    out << "keyRight=" << keyRight << std::endl;
-    out << "keyDown=" << keyDown << std::endl;
-    out << "keyLeft=" << keyLeft << std::endl;
-    out << "key1=" << key1 << std::endl;
-    out << "key2=" << key2 << std::endl;
-    out << "key12=" << key12 << std::endl;
+    int i = 0;
+    for(const BiosConfig& entry : bioses)
+    {
+        conf.SetPath("/bios/" + std::to_string(i++));
 
-    out.close();
-    return true;
+        if(!conf.Write("name", wxString(entry.name))) return false;
+        if(!conf.Write("biosFilePath", wxString(entry.biosFilePath))) return false;
+        if(!conf.Write("nvramFileName", wxString(entry.nvramFileName))) return false;
+        if(!conf.Write("initialTime", wxString(entry.initialTime))) return false;
+        if(!conf.Write("boardType", static_cast<int>(entry.boardType))) return false;
+        if(!conf.Write("PAL", entry.PAL)) return false;
+        if(!conf.Write("has32KbNvram", entry.has32KbNvram)) return false;
+    }
+
+    return conf.Flush(); // Technically it saves twice, here and in the dtor, but np I hope.
 }
 
 } // namespace Config

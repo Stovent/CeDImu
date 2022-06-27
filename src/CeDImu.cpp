@@ -44,6 +44,9 @@ bool CeDImu::OnInit()
 
     new MainFrame(*this);
 
+    if(Config::bioses.size() == 0)
+        wxMessageBox("Welcome in CeDImu. Start by configuring your BIOSes in Options > Settings.\nSee the MANUAL.md file for more information.");
+
     return true;
 }
 

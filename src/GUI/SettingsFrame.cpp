@@ -2,7 +2,6 @@
 #include "enums.hpp"
 #include "MainFrame.hpp"
 
-#include <wx/button.h>
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/hyperlink.h>
@@ -102,16 +101,21 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
 
     // BIOS path
     m_biosPath = new wxTextCtrl(biosConfigPage, wxID_ANY);
-    wxButton* biosSelect = new wxButton(biosConfigPage, wxID_ANY, "Select BIOS file", wxDefaultPosition, wxSize(115, 0));
-    biosSelect->Bind(wxEVT_BUTTON, [this] (wxEvent&) {
+    m_biosSelect = new wxButton(biosConfigPage, wxID_ANY, "Select BIOS file", wxDefaultPosition, wxSize(115, 0));
+    m_biosSelect->Bind(wxEVT_BUTTON, [this] (wxEvent&) {
         std::filesystem::path biosDir = this->m_biosPath->GetValue().ToStdString();
         wxFileDialog fileDlg(this, "Select system BIOS", biosDir.parent_path().string(), "", "Binary files (*.bin;*.rom)|*.bin;*.rom|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if(fileDlg.ShowModal() == wxID_OK)
-            this->m_biosPath->SetValue(fileDlg.GetPath());
+        {
+            const wxString path = fileDlg.GetPath();
+            this->m_biosPath->SetValue(path);
+            if(this->m_nvramFileName->GetValue().size() == 0)
+                this->m_nvramFileName->SetValue("nvram_" + std::filesystem::path(path.ToStdString()).stem().string() + ".bin");
+        }
     });
     wxBoxSizer* biosPathSizer = new wxBoxSizer(wxHORIZONTAL);
     biosPathSizer->Add(m_biosPath, wxSizerFlags(1).Expand());
-    biosPathSizer->Add(biosSelect, wxSizerFlags().Expand());
+    biosPathSizer->Add(m_biosSelect, wxSizerFlags().Expand());
 
     // NVRAM file name
     m_nvramFileName = new wxTextCtrl(biosConfigPage, wxID_ANY);
@@ -226,7 +230,9 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
     frameSizer->Add(buttonsPanel, wxSizerFlags().Right());
     framePanel->SetSizerAndFit(frameSizer);
 
-    m_biosList->SetSelection(m_lastSelection);
+    if(m_biosConfigs.size() > 0)
+        m_biosList->SetSelection(m_lastSelection);
+
     LoadSelection();
 
     Fit();
@@ -245,8 +251,6 @@ void SettingsFrame::OnSaveConfig(wxEvent&)
 
     Config::discDirectory = m_discPath->GetValue();
 
-    Config::bioses = m_biosConfigs;
-
     Config::keyUp = m_keyUp;
     Config::keyRight = m_keyRight;
     Config::keyDown = m_keyDown;
@@ -254,6 +258,8 @@ void SettingsFrame::OnSaveConfig(wxEvent&)
     Config::key1 = m_key1;
     Config::key2 = m_key2;
     Config::key12 = m_key12;
+
+    Config::bioses = m_biosConfigs;
 
     if(Config::saveConfig())
     {
@@ -289,7 +295,7 @@ void SettingsFrame::OnNewConfig(wxCommandEvent&)
 
 void SettingsFrame::OnDeleteConfig(wxCommandEvent&)
 {
-    if(m_biosConfigs.size() < 2)
+    if(static_cast<size_t>(m_lastSelection) >= m_biosConfigs.size())
         return;
 
     m_biosConfigs.erase(std::next(m_biosConfigs.cbegin(), m_lastSelection));
@@ -298,9 +304,11 @@ void SettingsFrame::OnDeleteConfig(wxCommandEvent&)
     if(static_cast<size_t>(m_lastSelection) >= m_biosConfigs.size())
         m_lastSelection--;
 
-
-    m_biosList->SetSelection(m_lastSelection);
-    m_biosList->EnsureVisible(m_lastSelection);
+    if(static_cast<size_t>(m_lastSelection) < m_biosConfigs.size())
+    {
+        m_biosList->SetSelection(m_lastSelection);
+        m_biosList->EnsureVisible(m_lastSelection);
+    }
 
     LoadSelection();
 }
@@ -314,6 +322,11 @@ void SettingsFrame::OnSelectBios(wxCommandEvent& event)
 
 void SettingsFrame::LoadSelection()
 {
+    CheckControls();
+
+    if(static_cast<size_t>(m_lastSelection) >= m_biosConfigs.size())
+        return;
+
     const Config::BiosConfig& config = m_biosConfigs[m_lastSelection];
 
     m_biosPath->SetValue(config.biosFilePath);
@@ -326,6 +339,9 @@ void SettingsFrame::LoadSelection()
 
 void SettingsFrame::SaveSelection()
 {
+    if(static_cast<size_t>(m_lastSelection) >= m_biosConfigs.size())
+        return;
+
     Config::BiosConfig& config = m_biosConfigs[m_lastSelection];
 
     config.biosFilePath = m_biosPath->GetValue();
@@ -334,4 +350,17 @@ void SettingsFrame::SaveSelection()
     config.boardType = static_cast<Boards>(m_boardChoice->GetSelection());
     config.PAL = m_palCheckBox->GetValue();
     config.has32KbNvram = m_nvramCheckBox->GetValue();
+}
+
+void SettingsFrame::CheckControls()
+{
+    const bool enable = m_biosConfigs.size() != 0 ? true : false;
+
+    m_biosPath->Enable(enable);
+    m_biosSelect->Enable(enable);
+    m_nvramFileName->Enable(enable);
+    m_initialTime->Enable(enable);
+    m_boardChoice->Enable(enable);
+    m_palCheckBox->Enable(enable);
+    m_nvramCheckBox->Enable(enable);
 }
