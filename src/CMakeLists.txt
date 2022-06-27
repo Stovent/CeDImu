@@ -31,7 +31,14 @@ add_executable(CeDImu
     GUI/MainFrame.cpp
     GUI/SettingsFrame.cpp
     GUI/VDSCViewer.cpp
+    ../resources/resource.rc
 )
+
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipoAvailable)
+if(ipoAvailable)
+    set_property(TARGET cdi PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 include(${wxWidgets_USE_FILE})
 target_include_directories(CeDImu PRIVATE ${wxWidgets_INCLUDE_DIRS})

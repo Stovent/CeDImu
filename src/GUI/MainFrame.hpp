@@ -1,10 +1,6 @@
 #ifndef GUI_MAINFRAME_HPP
 #define GUI_MAINFRAME_HPP
 
-#include <wx/frame.h>
-#include <wx/menuitem.h>
-#include <wx/timer.h>
-
 class CeDImu;
 class CPUViewer;
 class DebugFrame;
@@ -12,11 +8,18 @@ class GamePanel;
 class SettingsFrame;
 class VDSCViewer;
 
+#include <wx/frame.h>
+#include <wx/menuitem.h>
+#include <wx/timer.h>
+
 class MainFrame : public wxFrame
 {
 public:
     CeDImu& m_cedimu;
     wxTimer m_updateTimer;
+    wxMenu* m_fileMenu;
+    wxMenuItem* m_startBiosMenuItem;
+    wxMenuItem* m_reloadCoreMenuItem;
     wxMenuItem* m_pauseMenuItem;
 
     GamePanel* m_gamePanel;
@@ -27,15 +30,18 @@ public:
 
     uint64_t m_oldCycleCount;
     uint32_t m_oldFrameCount;
+    int m_biosIndex;
 
     MainFrame() = delete;
-    MainFrame(CeDImu& cedimu);
+    explicit MainFrame(CeDImu& cedimu);
 
     void CreateMenuBar();
+    void CreateBiosMenu();
     void UpdateTitle();
     void UpdateStatusBar();
     void UpdateUI(wxTimerEvent&);
 
+    void OnStartBios(wxCommandEvent& event);
     void OnOpenDisc(wxCommandEvent&);
     void OnCloseDisc(wxCommandEvent&);
     void OnScreenshot(wxCommandEvent&);

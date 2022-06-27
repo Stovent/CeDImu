@@ -28,9 +28,6 @@ if(ENABLE_LOG)
     add_definitions(-DENABLE_LOG)
 endif()
 
-include(CheckIPOSupported)
-check_ipo_supported(RESULT ipoAvailable)
-
 add_library(cdi ${LIBRARY_TYPE}
     CDI.cpp
     CDIDisc.cpp
@@ -70,6 +67,8 @@ add_library(cdi ${LIBRARY_TYPE}
     OS9/SystemCalls.cpp
 )
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipoAvailable)
 if(ipoAvailable)
     set_property(TARGET cdi PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
