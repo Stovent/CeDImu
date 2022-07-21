@@ -25,10 +25,10 @@ jobs:
       - run: .\vcpkg\bootstrap-vcpkg.bat
 
       - name: Install wxWidgets
-        run: .\vcpkg\vcpkg.exe install wxwidgets
+        run: .\vcpkg\vcpkg.exe install wxwidgets:x64-mingw-static
 
       - name: Generate Makefile
-        run: cmake . -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -G "MinGW Makefiles"
+        run: cmake . -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -G "MinGW Makefiles" -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
 
       - name: Build
         run: mingw32-make
