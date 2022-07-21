@@ -6,7 +6,9 @@ jobs:
   test-job:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2.4.2
+      - uses: actions/checkout@v3
+      
+      - run: dir
 
       - name: Install MinGW
         uses: egor-tensin/setup-mingw@v2
@@ -15,3 +17,12 @@ jobs:
 
       - name: test
         run: g++ --version
+
+      - name: Install vcpkg
+        uses: actions/checkout@v3
+        with:
+          repository: Microsoft/vcpkg
+        run: .\vcpkg\bootstrap-vcpkg.bat
+
+      - name: Install wxWidgets
+        run: .\vcpkg\vcpkg.exe install wxwidgets

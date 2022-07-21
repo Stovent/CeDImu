@@ -6,17 +6,20 @@ jobs:
   test-job:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.4.2
+      - uses: actions/checkout@v3
+
       - name: Set up
         run: |
           sudo apt update
           sudo apt install cmake libwxgtk3.0-gtk3-dev
           mkdir ${{github.workspace}}/build
+
       - name: Build
         working-directory: ${{github.workspace}}/build
         run: |
           cmake ..
           make -j$(nproc --all)
+
       - uses: actions/upload-artifact@v3.1.0
         with:
           name: CeDImu-ubuntu-x86_64
