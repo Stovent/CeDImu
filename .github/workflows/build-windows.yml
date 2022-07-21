@@ -7,20 +7,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      
-      - run: dir
 
-      - name: Install MinGW
-        uses: egor-tensin/setup-mingw@v2
+      - name: Install vcpkg
+        uses: actions/checkout@v3
         with:
-            platform: x64
-
-      - name: test
-        run: g++ --version
-
-      - run: git clone https://github.com/Microsoft/vcpkg
-      - run: dir
-      - run: .\vcpkg\bootstrap-vcpkg.bat
+          repository: Microsoft/vcpkg
+          path: ..\vcpkg
+      - run: dir ..\vcpkg
+      - run: ..\vcpkg\bootstrap-vcpkg.bat
 
       - name: Install wxWidgets
-        run: .\vcpkg\vcpkg.exe install wxwidgets
+        run: ..\vcpkg\vcpkg.exe install wxwidgets
