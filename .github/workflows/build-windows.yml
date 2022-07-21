@@ -18,10 +18,7 @@ jobs:
       - name: test
         run: g++ --version
 
-      - name: Install vcpkg
-        uses: actions/checkout@v3
-        with:
-          repository: Microsoft/vcpkg
+      - run: git clone https://github.com/Microsoft/vcpkg
       - run: dir
       - run: .\vcpkg\bootstrap-vcpkg.bat
 
