@@ -1,0 +1,17 @@
+name: Build Windows
+
+on: [push]
+
+jobs:
+  test-job:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2.4.2
+
+      - name: Install MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+            platform: x64
+
+      - name: test
+        run: g++ --version
