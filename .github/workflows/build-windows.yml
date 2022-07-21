@@ -31,4 +31,4 @@ jobs:
         run: cmake . -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake
 
       - name: Build
-      - run: mingw32-make
+        run: mingw32-make
