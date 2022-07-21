@@ -16,7 +16,8 @@ jobs:
       - name: Install CMake
         uses: lukka/get-cmake@latest
 
-      - run: cmake
+      - run: cmake .
+      - run: mingw32-make
 
       # - name: Install vcpkg
         # uses: actions/checkout@v3
