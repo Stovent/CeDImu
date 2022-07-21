@@ -8,13 +8,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install vcpkg
-        uses: actions/checkout@v3
+      - name: Install MinGW
+        uses: egor-tensin/setup-mingw@v2
         with:
-          repository: Microsoft/vcpkg
-          path: vcpkg
-      - run: dir vcpkg
-      - run: .\vcpkg\bootstrap-vcpkg.bat
+            platform: x64
 
-      - name: Install wxWidgets
-        run: .\vcpkg\vcpkg.exe install wxwidgets
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
+
+      - run: cmake
+
+      # - name: Install vcpkg
+        # uses: actions/checkout@v3
+        # with:
+          # repository: Microsoft/vcpkg
+          # path: vcpkg
+      # - run: dir vcpkg
+      # - run: .\vcpkg\bootstrap-vcpkg.bat
+
+      # - name: Install wxWidgets
+        # run: .\vcpkg\vcpkg.exe install wxwidgets
