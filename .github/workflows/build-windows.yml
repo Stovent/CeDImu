@@ -28,7 +28,7 @@ jobs:
         run: .\vcpkg\vcpkg.exe install wxwidgets
 
       - name: Generate Makefile
-        run: cmake . -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake
+        run: cmake . -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -G "MinGW Makefiles"
 
       - name: Build
         run: mingw32-make
