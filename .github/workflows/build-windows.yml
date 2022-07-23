@@ -8,26 +8,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install MinGW
-        uses: egor-tensin/setup-mingw@v2
-        with:
-            platform: x64
-
-      # - name: Install CMake
-        # uses: lukka/get-cmake@latest
-
-      - name: Install vcpkg
-        uses: actions/checkout@v3
-        with:
-          repository: Microsoft/vcpkg
-          path: vcpkg
-      - run: .\vcpkg\bootstrap-vcpkg.bat
-
       - name: Install wxWidgets
-        run: .\vcpkg\vcpkg.exe install wxwidgets:x64-mingw-static
+        run: vcpkg install wxwidgets:x64-mingw-static
 
       - name: Generate Makefile
-        run: cmake . -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
+        run: cmake . -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
 
       - name: Build
         run: mingw32-make
