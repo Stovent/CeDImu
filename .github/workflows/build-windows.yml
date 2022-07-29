@@ -8,8 +8,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run: vcpkg update
-
       - name: Install wxWidgets
         run: vcpkg install wxwidgets:x64-mingw-static
 
