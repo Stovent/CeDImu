@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   test-job:
+    continue-on-error: true
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
@@ -13,6 +14,11 @@ jobs:
 
       - name: Generate Makefile
         run: cmake . -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
+        
+      - uses: actions/upload-artifact@v3.1.0
+        with:
+          name: logs.txt
+          path: C:\vcpkg\buildtrees\wxwidgets\install-x64-mingw-static-dbg-out.log
 
       - name: Build
         run: mingw32-make
