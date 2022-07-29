@@ -14,11 +14,6 @@ jobs:
 
       - name: Generate Makefile
         run: cmake . -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
-        
-      - uses: actions/upload-artifact@v3.1.0
-        with:
-          name: logs.txt
-          path: C:\vcpkg\buildtrees\wxwidgets\install-x64-mingw-static-dbg-out.log
 
       - name: Build
         run: mingw32-make
@@ -28,3 +23,11 @@ jobs:
         with:
           name: CeDImu.exe
           path: .\CeDImu.exe
+
+  job2:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/upload-artifact@v3.1.0
+        with:
+          name: logs.txt
+          path: C:\vcpkg\buildtrees\wxwidgets\install-x64-mingw-static-dbg-out.log
