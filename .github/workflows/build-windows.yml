@@ -25,6 +25,7 @@ jobs:
           path: .\CeDImu.exe
 
   job2:
+    needs: test-job
     runs-on: windows-latest
     steps:
       - uses: actions/upload-artifact@v3.1.0
