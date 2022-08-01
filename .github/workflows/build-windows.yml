@@ -3,8 +3,7 @@ name: Build Windows
 on: [push]
 
 jobs:
-  test-job:
-    continue-on-error: true
+  build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
@@ -21,14 +20,5 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
         with:
-          name: CeDImu.exe
+          name: CeDImu-windows-x86_64.exe
           path: .\CeDImu.exe
-
-  job2:
-    needs: test-job
-    runs-on: windows-latest
-    steps:
-      - uses: actions/upload-artifact@v3.1.0
-        with:
-          name: logs.txt
-          path: C:\vcpkg\buildtrees\wxwidgets\install-x64-mingw-static-dbg-out.log
