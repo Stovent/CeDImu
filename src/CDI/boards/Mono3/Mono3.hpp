@@ -8,7 +8,7 @@
 class Mono3 : public Board
 {
     MCD212 mcd212;
-    CIAP ciap;
+    HLE::CIAP ciap;
     const uint32_t nvramMaxAddress;
 
 public:

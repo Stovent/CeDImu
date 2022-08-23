@@ -27,41 +27,10 @@ LOG(static std::string getPortName(uint8_t index)
 namespace HLE
 {
 
-enum Channels
-{
-    CHA = 0,
-    CHB,
-    CHC,
-    CHD,
-};
-
-enum IKATRegisters
-{
-    CHA_IN = 0,
-    CHB_IN,
-    CHC_IN,
-    CHD_IN,
-
-    CHA_OUT,
-    CHB_OUT,
-    CHC_OUT,
-    CHD_OUT,
-
-    CHA_SR,
-    CHB_SR,
-    CHC_SR,
-    CHD_SR,
-
-    ISR,
-    IMR,
-    Mode,
-};
-
 #define UNSET_REMTY(reg) registers[reg] &= 0x01;
 #define SET_RTEMTY(reg) registers[reg] |= 0x11;
 #define CHANNEL(addr) (addr % 4)
 
-int INT_MASK[4] = {0x02, 0x08, 0x20, 0x80};
 #define SET_INT(reg) registers[ISR] |= INT_MASK[reg]; \
                      if(registers[IMR] & INT_MASK[reg]) \
                          cdi.board->cpu.IN2();
@@ -163,6 +132,15 @@ void IKAT::ProcessCommandC()
 {
     switch(channelIn[CHC][0])
     {
+    case 0xF0:
+        channelIn[CHC].clear();
+        channelOut[CHC].clear();
+        channelOut[CHC].insert(channelOut[CHC].begin(), responseCF0.begin(), responseCF0.end());
+
+        UNSET_REMTY(CHC_SR)
+        SET_INT(CHC)
+        break;
+
     case 0xF4:
         channelIn[CHC].clear();
         channelOut[CHC].clear();
@@ -176,6 +154,24 @@ void IKAT::ProcessCommandC()
         channelIn[CHC].clear();
         channelOut[CHC].clear();
         channelOut[CHC].insert(channelOut[CHC].begin(), responseCF6.begin(), responseCF6.end());
+
+        UNSET_REMTY(CHC_SR)
+        SET_INT(CHC)
+        break;
+
+    case 0xF7:
+        channelIn[CHC].clear();
+        channelOut[CHC].clear();
+        channelOut[CHC].insert(channelOut[CHC].begin(), responseCF7.begin(), responseCF7.end());
+
+        UNSET_REMTY(CHC_SR)
+        SET_INT(CHC)
+        break;
+
+    case 0xF8:
+        channelIn[CHC].clear();
+        channelOut[CHC].clear();
+        channelOut[CHC].insert(channelOut[CHC].begin(), responseCF8.begin(), responseCF8.end());
 
         UNSET_REMTY(CHC_SR)
         SET_INT(CHC)
