@@ -1,5 +1,7 @@
 #include "MC68HSC05C8.hpp"
 
+#include <cstring>
+
 /** @brief Creates a new MC68HSC05C8 MCU.
  *
  * @param internalMemory The initial memory of the MCU.

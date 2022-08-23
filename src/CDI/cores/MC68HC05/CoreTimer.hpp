@@ -1,6 +1,7 @@
 #ifndef CDI_CORES_MC68HC05_CORETIMER_HPP
 #define CDI_CORES_MC68HC05_CORETIMER_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 
