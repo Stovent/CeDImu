@@ -44,6 +44,13 @@ add_library(cdi ${LIBRARY_TYPE}
     common/Video.cpp
     cores/DS1216/DS1216.cpp
     cores/M48T08/M48T08.cpp
+    cores/MC68HC05/CoreTimer.cpp
+    cores/MC68HC05/M68000Interface.cpp
+    cores/MC68HC05/MC68HC05.cpp
+    cores/MC68HC05/MC68HC05i8.cpp
+    cores/MC68HC05/MC68HSC05C8.cpp
+    cores/MC68HC05/ProgrammableTimer.cpp
+    cores/MC68HC05/SCI.cpp
     cores/MCD212/Display.cpp
     cores/MCD212/DRAMInterface.cpp
     cores/MCD212/MCD212.cpp
