@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install wxWidgets
-        run: vcpkg install wxwidgets:x64-mingw-static
+        run: vcpkg install wxwidgets:x64-mingw-static-rel
 
       - name: Generate Makefile
         run: cmake . -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
