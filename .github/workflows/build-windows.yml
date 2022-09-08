@@ -17,6 +17,7 @@ jobs:
       - name: Build
         run: mingw32-make
 
+
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
         with:
