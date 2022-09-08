@@ -10,7 +10,7 @@ jobs:
 
       - name: Install wxWidgets
         run: git clone --depth 1 --branch v3.2.1 https://github.com/wxWidgets/wxWidgets
-        run: mingw32-make -f ./wxWidgets/build/msw/makefile.gcc CFLAGS="-m64" CXXFLAGS="-std=c++17 -m64" BUILD=release DEBUG_FLAG=0
+      - run: mingw32-make -f ./wxWidgets/build/msw/makefile.gcc CFLAGS="-m64" CXXFLAGS="-std=c++17 -m64" BUILD=release DEBUG_FLAG=0
 
       - name: Generate Makefile
         run: cmake . -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
