@@ -9,9 +9,13 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install wxWidgets
-        run: git clone --depth 1 --branch v3.2.1 https://github.com/wxWidgets/wxWidgets
-      - working-directory: ./wxWidgets/build/msw
-        run: mingw32-make -f makefile.gcc CFLAGS="-m64" CXXFLAGS="-std=c++17 -m64" BUILD=release DEBUG_FLAG=0
+        run: vcpkg install wxwidgets:x64-mingw-static
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          name: logs.txt
+          path: C:\vcpkg\buildtrees\wxwidgets\install-x64-mingw-static-dbg-out.log
 
       - name: Generate Makefile
         run: cmake . -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
