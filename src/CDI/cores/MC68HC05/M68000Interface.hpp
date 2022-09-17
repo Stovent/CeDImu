@@ -22,16 +22,16 @@ public:
 
     void Reset();
 
-    [[nodiscard]] uint8_t PopByteMCU(size_t channel);
-    [[nodiscard]] bool PushByteMCU(size_t channel, uint8_t data);
-    [[nodiscard]] uint8_t GetStatusMCU(size_t channel);
+    [[nodiscard]] uint8_t PopByteMCU(std::size_t channel);
+    [[nodiscard]] bool PushByteMCU(std::size_t channel, uint8_t data);
+    [[nodiscard]] uint8_t GetStatusMCU(std::size_t channel);
     [[nodiscard]] uint8_t GetInterruptStatusMCU();
     [[nodiscard]] uint8_t GetInterruptMaskMCU();
     void SetInterruptMaskMCU(uint8_t value);
 
-    [[nodiscard]] uint8_t PopByteHost(size_t channel);
-    [[nodiscard]] bool PushByteHost(size_t channel, uint8_t data);
-    [[nodiscard]] uint8_t GetStatusHost(size_t channel);
+    [[nodiscard]] uint8_t PopByteHost(std::size_t channel);
+    [[nodiscard]] bool PushByteHost(std::size_t channel, uint8_t data);
+    [[nodiscard]] uint8_t GetStatusHost(std::size_t channel);
     [[nodiscard]] uint8_t GetInterruptStatusHost();
     [[nodiscard]] uint8_t GetInterruptMaskHost();
     void SetInterruptMaskHost(uint8_t value);
@@ -47,8 +47,8 @@ private:
     uint8_t modeHost;
 
     void ClearChannels();
-    bool ChannelEnabledMCU(size_t channel);
-    bool ChannelEnabledHost(size_t channel);
+    bool ChannelEnabledMCU(std::size_t channel);
+    bool ChannelEnabledHost(std::size_t channel);
 
     enum RegistersFlags
     {
