@@ -1287,11 +1287,11 @@ void MC68HC05::ASR(uint16_t addr)
     SetMemory(addr, data);
 }
 
-template<int BIT>
+template<int BITNUM>
 void MC68HC05::BCLR()
 {
     const uint8_t addr = GetNextByte();
-    SetMemory(addr, GetMemory(addr) & ~(1 << BIT));
+    SetMemory(addr, GetMemory(addr) & ~(1 << BITNUM));
 }
 
 uint8_t MC68HC05::BIT(uint8_t rhs)
@@ -1309,31 +1309,31 @@ void MC68HC05::Branch(bool condition)
         PC += offset;
 }
 
-template<int BIT>
+template<int BITNUM>
 void MC68HC05::BRCLR()
 {
     const uint8_t addr = GetNextByte();
     const int8_t offset = GetNextByte();
-    CCR[CCRC] = GetMemory(addr) & (1 << BIT);
+    CCR[CCRC] = GetMemory(addr) & (1 << BITNUM);
     if(!CCR[CCRC])
         PC += offset;
 }
 
-template<int BIT>
+template<int BITNUM>
 void MC68HC05::BRSET()
 {
     const uint8_t addr = GetNextByte();
     const int8_t offset = GetNextByte();
-    CCR[CCRC] = GetMemory(addr) & (1 << BIT);
+    CCR[CCRC] = GetMemory(addr) & (1 << BITNUM);
     if(CCR[CCRC])
         PC += offset;
 }
 
-template<int BIT>
+template<int BITNUM>
 void MC68HC05::BSET()
 {
     const uint8_t addr = GetNextByte();
-    SetMemory(addr, GetMemory(addr) | (1 << BIT));
+    SetMemory(addr, GetMemory(addr) | (1 << BITNUM));
 }
 
 void MC68HC05::CLR(uint8_t& reg)
