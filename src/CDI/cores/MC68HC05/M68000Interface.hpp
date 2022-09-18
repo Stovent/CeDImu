@@ -2,6 +2,7 @@
 #define CDI_CORES_MC68HC05_M68000INTERFACE_HPP
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <deque>
 

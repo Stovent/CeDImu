@@ -109,6 +109,21 @@ make -j$(nproc --all)
 
 If you want to have the memory access logs, replace `cmake ..` with `cmake .. -DENABLE_LOG=1`
 
+#### macOS
+
+Package dependency: `wxwidgets` and `cmake` (e.g. if using brew run: `brew install wxwidgets cmake`). Also make sure to have Xcode or just it's Command Line Tools installed.
+
+For keyboard input to work properly, enable 'Keyboard Navigation' in macOS. See this [support article](https://support.apple.com/en-us/HT204434#fullkeyboard).
+
+Open a terminal in the root directory of the git and type:
+
+```sh
+mkdir build
+cd build
+cmake ..
+make -j$(sysctl -n hw.physicalcpu)
+```
+
 ## libCeDImu
 
 If I get everything listed upper working, stable and fully functional, the goal is to create libCeDImu, a complete library (static and/or dynamic) to allow any program to implement CDI applications (other emulators like Bizhawk, MAME, etc).
