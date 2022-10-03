@@ -1,0 +1,24 @@
+name: Build MacOS
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install wxWidgets
+        run: brew install wxwidgets
+
+      - name: Generate Makefile
+        run: cmake .
+
+      - name: Build
+        run: make
+
+      - name: Upload build
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: CeDImu-macos-x86_64.exe
+          path: .\CeDImu
