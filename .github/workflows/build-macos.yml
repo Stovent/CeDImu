@@ -15,7 +15,7 @@ jobs:
         run: cmake .
 
       - name: Build
-        run: make
+        run: make -j$(sysctl -n hw.physicalcpu)
 
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
