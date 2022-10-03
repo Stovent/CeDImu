@@ -36,7 +36,7 @@ add_executable(CeDImu
 include(${wxWidgets_USE_FILE})
 target_include_directories(CeDImu PRIVATE ${wxWidgets_INCLUDE_DIRS})
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	target_link_libraries(CeDImu cdi ${wxWidgets_LIBRARIES} c++fs)
+	target_link_libraries(CeDImu cdi ${wxWidgets_LIBRARIES})
 else()
 	target_link_libraries(CeDImu cdi ${wxWidgets_LIBRARIES} stdc++fs)
 endif()
