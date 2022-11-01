@@ -201,9 +201,9 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
         switch(column)
         {
         case 0: return toHex(log.second.returnAddress);
-        case 1: return log.second.vector == SCC68070::Trap0Instruction ? log.second.systemCall.module : "";
+        case 1: return log.second.vector == Trap0Instruction ? log.second.systemCall.module : "";
         case 2: return log.second.disassembled;
-        case 3: return log.second.vector == SCC68070::Trap0Instruction ? OS9::systemCallNameToString(log.second.systemCall.type) : "";
+        case 3: return log.second.vector == Trap0Instruction ? OS9::systemCallNameToString(log.second.systemCall.type) : "";
         case 4: return log.second.systemCall.inputs;
         case 5: return log.second.systemCall.outputs;
         default: return "";
@@ -237,7 +237,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
 
                 if(registers->sr.c)
                 {
-                    snprintf(error, 64, "carry=1 d1.w=%s ", OS9::errorNameToString(OS9::Error(registers->d[1])).c_str());
+                    snprintf(error, 64, "carry=1 d1.w=%s ", OS9::errorNameToString(static_cast<OS9::Error>((uint16_t)registers->d[1])).c_str());
                 }
                 else
                 {

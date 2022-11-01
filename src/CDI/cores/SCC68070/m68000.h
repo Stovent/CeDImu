@@ -4,6 +4,88 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef struct m68000_mc68000_s m68000_mc68000_t;
+typedef struct m68000_scc68070_s m68000_scc68070_t;
+
+/**
+ * Specify the direction of the operation.
+ *
+ * `RegisterToMemory` and `MemoryToRegister` are used by MOVEM and MOVEP.
+ *
+ * `DstReg` and `DstEa` are used by ADD, AND, OR and SUB.
+ *
+ * `Left` and `Right` are used by the Shift and Rotate instructions.
+ *
+ * `RegisterToUsp` and `UspToRegister` are used by MOVE USP.
+ *
+ * `RegisterToRegister` and `MemoryToMemory` are used by ABCD, ADDX, SBCD and SUBX.
+ */
+typedef enum Direction
+{
+    /**
+     * Transfert from a register to memory.
+     */
+    RegisterToMemory,
+    /**
+     * Transfert from memory to a register.
+     */
+    MemoryToRegister,
+    /**
+     * Destination is a register.
+     */
+    DstReg,
+    /**
+     * Destination is in memory.
+     */
+    DstEa,
+    /**
+     * Left shift or rotation.
+     */
+    Left,
+    /**
+     * Right shift or rotation.
+     */
+    Right,
+    /**
+     * For MOVE USP only.
+     */
+    RegisterToUsp,
+    /**
+     * For MOVE USP only.
+     */
+    UspToRegister,
+    /**
+     * Register to register operation.
+     */
+    RegisterToRegister,
+    /**
+     * Memory to Memory operation.
+     */
+    MemoryToMemory,
+    /**
+     * Exchange Data Registers (EXG only).
+     */
+    ExchangeData,
+    /**
+     * Exchange Address Registers (EXG only).
+     */
+    ExchangeAddress,
+    /**
+     * Exchange Data and Address Registers (EXG only).
+     */
+    ExchangeDataAddress,
+} Direction;
+
+/**
+ * Size of an operation.
+ */
+typedef enum Size
+{
+    Byte = 1,
+    Word = 2,
+    Long = 4,
+} Size;
+
 /**
  * Exception vectors of the 68000.
  *
@@ -67,119 +149,6 @@ typedef enum Vector
     Level7OnChipInterrupt,
     UserInterrupt,
 } Vector;
-
-/**
- * A M68000 core.
- */
-typedef struct M68000 M68000;
-
-#if defined(DOC)
-/**
- * Return type of the memory callback functions.
- */
-typedef struct GetSetResult
-{
-    /**
-     * Set to the value to be returned. Only the low order bytes are read depending on the size. Unused with SetResult.
-     */
-    uint32_t data;
-    /**
-     * Set to 0 if read successfully, set to 2 (Access Error) otherwise (Address errors are automatically detected by the library).
-     */
-    uint8_t exception;
-} GetSetResult;
-#endif
-
-#if !defined(DOC)
-/**
- * Return type of the memory callback functions.
- */
-typedef struct GetSetResult
-{
-    /**
-     * Set to the value to be returned. Only the low order bytes are read depending on the size. Unused with SetResult.
-     */
-    uint32_t data;
-    /**
-     * Set to 0 if read successfully, set to 2 (Access Error) otherwise (Address errors are automatically detected by the library).
-     */
-    uint8_t exception;
-} GetSetResult;
-#endif
-
-#if defined(DOC)
-/**
- * Memory callbacks sent to the interpreter methods.
- *
- * The void* argument passed on each callback is the `user_data` member, and its usage is let to the user of this library.
- * For example, this can be used to allow the usage of C++ objects, where `user_data` has the value of the `this` pointer of the object.
- */
-typedef struct M68000Callbacks
-{
-    struct GetSetResult (*get_byte)(uint32_t addr, void *user_data);
-    struct GetSetResult (*get_word)(uint32_t addr, void *user_data);
-    struct GetSetResult (*get_long)(uint32_t addr, void *user_data);
-    struct GetSetResult (*set_byte)(uint32_t addr, uint8_t data, void *user_data);
-    struct GetSetResult (*set_word)(uint32_t addr, uint16_t data, void *user_data);
-    struct GetSetResult (*set_long)(uint32_t addr, uint32_t data, void *user_data);
-    void (*reset_instruction)(void*);
-    void *user_data;
-} M68000Callbacks;
-#endif
-
-#if !defined(DOC)
-/**
- * Memory callbacks sent to the interpreter methods.
- *
- * The void* argument passed on each callback is the `user_data` member, and its usage is let to the user of this library.
- * For example, this can be used to allow the usage of C++ objects, where `user_data` has the value of the `this` pointer of the object.
- */
-typedef struct M68000Callbacks
-{
-    struct GetSetResult (*get_byte)(uint32_t addr, void *user_data);
-    struct GetSetResult (*get_word)(uint32_t addr, void *user_data);
-    struct GetSetResult (*get_long)(uint32_t addr, void *user_data);
-    struct GetSetResult (*set_byte)(uint32_t addr, uint8_t data, void *user_data);
-    struct GetSetResult (*set_word)(uint32_t addr, uint16_t data, void *user_data);
-    struct GetSetResult (*set_long)(uint32_t addr, uint32_t data, void *user_data);
-    void (*reset_instruction)(void*);
-    void *user_data;
-} M68000Callbacks;
-#endif
-
-#if defined(DOC)
-/**
- * Return value of the `cycle_until_exception`, `loop_until_exception_stop` and `interpreter_exception` functions.
- */
-typedef struct ExceptionResult
-{
-    /**
-     * The number of cycles executed.
-     */
-    size_t cycles;
-    /**
-     * 0 if no exception occured, the vector number that occured otherwise.
-     */
-    uint8_t exception;
-} ExceptionResult;
-#endif
-
-#if !defined(DOC)
-/**
- * Return value of the `cycle_until_exception`, `loop_until_exception_stop` and `interpreter_exception` functions.
- */
-typedef struct ExceptionResult
-{
-    /**
-     * The number of cycles executed.
-     */
-    size_t cycles;
-    /**
-     * 0 if no exception occured, the vector number that occured otherwise.
-     */
-    uint8_t exception;
-} ExceptionResult;
-#endif
 
 /**
  * M68000 status register.
@@ -251,286 +220,490 @@ typedef struct Registers
     uint32_t pc;
 } Registers;
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
-#if defined(DOC)
 /**
- * Allocates a new core and returns the pointer to it.
- *
- * The created core has a [Reset vector](crate::exception::Vector::ResetSspPc) pushed, so that the first call to an interpreter method
- * will first fetch the reset vectors, then will execute the first instruction.
- *
- * It is not managed by Rust, so you have to delete it after usage with [m68000_delete].
+ * Raw Brief Extension Word.
  */
-struct M68000 *m68000_new(void);
-#endif
+typedef struct BriefExtensionWord
+{
+    uint16_t _0;
+} BriefExtensionWord;
 
-#if defined(DOC)
 /**
- * [m68000_new] but without the initial reset vector, so you can initialize the core as you want.
+ * Addressing modes.
  */
-struct M68000 *m68000_new_no_reset(void);
-#endif
+typedef enum AddressingMode_Tag
+{
+    /**
+     * Data Register Direct.
+     */
+    Drd,
+    /**
+     * Address Register Direct.
+     */
+    Ard,
+    /**
+     * Address Register Indirect.
+     */
+    Ari,
+    /**
+     * Address Register Indirect With POstincrement.
+     */
+    Ariwpo,
+    /**
+     * Address Register Indirect With PRedecrement.
+     */
+    Ariwpr,
+    /**
+     * Address Register Indirect With Displacement (address reg, displacement).
+     */
+    Ariwd,
+    /**
+     * Address Register Indirect With Index 8 (address reg, brief extension word).
+     */
+    Ariwi8,
+    /**
+     * Absolute Short.
+     */
+    AbsShort,
+    /**
+     * Absolute Long.
+     */
+    AbsLong,
+    /**
+     * Program Counter Indirect With Displacement (PC value, displacement).
+     *
+     * When using it with the assembler, the PC value is ignored.
+     */
+    Pciwd,
+    /**
+     * Program Counter Indirect With Index 8 (PC value, brief extension word).
+     *
+     * When using it with the assembler, the PC value is ignored.
+     */
+    Pciwi8,
+    /**
+     * Immediate Data (cast this variant to the correct type when used).
+     */
+    Immediate,
+} AddressingMode_Tag;
 
-#if defined(DOC)
+typedef struct Ariwd_Body
+{
+    uint8_t _0;
+    int16_t _1;
+} Ariwd_Body;
+
+typedef struct Ariwi8_Body
+{
+    uint8_t _0;
+    struct BriefExtensionWord _1;
+} Ariwi8_Body;
+
+typedef struct Pciwd_Body
+{
+    uint32_t _0;
+    int16_t _1;
+} Pciwd_Body;
+
+typedef struct Pciwi8_Body
+{
+    uint32_t _0;
+    struct BriefExtensionWord _1;
+} Pciwi8_Body;
+
+typedef struct AddressingMode
+{
+    AddressingMode_Tag tag;
+    union
+    {
+        struct
+        {
+            uint8_t drd;
+        };
+        struct
+        {
+            uint8_t ard;
+        };
+        struct
+        {
+            uint8_t ari;
+        };
+        struct
+        {
+            uint8_t ariwpo;
+        };
+        struct
+        {
+            uint8_t ariwpr;
+        };
+        Ariwd_Body ariwd;
+        Ariwi8_Body ariwi8;
+        struct
+        {
+            uint16_t abs_short;
+        };
+        struct
+        {
+            uint32_t abs_long;
+        };
+        Pciwd_Body pciwd;
+        Pciwi8_Body pciwi8;
+        struct
+        {
+            uint32_t immediate;
+        };
+    };
+} AddressingMode;
+
 /**
- * Frees the memory of the given core.
+ * Operands of an instruction.
  */
-void m68000_delete(struct M68000 *m68000);
-#endif
+typedef enum Operands_Tag
+{
+    /**
+     * ILLEGAL, NOP, RESET, RTE, RTR, RTS, TRAPV
+     */
+    NoOperands,
+    /**
+     * ANDI/EORI/ORI CCR/SR, STOP
+     */
+    Immediate_,
+    /**
+     * ADDI, ANDI, CMPI, EORI, ORI, SUBI
+     */
+    SizeEffectiveAddressImmediate,
+    /**
+     * BCHG, BCLR, BSET, BTST
+     */
+    EffectiveAddressCount,
+    /**
+     * JMP, JSR, MOVE (f) SR CCR, NBCD, PEA, TAS
+     */
+    EffectiveAddress,
+    /**
+     * CLR, NEG, NEGX, NOT, TST
+     */
+    SizeEffectiveAddress,
+    /**
+     * CHK, DIVS, DIVU, LEA, MULS, MULU
+     */
+    RegisterEffectiveAddress,
+    /**
+     * MOVEP
+     */
+    RegisterDirectionSizeRegisterDisplacement,
+    /**
+     * MOVEA
+     */
+    SizeRegisterEffectiveAddress,
+    /**
+     * MOVE
+     */
+    SizeEffectiveAddressEffectiveAddress,
+    /**
+     * EXG
+     */
+    RegisterOpmodeRegister,
+    /**
+     * EXT
+     */
+    OpmodeRegister,
+    /**
+     * TRAP
+     */
+    Vector_,
+    /**
+     * LINK
+     */
+    RegisterDisplacement,
+    /**
+     * SWAP, UNLK
+     */
+    Register,
+    /**
+     * MOVE USP
+     */
+    DirectionRegister,
+    /**
+     * MOVEM
+     */
+    DirectionSizeEffectiveAddressList,
+    /**
+     * ADDQ, SUBQ
+     */
+    DataSizeEffectiveAddress,
+    /**
+     * Scc
+     */
+    ConditionEffectiveAddress,
+    /**
+     * DBcc
+     */
+    ConditionRegisterDisplacement,
+    /**
+     * BRA, BSR
+     */
+    Displacement,
+    /**
+     * Bcc
+     */
+    ConditionDisplacement,
+    /**
+     * MOVEQ
+     */
+    RegisterData,
+    /**
+     * ADD, AND, CMP, EOR, OR, SUB
+     */
+    RegisterDirectionSizeEffectiveAddress,
+    /**
+     * ADDA, CMPA, SUBA
+     */
+    RegisterSizeEffectiveAddress,
+    /**
+     * ABCD, ADDX, SBCD, SUBX
+     */
+    RegisterSizeModeRegister,
+    /**
+     * CMPM
+     */
+    RegisterSizeRegister,
+    /**
+     * ASm, LSm, ROm, ROXm
+     */
+    DirectionEffectiveAddress,
+    /**
+     * ASr, LSr, ROr, ROXr
+     */
+    RotationDirectionSizeModeRegister,
+} Operands_Tag;
 
-#if defined(DOC)
+typedef struct SizeEffectiveAddressImmediate_Body
+{
+    enum Size _0;
+    struct AddressingMode _1;
+    uint32_t _2;
+} SizeEffectiveAddressImmediate_Body;
+
+typedef struct EffectiveAddressCount_Body
+{
+    struct AddressingMode _0;
+    uint8_t _1;
+} EffectiveAddressCount_Body;
+
+typedef struct SizeEffectiveAddress_Body
+{
+    enum Size _0;
+    struct AddressingMode _1;
+} SizeEffectiveAddress_Body;
+
+typedef struct RegisterEffectiveAddress_Body
+{
+    uint8_t _0;
+    struct AddressingMode _1;
+} RegisterEffectiveAddress_Body;
+
+typedef struct RegisterDirectionSizeRegisterDisplacement_Body
+{
+    uint8_t _0;
+    enum Direction _1;
+    enum Size _2;
+    uint8_t _3;
+    int16_t _4;
+} RegisterDirectionSizeRegisterDisplacement_Body;
+
+typedef struct SizeRegisterEffectiveAddress_Body
+{
+    enum Size _0;
+    uint8_t _1;
+    struct AddressingMode _2;
+} SizeRegisterEffectiveAddress_Body;
+
+typedef struct SizeEffectiveAddressEffectiveAddress_Body
+{
+    enum Size _0;
+    struct AddressingMode _1;
+    struct AddressingMode _2;
+} SizeEffectiveAddressEffectiveAddress_Body;
+
+typedef struct RegisterOpmodeRegister_Body
+{
+    uint8_t _0;
+    enum Direction _1;
+    uint8_t _2;
+} RegisterOpmodeRegister_Body;
+
+typedef struct OpmodeRegister_Body
+{
+    uint8_t _0;
+    uint8_t _1;
+} OpmodeRegister_Body;
+
+typedef struct RegisterDisplacement_Body
+{
+    uint8_t _0;
+    int16_t _1;
+} RegisterDisplacement_Body;
+
+typedef struct DirectionRegister_Body
+{
+    enum Direction _0;
+    uint8_t _1;
+} DirectionRegister_Body;
+
+typedef struct DirectionSizeEffectiveAddressList_Body
+{
+    enum Direction _0;
+    enum Size _1;
+    struct AddressingMode _2;
+    uint16_t _3;
+} DirectionSizeEffectiveAddressList_Body;
+
+typedef struct DataSizeEffectiveAddress_Body
+{
+    uint8_t _0;
+    enum Size _1;
+    struct AddressingMode _2;
+} DataSizeEffectiveAddress_Body;
+
+typedef struct ConditionEffectiveAddress_Body
+{
+    uint8_t _0;
+    struct AddressingMode _1;
+} ConditionEffectiveAddress_Body;
+
+typedef struct ConditionRegisterDisplacement_Body
+{
+    uint8_t _0;
+    uint8_t _1;
+    int16_t _2;
+} ConditionRegisterDisplacement_Body;
+
+typedef struct ConditionDisplacement_Body
+{
+    uint8_t _0;
+    int16_t _1;
+} ConditionDisplacement_Body;
+
+typedef struct RegisterData_Body
+{
+    uint8_t _0;
+    int8_t _1;
+} RegisterData_Body;
+
+typedef struct RegisterDirectionSizeEffectiveAddress_Body
+{
+    uint8_t _0;
+    enum Direction _1;
+    enum Size _2;
+    struct AddressingMode _3;
+} RegisterDirectionSizeEffectiveAddress_Body;
+
+typedef struct RegisterSizeEffectiveAddress_Body
+{
+    uint8_t _0;
+    enum Size _1;
+    struct AddressingMode _2;
+} RegisterSizeEffectiveAddress_Body;
+
+typedef struct RegisterSizeModeRegister_Body
+{
+    uint8_t _0;
+    enum Size _1;
+    enum Direction _2;
+    uint8_t _3;
+} RegisterSizeModeRegister_Body;
+
+typedef struct RegisterSizeRegister_Body
+{
+    uint8_t _0;
+    enum Size _1;
+    uint8_t _2;
+} RegisterSizeRegister_Body;
+
+typedef struct DirectionEffectiveAddress_Body
+{
+    enum Direction _0;
+    struct AddressingMode _1;
+} DirectionEffectiveAddress_Body;
+
+typedef struct RotationDirectionSizeModeRegister_Body
+{
+    uint8_t _0;
+    enum Direction _1;
+    enum Size _2;
+    uint8_t _3;
+    uint8_t _4;
+} RotationDirectionSizeModeRegister_Body;
+
+typedef struct Operands
+{
+    Operands_Tag tag;
+    union
+    {
+        struct
+        {
+            uint16_t immediate;
+        };
+        SizeEffectiveAddressImmediate_Body size_effective_address_immediate;
+        EffectiveAddressCount_Body effective_address_count;
+        struct
+        {
+            struct AddressingMode effective_address;
+        };
+        SizeEffectiveAddress_Body size_effective_address;
+        RegisterEffectiveAddress_Body register_effective_address;
+        RegisterDirectionSizeRegisterDisplacement_Body register_direction_size_register_displacement;
+        SizeRegisterEffectiveAddress_Body size_register_effective_address;
+        SizeEffectiveAddressEffectiveAddress_Body size_effective_address_effective_address;
+        RegisterOpmodeRegister_Body register_opmode_register;
+        OpmodeRegister_Body opmode_register;
+        struct
+        {
+            uint8_t vector;
+        };
+        RegisterDisplacement_Body register_displacement;
+        struct
+        {
+            uint8_t register_;
+        };
+        DirectionRegister_Body direction_register;
+        DirectionSizeEffectiveAddressList_Body direction_size_effective_address_list;
+        DataSizeEffectiveAddress_Body data_size_effective_address;
+        ConditionEffectiveAddress_Body condition_effective_address;
+        ConditionRegisterDisplacement_Body condition_register_displacement;
+        struct
+        {
+            int16_t displacement;
+        };
+        ConditionDisplacement_Body condition_displacement;
+        RegisterData_Body register_data;
+        RegisterDirectionSizeEffectiveAddress_Body register_direction_size_effective_address;
+        RegisterSizeEffectiveAddress_Body register_size_effective_address;
+        RegisterSizeModeRegister_Body register_size_mode_register;
+        RegisterSizeRegister_Body register_size_register;
+        DirectionEffectiveAddress_Body direction_effective_address;
+        RotationDirectionSizeModeRegister_Body rotation_direction_size_mode_register;
+    };
+} Operands;
+
 /**
- * Runs the CPU for `cycles` number of cycles.
- *
- * This function executes **at least** the given number of cycles.
- * Returns the number of cycles actually executed.
- *
- * If you ask to execute 4 cycles but the next instruction takes 6 cycles to execute,
- * it will be executed and the 2 extra cycles will be subtracted in the next call.
+ * M68000 instruction.
  */
-size_t m68000_cycle(struct M68000 *m68000, struct M68000Callbacks *memory, size_t cycles);
-#endif
-
-#if defined(DOC)
-/**
- * Runs the CPU until either an exception occurs or `cycle` cycles have been executed.
- *
- * This function executes **at least** the given number of cycles.
- * Returns the number of cycles actually executed, and the exception that occured if any.
- *
- * If you ask to execute 4 cycles but the next instruction takes 6 cycles to execute,
- * it will be executed and the 2 extra cycles will be subtracted in the next call.
- */
-struct ExceptionResult m68000_cycle_until_exception(struct M68000 *m68000, struct M68000Callbacks *memory, size_t cycles);
-#endif
-
-#if defined(DOC)
-/**
- * Runs indefinitely until an exception or STOP instruction occurs.
- *
- * Returns the number of cycles executed and the exception that occured.
- * If exception is None, this means the CPU has executed a STOP instruction.
- */
-struct ExceptionResult m68000_loop_until_exception_stop(struct M68000 *m68000, struct M68000Callbacks *memory);
-#endif
-
-#if defined(DOC)
-/**
- * Executes the next instruction, returning the cycle count necessary to execute it.
- */
-size_t m68000_interpreter(struct M68000 *m68000, struct M68000Callbacks *memory);
-#endif
-
-#if defined(DOC)
-/**
- * Executes the next instruction, returning the cycle count necessary to execute it,
- * and the vector of the exception that occured during the execution if any.
- *
- * To process the returned exception, call [M68000::exception].
- */
-struct ExceptionResult m68000_interpreter_exception(struct M68000 *m68000, struct M68000Callbacks *memory);
-#endif
-
-#if defined(DOC)
-/**
- * Executes and disassembles the next instruction, returning the disassembler string and the cycle count necessary to execute it.
- *
- * `str` is a pointer to a C string buffer where the disassembled instruction will be written.
- * `len` is the maximum size of the buffer.
- */
-size_t m68000_disassembler_interpreter(struct M68000 *m68000, struct M68000Callbacks *memory, char *str, size_t len);
-#endif
-
-#if defined(DOC)
-/**
- * Executes and disassembles the next instruction, returning the disassembled string, the cycle count necessary to execute it,
- * and the vector of the exception that occured during the execution if any.
- *
- * To process the returned exception, call [M68000::exception].
- *
- * `str` is a pointer to a C string buffer where the disassembled instruction will be written.
- * `len` is the maximum size of the buffer.
- */
-struct ExceptionResult m68000_disassembler_interpreter_exception(struct M68000 *m68000, struct M68000Callbacks *memory, char *str, size_t len);
-#endif
-
-#if defined(DOC)
-/**
- * Requests the CPU to process the given exception vector.
- */
-void m68000_exception(struct M68000 *m68000, enum Vector vector);
-#endif
-
-#if defined(DOC)
-/**
- * Returns the 16-bits word at the current PC value of the given core.
- */
-struct GetSetResult m68000_peek_next_word(struct M68000 *m68000, struct M68000Callbacks *memory);
-#endif
-
-#if defined(DOC)
-/**
- * Returns a mutable pointer to the registers of the given core.
- */
-struct Registers *m68000_registers(struct M68000 *m68000);
-#endif
-
-#if defined(DOC)
-/**
- * Returns a copy of the registers of the given core.
- */
-struct Registers m68000_get_registers(const struct M68000 *m68000);
-#endif
-
-#if defined(DOC)
-/**
- * Sets the registers of the core to the given value.
- */
-void m68000_set_registers(struct M68000 *m68000, struct Registers regs);
-#endif
-
-#if !defined(DOC)
-/**
- * Allocates a new core and returns the pointer to it.
- *
- * The created core has a [Reset vector](crate::exception::Vector::ResetSspPc) pushed, so that the first call to an interpreter method
- * will first fetch the reset vectors, then will execute the first instruction.
- *
- * It is not managed by Rust, so you have to delete it after usage with [m68000_delete].
- */
-struct M68000 *m68000_new(void);
-#endif
-
-#if !defined(DOC)
-/**
- * [m68000_new] but without the initial reset vector, so you can initialize the core as you want.
- */
-struct M68000 *m68000_new_no_reset(void);
-#endif
-
-#if !defined(DOC)
-/**
- * Frees the memory of the given core.
- */
-void m68000_delete(struct M68000 *m68000);
-#endif
-
-#if !defined(DOC)
-/**
- * Runs the CPU for `cycles` number of cycles.
- *
- * This function executes **at least** the given number of cycles.
- * Returns the number of cycles actually executed.
- *
- * If you ask to execute 4 cycles but the next instruction takes 6 cycles to execute,
- * it will be executed and the 2 extra cycles will be subtracted in the next call.
- */
-size_t m68000_cycle(struct M68000 *m68000, struct M68000Callbacks *memory, size_t cycles);
-#endif
-
-#if !defined(DOC)
-/**
- * Runs the CPU until either an exception occurs or `cycle` cycles have been executed.
- *
- * This function executes **at least** the given number of cycles.
- * Returns the number of cycles actually executed, and the exception that occured if any.
- *
- * If you ask to execute 4 cycles but the next instruction takes 6 cycles to execute,
- * it will be executed and the 2 extra cycles will be subtracted in the next call.
- */
-struct ExceptionResult m68000_cycle_until_exception(struct M68000 *m68000, struct M68000Callbacks *memory, size_t cycles);
-#endif
-
-#if !defined(DOC)
-/**
- * Runs indefinitely until an exception or STOP instruction occurs.
- *
- * Returns the number of cycles executed and the exception that occured.
- * If exception is None, this means the CPU has executed a STOP instruction.
- */
-struct ExceptionResult m68000_loop_until_exception_stop(struct M68000 *m68000, struct M68000Callbacks *memory);
-#endif
-
-#if !defined(DOC)
-/**
- * Executes the next instruction, returning the cycle count necessary to execute it.
- */
-size_t m68000_interpreter(struct M68000 *m68000, struct M68000Callbacks *memory);
-#endif
-
-#if !defined(DOC)
-/**
- * Executes the next instruction, returning the cycle count necessary to execute it,
- * and the vector of the exception that occured during the execution if any.
- *
- * To process the returned exception, call [M68000::exception].
- */
-struct ExceptionResult m68000_interpreter_exception(struct M68000 *m68000, struct M68000Callbacks *memory);
-#endif
-
-#if !defined(DOC)
-/**
- * Executes and disassembles the next instruction, returning the disassembler string and the cycle count necessary to execute it.
- *
- * `str` is a pointer to a C string buffer where the disassembled instruction will be written.
- * `len` is the maximum size of the buffer.
- */
-size_t m68000_disassembler_interpreter(struct M68000 *m68000, struct M68000Callbacks *memory, char *str, size_t len);
-#endif
-
-#if !defined(DOC)
-/**
- * Executes and disassembles the next instruction, returning the disassembled string, the cycle count necessary to execute it,
- * and the vector of the exception that occured during the execution if any.
- *
- * To process the returned exception, call [M68000::exception].
- *
- * `str` is a pointer to a C string buffer where the disassembled instruction will be written.
- * `len` is the maximum size of the buffer.
- */
-struct ExceptionResult m68000_disassembler_interpreter_exception(struct M68000 *m68000, struct M68000Callbacks *memory, char *str, size_t len);
-#endif
-
-#if !defined(DOC)
-/**
- * Requests the CPU to process the given exception vector.
- */
-void m68000_exception(struct M68000 *m68000, enum Vector vector);
-#endif
-
-#if !defined(DOC)
-/**
- * Returns the 16-bits word at the current PC value of the given core.
- */
-struct GetSetResult m68000_peek_next_word(struct M68000 *m68000, struct M68000Callbacks *memory);
-#endif
-
-#if !defined(DOC)
-/**
- * Returns a mutable pointer to the registers of the given core.
- */
-struct Registers *m68000_registers(struct M68000 *m68000);
-#endif
-
-#if !defined(DOC)
-/**
- * Returns a copy of the registers of the given core.
- */
-struct Registers m68000_get_registers(const struct M68000 *m68000);
-#endif
-
-#if !defined(DOC)
-/**
- * Sets the registers of the core to the given value.
- */
-void m68000_set_registers(struct M68000 *m68000, struct Registers regs);
-#endif
-
-#ifdef __cplusplus
-} // extern "C"
-#endif // __cplusplus
+typedef struct Instruction
+{
+    /**
+     * The opcode itself.
+     */
+    uint16_t opcode;
+    /**
+     * The address of the instruction.
+     */
+    uint32_t pc;
+    /**
+     * The operands.
+     */
+    struct Operands operands;
+} Instruction;
 
 #endif /* M68000_H */

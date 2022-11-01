@@ -35,7 +35,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
     {
         LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Byte", cdi.m_cpu.currentPC, addr, 0}); })
-        throw SCC68070::Exception(SCC68070::BusError, 0);
+        throw SCC68070::Exception(AccessError);
     }
 
     LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
@@ -49,7 +49,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
     if(memorySwapCount < 4 && flags & Trigger)
     {
         memorySwapCount++;
-        return GET_ARRAY16(BIOS, addr);
+        return (uint16_t)BIOS[addr] << 8 | BIOS[addr + 1];
     }
 
     uint16_t data;
@@ -57,12 +57,12 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr < 0x400000)
     {
-        data = GET_ARRAY16(memory, addr);
+        data = (uint16_t)memory[addr] << 8 | memory[addr + 1];
         LOG(location = MemoryAccessLocation::RAM;)
     }
     else if(addr < 0x4FFC00)
     {
-        data = GET_ARRAY16(BIOS, addr - 0x400000);
+        data = (uint16_t)BIOS[addr - 0x400000] << 8 | BIOS[addr - 0x3FFFFF];
         LOG(location = MemoryAccessLocation::BIOS;)
     }
     else if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
@@ -81,7 +81,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
     {
         LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Word", cdi.m_cpu.currentPC, addr, 0}); })
-        throw SCC68070::Exception(SCC68070::BusError, 0);
+        throw SCC68070::Exception(AccessError);
     }
 
     LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
@@ -92,7 +92,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t MCD212::GetLong(const uint32_t addr)
 {
-    return as<uint32_t>(GetWord(addr, Trigger)) << 16 | GetWord(addr + 2, Trigger);
+    return (uint32_t)GetWord(addr, Trigger) << 16 | GetWord(addr + 2, Trigger);
 }
 
 void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
@@ -110,7 +110,7 @@ void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flag
         if(isEven(addr))
         {
             internalRegisters[addr - 0x4FFFE0] &= 0x00FF;
-            internalRegisters[addr - 0x4FFFE0] |= as<uint16_t>(data) << 8;
+            internalRegisters[addr - 0x4FFFE0] |= (uint16_t)data << 8;
         }
         else
         {
@@ -125,14 +125,14 @@ void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flag
     LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Byte", cdi.m_cpu.currentPC, addr, data}); })
 
-    throw SCC68070::Exception(SCC68070::BusError, 0);
+    throw SCC68070::Exception(AccessError);
 }
 
 void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
     if(addr < 0x400000)
     {
-        memory[addr]     = bits<8, 15>(data);
+        memory[addr]     = data >> 8;
         memory[addr + 1] = data;
         LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RAM, "Set", "Word", cdi.m_cpu.currentPC, addr, data}); })
@@ -150,5 +150,5 @@ void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fla
     LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Word", cdi.m_cpu.currentPC, addr, data}); })
 
-    throw SCC68070::Exception(SCC68070::BusError, 0);
+    throw SCC68070::Exception(AccessError);
 }

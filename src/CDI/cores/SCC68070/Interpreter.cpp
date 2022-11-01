@@ -13,25 +13,39 @@ void SCC68070::Interpreter()
 
     do
     {
-        const ExceptionResult res = m68000_interpreter_exception(m68000, &m68000Callbacks);
-        const size_t executionCycles = res.cycles ? res.cycles : 25; // Stop mode returns 0.
+        currentPC = m68000_scc68070_registers(m68000)->pc;
+        ExceptionResult res;
+        if(cdi.m_callbacks.HasOnLogDisassembler())
+        {
+            char str[64]{0};
+            res = m68000_scc68070_disassembler_interpreter_exception(m68000, &m68000Callbacks, str, 64);
+
+            if(res.cycles > 0)
+            {
+                const LogInstruction inst = {currentPC, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOS().m_base), str};
+                cdi.m_callbacks.OnLogDisassembler(inst);
+            }
+        }
+        else
+        {
+            res = m68000_scc68070_interpreter_exception(m68000, &m68000Callbacks);
+        }
+
+        const size_t executionCycles = res.cycles == 0 && res.exception == 0 ? 25 : res.cycles; // Stop mode returns 0.
         totalCycleCount += executionCycles;
 
-        if(res.exception)
+        if(res.exception != 0)
         {
-            if(res.exception == Trap0Instruction)
+            if(cdi.m_callbacks.HasOnLogException())
             {
-                if(cdi.m_callbacks.HasOnLogException())
-                {
-                    const uint32_t returnAddress = 0;
-                    const OS9::SystemCallType syscallType = OS9::SystemCallType(m68000_peek_next_word(m68000, &m68000Callbacks).data);
-                    const std::string inputs = res.exception == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, CPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->cdi.GetPointer(addr); }) : "";
-                    const OS9::SystemCall syscall = {syscallType, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOSBaseAddress()), inputs, ""};
-                    cdi.m_callbacks.OnLogException({res.exception, returnAddress, exceptionVectorToString(res.exception), syscall});
-                }
+                const uint32_t returnAddress = 0;
+                const OS9::SystemCallType syscallType = OS9::SystemCallType(m68000_scc68070_peek_next_word(m68000, &m68000Callbacks).data);
+                const std::string inputs = res.exception == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, CPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->cdi.GetPointer(addr); }) : "";
+                const OS9::SystemCall syscall = {syscallType, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOSBaseAddress()), inputs, ""};
+                cdi.m_callbacks.OnLogException({res.exception, returnAddress, exceptionVectorToString(res.exception), syscall});
             }
 
-            m68000_exception(m68000, static_cast<Vector>(res.exception));
+            m68000_scc68070_exception(m68000, static_cast<Vector>(res.exception));
         }
 
         const double ns = executionCycles * cycleDelay;

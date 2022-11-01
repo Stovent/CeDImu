@@ -25,9 +25,13 @@ GetSetResult get_byte(uint32_t addr, void* user_data)
 GetSetResult get_word(uint32_t addr, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
+    uint8_t flags = Trigger;
+    if(m68000_scc68070_registers(self->m68000)->pc != addr)
+        flags |= Log; // Do not log instruction read.
+
     try {
         return GetSetResult{
-            .data = self->GetWord(addr),
+            .data = self->GetWord(addr, flags),
             .exception = 0,
         };
     } catch(SCC68070::Exception& ex) {
@@ -103,7 +107,7 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     , totalCycleCount(0)
     , cdi(idc)
     , executionThread()
-    , m68000(m68000_new())
+    , m68000(m68000_scc68070_new())
     , m68000Callbacks{
         .get_byte = get_byte,
         .get_word = get_word,
@@ -131,7 +135,7 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
 SCC68070::~SCC68070()
 {
     Stop(true);
-    m68000_delete(m68000);
+    m68000_scc68070_delete(m68000);
 }
 
 /** \brief Check if the CPU is running.
@@ -200,7 +204,7 @@ void SCC68070::Stop(const bool wait)
  */
 void SCC68070::Reset()
 {
-    m68000_exception(m68000, ResetSspPc);
+    m68000_scc68070_exception(m68000, ResetSspPc);
     RESET_INTERNAL()
 }
 
@@ -210,7 +214,7 @@ void SCC68070::INT1()
 {
     const uint8_t level = internal[LIR] >> 4 & 0x07;
     if(level)
-        m68000_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + level));
+        m68000_scc68070_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + level));
 }
 
 /** \brief Trigger interrupt with LIR2 level.
@@ -219,14 +223,14 @@ void SCC68070::INT2()
 {
     const uint8_t level = internal[LIR] & 0x07;
     if(level)
-        m68000_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + level));
+        m68000_scc68070_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + level));
 }
 
 /** \brief Trigger level 2 external interrupt vector.
  */
 void SCC68070::IN2()
 {
-    m68000_exception(m68000, Vector::Level2Interrupt);
+    m68000_scc68070_exception(m68000, Vector::Level2Interrupt);
 }
 
 /** \brief Send a byte through UART.
@@ -243,7 +247,7 @@ void SCC68070::SendUARTIn(const uint8_t byte)
  */
 const Registers* SCC68070::CPURegisters() const
 {
-    return m68000_registers(m68000);
+    return m68000_scc68070_registers(m68000);
 }
 
 /** \brief Get the CPU registers through a mutable pointer.
@@ -251,7 +255,7 @@ const Registers* SCC68070::CPURegisters() const
  */
 Registers* SCC68070::CPURegisters()
 {
-    return m68000_registers(m68000);
+    return m68000_scc68070_registers(m68000);
 }
 
 /** \brief Get the internal registers.

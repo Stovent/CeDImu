@@ -4,7 +4,7 @@
 class CDI;
 #include "../../common/types.hpp"
 
-#include "m68000.h"
+#include "m68000-ffi.h"
 
 #include <array>
 #include <atomic>
@@ -164,7 +164,7 @@ private:
     CDI& cdi;
     std::thread executionThread;
 
-    M68000* m68000;
+    m68000_scc68070_t* m68000;
     M68000Callbacks m68000Callbacks;
 
     std::mutex uartInMutex;
