@@ -14,7 +14,7 @@ void SCC68070::Interpreter()
     do
     {
         currentPC = m68000_scc68070_registers(m68000)->pc;
-        ExceptionResult res;
+        m68000_exception_result_t res;
         if(cdi.m_callbacks.HasOnLogDisassembler())
         {
             char str[64]{0};

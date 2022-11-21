@@ -6,23 +6,23 @@
 #include <functional>
 #include <iterator>
 
-GetSetResult get_byte(uint32_t addr, void* user_data)
+m68000_memory_result_t get_byte(uint32_t addr, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
-        return GetSetResult{
+        return m68000_memory_result_t {
             .data = self->GetByte(addr),
             .exception = 0,
         };
     } catch(SCC68070::Exception& ex) {
-        return GetSetResult{
+        return m68000_memory_result_t {
             .data = 0,
             .exception = ex.vector,
         };
     }
 }
 
-GetSetResult get_word(uint32_t addr, void* user_data)
+m68000_memory_result_t get_word(uint32_t addr, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
     uint8_t flags = Trigger;
@@ -30,64 +30,64 @@ GetSetResult get_word(uint32_t addr, void* user_data)
         flags |= Log; // Do not log instruction read.
 
     try {
-        return GetSetResult{
+        return m68000_memory_result_t {
             .data = self->GetWord(addr, flags),
             .exception = 0,
         };
     } catch(SCC68070::Exception& ex) {
-        return GetSetResult{
+        return m68000_memory_result_t {
             .data = 0,
             .exception = ex.vector,
         };
     }
 }
 
-GetSetResult get_long(uint32_t addr, void* user_data)
+m68000_memory_result_t get_long(uint32_t addr, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
-        return GetSetResult{
+        return m68000_memory_result_t {
             .data = self->GetLong(addr),
             .exception = 0,
         };
     } catch(SCC68070::Exception& ex) {
-        return GetSetResult{
+        return m68000_memory_result_t {
             .data = 0,
             .exception = ex.vector,
         };
     }
 }
 
-GetSetResult set_byte(uint32_t addr, uint8_t data, void* user_data)
+m68000_memory_result_t set_byte(uint32_t addr, uint8_t data, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         self->SetByte(addr, data);
-        return GetSetResult {0, 0};
+        return m68000_memory_result_t {0, 0};
     } catch(SCC68070::Exception& ex) {
-        return GetSetResult {0, ex.vector};
+        return m68000_memory_result_t {0, ex.vector};
     }
 }
 
-GetSetResult set_word(uint32_t addr, uint16_t data, void* user_data)
+m68000_memory_result_t set_word(uint32_t addr, uint16_t data, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         self->SetWord(addr, data);
-        return GetSetResult {0, 0};
+        return m68000_memory_result_t {0, 0};
     } catch(SCC68070::Exception& ex) {
-        return GetSetResult {0, ex.vector};
+        return m68000_memory_result_t {0, ex.vector};
     }
 }
 
-GetSetResult set_long(uint32_t addr, uint32_t data, void* user_data)
+m68000_memory_result_t set_long(uint32_t addr, uint32_t data, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
     try {
         self->SetLong(addr, data);
-        return GetSetResult {0, 0};
+        return m68000_memory_result_t {0, 0};
     } catch(SCC68070::Exception& ex) {
-        return GetSetResult {0, ex.vector};
+        return m68000_memory_result_t {0, ex.vector};
     }
 }
 

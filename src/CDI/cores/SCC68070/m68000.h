@@ -7,6 +7,10 @@
 typedef struct m68000_mc68000_s m68000_mc68000_t;
 typedef struct m68000_scc68070_s m68000_scc68070_t;
 
+
+
+
+
 /**
  * Specify the direction of the operation.
  *
@@ -149,76 +153,6 @@ typedef enum Vector
     Level7OnChipInterrupt,
     UserInterrupt,
 } Vector;
-
-/**
- * M68000 status register.
- */
-typedef struct StatusRegister
-{
-    /**
-     * Trace
-     */
-    bool t;
-    /**
-     * Supervisor
-     */
-    bool s;
-    /**
-     * Interrupt Priority Mask
-     */
-    uint8_t interrupt_mask;
-    /**
-     * Extend
-     */
-    bool x;
-    /**
-     * Negate
-     */
-    bool n;
-    /**
-     * Zero
-     */
-    bool z;
-    /**
-     * Overflow
-     */
-    bool v;
-    /**
-     * Carry
-     */
-    bool c;
-} StatusRegister;
-
-/**
- * M68000 registers.
- */
-typedef struct Registers
-{
-    /**
-     * Data registers.
-     */
-    uint32_t d[8];
-    /**
-     * Address registers.
-     */
-    uint32_t a[7];
-    /**
-     * User Stack Pointer.
-     */
-    uint32_t usp;
-    /**
-     * System Stack Pointer.
-     */
-    uint32_t ssp;
-    /**
-     * Status Register.
-     */
-    struct StatusRegister sr;
-    /**
-     * Program Counter.
-     */
-    uint32_t pc;
-} Registers;
 
 /**
  * Raw Brief Extension Word.
@@ -706,4 +640,83 @@ typedef struct Instruction
     struct Operands operands;
 } Instruction;
 
+/**
+ * M68000 status register.
+ *
+ * [StatusRegister::default] returns a Status Register set to 0x2700 (supervisor bit set, interrupt mask to 7).
+ */
+typedef struct StatusRegister
+{
+    /**
+     * Trace
+     */
+    bool t;
+    /**
+     * Supervisor
+     */
+    bool s;
+    /**
+     * Interrupt Priority Mask
+     */
+    uint8_t interrupt_mask;
+    /**
+     * Extend
+     */
+    bool x;
+    /**
+     * Negate
+     */
+    bool n;
+    /**
+     * Zero
+     */
+    bool z;
+    /**
+     * Overflow
+     */
+    bool v;
+    /**
+     * Carry
+     */
+    bool c;
+} StatusRegister;
+/**
+ * The default raw value of 0x2700 (supervisor bit set, interrupt mask to 7).
+ */
+#define StatusRegister_DEFAULT 9984
+
+/**
+ * M68000 registers.
+ */
+typedef struct Registers
+{
+    /**
+     * Data registers.
+     */
+    uint32_t d[8];
+    /**
+     * Address registers.
+     */
+    uint32_t a[7];
+    /**
+     * User Stack Pointer.
+     */
+    uint32_t usp;
+    /**
+     * System Stack Pointer.
+     */
+    uint32_t ssp;
+    /**
+     * Status Register.
+     */
+    struct StatusRegister sr;
+    /**
+     * Program Counter.
+     */
+    uint32_t pc;
+} Registers;
+
 #endif /* M68000_H */
+
+
+

@@ -165,7 +165,7 @@ private:
     std::thread executionThread;
 
     m68000_scc68070_t* m68000;
-    M68000Callbacks m68000Callbacks;
+    m68000_callbacks_t m68000Callbacks;
 
     std::mutex uartInMutex;
     std::deque<uint8_t> uartIn;
@@ -181,12 +181,12 @@ private:
     std::array<uint8_t, Peripheral::Size> internal;
 
     // Direct Memory Access
-    friend GetSetResult get_byte(uint32_t, void*);
-    friend GetSetResult get_word(uint32_t, void*);
-    friend GetSetResult get_long(uint32_t, void*);
-    friend GetSetResult set_byte(uint32_t, uint8_t, void*);
-    friend GetSetResult set_word(uint32_t, uint16_t, void*);
-    friend GetSetResult set_long(uint32_t, uint32_t, void*);
+    friend m68000_memory_result_t get_byte(uint32_t, void*);
+    friend m68000_memory_result_t get_word(uint32_t, void*);
+    friend m68000_memory_result_t get_long(uint32_t, void*);
+    friend m68000_memory_result_t set_byte(uint32_t, uint8_t, void*);
+    friend m68000_memory_result_t set_word(uint32_t, uint16_t, void*);
+    friend m68000_memory_result_t set_long(uint32_t, uint32_t, void*);
     friend void reset_instruction(void*);
     friend void disassembler(uint32_t, const char*, void*);
 
