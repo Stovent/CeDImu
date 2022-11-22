@@ -4,7 +4,7 @@
 class CDI;
 #include "../../common/types.hpp"
 
-#include "m68000-ffi.h"
+#include "m68000/m68000-ffi.h"
 
 #include <array>
 #include <atomic>

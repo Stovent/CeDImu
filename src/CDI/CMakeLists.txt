@@ -40,3 +40,7 @@ endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(CeDImu PRIVATE stdc++fs)
 endif()
+
+target_include_directories(CeDImu PRIVATE "../../submodules/m68000/include")
+target_link_directories(CeDImu PRIVATE "../../submodules/m68000/target/release")
+target_link_libraries(CeDImu PRIVATE m68000-ffi m68000)

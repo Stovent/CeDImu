@@ -1,9 +1,5 @@
 target_sources(CeDImu
     PRIVATE
-        AddressingModes.cpp
-        ConditionalTests.cpp
-        Disassembler.cpp
-        InstructionSet.cpp
         Interpreter.cpp
         MemoryAccess.cpp
         Peripherals.cpp
