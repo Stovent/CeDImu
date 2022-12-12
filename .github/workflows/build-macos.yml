@@ -3,7 +3,7 @@ name: Build MacOS
 on: [push]
 
 jobs:
-  build:
+  build-x86_64:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
