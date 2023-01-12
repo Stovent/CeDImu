@@ -24,7 +24,7 @@ void SCC68070::Interpreter()
                (ex.vector >= Level1OnChipInterruptAutovector && ex.vector <= Level7OnChipInterruptAutovector))
             {
                 const uint8_t level = ex.vector & 0x7;
-                if(level <= GetIPM())
+                if(level != 7 && level <= GetIPM())
                 {
                     unprocessedExceptions.push(ex);
                     continue;

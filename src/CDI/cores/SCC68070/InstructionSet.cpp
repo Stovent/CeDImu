@@ -86,29 +86,41 @@ uint16_t SCC68070::ABCD()
     uint8_t dst, src;
     if(rm) // Memory to Memory
     {
-        src = PBCDToByte(GetByte(ARIWPr(ry, 1)));
-        dst = PBCDToByte(GetByte(ARIWPr(rx, 1)));
+        src = GetByte(ARIWPr(ry, 1));
+        dst = GetByte(ARIWPr(rx, 1));
         calcTime = 31;
     }
     else // Data register to Data register
     {
-        src = PBCDToByte(D[ry] & 0xFF);
-        dst = PBCDToByte(D[rx] & 0xFF);
+        src = D[ry] & 0xFF;
+        dst = D[rx] & 0xFF;
         calcTime = 10;
     }
+    src += GetX();
 
-    const uint8_t result = src + dst + GetX();
+    const uint16_t binResult = src + dst;
 
-    if(result != 0)
+    uint16_t result = (src & 0x0F) + (dst & 0x0F);
+    if(result >= 0x0A)
+        result += 0x06;
+
+    result += (src & 0xF0) + (dst & 0xF0);
+    if(result >= 0xA0)
+        result += 0x60;
+
+
+    SetN(result & 0x80);
+    if((result & 0x00FF) != 0)
         SetZ(0);
-    SetXC(result > 99);
+    SetV(src > (0x79 - dst) && binResult < 0x80);
+    SetXC(result >= 0x0100);
 
     if(rm)
-        SetByte(lastAddress, byteToPBCD(result));
+        SetByte(lastAddress, result);
     else
     {
         D[rx] &= 0xFFFFFF00;
-        D[rx] |= byteToPBCD(result);
+        D[rx] |= result & 0x00FF;
     }
 
     return calcTime;
@@ -1789,20 +1801,25 @@ uint16_t SCC68070::NBCD()
     const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = eamode ? 14 : 10;
 
-    const uint8_t dst = PBCDToByte(GetByte(eamode, eareg, calcTime));
-    int8_t result = 0 - dst - GetX();
+    const uint8_t data = GetByte(eamode, eareg, calcTime);
+    uint8_t result = 0 - data - GetX();
+    if(result != 0)
+        result -= 0x60;
+    if((result & 0x0F) != 0)
+        result -= 0x06;
 
+    SetN((result & 0x80) != 0);
     if(result != 0)
         SetZ(0);
-    SetXC(result < 0);
-    result = 100 + result;
+    SetV(result != 0 && !(result & 0x80) && data <= 0x80);
+    SetXC(data != 0);
 
     if(eamode)
-        SetByte(lastAddress, byteToPBCD(result));
+        SetByte(lastAddress, result);
     else
     {
         D[eareg] &= 0xFFFFFF00;
-        D[eareg] |= byteToPBCD(result);
+        D[eareg] |= result;
     }
 
     return calcTime;
@@ -2401,34 +2418,45 @@ uint16_t SCC68070::SBCD()
     const uint8_t rx = currentOpcode & 0x0007;
     uint16_t calcTime;
 
-    uint8_t dst, src;
+    uint16_t dst, src;
     if(rm) // Memory to Memory
     {
-        src = PBCDToByte(GetByte(ARIWPr(rx, 1)));
-        dst = PBCDToByte(GetByte(ARIWPr(ry, 1)));
+        src = GetByte(ARIWPr(rx, 1));
+        dst = GetByte(ARIWPr(ry, 1));
         calcTime = 31;
     }
     else // Data register to Data register
     {
-        src = PBCDToByte(D[rx] & 0x000000FF);
-        dst = PBCDToByte(D[ry] & 0x000000FF);
+        src = D[rx] & 0x000000FF;
+        dst = D[ry] & 0x000000FF;
         calcTime = 10;
     }
+    src += GetX();
 
-    int8_t result = dst - src - GetX();
+    const uint16_t binResult = dst - src;
 
+    uint16_t result = (dst & 0x0F) - (src & 0x0F);
+    if(result >= 0x0A)
+        result -= 0x06;
+
+    result += (dst & 0xF0) - (src & 0xF0);
+    if(result >= 0xA0 || binResult > 0x99)
+        result -= 0x60;
+
+    result &= 0x00FF;
+
+    SetN(result & 0x80);
     if(result != 0)
         SetZ(0);
-    SetXC(result < 0);
-    if(result < 0)
-        result = 100 + result;
+    SetV(result < 0x80 && binResult > 0x99);
+    SetXC(src > dst);
 
     if(rm)
-        SetByte(lastAddress, byteToPBCD(result));
+        SetByte(lastAddress, result);
     else
     {
         D[ry] &= 0xFFFFFF00;
-        D[ry] |= byteToPBCD(result);
+        D[ry] |= result;
     }
 
     return calcTime;
