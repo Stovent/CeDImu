@@ -150,7 +150,7 @@ uint32_t SCC66470::GetLong(const uint32_t addr, const uint8_t flags)
     return data;
 }
 
-void SCC66470::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
+void SCC66470::SetByte(const uint32_t addr, const uint8_t data, const uint8_t)
 {
     if(isMaster)
     {
@@ -206,7 +206,7 @@ void SCC66470::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 //    LOG(if(flags & Log) { fprintf(out_dram, "%X\tSet byte OUT OF RANGE at 0x%X: %d %d 0x%X\n", cdi.board->cpu.currentPC, addr, (int8_t)data, data, data); })
 }
 
-void SCC66470::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
+void SCC66470::SetWord(const uint32_t addr, const uint16_t data, const uint8_t)
 {
     if(isMaster)
     {

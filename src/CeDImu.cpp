@@ -95,7 +95,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     else
         m_cdi.config.initialTime = stoi(biosConfig.initialTime);
 
-    m_cdi.callbacks.SetOnSaveNVRAM([=] (const void* data, size_t size) {
+    m_cdi.callbacks.SetOnSaveNVRAM([&] (const void* data, size_t size) {
         std::ofstream out(biosConfig.nvramFileName, std::ios::out | std::ios::binary);
         out.write((char*)data, size);
         out.close();
@@ -187,7 +187,7 @@ void CeDImu::WriteException(const LogSCC68070Exception& e, size_t trapIndex)
     m_instructionsOut << std::endl;
 }
 
-void CeDImu::WriteRTE(uint32_t pc, uint16_t format, const LogSCC68070Exception& e, size_t trapIndex)
+void CeDImu::WriteRTE(uint32_t, uint16_t, const LogSCC68070Exception& e, size_t trapIndex)
 {
     if(!m_exceptionsOut.is_open())
         m_exceptionsOut.open("exceptions.txt");

@@ -49,7 +49,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
 
     // Disassembler
-    m_disassemblerList = new GenericList(this, [=] (wxListCtrl* list) {
+    m_disassemblerList = new GenericList(this, [] (wxListCtrl* list) {
         list->EnableAlternateRowColours();
 
         wxListItem addressCol;
@@ -69,7 +69,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
         instructionCol.SetText("Instruction");
         instructionCol.SetWidth(700);
         list->InsertColumn(2, instructionCol);
-    }, [=] (long item, long column) -> wxString {
+    }, [&] (long item, long column) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_instructionsMutex);
         if(item >= (long)this->m_instructions.size())
             return "";
@@ -84,7 +84,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
     });
     m_auiManager.AddPane(m_disassemblerList, wxAuiPaneInfo().Center().Caption("Disassembler").CloseButton(false).Floatable().Resizable());
 
-    m_cedimu.m_cdi.callbacks.SetOnLogDisassembler([=] (const LogInstruction& inst) {
+    m_cedimu.m_cdi.callbacks.SetOnLogDisassembler([&] (const LogInstruction& inst) {
         std::lock_guard<std::mutex> lock(this->m_instructionsMutex);
         if(this->m_flushInstructions)
         {
@@ -117,7 +117,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
     // UART
     m_uartTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
     m_auiManager.AddPane(m_uartTextCtrl, wxAuiPaneInfo().Bottom().Caption("UART out").CloseButton(false).Floatable().Resizable().BestSize(-1, 200));
-    m_uartTextCtrl->Bind(wxEVT_KEY_DOWN, [=] (wxKeyEvent& event) {
+    m_uartTextCtrl->Bind(wxEVT_KEY_DOWN, [&] (wxKeyEvent& event) {
         const int key = event.GetKeyCode();
         std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
         if(key < 128)
@@ -125,7 +125,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
                 this->m_cedimu.m_cdi.board->cpu.SendUARTIn(key);
     });
 
-    m_cedimu.m_cdi.callbacks.SetOnUARTOut([=] (uint8_t d) {
+    m_cedimu.m_cdi.callbacks.SetOnUARTOut([&] (uint8_t d) {
         this->m_cedimu.m_uartOut.put(d);
         if(!((this->m_lastByte == '\r' && d == '\n') || (this->m_lastByte == '\n' && d == '\r')))
             this->m_uartTextCtrl->AppendText((char)d);

@@ -44,10 +44,10 @@ public:
         const RAMBank ram2 = GetRAMBank2();
         const OS9::BIOS& bios = GetBIOS();
 
-        if(addr >= ram1.base && addr < ram1.base + ram1.size)
+        if(addr >= ram1.base && addr < ram1.base + ram1.data.size())
             return &ram1.data[addr - ram1.base];
 
-        if(addr >= ram2.base && addr < ram2.base + ram2.size)
+        if(addr >= ram2.base && addr < ram2.base + ram2.data.size())
             return &ram2.data[addr - ram2.base];
 
         if(addr >= bios.base && addr < bios.base + bios.size)

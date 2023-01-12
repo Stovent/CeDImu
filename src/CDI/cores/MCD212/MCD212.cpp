@@ -329,12 +329,12 @@ void MCD212::ExecuteDCA2()
 
 RAMBank MCD212::GetRAMBank1() const
 {
-    return {memory.data(), 0, 0x80000};
+    return {{memory.data(), 0x80000}, 0};
 }
 
 RAMBank MCD212::GetRAMBank2() const
 {
-    return {&memory[0x200000], 0x200000, 0x80000};
+    return {{&memory[0x200000], 0x80000}, 0x200000};
 }
 
 const Video::Plane& MCD212::GetScreen() const

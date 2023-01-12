@@ -35,7 +35,7 @@ void SCC66470::Reset()
     MemorySwap();
 }
 
-void SCC66470::IncrementTime(const double ns)
+void SCC66470::IncrementTime(const double)
 {
 }
 
@@ -46,12 +46,12 @@ void SCC66470::MemorySwap()
 
 RAMBank SCC66470::GetRAMBank1() const
 {
-    return {memory.data(), 0, 0x80000};
+    return {{memory.data(), 0x80000}, 0};
 }
 
 RAMBank SCC66470::GetRAMBank2() const
 {
-    return {&memory[0x80000], 0x80000, 0x80000};
+    return {{&memory[0x80000], 0x80000}, 0x80000};
 }
 
 const Video::Plane& SCC66470::GetScreen() const

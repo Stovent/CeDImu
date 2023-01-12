@@ -94,7 +94,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     wxStaticBoxSizer* ica2Sizer = new wxStaticBoxSizer(wxVERTICAL, icadcaPage, "ICA 2");
     icaSizer->Add(ica2Sizer, wxSizerFlags().Expand().Proportion(1));
 
-    const std::function<void(wxListCtrl*)>dcaListBuilder = [=] (wxListCtrl* list) {
+    const std::function<void(wxListCtrl*)>dcaListBuilder = [] (wxListCtrl* list) {
         wxListItem frame;
         frame.SetId(0);
         frame.SetText("Frame");
@@ -114,7 +114,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         list->InsertColumn(3, inst);
     };
 
-    const std::function<void(wxListCtrl*)>icaListBuilder = [=] (wxListCtrl* list) {
+    const std::function<void(wxListCtrl*)>icaListBuilder = [] (wxListCtrl* list) {
         wxListItem frame;
         frame.SetId(0);
         frame.SetText("Frame");
@@ -128,7 +128,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         list->InsertColumn(2, inst);
     };
 
-    m_dca1List = new GenericList(icadcaPage, dcaListBuilder, [=] (long item, long col) -> wxString {
+    m_dca1List = new GenericList(icadcaPage, dcaListBuilder, [&] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(item >= (long)this->m_dca1.size())
             return "";
@@ -140,7 +140,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     });
     dca1Sizer->Add(m_dca1List, wxSizerFlags().Expand().Proportion(1));
 
-    m_ica1List = new GenericList(icadcaPage, icaListBuilder, [=] (long item, long col) -> wxString {
+    m_ica1List = new GenericList(icadcaPage, icaListBuilder, [&] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(item >= (long)this->m_ica1.size())
             return "";
@@ -150,7 +150,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     });
     ica1Sizer->Add(m_ica1List, wxSizerFlags().Expand().Proportion(1));
 
-    m_dca2List = new GenericList(icadcaPage, dcaListBuilder, [=] (long item, long col) -> wxString {
+    m_dca2List = new GenericList(icadcaPage, dcaListBuilder, [&] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(item >= (long)this->m_dca2.size())
             return "";
@@ -162,7 +162,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     });
     dca2Sizer->Add(m_dca2List, wxSizerFlags().Expand().Proportion(1));
 
-    m_ica2List = new GenericList(icadcaPage, icaListBuilder, [=] (long item, long col) -> wxString {
+    m_ica2List = new GenericList(icadcaPage, icaListBuilder, [&] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(item >= (long)this->m_ica2.size())
             return "";
@@ -206,7 +206,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     backgdSizer->Add(m_backgdPanel, wxSizerFlags().Expand().Proportion(1));
 
     wxButton* planeAButton = new wxButton(planesPage, wxID_ANY, "Save plane A");
-    planeAButton->Bind(wxEVT_BUTTON, [=] (wxEvent&) {
+    planeAButton->Bind(wxEVT_BUTTON, [&] (wxEvent&) {
         if(!this->m_imgPlaneA.IsOk())
             return;
 
@@ -233,7 +233,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     buttonsSizer->Add(planeAButton, wxSizerFlags().Border().Proportion(1));
 
     wxButton* planeBButton = new wxButton(planesPage, wxID_ANY, "Save plane B");
-    planeBButton->Bind(wxEVT_BUTTON, [=] (wxEvent&) {
+    planeBButton->Bind(wxEVT_BUTTON, [&] (wxEvent&) {
         if(!this->m_imgPlaneB.IsOk())
             return;
 
@@ -260,7 +260,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     buttonsSizer->Add(planeBButton, wxSizerFlags().Border().Proportion(1));
 
     wxButton* cursorButton = new wxButton(planesPage, wxID_ANY, "Save cursor");
-    cursorButton->Bind(wxEVT_BUTTON, [=] (wxEvent&) {
+    cursorButton->Bind(wxEVT_BUTTON, [&] (wxEvent&) {
         if(!this->m_imgCursor.IsOk())
             return;
 
@@ -287,7 +287,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     buttonsSizer->Add(cursorButton, wxSizerFlags().Border().Proportion(1));
 
     wxButton* backgdButton = new wxButton(planesPage, wxID_ANY, "Save background");
-    backgdButton->Bind(wxEVT_BUTTON, [=] (wxEvent&) {
+    backgdButton->Bind(wxEVT_BUTTON, [&] (wxEvent&) {
         if(!this->m_imgBackgd.IsOk())
             return;
 
@@ -317,7 +317,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     Show();
     m_updateTimer.Start(16);
 
-    m_cedimu.m_cdi.callbacks.SetOnLogICADCA([=] (Video::ControlArea area, LogICADCA inst) {
+    m_cedimu.m_cdi.callbacks.SetOnLogICADCA([&] (Video::ControlArea area, LogICADCA inst) {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(this->m_flushIcadca)
         {

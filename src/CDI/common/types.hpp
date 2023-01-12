@@ -2,6 +2,7 @@
 #define CDI_COMMON_TYPES_HPP
 
 #include <cstdint>
+#include <span>
 #include <string>
 
 enum BusFlags
@@ -49,9 +50,8 @@ struct InternalRegister
 
 struct RAMBank
 {
-    const uint8_t* data;
+    std::span<const uint8_t> data;
     uint32_t base;
-    uint32_t size;
 };
 
 #endif // CDI_COMMON_TYPES_HPP

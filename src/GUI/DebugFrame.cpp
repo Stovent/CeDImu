@@ -69,7 +69,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
     m_logOutOfRange = new wxCheckBox(memoryPanel, wxID_ANY, "Out of range");
     memoryButtonsSizer->Add(m_logOutOfRange, wxSizerFlags().Proportion(1));
 
-    m_memoryLogsList = new GenericList(memoryPanel, [=] (wxListCtrl* list) {
+    m_memoryLogsList = new GenericList(memoryPanel, [] (wxListCtrl* list) {
         wxListItem location;
         location.SetText("Location");
         location.SetWidth(60);
@@ -104,7 +104,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
         valueHex.SetText("Value Hex");
         valueHex.SetWidth(65);
         list->InsertColumn(6, valueHex);
-    }, [=] (long item, long column) -> wxString {
+    }, [&] (long item, long column) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_memoryLogsMutex);
         if(item >= (long)this->m_memoryLogs.size())
             return "";
@@ -132,7 +132,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
     });
     memoryPanelSizer->Add(m_memoryLogsList, wxSizerFlags().Expand().Proportion(1));
 
-    m_cedimu.m_cdi.callbacks.SetOnLogMemoryAccess([=] (const LogMemoryAccess& log) {
+    m_cedimu.m_cdi.callbacks.SetOnLogMemoryAccess([&] (const LogMemoryAccess& log) {
         if((log.location == MemoryAccessLocation::CPU   && this->m_logCpu->GetValue())   ||
            (log.location == MemoryAccessLocation::BIOS  && this->m_logBios->GetValue())  ||
            (log.location == MemoryAccessLocation::RAM   && this->m_logRam->GetValue())   ||
@@ -162,7 +162,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
 
 
     // Exceptions
-    m_exceptionsList = new GenericList(this, [=] (wxListCtrl* list) {
+    m_exceptionsList = new GenericList(this, [] (wxListCtrl* list) {
         wxListItem address;
         address.SetText("Return address");
         address.SetWidth(60);
@@ -192,7 +192,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
         outputs.SetText("System call outputs");
         outputs.SetWidth(400);
         list->InsertColumn(5, outputs);
-    }, [=] (long item, long column) -> wxString {
+    }, [&] (long item, long column) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_exceptionsMutex);
         if(item >= (long)this->m_exceptions.size())
             return "";
@@ -211,7 +211,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
     });
     m_auiManager.AddPane(m_exceptionsList, wxAuiPaneInfo().Bottom().Caption("Exceptions stack").CloseButton(false).Floatable().Resizable());
 
-    m_cedimu.m_cdi.callbacks.SetOnLogException([=] (const LogSCC68070Exception& log) {
+    m_cedimu.m_cdi.callbacks.SetOnLogException([&] (const LogSCC68070Exception& log) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
         const size_t trap = log.vector >= SCC68070::Trap0Instruction && log.vector <= SCC68070::Trap15Instruction ? ++m_trapCount : 0;
@@ -221,7 +221,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
             m_cedimu.WriteException(log, trap);
     });
 
-    m_cedimu.m_cdi.callbacks.SetOnLogRTE([=] (uint32_t pc, uint16_t format) {
+    m_cedimu.m_cdi.callbacks.SetOnLogRTE([&] (uint32_t pc, uint16_t format) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
         for(std::vector<std::pair<size_t, LogSCC68070Exception>>::const_reverse_iterator it = this->m_exceptions.crbegin();
@@ -242,7 +242,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
                 }
                 else
                 {
-                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [=] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
+                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [&] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
                 }
 
                 const OS9::SystemCall syscall = {it->second.systemCall.type, "", "", cc ? std::string(error) : outputs};
