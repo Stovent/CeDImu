@@ -463,8 +463,8 @@ std::string errorNameToString(const Error error)
     case Error::E$Hardware: return "E$Hardware";
     case Error::E$SectSize: return "E$SectSize";
 
+    case Error::E$PthFul:  return "E$PthFul";
     case Error::E$BPNum:   return "E$BPNum";
-    case Error::E$IllPath: return "E$IllPath";
     case Error::E$Poll:    return "E$Poll";
     case Error::E$BMode:   return "E$BMode";
     case Error::E$DevOvf:  return "E$DevOvf";

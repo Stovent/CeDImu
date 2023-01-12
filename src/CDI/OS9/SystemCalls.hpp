@@ -192,8 +192,8 @@ enum class Error
     E$Hardware = 175,
     E$SectSize = 176,
 
-    E$BPNum = 200,
-    E$IllPath = 201,
+    E$PthFul = 200,
+    E$BPNum = 201,
     E$Poll = 202,
     E$BMode = 203,
     E$DevOvf = 204,

@@ -1,0 +1,17 @@
+target_sources(CeDImu-GUI
+    PRIVATE
+        CPUViewer.cpp
+        CPUViewer.hpp
+        DebugFrame.cpp
+        DebugFrame.hpp
+        enums.hpp
+        GamePanel.cpp
+        GamePanel.hpp
+        GenericList.hpp
+        MainFrame.cpp
+        MainFrame.hpp
+        SettingsFrame.cpp
+        SettingsFrame.hpp
+        VDSCViewer.cpp
+        VDSCViewer.hpp
+)

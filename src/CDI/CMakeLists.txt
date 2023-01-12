@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(cdi)
+project(CeDImu)
 
 find_package(wxWidgets REQUIRED COMPONENTS base)
 
@@ -16,7 +16,7 @@ if(NOT DEFINED LIBRARY_TYPE)
     set(LIBRARY_TYPE STATIC)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-s -O3")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -28,57 +28,25 @@ if(ENABLE_LOG)
     add_definitions(-DENABLE_LOG)
 endif()
 
-add_library(cdi ${LIBRARY_TYPE}
+add_library(CeDImu ${LIBRARY_TYPE}
     CDI.cpp
-    CDIDisc.cpp
+    CDI.hpp
+    CDIConfig.hpp
     CDIDirectory.cpp
+    CDIDirectory.hpp
+    CDIDisc.cpp
+    CDIDisc.hpp
     CDIFile.cpp
+    CDIFile.hpp
     Export.cpp
     PointingDevice.cpp
-    boards/MiniMMC/Bus.cpp
-    boards/MiniMMC/MiniMMC.cpp
-    boards/Mono3/Bus.cpp
-    boards/Mono3/Mono3.cpp
-    common/Audio.cpp
-    common/filesystem.cpp
-    common/Video.cpp
-    cores/DS1216/DS1216.cpp
-    cores/M48T08/M48T08.cpp
-    cores/MC68HC05/CoreTimer.cpp
-    cores/MC68HC05/M68000Interface.cpp
-    cores/MC68HC05/MC68HC05.cpp
-    cores/MC68HC05/MC68HC05i8.cpp
-    cores/MC68HC05/MC68HSC05C8.cpp
-    cores/MC68HC05/ProgrammableTimer.cpp
-    cores/MC68HC05/SCI.cpp
-    cores/MCD212/Display.cpp
-    cores/MCD212/DRAMInterface.cpp
-    cores/MCD212/MCD212.cpp
-    cores/MCD212/Registers.cpp
-    cores/SCC66470/DRAMInterface.cpp
-    cores/SCC66470/Registers.cpp
-    cores/SCC66470/Display.cpp
-    cores/SCC66470/SCC66470.cpp
-    cores/SCC68070/AddressingModes.cpp
-    cores/SCC68070/ConditionalTests.cpp
-    cores/SCC68070/Disassembler.cpp
-    cores/SCC68070/InstructionSet.cpp
-    cores/SCC68070/Interpreter.cpp
-    cores/SCC68070/MemoryAccess.cpp
-    cores/SCC68070/Peripherals.cpp
-    cores/SCC68070/SCC68070.cpp
-    HLE/CIAP/CIAP.cpp
-    HLE/IKAT/IKAT.cpp
-    OS9/BIOS.cpp
-    OS9/Stt.cpp
-    OS9/SystemCalls.cpp
+    PointingDevice.hpp
 )
-
-include(CheckIPOSupported)
-check_ipo_supported(RESULT ipoAvailable)
-if(ipoAvailable)
-    set_property(TARGET cdi PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif()
+add_subdirectory(boards)
+add_subdirectory(common)
+add_subdirectory(cores)
+add_subdirectory(HLE)
+add_subdirectory(OS9)
 
 include(${wxWidgets_USE_FILE})
-target_include_directories(cdi PRIVATE ${wxWidgets_INCLUDE_DIRS})
+target_include_directories(CeDImu PRIVATE ${wxWidgets_INCLUDE_DIRS})

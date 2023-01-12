@@ -1,0 +1,12 @@
+target_sources(CeDImu
+    PRIVATE
+        Audio.cpp
+        Audio.hpp
+        Callbacks.hpp
+        filesystem.cpp
+        filesystem.hpp
+        Video.cpp
+        Video.hpp
+        types.hpp
+        utils.hpp
+)

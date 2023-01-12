@@ -1,0 +1,9 @@
+target_sources(CeDImu
+    PRIVATE
+        BIOS.cpp
+        BIOS.hpp
+        Stt.cpp
+        Stt.hpp
+        SystemCalls.cpp
+        SystemCalls.hpp
+)

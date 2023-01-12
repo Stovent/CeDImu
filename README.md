@@ -1,5 +1,3 @@
-
-
 # CeDImu
 
 ![CeDImu concept by jongg-eater](https://raw.githubusercontent.com/Stovent/CeDImu/master/resources/CeDImu-concept.png "CeDImu concept by jongg-eater")
@@ -45,15 +43,19 @@ Compatible means it is capable of playing discs.
 ### Chips
 
 - [x] SCC68070
-- [ ] SCC66470 (Mini-MMC)
-- [x] MCD212 (Mono-1, 2, 3, 4)
-- [ ] CDIC (Mini-MMC, Mono-1)
-- [ ] DSP (Mono-2)
-- [ ] MCD221 CIAP (Mono-3, 4)
-- [ ] Slave (Mini-MMC, Mono-1, 2)
-- [ ] IKAT (Mono-3, 4)
-- [x] M48T08
-- [x] DS1216
+- [ ] VDSCs
+  - [ ] SCC66470 (Mini-MMC)
+  - [x] MCD212 (Mono-1, 2, 3, 4)
+- [ ] CD and Audio
+  - [ ] CDIC (Mini-MMC, Mono-1)
+  - [ ] DSP (Mono-2)
+  - [ ] MCD221 CIAP (Mono-3, 4)
+- [ ] Slave MCUs
+  - [ ] Slave (Mini-MMC, Mono-1, 2)
+  - [ ] IKAT (Mono-3, 4)
+- [x] Timekeepers
+  - [x] M48T08
+  - [x] DS1216
 
 ## Features
 
@@ -132,4 +134,3 @@ If I get everything listed upper working, stable and fully functional, the goal 
 
 - [CD-i Fan](https://github.com/cdifan) for his help and his information that made me progress way faster than I could imagine.
 -  jongg-eater for the logo.
-
