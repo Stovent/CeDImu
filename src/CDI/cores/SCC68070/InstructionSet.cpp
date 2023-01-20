@@ -2,6 +2,8 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
+#include <bit>
+
 uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
 {
     uint16_t calcTime = 0;
@@ -107,7 +109,6 @@ uint16_t SCC68070::ABCD()
     result += (src & 0xF0) + (dst & 0xF0);
     if(result >= 0xA0)
         result += 0x60;
-
 
     SetN(result & 0x80);
     if((result & 0x00FF) != 0)
@@ -607,21 +608,19 @@ uint16_t SCC68070::ASm()
     const uint8_t  eareg = currentOpcode & 0x0007;
     uint16_t calcTime = 14;
 
-    uint16_t data = GetWord(eamode, eareg, calcTime);
+    int16_t data = GetWord(eamode, eareg, calcTime);
+    const uint16_t sign = data & 0x8000;
     if(currentOpcode & 0x0100) // Left
     {
-        const uint16_t sign = data & 0x8000;
         SetXC(sign);
         data <<= 1;
         SetV(sign ^ (data & 0x8000));
     }
     else // Right
     {
-        // TODO: use C++20 behaviour when right shifting signed data (int16_t and without sign).
-        const uint16_t sign = data & 0x8000;
+        // C++20 behaviour when right shifting signed data.
         SetXC(data & 1);
         data >>= 1;
-        data |= sign;
         SetV(0);
     }
 
@@ -640,9 +639,7 @@ uint16_t SCC68070::ASr()
     const uint8_t   reg = currentOpcode & 0x0007;
     const uint8_t shift = currentOpcode & 0x0020 ? D[count] % 64 : (count ? count : 8);
 
-    SetVC(0);
-
-    uint32_t data, dataMask, signMask;
+    uint32_t dataMask, signMask;
     if(size == 0) // Byte
     {
         dataMask = 0x000000FF;
@@ -658,7 +655,9 @@ uint16_t SCC68070::ASr()
         dataMask = 0xFFFFFFFF;
         signMask = 0x80000000;
     }
-    data = D[reg] & dataMask;
+    uint32_t data = D[reg] & dataMask;
+
+    SetVC(0);
 
     if(currentOpcode & 0x0100) // Left
     {
@@ -2198,17 +2197,13 @@ uint16_t SCC68070::ROm()
     uint16_t data = GetWord(eamode, eareg, calcTime);
     if(currentOpcode & 0x0100) // Left
     {
-        const uint16_t msb = data >> 15;
-        SetC(msb);
-        data <<= 1;
-        data |= msb;
+        SetC(data & 0x8000);
+        data = std::rotl(data, 1);
     }
     else // Right
     {
-        const uint16_t lsb = data << 15;
-        SetC(lsb);
-        data >>= 1;
-        data |= lsb;
+        SetC(data & 1);
+        data = std::rotr(data, 1);
     }
 
     SetN(data & 0x8000);
