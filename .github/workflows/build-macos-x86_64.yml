@@ -34,5 +34,5 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
         with:
-          name: CeDImu-Installer.dmg
-          path: ./CeDImu-Installer-x86_64.dmg
+          name: CeDImu-Installer-x86_64.dmg
+          path: ./CeDImu-Installer.dmg

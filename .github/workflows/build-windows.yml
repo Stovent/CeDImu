@@ -15,7 +15,7 @@ jobs:
         run: cmake . -B build -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static
 
       - name: Build
-        run: cmake --build build -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static
+        run: cmake --build build
 
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
