@@ -7,8 +7,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3.1.0
-          with:
-            ref: actions-test
+        with:
+          ref: actions-test
 
       - name: Install wxWidgets
         run: vcpkg install wxwidgets:x64-windows-static
