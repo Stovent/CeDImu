@@ -2,6 +2,7 @@
 #include "enums.hpp"
 #include "MainFrame.hpp"
 
+#include <wx/arrstr.h>
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
 #include <wx/hyperlink.h>
@@ -17,12 +18,12 @@
 void createControlButton(wxPanel* controlsPanel, int* key, const wxString& label, wxBoxSizer* nameSizer, wxBoxSizer* buttonSizer)
 {
     wxStaticText* keyText = new wxStaticText(controlsPanel, wxID_ANY, label);
-    wxButton* keyButton = new wxButton(controlsPanel, wxID_ANY, *key ? wxAcceleratorEntry(0, *key).ToString() : "", wxDefaultPosition, wxSize(100, 25));
+    wxButton* keyButton = new wxButton(controlsPanel, wxID_ANY, *key ? wxAcceleratorEntry(0, *key).ToString() : wxString(), wxDefaultPosition, wxSize(100, 25));
     keyButton->Bind(wxEVT_BUTTON, [key, keyButton] (wxEvent&) {
         keyButton->Bind(wxEVT_CHAR_HOOK, [key, keyButton] (wxKeyEvent& evt) {
             keyButton->Bind(wxEVT_CHAR_HOOK, [] (wxKeyEvent&) {});
             *key = evt.GetKeyCode();
-            keyButton->SetLabel(*key ? wxAcceleratorEntry(0, *key).ToString() : "");
+            keyButton->SetLabel(*key ? wxAcceleratorEntry(0, *key).ToString() : wxString());
         });
         keyButton->SetLabel("Waiting for key...");
     });
@@ -86,11 +87,11 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
     biosListButtonSizer->Add(biosDeleteButton);
 
     // BIOS list box
-    wxString biosStrings[m_biosConfigs.size()];
+    wxArrayString biosStrings;
     for(size_t i = 0; i < m_biosConfigs.size(); i++)
-        biosStrings[i] = wxString(m_biosConfigs[i].name);
+        biosStrings.Add(wxString(m_biosConfigs[i].name));
 
-    m_biosList = new wxListBox(generalPage, IDSettingsFrameOnSelectBios, wxDefaultPosition, wxDefaultSize, m_biosConfigs.size(), biosStrings);
+    m_biosList = new wxListBox(generalPage, IDSettingsFrameOnSelectBios, wxDefaultPosition, wxDefaultSize, biosStrings);
 
     wxBoxSizer* biosListSizer = new wxBoxSizer(wxVERTICAL);
     biosListSizer->Add(biosListButtonSizer, wxSizerFlags().Border().Expand());

@@ -141,8 +141,6 @@ public:
        , onLogRTECallback(other.onLogRTECallback)
    {}
 
-   Callbacks(Callbacks&&) = default;
-
     bool HasOnLogDisassembler()
     {
         std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);

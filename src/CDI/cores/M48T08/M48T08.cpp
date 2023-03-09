@@ -3,7 +3,7 @@
 #include "../../common/Callbacks.hpp"
 #include "../../common/utils.hpp"
 
-#include <cstring>
+#include <algorithm>
 #include <fstream>
 
 enum M48T08Registers
@@ -41,7 +41,7 @@ M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state)
     else
     {
         sram.fill(0xFF);
-        std::fill(&sram[0x1FF8], sram.end(), 0);
+        std::fill(sram.begin() + 0x1FF8, sram.end(), 0);
 
         if(initialTime == 0)
             initialTime = IRTC::defaultTime;
