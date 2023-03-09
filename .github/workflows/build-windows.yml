@@ -14,7 +14,7 @@ jobs:
         run: vcpkg install wxwidgets:x64-windows-static
 
       - name: Generate Makefile
-        run: cmake . -B build -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static
+        run: cmake . -B build -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=x64-windows-static -DVCPKG_BUILD_TYPE=release
 
       - name: Build
         run: cmake --build build
