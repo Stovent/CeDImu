@@ -6,13 +6,14 @@
 #include <array>
 #include <cstdint>
 #include <ctime>
+#include <span>
 
 class M48T08 : public IRTC
 {
 public:
     M48T08() = delete;
     M48T08(M48T08&) = delete;
-    explicit M48T08(CDI& idc, std::time_t initialTime = 0, const uint8_t* state = nullptr);
+    explicit M48T08(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime = 0);
     ~M48T08();
 
     void IncrementClock(const double ns) override;
@@ -21,8 +22,8 @@ public:
     void SetByte(const uint16_t addr, const uint8_t data) override;
 
 private:
-    Clock internalClock;
     std::array<uint8_t, 0x2000> sram;
+    Clock internalClock;
 
     void ClockToSRAM();
     void SRAMToClock();

@@ -7,6 +7,7 @@
 #include "common/Callbacks.hpp"
 
 #include <memory>
+#include <span>
 
 class CDI
 {
@@ -18,10 +19,10 @@ public:
 
     CDI(const CDI&) = delete;
     explicit CDI(const CDIConfig& conf = defaultConfig, const Callbacks& calls = Callbacks());
-    CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf = defaultConfig, const Callbacks& calls = Callbacks());
+    CDI(const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, Boards brd, const CDIConfig& conf = defaultConfig, const Callbacks& calls = Callbacks());
     ~CDI();
 
-    bool LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect);
+    bool LoadBoard(const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, Boards boardDetect);
     void UnloadBoard();
 };
 

@@ -28,7 +28,7 @@ CDI::CDI(const CDIConfig& conf, const Callbacks& calls)
  * See description of CDI::LoadBoard.
  * On failure, CDI::board is a nullptr. On success CDI::board is a valid pointer.
  */
-CDI::CDI(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards brd, const CDIConfig& conf, const Callbacks& calls)
+CDI::CDI(const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, Boards brd, const CDIConfig& conf, const Callbacks& calls)
     : config(conf)
     , disc()
     , board()
@@ -46,7 +46,7 @@ CDI::~CDI()
 /** \brief Loads a new player type.
  * \param vdscBios System BIOS data.
  * \param vdscSize System BIOS data size.
- * \param nvram NVRAM data from saved file.
+ * \param nvram NVRAM data from saved file, or an empty span to use default initialization.
  * \param boardDetect The type of board to use.
  * \return True if successful, false otherwise.
  *
@@ -56,7 +56,7 @@ CDI::~CDI()
  *
  * User needs to ensure the NVRAM data size corresponds to the NVRAM size in the config (or auto-detected).
  */
-bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* nvram, Boards boardDetect)
+bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, Boards boardDetect)
 {
     UnloadBoard();
     const OS9::BIOS bios(vdscBios, vdscSize, 0);
@@ -77,13 +77,13 @@ bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, const void* n
 //        break;
 
 //    case Boards::Mono2:
-//        board = std::make_unique<Mono2>(*this, vdscBios, vdscSize, (uint8_t*)nvram, config);
+//        board = std::make_unique<Mono2>(*this, vdscBios, vdscSize, nvram, config);
 //        break;
 
     case Boards::Mono3:
     case Boards::Mono4:
     case Boards::Roboco:
-        board = std::make_unique<Mono3>(*this, vdscBios, vdscSize, (uint8_t*)nvram, config);
+        board = std::make_unique<Mono3>(*this, vdscBios, vdscSize, nvram, config);
         break;
 
     default:

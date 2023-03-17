@@ -5,6 +5,8 @@
 #include "../../cores/MCD212/MCD212.hpp"
 #include "../../HLE/CIAP/CIAP.hpp"
 
+#include <span>
+
 class Mono3 : public Board
 {
     MCD212 mcd212;
@@ -12,7 +14,7 @@ class Mono3 : public Board
     const uint32_t nvramMaxAddress;
 
 public:
-    Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void* nvram, const CDIConfig& conf);
+    Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, const CDIConfig& conf);
     virtual ~Mono3();
     virtual void Reset(const bool resetCPU) override;
     virtual void IncrementTime(const double ns) override;

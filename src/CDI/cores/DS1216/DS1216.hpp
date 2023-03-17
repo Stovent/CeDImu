@@ -5,13 +5,14 @@
 
 #include <array>
 #include <deque>
+#include <span>
 
 class DS1216 : public IRTC
 {
 public:
     DS1216() = delete;
     DS1216(DS1216&) = delete;
-    explicit DS1216(CDI& idc, std::time_t initialTime = 0, const uint8_t* state = nullptr);
+    explicit DS1216(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime = 0);
     ~DS1216();
 
     void IncrementClock(const double ns) override;
@@ -20,9 +21,9 @@ public:
     void SetByte(const uint16_t addr, const uint8_t data) override;
 
 private:
-    Clock internalClock;
-    std::array<uint8_t, 8> clock;
     std::array<uint8_t, 0x8000> sram; // 32KB
+    std::array<uint8_t, 8> clock;
+    Clock internalClock;
 
     void ClockToSRAM();
     void SRAMToClock();

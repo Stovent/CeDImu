@@ -19,20 +19,20 @@ enum M48T08Registers
 };
 
 /** \brief Construct a new M48T08 timekeeper.
- * \param idc A reference to the CDI context.
+ * \param cdi A reference to the CDI context.
  * \param initialTime The timestamp to be used as the initial time.
  * \param state The initial state of the SRAM, or nullptr for empty SRAM. Must be 8192 bytes long.
  *
  * If \p initialTime is 0, then time will continue from the time stored in the initial state at the 8 last bytes.
  */
-M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state)
-    : IRTC(idc)
+M48T08::M48T08(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime)
+    : IRTC(cdi)
+    , sram{}
     , internalClock{initialTime, 0.0}
-    , sram()
 {
-    if(state)
+    if(state.size() > 0)
     {
-        std::copy(state, &state[sram.size()], sram.begin());
+        std::copy(state.begin(), state.begin() + sram.size(), sram.begin());
         if(initialTime)
             ClockToSRAM();
         else
@@ -44,9 +44,8 @@ M48T08::M48T08(CDI& idc, std::time_t initialTime, const uint8_t* state)
         std::fill(sram.begin() + 0x1FF8, sram.end(), 0);
 
         if(initialTime == 0)
-            initialTime = IRTC::defaultTime;
+            internalClock.sec = IRTC::defaultTime;
 
-        internalClock.sec = initialTime;
         ClockToSRAM();
     }
     sram[Control] = 0;

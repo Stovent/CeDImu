@@ -8,9 +8,10 @@
 
 #include <ctime>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <memory>
+#include <span>
 
 constexpr float CPU_SPEEDS[] = {
     0.01,
@@ -73,16 +74,19 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     std::unique_ptr<uint8_t[]> bios = std::make_unique<uint8_t[]>(biosSize);
     biosFile.read((char*)bios.get(), biosSize);
 
-    std::unique_ptr<uint8_t[]> nvram = nullptr;
+    std::unique_ptr<uint8_t[]> nvramBuffer = nullptr;
     m_biosName = biosConfig.name;
     std::ifstream nvramFile(biosConfig.nvramFileName, std::ios::in | std::ios::binary);
+
+    std::span<const uint8_t> nvram;
     if(nvramFile)
     {
         nvramFile.seekg(0, std::ios::end);
         size_t nvramSize = nvramFile.tellg();
         nvramFile.seekg(0);
-        nvram = std::make_unique<uint8_t[]>(nvramSize);
-        nvramFile.read((char*)nvram.get(), nvramSize);
+        nvramBuffer = std::make_unique<uint8_t[]>(nvramSize);
+        nvramFile.read((char*)nvramBuffer.get(), nvramSize);
+        nvram = std::span<const uint8_t>(nvramBuffer.get(), nvramSize);
     }
     else
         std::cout << "Warning: no NVRAM file associated with the system BIOS used" << std::endl;
@@ -101,7 +105,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
         out.close();
     });
 
-    if(!m_cdi.LoadBoard(bios.get(), biosSize, nvram.get(), biosConfig.boardType))
+    if(!m_cdi.LoadBoard(bios.get(), biosSize, nvram, biosConfig.boardType))
     {
         wxMessageBox("Failed to load system BIOS '" + biosConfig.biosFilePath + "': unsupported board type.");
         return false;

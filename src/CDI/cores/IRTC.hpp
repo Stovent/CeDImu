@@ -21,7 +21,7 @@ public:
     IRTC() = delete;
     IRTC(IRTC&) = delete;
     IRTC(CDI& idc) : cdi(idc) {}
-    virtual ~IRTC() {}
+    virtual ~IRTC() = default;
 
     virtual void IncrementClock(const double ns) = 0;
 

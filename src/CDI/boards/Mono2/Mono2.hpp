@@ -4,6 +4,8 @@
 #include "../Board.hpp"
 #include "../../cores/MCD212/MCD212.hpp"
 
+#include <span>
+
 class Mono2 : public Board
 {
     MCD212 mcd212;
@@ -12,7 +14,7 @@ class Mono2 : public Board
 public:
     Mono2() = delete;
     Mono2(const Mono2&) = delete;
-    Mono2(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, const void* nvram, const CDIConfig& conf);
+    Mono2(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, const CDIConfig& conf);
     virtual ~Mono2();
     virtual void Reset(const bool resetCPU) override;
     virtual void IncrementTime(const double ns) override;

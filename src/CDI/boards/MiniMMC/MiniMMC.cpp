@@ -7,7 +7,7 @@ MiniMMC::MiniMMC(CDI& cdi, const void* bios, const uint32_t size, const CDIConfi
     , masterVDSC(cdi, true, bios, size)
     , slaveVDSC(cdi, false, "\0", 2)
 {
-    timekeeper = std::make_unique<M48T08>(cdi, conf.initialTime);
+    timekeeper = std::make_unique<M48T08>(cdi, std::span<const uint8_t>(), conf.initialTime);
     Reset(true);
 }
 

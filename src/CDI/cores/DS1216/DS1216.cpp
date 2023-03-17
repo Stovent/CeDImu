@@ -29,25 +29,25 @@ static constexpr std::array<bool, 64> matchPattern = {
 };
 
 /** \brief Constructs a new timekeeper.
- * \param idc A reference to the CDI context.
+ * \param cdi A reference to the CDI context.
  * \param initialTime The timestamp to be used as the initial time.
- * \param state The initial state of the SRAM, or nullptr for empty SRAM. Must be 32776 bytes long.
+ * \param state The initial state of the SRAM, or nullptr for empty SRAM. Must be 32776 (0x8000 + 8) bytes long.
  *
  * If \p initialTime is 0, then time will continue from the time stored in the initial state at the 8 last bytes.
  * If \p initialTime is 0 and \p state is a nullptr, then initial time will be IRTC::defaultTime.
  */
-DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state)
-    : IRTC(idc)
-    , internalClock{initialTime, 0.0}
-    , clock{0}
+DS1216::DS1216(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime)
+    : IRTC(cdi)
     , sram{}
+    , clock{}
+    , internalClock{initialTime, 0.0}
     , patternCount(-1)
     , pattern(64)
 {
-    if(state)
+    if(state.size() > 0)
     {
-        std::copy(state, &state[0x8000], sram.begin());
-        std::copy(&state[0x8000], &state[0x8008], clock.begin());
+        std::copy(state.begin(), state.begin() + sram.size(), sram.begin());
+        std::copy(state.begin() + sram.size(), state.begin() + sram.size() + 8, clock.begin());
         if(initialTime)
             ClockToSRAM();
         else
@@ -56,12 +56,10 @@ DS1216::DS1216(CDI& idc, std::time_t initialTime, const uint8_t* state)
     else
     {
         sram.fill(0xFF);
-        clock.fill(0);
 
         if(initialTime == 0)
-            initialTime = IRTC::defaultTime;
+            internalClock.sec = IRTC::defaultTime;
 
-        internalClock.sec = initialTime;
         ClockToSRAM();
     }
 }
