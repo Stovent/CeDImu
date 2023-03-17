@@ -12,7 +12,7 @@ public:
     const uint32_t busBase;
 
     ISlave() = delete;
-    ISlave(CDI& idc, uint32_t busbase, PointingDevice::Type deviceType) : cdi(idc), pointingDevice(*this, deviceType), busBase(busbase) {}
+    ISlave(CDI& idc, uint32_t busbase, PointingDevice::Class deviceClass) : cdi(idc), pointingDevice(*this, deviceClass), busBase(busbase) {}
     virtual ~ISlave() {}
 
     virtual void UpdatePointerState() = 0;

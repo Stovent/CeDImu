@@ -15,7 +15,7 @@ class IKAT : public ISlave
 public:
     IKAT() = delete;
     IKAT(const IKAT&) = delete;
-    IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Type deviceType);
+    IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Class deviceClass);
     IKAT& operator=(const IKAT&) = delete;
 
     virtual void UpdatePointerState() override;

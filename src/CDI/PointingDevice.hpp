@@ -9,11 +9,11 @@ class ISlave;
 class PointingDevice
 {
 public:
-    enum class Type : char
+    enum class Class : char
     {
         Relative = 'M',
         Maneuvering = 'J',
-        Absolute = 'T',
+        AbsoluteCoordinate = 'T',
         AbsoluteScreen = 'S',
     };
 
@@ -24,13 +24,13 @@ public:
         II,
     };
 
-    ISlave& slave;
-    const Type type;
-    const size_t dataPacketDelay;
-    std::array<uint8_t, 4> pointerMessage{};
+    ISlave& m_slave;
+    const Class m_deviceClass;
+    const size_t m_dataPacketDelay;
+    std::array<uint8_t, 4> m_pointerMessage{};
 
     PointingDevice() = delete;
-    PointingDevice(ISlave& slv, Type deviceType);
+    PointingDevice(ISlave& slv, Class deviceClass);
 
     void IncrementTime(const size_t ns);
 
@@ -54,41 +54,21 @@ private:
         int y;     /**< relative y offset or absolute y location */
     };
 
-    size_t timer;
-    size_t consecutiveCursorPackets; // Ranges from 1 to 8.
-    GamepadSpeed gamepadSpeed;
+    size_t m_timer;
+    int m_consecutiveCursorPackets; // Ranges from 1 to 8.
+    GamepadSpeed m_gamepadSpeed;
 
-    std::mutex pointerMutex{};
-    PointerState pointerState = {false, false, false, 0, 0};
-    PointerState lastPointerState = {false, false, false, 0, 0};
-    bool padLeft = false;
-    bool padUp = false;
-    bool padRight = false;
-    bool padDown = false;
+    int GetCursorSpeed() const;
+
+    std::mutex m_pointerMutex{};
+    PointerState m_pointerState{false, false, false, 0, 0};
+    PointerState m_lastPointerState{false, false, false, 0, 0};
+    bool m_padLeft = false;
+    bool m_padUp = false;
+    bool m_padRight = false;
+    bool m_padDown = false;
 
     void GeneratePointerMessage();
 };
-
-inline size_t getDataPacketDelay(PointingDevice::Type type)
-{
-    if(type == PointingDevice::Type::Absolute || type == PointingDevice::Type::AbsoluteScreen)
-        return 33'333'333;
-    return 25'000'000;
-}
-
-// Gamepad cursor acceleration measured with an oscilloscope:
-// speed I only sends 1
-// speed N sends 2 2 4 4 6 6 8 8
-// speed II sends 2 4 6 8 10 12 14 16
-inline int getCursorSpeed(PointingDevice::GamepadSpeed speed, size_t cursorPacketIndex)
-{
-    switch(speed)
-    {
-        case PointingDevice::GamepadSpeed::N:  return cursorPacketIndex >= 8 ? 8 : cursorPacketIndex + (cursorPacketIndex & 1);
-        case PointingDevice::GamepadSpeed::I:  return 1;
-        case PointingDevice::GamepadSpeed::II: return cursorPacketIndex >= 8 ? 16 : 2 * cursorPacketIndex;
-    }
-    return 0;
-}
 
 #endif // CDI_POINTINGDEVICE_HPP

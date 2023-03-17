@@ -38,8 +38,8 @@ namespace HLE
 #define DELAY_RSP(channel, rsp) { delayedRsp[channel] = &rsp; \
                                 delayedRspFrame[channel] = cdi.board->GetTotalFrameCount() + 2; }
 
-IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Type deviceType)
-    : ISlave(idc, busbase, deviceType)
+IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Class deviceClass)
+    : ISlave(idc, busbase, deviceClass)
     , registers{0}
     , delayedRsp{nullptr}
     , delayedRspFrame{0}
@@ -53,7 +53,7 @@ IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Type deviceType
 void IKAT::UpdatePointerState()
 {
     channelOut[CHB].clear();
-    channelOut[CHB].insert(channelOut[CHB].begin(), pointingDevice.pointerMessage.begin(), pointingDevice.pointerMessage.end());
+    channelOut[CHB].insert(channelOut[CHB].begin(), pointingDevice.m_pointerMessage.begin(), pointingDevice.m_pointerMessage.end());
 
     UNSET_REMTY(CHB_SR)
     SET_INT(CHB)

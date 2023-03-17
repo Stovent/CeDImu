@@ -1,77 +1,85 @@
 #include "PointingDevice.hpp"
 #include "cores/ISlave.hpp"
 
-PointingDevice::PointingDevice(ISlave& slv, PointingDevice::Type deviceType) :
-    slave(slv),
-    type(deviceType),
-    dataPacketDelay(getDataPacketDelay(deviceType)),
-    timer(0),
-    consecutiveCursorPackets(0),
-    gamepadSpeed(GamepadSpeed::N)
-{}
+#include <algorithm>
 
+static constexpr inline size_t getDataPacketDelay(PointingDevice::Class type)
+{
+    if(type == PointingDevice::Class::AbsoluteCoordinate || type == PointingDevice::Class::AbsoluteScreen)
+        return 33'333'333;
+    return 25'000'000;
+}
+
+PointingDevice::PointingDevice(ISlave& slv, PointingDevice::Class deviceClass)
+    : m_slave(slv)
+    , m_deviceClass(deviceClass)
+    , m_dataPacketDelay(getDataPacketDelay(deviceClass))
+    , m_timer(0)
+    , m_consecutiveCursorPackets(0)
+    , m_gamepadSpeed(GamepadSpeed::N)
+{}
 
 void PointingDevice::IncrementTime(const size_t ns)
 {
-    timer += ns;
+    m_timer += ns;
 
-    if(timer >= dataPacketDelay)
+    if(m_timer >= m_dataPacketDelay)
     {
-        timer -= dataPacketDelay;
-        std::lock_guard<std::mutex> lock(pointerMutex);
+        m_timer -= m_dataPacketDelay;
         bool update = false;
+        std::lock_guard<std::mutex> lock(m_pointerMutex);
 
-        if(!padLeft && !padUp && !padRight && !padDown)
-            consecutiveCursorPackets = 0;
+        if(!m_padLeft && !m_padUp && !m_padRight && !m_padDown)
+            m_consecutiveCursorPackets = 0;
         else
-            consecutiveCursorPackets++;
+            m_consecutiveCursorPackets++;
 
-        int speed = getCursorSpeed(gamepadSpeed, consecutiveCursorPackets);
+        const int speed = GetCursorSpeed();
 
-        if(padLeft)
+        if(m_padLeft)
         {
-            pointerState.x = -speed;
+            m_pointerState.x = -speed;
             update = true;
-            if(lastPointerState.x < pointerState.x)
-                consecutiveCursorPackets = 0;
+            if(m_lastPointerState.x < m_pointerState.x)
+                m_consecutiveCursorPackets = 0;
         }
-        else if(padRight)
+        else if(m_padRight)
         {
-            pointerState.x = speed;
+            m_pointerState.x = speed;
             update = true;
-            if(lastPointerState.x > pointerState.x)
-                consecutiveCursorPackets = 0;
-        }
-        else
-            pointerState.x = 0;
-
-        if(padUp)
-        {
-            pointerState.y = -speed;
-            update = true;
-            if(lastPointerState.y < pointerState.y)
-                consecutiveCursorPackets = 0;
-        }
-        else if(padDown)
-        {
-            pointerState.y = speed;
-            update = true;
-            if(lastPointerState.y > pointerState.y)
-                consecutiveCursorPackets = 0;
+            if(m_lastPointerState.x > m_pointerState.x)
+                m_consecutiveCursorPackets = 0;
         }
         else
-            pointerState.y = 0;
+            m_pointerState.x = 0;
 
-        if(pointerState.btn1 != lastPointerState.btn1)
+        if(m_padUp)
+        {
+            m_pointerState.y = -speed;
+            update = true;
+            if(m_lastPointerState.y < m_pointerState.y)
+                m_consecutiveCursorPackets = 0;
+        }
+        else if(m_padDown)
+        {
+            m_pointerState.y = speed;
+            update = true;
+            if(m_lastPointerState.y > m_pointerState.y)
+                m_consecutiveCursorPackets = 0;
+        }
+        else
+            m_pointerState.y = 0;
+
+        if(m_pointerState.btn1 != m_lastPointerState.btn1)
             update = true;
 
-        if(pointerState.btn2 != lastPointerState.btn2)
+        if(m_pointerState.btn2 != m_lastPointerState.btn2)
             update = true;
 
         if(update)
         {
             GeneratePointerMessage();
-            slave.UpdatePointerState();
+            m_slave.UpdatePointerState();
         }
     }
 }
@@ -81,8 +89,8 @@ void PointingDevice::IncrementTime(const size_t ns)
  */
 void PointingDevice::SetButton1(const bool pressed)
 {
-    std::lock_guard<std::mutex> lock(pointerMutex);
-    pointerState.btn1 = pressed;
+    std::lock_guard<std::mutex> lock(m_pointerMutex);
+    m_pointerState.btn1 = pressed;
 }
 
 /** \brief Set button 2 state.
@@ -90,8 +98,8 @@ void PointingDevice::SetButton1(const bool pressed)
  */
 void PointingDevice::SetButton2(const bool pressed)
 {
-    std::lock_guard<std::mutex> lock(pointerMutex);
-    pointerState.btn2 = pressed;
+    std::lock_guard<std::mutex> lock(m_pointerMutex);
+    m_pointerState.btn2 = pressed;
 }
 
 /** \brief Set both the button 1 and 2 state.
@@ -110,10 +118,10 @@ void PointingDevice::SetButton12(const bool pressed)
  */
 void PointingDevice::SetLeft(const bool pressed)
 {
-    std::lock_guard<std::mutex> lock(pointerMutex);
-    padLeft = pressed;
-    if(pressed && padRight)
-        padRight = false;
+    std::lock_guard<std::mutex> lock(m_pointerMutex);
+    m_padLeft = pressed;
+    if(pressed && m_padRight)
+        m_padRight = false;
 }
 
 /** \brief Set pad up state.
@@ -123,10 +131,10 @@ void PointingDevice::SetLeft(const bool pressed)
  */
 void PointingDevice::SetUp(const bool pressed)
 {
-    std::lock_guard<std::mutex> lock(pointerMutex);
-    padUp = pressed;
-    if(pressed && padDown)
-        padDown = false;
+    std::lock_guard<std::mutex> lock(m_pointerMutex);
+    m_padUp = pressed;
+    if(pressed && m_padDown)
+        m_padDown = false;
 }
 
 /** \brief Set pad right state.
@@ -136,10 +144,10 @@ void PointingDevice::SetUp(const bool pressed)
  */
 void PointingDevice::SetRight(const bool pressed)
 {
-    std::lock_guard<std::mutex> lock(pointerMutex);
-    padRight = pressed;
-    if(pressed && padLeft)
-        padLeft = false;
+    std::lock_guard<std::mutex> lock(m_pointerMutex);
+    m_padRight = pressed;
+    if(pressed && m_padLeft)
+        m_padLeft = false;
 }
 
 /** \brief Set pad down state.
@@ -149,10 +157,10 @@ void PointingDevice::SetRight(const bool pressed)
  */
 void PointingDevice::SetDown(const bool pressed)
 {
-    std::lock_guard<std::mutex> lock(pointerMutex);
-    padDown = pressed;
-    if(pressed && padUp)
-        padUp = false;
+    std::lock_guard<std::mutex> lock(m_pointerMutex);
+    m_padDown = pressed;
+    if(pressed && m_padUp)
+        m_padUp = false;
 }
 
 /** \brief Set absolute pointer location.
@@ -162,39 +170,55 @@ void PointingDevice::SetDown(const bool pressed)
  */
 void PointingDevice::SetAbsolutePointerLocation(const bool pd, const int x, const int y)
 {
-    std::lock_guard<std::mutex> lock(pointerMutex);
-    pointerState.pd = pd;
-    pointerState.x = x;
-    pointerState.y = y;
+    std::lock_guard<std::mutex> lock(m_pointerMutex);
+    m_pointerState.pd = pd;
+    m_pointerState.x = x;
+    m_pointerState.y = y;
 }
 
 void PointingDevice::SetCursorSpeed(const GamepadSpeed speed)
 {
-    std::lock_guard<std::mutex> lock(pointerMutex);
-    gamepadSpeed = speed;
+    std::lock_guard<std::mutex> lock(m_pointerMutex);
+    m_gamepadSpeed = speed;
 }
 
-// pointerLock must be locked before calling this method.
+// Gamepad cursor acceleration measured with an oscilloscope:
+// speed I only sends 1
+// speed N sends 2 2 4 4 6 6 8 8
+// speed II sends 2 4 6 8 10 12 14 16
+int PointingDevice::GetCursorSpeed() const
+{
+    switch(m_gamepadSpeed)
+    {
+    case GamepadSpeed::N:  return std::min(8, m_consecutiveCursorPackets + (m_consecutiveCursorPackets & 1));
+    case GamepadSpeed::I:  return 1;
+    case GamepadSpeed::II: return std::min(16, 2 * m_consecutiveCursorPackets);
+    }
+    // std::unreachable();
+    return 0;
+}
+
+// m_pointerMutex must be locked before calling this method.
 void PointingDevice::GeneratePointerMessage()
 {
-    switch(type)
+    switch(m_deviceClass)
     {
-    case PointingDevice::Type::Absolute:
-    case PointingDevice::Type::AbsoluteScreen:
-        pointerMessage[0] = 0x40 | pointerState.btn1 << 5 | pointerState.btn2 << 4 | (pointerState.x >> 6 & 0xF);
-        pointerMessage[1] = pointerState.pd << 5 | (pointerState.y >> 6 & 0xF);
-        pointerMessage[2] = pointerState.x & 0x3F;
-        pointerMessage[3] = pointerState.y & 0x3F;
+    case Class::AbsoluteCoordinate:
+    case Class::AbsoluteScreen:
+        m_pointerMessage[0] = 0x40 | m_pointerState.btn1 << 5 | m_pointerState.btn2 << 4 | (m_pointerState.x >> 6 & 0xF);
+        m_pointerMessage[1] = m_pointerState.pd << 5 | (m_pointerState.y >> 6 & 0xF);
+        m_pointerMessage[2] = m_pointerState.x & 0x3F;
+        m_pointerMessage[3] = m_pointerState.y & 0x3F;
         break;
 
-    case PointingDevice::Type::Maneuvering:
-    case PointingDevice::Type::Relative:
-        pointerMessage[0] = 0x40 | pointerState.btn1 << 5 | pointerState.btn2 << 4 | (pointerState.y >> 4 & 0xC) | (pointerState.x >> 6 & 3);
-        pointerMessage[1] = pointerState.x & 0x3F;
-        pointerMessage[2] = pointerState.y & 0x3F;
-        pointerMessage[3] = 0;
+    case Class::Maneuvering:
+    case Class::Relative:
+        m_pointerMessage[0] = 0x40 | m_pointerState.btn1 << 5 | m_pointerState.btn2 << 4 | (m_pointerState.y >> 4 & 0xC) | (m_pointerState.x >> 6 & 3);
+        m_pointerMessage[1] = m_pointerState.x & 0x3F;
+        m_pointerMessage[2] = m_pointerState.y & 0x3F;
+        m_pointerMessage[3] = 0;
         break;
     }
 
-    lastPointerState = pointerState;
+    m_lastPointerState = m_pointerState;
 }
