@@ -17,6 +17,8 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
     , m_updateTimer(this, wxID_ANY)
     , m_updateManager(false)
     , m_flushInstructions(false)
+    , m_uartMutex()
+    , m_uartMissing()
     , m_lastByte(0)
 {
     // Internal registers
@@ -128,7 +130,10 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
     m_cedimu.m_cdi.callbacks.SetOnUARTOut([&] (uint8_t d) {
         this->m_cedimu.m_uartOut.put(d);
         if(!((this->m_lastByte == '\r' && d == '\n') || (this->m_lastByte == '\n' && d == '\r')))
-            this->m_uartTextCtrl->AppendText((char)d);
+        {
+            std::lock_guard<std::mutex> lock(m_uartMutex);
+            m_uartMissing.push_back(d);
+        }
         this->m_lastByte = d;
     });
 
@@ -155,6 +160,7 @@ void CPUViewer::UpdateManager(wxTimerEvent&)
     m_disassemblerList->Refresh();
     UpdateInternal();
     UpdateRegisters();
+    UpdateUART();
 }
 
 void CPUViewer::UpdateInternal()
@@ -198,4 +204,11 @@ void CPUViewer::UpdateRegisters()
         std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : reg.first == SCC68070::Register::SR ? " : " + toBinString(reg.second, 16) : " : 0x" + toHex(reg.second);
         m_registers[i++]->SetValue(CPURegisterToString(reg.first) + val);
     }
+}
+
+void CPUViewer::UpdateUART()
+{
+    std::lock_guard<std::mutex> lock(m_uartMutex);
+    m_uartTextCtrl->AppendText(wxString(m_uartMissing.data(), m_uartMissing.size()));
+    m_uartMissing.clear();
 }

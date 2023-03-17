@@ -31,6 +31,8 @@ public:
 
     wxTextCtrl* m_registers[20];
 
+    std::mutex m_uartMutex;
+    std::vector<char> m_uartMissing;
     uint8_t m_lastByte;
     wxTextCtrl* m_uartTextCtrl;
 
@@ -41,6 +43,7 @@ public:
     void UpdateManager(wxTimerEvent&);
     void UpdateInternal();
     void UpdateRegisters();
+    void UpdateUART();
 
     wxDECLARE_EVENT_TABLE();
 };
