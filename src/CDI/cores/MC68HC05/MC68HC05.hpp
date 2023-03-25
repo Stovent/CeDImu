@@ -5,8 +5,8 @@
 #include <cstdint>
 #include <set>
 
-/** @class MC68HC05
- * @brief Implements the CPU core of a MC68HC05 microcontroller.
+/** \class MC68HC05
+ * \brief Implements the CPU core of a MC68HC05 microcontroller.
  */
 class MC68HC05
 {
@@ -41,15 +41,15 @@ protected:
     uint16_t PC;
     std::bitset<8> CCR;
 
-    /** @brief Reads a byte from internal memory. */
+    /** \brief Reads a byte from internal memory. */
     virtual uint8_t GetMemory(uint16_t addr) = 0;
-    /** @brief Writes a byte to internal memory. */
+    /** \brief Writes a byte to internal memory. */
     virtual void SetMemory(uint16_t addr, uint8_t value) = 0;
 
     virtual void Reset();
-    /** @brief Called by the interpreter when a STOP instruction is executed. */
+    /** \brief Called by the interpreter when a STOP instruction is executed. */
     virtual void Stop() {};
-    /** @brief Called by the interpreter when a WAIT instruction is executed. */
+    /** \brief Called by the interpreter when a WAIT instruction is executed. */
     virtual void Wait() {};
 
     size_t Interpreter();

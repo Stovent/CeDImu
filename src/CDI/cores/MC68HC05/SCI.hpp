@@ -5,8 +5,8 @@
 #include <functional>
 #include <optional>
 
-/** @class SCI
- * @brief SCI subsystem for the MC68HC05 microcontrollers.
+/** \class SCI
+ * \brief SCI subsystem for the MC68HC05 microcontrollers.
  */
 class SCI
 {

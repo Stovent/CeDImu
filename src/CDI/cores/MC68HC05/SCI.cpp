@@ -1,8 +1,8 @@
 #include "SCI.hpp"
 #include "MC68HC05.hpp"
 
-/** @brief New SCI subsystem.
- * @param sendDataCallback The callback called when the transmitter will send data.
+/** \brief New SCI subsystem.
+ * \param sendDataCallback The callback called when the transmitter will send data.
  */
 SCI::SCI(const std::function<void(uint16_t)> sendDataCallback)
     : controlRegister1(0)
@@ -29,8 +29,8 @@ void SCI::Reset()
     tdreTcRead = false;
 }
 
-/** @brief Emulates the SCI subsystem for the given number of cycles.
- * @return true if an interrupt has to be triggered, false otherwise.
+/** \brief Emulates the SCI subsystem for the given number of cycles.
+ * \return true if an interrupt has to be triggered, false otherwise.
  */
 bool SCI::AdvanceCycles(size_t cycles)
 {
@@ -60,8 +60,8 @@ bool SCI::AdvanceCycles(size_t cycles)
     return interrupt;
 }
 
-/** @brief Sets the data received by the SCI receiver.
- * @return true if an interrupt has to be triggered, false otherwise.
+/** \brief Sets the data received by the SCI receiver.
+ * \return true if an interrupt has to be triggered, false otherwise.
  */
 bool SCI::ReceiveData(uint16_t data)
 {
@@ -86,8 +86,8 @@ bool SCI::ReceiveData(uint16_t data)
     return false;
 }
 
-/** @brief Sets the data register to the given byte.
- * @return true if an interrupt has to be triggered, false otherwise.
+/** \brief Sets the data register to the given byte.
+ * \return true if an interrupt has to be triggered, false otherwise.
  */
 bool SCI::SetDataRegister(uint8_t data)
 {
@@ -105,7 +105,7 @@ bool SCI::SetDataRegister(uint8_t data)
     return false;
 }
 
-/** @brief Returns the data in SCDR.
+/** \brief Returns the data in SCDR.
  */
 uint8_t SCI::GetDataRegister()
 {
@@ -119,8 +119,8 @@ uint8_t SCI::GetStatusRegister()
     return statusRegister;
 }
 
-/** @brief Transfers the tdrBuffer to the sciTransmit.
- * @return true if an interrupt has to be triggered, false otherwise.
+/** \brief Transfers the tdrBuffer to the sciTransmit.
+ * \return true if an interrupt has to be triggered, false otherwise.
  */
 bool SCI::LoadTransmitter()
 {

@@ -1,6 +1,6 @@
 #include "MC68HC05.hpp"
 
-/** @brief Triggers the RESET pin.
+/** \brief Triggers the RESET pin.
  *
  * Default implementation fetches the PC from the RESET vector and sets \ref MC68HC05.wait and \ref MC68HC05.stop to false.
  */
@@ -11,8 +11,8 @@ void MC68HC05::Reset()
     stop = wait = false;
 }
 
-/** @brief Executes a single instruction.
- * @return The number of cycles used to execute the instruction. 0 if in WAIT or STOP mode.
+/** \brief Executes a single instruction.
+ * \return The number of cycles used to execute the instruction. 0 if in WAIT or STOP mode.
  */
 size_t MC68HC05::Interpreter()
 {
@@ -1152,8 +1152,8 @@ void MC68HC05::RequestInterrupt(uint16_t addr)
     maskableInterrupts.insert(addr);
 }
 
-/** @brief Processes an interrupt.
- *  @param addr The address where to fetch the high byte of the vector.
+/** \brief Processes an interrupt.
+ *  \param addr The address where to fetch the high byte of the vector.
  */
 void MC68HC05::ProcessInterrupt(uint16_t addr)
 {

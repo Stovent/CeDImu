@@ -3,6 +3,7 @@
 
 !.gitignore
 !CMakeLists.txt
+!Doxyfile
 !MANUAL.md
 !README.md
 

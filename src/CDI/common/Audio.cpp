@@ -1,8 +1,6 @@
 #include "Audio.hpp"
 #include "utils.hpp"
 
-#include <cmath>
-
 namespace Audio
 {
 
@@ -30,7 +28,7 @@ static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, b
     uint8_t index = 0;
     for(int su = 0; su < SU; su++)
     {
-        const uint16_t gain = pow(2, GAIN - ranges[su]);
+        const uint16_t gain = 2 << (GAIN - ranges[su]);
         for(uint8_t ss = 0; ss < 28; ss++)
         {
             if(stereo && su & 1)

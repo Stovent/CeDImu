@@ -52,8 +52,8 @@ uint8_t M68000Interface::PopByteMCU(size_t channel)
     return data;
 }
 
-/** @brief Called by the MCU to push a byte in its transmit channel.
- * @return true if a host interrupt has to be triggered, false otherwise.
+/** \brief Called by the MCU to push a byte in its transmit channel.
+ * \return true if a host interrupt has to be triggered, false otherwise.
  */
 bool M68000Interface::PushByteMCU(size_t channel, uint8_t data)
 {
@@ -146,8 +146,8 @@ uint8_t M68000Interface::PopByteHost(size_t channel)
     return data;
 }
 
-/** @brief Called by the host to push a byte in its transmit channel.
- * @return true if a MCU interrupt has to be triggered, false otherwise.
+/** \brief Called by the host to push a byte in its transmit channel.
+ * \return true if a MCU interrupt has to be triggered, false otherwise.
  */
 bool M68000Interface::PushByteHost(size_t channel, uint8_t data)
 {

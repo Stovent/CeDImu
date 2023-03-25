@@ -1,7 +1,7 @@
 #include "ProgrammableTimer.hpp"
 
-/** @brief New programmable timer.
- * @param timerCallback The argument is true if output compare level is high, false for low.
+/** \brief New programmable timer.
+ * \param timerCallback The argument is true if output compare level is high, false for low.
  */
 ProgrammableTimer::ProgrammableTimer(std::function<void(bool)> outputCompareCallback)
     : controlRegister(0)
@@ -49,8 +49,8 @@ void ProgrammableTimer::Reset()
     alternateCounterLowBuffer.reset();
 }
 
-/** @brief Advances the timer for the given number of timer cycles (internal frequency / 4).
- * @return true if an interrupt has to be triggered, false otherwise.
+/** \brief Advances the timer for the given number of timer cycles (internal frequency / 4).
+ * \return true if an interrupt has to be triggered, false otherwise.
  */
 bool ProgrammableTimer::AdvanceCycles(size_t cycles)
 {
@@ -226,4 +226,3 @@ void ProgrammableTimer::SetOutputCompareLowRegister(uint8_t value)
     outputCompareInhibited = false;
     outputCompareLow = value;
 }
-

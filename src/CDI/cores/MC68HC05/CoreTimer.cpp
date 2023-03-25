@@ -16,8 +16,8 @@ void CoreTimer::Reset()
     copCounter = 0;
 }
 
-/** @brief Advances the timer for the given number of timer cycles (internal frequency / 4).
- * @return A pair indicating if an interrupt (.first) or a reset (.second) should happen.
+/** \brief Advances the timer for the given number of timer cycles (internal frequency / 4).
+ * \return A pair indicating if an interrupt (.first) or a reset (.second) should happen.
  */
 std::pair<bool, bool> CoreTimer::AdvanceCycles(size_t cycles)
 {

@@ -2,11 +2,11 @@
 
 #include <cstring>
 
-/** @brief Creates a new MC68HSC05C8 MCU.
+/** \brief Creates a new MC68HSC05C8 MCU.
  *
- * @param internalMemory The initial memory of the MCU.
- * @param size The size of the \p internalMemory array. Should be 8KB.
- * @param outputPinCallback Called by the MCU when one of its output pin changes state or to send serial data.
+ * \param internalMemory The initial memory of the MCU.
+ * \param size The size of the \p internalMemory array. Should be 8KB.
+ * \param outputPinCallback Called by the MCU when one of its output pin changes state or to send serial data.
  *
  * When the port is \ref Port::SPI, this means a SPI transfert has been done. The callback is called with this port by the master of the SPI,
  * the receiver of the SPI has to send its own byte back to its master during the callback. The byte is sent in the 2nd parameter (pin).
@@ -168,10 +168,10 @@ void MC68HSC05C8::IncrementTime(double ns)
     }
 }
 
-/** @brief Sets the given pin to the given state.
- *  @param port The data port.
- *  @param pin The pin number of the port (0-7).
- *  @param high true if pin is high, false if low.
+/** \brief Sets the given pin to the given state.
+ *  \param port The data port.
+ *  \param pin The pin number of the port (0-7).
+ *  \param high true if pin is high, false if low.
  *
  * If the pin set is configured as output by the MCU, this function does nothing.
  */
@@ -496,8 +496,8 @@ uint64_t MC68HSC05C8::GetSCIBaudRate() const
     return MC68HC05::INTERNAL_BUS_FREQUENCY / sciPrescaler / sciRate / 16; // Figure 3.24.
 }
 
-/** @brief Transfers the LDR buffer to the SCI shift register.
- * @return true if an interrupt has to be triggered, false otherwise.
+/** \brief Transfers the LDR buffer to the SCI shift register.
+ * \return true if an interrupt has to be triggered, false otherwise.
  */
 bool MC68HSC05C8::LoadSCITransmitter()
 {
