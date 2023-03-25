@@ -1,8 +1,8 @@
 #include "CDIDirectory.hpp"
 #include "CDIDisc.hpp"
-#include "common/filesystem.hpp"
 #include "common/utils.hpp"
 
+#include <filesystem>
 #include <string>
 
 CDIDirectory::CDIDirectory(uint8_t namesize, std::string dirName, uint32_t lbn, uint16_t parent, uint16_t offset)
@@ -169,14 +169,14 @@ std::stringstream CDIDirectory::GetChildrenTree() const
 /** \brief Export the audio data from each file in the directory and its subdirectories recursively.
  *
  * \param  basePath The directory where the files will be written.
+ * \throw std::filesystem::filesystem_error if it cannot create directories.
  */
 void CDIDirectory::ExportAudio(std::string basePath) const
 {
     if(name != "/")
         basePath += name + "/";
 
-    if(!createDirectories(basePath))
-        return;
+    std::filesystem::create_directories(basePath);
 
     for(std::pair<std::string, CDIFile> file : files)
     {
@@ -192,14 +192,14 @@ void CDIDirectory::ExportAudio(std::string basePath) const
 /** \brief Export the content of each file in the directory and its subdirectories recursively.
  *
  * \param basePath The directory where the files will be written.
+ * \throw std::filesystem::filesystem_error if it cannot create directories.
  */
 void CDIDirectory::ExportFiles(std::string basePath) const
 {
     if(name != "/")
         basePath += name + "/";
 
-    if(!createDirectories(basePath))
-        return;
+    std::filesystem::create_directories(basePath);
 
     for(std::pair<std::string, CDIFile> file : files)
     {
@@ -215,14 +215,14 @@ void CDIDirectory::ExportFiles(std::string basePath) const
 /** \brief Export the video data from each file in the directory and its subdirectories recursively.
  *
  * \param  basePath The directory where the files will be written.
+ * \throw std::filesystem::filesystem_error if it cannot create directories.
  */
 void CDIDirectory::ExportVideo(std::string basePath) const
 {
     if(name != "/")
         basePath += name + "/";
 
-    if(!createDirectories(basePath))
-        return;
+    std::filesystem::create_directories(basePath);
 
     for(std::pair<std::string, CDIFile> file : files)
     {
@@ -238,14 +238,14 @@ void CDIDirectory::ExportVideo(std::string basePath) const
 /** \brief Export the raw video data from each file in the directory and its subdirectories recursively.
  *
  * \param  basePath The base directory where the files will be written.
+ * \throw std::filesystem::filesystem_error if it cannot create directories.
  */
 void CDIDirectory::ExportRawVideo(std::string basePath) const
 {
     if(name != "/")
         basePath += name + "/";
 
-    if(!createDirectories(basePath))
-        return;
+    std::filesystem::create_directories(basePath);
 
     for(std::pair<std::string, CDIFile> file : files)
     {

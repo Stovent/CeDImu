@@ -67,10 +67,10 @@ public:
 
     bool ExportAudio(const std::string& path);
     bool ExportFiles(const std::string& path);
-    void ExportFileSystem(const std::string& path);
+    bool ExportFileSystem(const std::string& path);
     bool ExportVideo(const std::string& path);
     bool ExportRawVideo(const std::string& path);
-    void ExportSectorsInfo(const std::string& path);
+    bool ExportSectorsInfo(const std::string& path);
 
 private:
     friend CDIFile;

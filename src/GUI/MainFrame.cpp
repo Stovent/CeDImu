@@ -13,6 +13,8 @@
 #include <wx/menu.h>
 #include <wx/msgdlg.h>
 
+#include <filesystem>
+
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_TIMER(wxID_ANY, MainFrame::UpdateUI)
     EVT_CLOSE(MainFrame::OnClose)
@@ -310,8 +312,16 @@ void MainFrame::OnExportAudio(wxCommandEvent&)
     if(m_cedimu.m_cdi.disc.IsOpen())
     {
         wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if(dirDlg.ShowModal() == wxID_OK)
-            m_cedimu.m_cdi.disc.ExportAudio(dirDlg.GetPath().ToStdString());
+        try
+        {
+            if(dirDlg.ShowModal() == wxID_OK)
+                m_cedimu.m_cdi.disc.ExportAudio(dirDlg.GetPath().ToStdString());
+        }
+        catch(const std::filesystem::filesystem_error& e)
+        {
+            std::string msg = "Failed to create directory \"" + e.path1().string() + "\".\nReason: ";
+            wxMessageBox(msg + e.what());
+        }
     }
     else
     {
@@ -324,8 +334,16 @@ void MainFrame::OnExportFiles(wxCommandEvent&)
     if(m_cedimu.m_cdi.disc.IsOpen())
     {
         wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if(dirDlg.ShowModal() == wxID_OK)
-            m_cedimu.m_cdi.disc.ExportFiles(dirDlg.GetPath().ToStdString());
+        try
+        {
+            if(dirDlg.ShowModal() == wxID_OK)
+                m_cedimu.m_cdi.disc.ExportFiles(dirDlg.GetPath().ToStdString());
+        }
+        catch(const std::filesystem::filesystem_error& e)
+        {
+            std::string msg = "Failed to create directory \"" + e.path1().string() + "\".\nReason: ";
+            wxMessageBox(msg + e.what());
+        }
     }
     else
     {
@@ -338,8 +356,16 @@ void MainFrame::OnExportVideo(wxCommandEvent&)
     if(m_cedimu.m_cdi.disc.IsOpen())
     {
         wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if(dirDlg.ShowModal() == wxID_OK)
-            m_cedimu.m_cdi.disc.ExportVideo(dirDlg.GetPath().ToStdString());
+        try
+        {
+            if(dirDlg.ShowModal() == wxID_OK)
+                m_cedimu.m_cdi.disc.ExportVideo(dirDlg.GetPath().ToStdString());
+        }
+        catch(const std::filesystem::filesystem_error& e)
+        {
+            std::string msg = "Failed to create directory \"" + e.path1().string() + "\".\nReason: ";
+            wxMessageBox(msg + e.what());
+        }
     }
     else
     {
@@ -352,8 +378,16 @@ void MainFrame::OnExportRawVideo(wxCommandEvent&)
     if(m_cedimu.m_cdi.disc.IsOpen())
     {
         wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if(dirDlg.ShowModal() == wxID_OK)
-            m_cedimu.m_cdi.disc.ExportRawVideo(dirDlg.GetPath().ToStdString());
+        try
+        {
+            if(dirDlg.ShowModal() == wxID_OK)
+                m_cedimu.m_cdi.disc.ExportRawVideo(dirDlg.GetPath().ToStdString());
+        }
+        catch(const std::filesystem::filesystem_error& e)
+        {
+            std::string msg = "Failed to create directory \"" + e.path1().string() + "\".\nReason: ";
+            wxMessageBox(msg + e.what());
+        }
     }
     else
     {
