@@ -37,9 +37,8 @@ public:
 
     void CreateMenuBar();
     void CreateBiosMenu();
-    void UpdateTitle();
-    void UpdateStatusBar();
-    void UpdateUI(wxTimerEvent&);
+    void OnUpdateUI(wxTimerEvent&);
+    void UpdateUI();
 
     void OnStartBios(wxCommandEvent& event);
     void OnOpenDisc(wxCommandEvent&);

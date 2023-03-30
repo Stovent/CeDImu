@@ -67,7 +67,7 @@ uint16_t decodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t*
 
 // Real-Time Decoders (set pixels in ARGB format)
 void decodeRGB555(const uint16_t pixel, uint8_t pixels[4]);
-void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], const uint32_t previous);
+void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous);
 void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable);
 
 void splitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uint8_t* rgb);

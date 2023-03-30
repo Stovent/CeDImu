@@ -79,9 +79,9 @@ void CDIDirectory::LoadContent(CDIDisc& disc)
                 files.emplace(name, CDIFile(disc, lbn, filesize, namesize, name, attributes, filenumber, relOffset));
             }
         }
-        if(!(disc.subheader.submode & cdieof))
+        if(!(disc.m_subheader.submode & cdieof))
             disc.GotoNextSector();
-    } while(!(disc.subheader.submode & cdieof)); // in case the directory structure is spreaded over several sectors
+    } while(!(disc.m_subheader.submode & cdieof)); // in case the directory structure is spreaded over several sectors
 
     disc.Seek(pos);
 }

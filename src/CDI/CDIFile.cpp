@@ -113,19 +113,19 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-            if(disc.subheader.channelNumber > maxChannel)
-                maxChannel = disc.subheader.channelNumber;
+            if(disc.m_subheader.channelNumber > maxChannel)
+                maxChannel = disc.m_subheader.channelNumber;
 
-            if(!(disc.subheader.submode & cdia) || disc.subheader.channelNumber != channel)
+            if(!(disc.m_subheader.submode & cdia) || disc.m_subheader.channelNumber != channel)
             {
                 disc.GotoNextSector();
                 continue;
             }
 
             // bool  emph = disc.subheader.codingInformation & Audio::CodingInformation::emphasis;
-                         bps = (disc.subheader.codingInformation & Audio::CodingInformation::bps) >> 4;
-            const uint8_t sf = (disc.subheader.codingInformation & Audio::CodingInformation::sf) >> 2;
-            const uint8_t ms =  disc.subheader.codingInformation & Audio::CodingInformation::ms;
+                         bps = (disc.m_subheader.codingInformation & Audio::CodingInformation::bps) >> 4;
+            const uint8_t sf = (disc.m_subheader.codingInformation & Audio::CodingInformation::sf) >> 2;
+            const uint8_t ms =  disc.m_subheader.codingInformation & Audio::CodingInformation::ms;
 
             if(bps > 1 || sf > 1 || ms > 1) // ignore reserved values
             {
@@ -140,7 +140,7 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
             wavHeader.channelNumber = ms + 1;
             wavHeader.frequency = sf ? 18900 : 37800;
 
-            if(disc.subheader.submode & cdieor)
+            if(disc.m_subheader.submode & cdieor)
             {
                 std::ofstream out(directoryPath + name + '_' + std::to_string(channel) + "_" + std::to_string(record++) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
                 Audio::writeWAV(out, wavHeader, left, right);
@@ -209,10 +209,10 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-            if(disc.subheader.channelNumber > maxChannel)
-                maxChannel = disc.subheader.channelNumber;
+            if(disc.m_subheader.channelNumber > maxChannel)
+                maxChannel = disc.m_subheader.channelNumber;
 
-            if(disc.subheader.submode & cdid) // Get CLUT table from a sector before the video data
+            if(disc.m_subheader.submode & cdid) // Get CLUT table from a sector before the video data
             {
                 uint8_t data[2048];
                 disc.GetRaw(data, 2048);
@@ -259,16 +259,16 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
                 continue;
             }
 
-            if(!(disc.subheader.submode & cdiv) || disc.subheader.channelNumber != channel)
+            if(!(disc.m_subheader.submode & cdiv) || disc.m_subheader.channelNumber != channel)
             {
                 disc.GotoNextSector();
                 continue;
             }
 
-            bool ascf = disc.subheader.codingInformation & Video::CodingInformation::ascf;
+            bool ascf = disc.m_subheader.codingInformation & Video::CodingInformation::ascf;
             // bool eolf = disc.subheader.codingInformation & Video::CodingInformation::eolf;
-            uint8_t resolution  = (disc.subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
-            coding = disc.subheader.codingInformation & Video::CodingInformation::coding;
+            uint8_t resolution  = (disc.m_subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
+            coding = disc.m_subheader.codingInformation & Video::CodingInformation::coding;
 
             if(ascf || coding > 7 || resolution == 2)
             {
@@ -358,37 +358,37 @@ void CDIFile::ExportRawVideo(const std::string& directoryPath)
         while(sizeLeft > 0)
         {
             sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-            if(disc.subheader.channelNumber > maxChannel)
-                maxChannel = disc.subheader.channelNumber;
+            if(disc.m_subheader.channelNumber > maxChannel)
+                maxChannel = disc.m_subheader.channelNumber;
 
-            if(!(disc.subheader.submode & cdiv) || disc.subheader.channelNumber != channel)
+            if(!(disc.m_subheader.submode & cdiv) || disc.m_subheader.channelNumber != channel)
             {
                 disc.GotoNextSector();
                 continue;
             }
 
-            bool ascf_ = disc.subheader.codingInformation & Video::CodingInformation::ascf;
+            bool ascf_ = disc.m_subheader.codingInformation & Video::CodingInformation::ascf;
             if(ascf >= 0 && ascf != ascf_)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
             }
             ascf = ascf_;
 
-            bool eolf_ = disc.subheader.codingInformation & Video::CodingInformation::eolf;
+            bool eolf_ = disc.m_subheader.codingInformation & Video::CodingInformation::eolf;
             if(eolf >= 0 && eolf != eolf_)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
             }
             eolf = eolf_;
 
-            uint8_t resolution_ = (disc.subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
+            uint8_t resolution_ = (disc.m_subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
             if(resolution >= 0 && resolution != resolution_)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
             }
             resolution = resolution_;
 
-            uint8_t coding_ = disc.subheader.codingInformation & Video::CodingInformation::coding;
+            uint8_t coding_ = disc.m_subheader.codingInformation & Video::CodingInformation::coding;
             if(coding >= 0 && coding != coding_)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
@@ -400,7 +400,7 @@ void CDIFile::ExportRawVideo(const std::string& directoryPath)
             disc.GetRaw(d.data(), d.size());
             data.insert(data.end(), d.begin(), d.end());
 
-            if(disc.subheader.submode & cdieor)
+            if(disc.m_subheader.submode & cdieor)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
             }

@@ -4,17 +4,17 @@
 #include "../../cores/DS1216/DS1216.hpp"
 #include "../../cores/M48T08/M48T08.hpp"
 
-Mono3::Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, const CDIConfig& conf)
-    : Board(cdi, "Mono-III", conf)
-    , mcd212(cdi, vdscBios, vdscSize, conf.PAL)
-    , ciap(cdi)
-    , nvramMaxAddress(conf.has32KBNVRAM ? 0x330000 : 0x324000)
+Mono3::Mono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc, std::string_view boardName)
+    : CDI(boardName, config, std::move(callbacks), std::move(disc))
+    , m_mcd212(*this, systemBios, config.PAL)
+    , m_ciap(*this)
+    , m_nvramMaxAddress(config.has32KBNVRAM ? 0x330000 : 0x324000)
 {
-    slave = std::make_unique<HLE::IKAT>(cdi, conf.PAL, 0x310000, PointingDevice::Class::Maneuvering);
-    if(conf.has32KBNVRAM)
-        timekeeper = std::make_unique<DS1216>(cdi, nvram, conf.initialTime);
+    m_slave = std::make_unique<HLE::IKAT>(*this, config.PAL, 0x310000, PointingDevice::Class::Maneuvering);
+    if(config.has32KBNVRAM)
+        m_timekeeper = std::make_unique<DS1216>(*this, nvram, config.initialTime);
     else
-        timekeeper = std::make_unique<M48T08>(cdi, nvram, conf.initialTime);
+        m_timekeeper = std::make_unique<M48T08>(*this, nvram, config.initialTime);
     Reset(true);
 }
 
@@ -24,36 +24,36 @@ Mono3::~Mono3()
 
 void Mono3::Reset(const bool resetCPU)
 {
-    mcd212.Reset();
+    m_mcd212.Reset();
     if(resetCPU)
-        cpu.Reset();
+        m_cpu.Reset();
 }
 
 void Mono3::IncrementTime(const double ns)
 {
-    Board::IncrementTime(ns);
-    mcd212.IncrementTime(ns);
-    ciap.IncrementTime(ns);
+    CDI::IncrementTime(ns);
+    m_mcd212.IncrementTime(ns);
+    m_ciap.IncrementTime(ns);
 }
 
 uint32_t Mono3::GetTotalFrameCount()
 {
-    return mcd212.totalFrameCount;
+    return m_mcd212.totalFrameCount;
 }
 
 const OS9::BIOS& Mono3::GetBIOS() const
 {
-    return mcd212.BIOS;
+    return m_mcd212.BIOS;
 }
 
-std::vector<InternalRegister> Mono3::GetInternalRegisters()
+std::vector<InternalRegister> Mono3::GetVDSCInternalRegisters()
 {
-    return mcd212.GetInternalRegisters();
+    return m_mcd212.GetInternalRegisters();
 }
 
-std::vector<InternalRegister> Mono3::GetControlRegisters()
+std::vector<InternalRegister> Mono3::GetVDSCControlRegisters()
 {
-    return mcd212.GetControlRegisters();
+    return m_mcd212.GetControlRegisters();
 }
 
 uint32_t Mono3::GetRAMSize() const
@@ -63,35 +63,35 @@ uint32_t Mono3::GetRAMSize() const
 
 RAMBank Mono3::GetRAMBank1() const
 {
-    return mcd212.GetRAMBank1();
+    return m_mcd212.GetRAMBank1();
 }
 
 RAMBank Mono3::GetRAMBank2() const
 {
-    return mcd212.GetRAMBank2();
+    return m_mcd212.GetRAMBank2();
 }
 
 const Video::Plane& Mono3::GetScreen()
 {
-    return mcd212.GetScreen();
+    return m_mcd212.GetScreen();
 }
 
 const Video::Plane& Mono3::GetPlaneA()
 {
-    return mcd212.GetPlaneA();
+    return m_mcd212.GetPlaneA();
 }
 
 const Video::Plane& Mono3::GetPlaneB()
 {
-    return mcd212.GetPlaneB();
+    return m_mcd212.GetPlaneB();
 }
 
 const Video::Plane& Mono3::GetBackground()
 {
-    return mcd212.GetBackground();
+    return m_mcd212.GetBackground();
 }
 
 const Video::Plane& Mono3::GetCursor()
 {
-    return mcd212.GetCursor();
+    return m_mcd212.GetCursor();
 }

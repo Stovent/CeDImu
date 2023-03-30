@@ -3,27 +3,79 @@
 
 #include "CDIConfig.hpp"
 #include "CDIDisc.hpp"
-#include "boards/Board.hpp"
 #include "common/Callbacks.hpp"
+#include "cores/IRTC.hpp"
+#include "cores/ISlave.hpp"
+#include "cores/SCC68070/SCC68070.hpp"
+#include "OS9/BIOS.hpp"
 
 #include <memory>
 #include <span>
+#include <string_view>
 
+class Mono3;
+class SCC68070;
+
+/** \brief Base class for a CD-i player.
+ */
 class CDI
 {
 public:
-    CDIConfig config; /**< Configuration of the CDI context, only read when loading a board. */
-    CDIDisc disc; /**< CDI disc, to be loaded independantly from the board. */
-    std::unique_ptr<Board> board; /**< The board representing the CDI player model. */
-    Callbacks callbacks; /**< The user callbacks. */
+    const std::string m_boardName; /**< Name of the hardware architecture (see http://icdia.co.uk/players/comparison.html). */
+    const CDIConfig m_config; /**< Configuration of the CDI context. */
+    CDIDisc m_disc; /**< CDI disc. */
+    Callbacks m_callbacks; /**< The user callbacks. */
+
+    SCC68070 m_cpu; /**< The main CPU. */
+    std::unique_ptr<ISlave> m_slave; /**< The slave processor. */
+    std::unique_ptr<IRTC> m_timekeeper; /**< The NVRAM chip. */
+
+    static std::unique_ptr<CDI> NewCDI(Boards board, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewMono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewMono4(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewRoboco(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
 
     CDI(const CDI&) = delete;
-    explicit CDI(const CDIConfig& conf = defaultConfig, const Callbacks& calls = Callbacks());
-    CDI(const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, Boards brd, const CDIConfig& conf = defaultConfig, const Callbacks& calls = Callbacks());
-    ~CDI();
+    CDI& operator=(const CDI&) = delete;
 
-    bool LoadBoard(const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, Boards boardDetect);
-    void UnloadBoard();
+    CDI(CDI&&) = default;
+    CDI& operator=(CDI&&) = default;
+
+    virtual ~CDI();
+
+    virtual uint32_t GetRAMSize() const = 0;
+    virtual RAMBank GetRAMBank1() const = 0;
+    virtual RAMBank GetRAMBank2() const = 0;
+    virtual const uint8_t* GetPointer(uint32_t addr) const;
+
+    virtual uint32_t GetTotalFrameCount() = 0;
+    virtual const OS9::BIOS& GetBIOS() const = 0;
+
+    virtual std::vector<InternalRegister> GetVDSCInternalRegisters() = 0;
+    virtual std::vector<InternalRegister> GetVDSCControlRegisters() = 0;
+    virtual const Video::Plane& GetScreen() = 0;
+    virtual const Video::Plane& GetPlaneA() = 0;
+    virtual const Video::Plane& GetPlaneB() = 0;
+    virtual const Video::Plane& GetBackground() = 0;
+    virtual const Video::Plane& GetCursor() = 0;
+
+protected:
+    friend Mono3;
+    friend SCC68070;
+
+    CDI() = delete;
+    CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());
+
+    virtual void Reset(bool resetCPU) = 0;
+    virtual void IncrementTime(double ns);
+
+    virtual uint8_t  GetByte(uint32_t addr, uint8_t flags = Trigger | Log) = 0;
+    virtual uint16_t GetWord(uint32_t addr, uint8_t flags = Trigger | Log) = 0;
+    virtual uint32_t GetLong(uint32_t addr, uint8_t flags = Trigger | Log) = 0;
+
+    virtual void SetByte(uint32_t addr, uint8_t  data, uint8_t flags = Trigger | Log) = 0;
+    virtual void SetWord(uint32_t addr, uint16_t data, uint8_t flags = Trigger | Log) = 0;
+    virtual void SetLong(uint32_t addr, uint32_t data, uint8_t flags = Trigger | Log) = 0;
 };
 
 #endif // CDI_CDI_HPP

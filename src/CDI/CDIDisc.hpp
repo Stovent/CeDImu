@@ -50,12 +50,17 @@ enum SubmodeBits : uint8_t
 class CDIDisc
 {
 public:
-    std::string mainModule;
-    std::string gameName;
+    std::string m_mainModule;
+    std::string m_gameName;
 
-    CDIDisc() : mainModule(), gameName(), disc(), header(), subheader(), rootDirectory(1, "/", 0, 1, 1) {}
+    CDIDisc();
+    explicit CDIDisc(const std::string& filename);
+
     CDIDisc(const CDIDisc&) = delete;
-    CDIDisc(const CDIDisc&&) = delete;
+    CDIDisc& operator=(const CDIDisc&) = delete;
+
+    CDIDisc(CDIDisc&&) = default;
+    CDIDisc& operator=(CDIDisc&&) = default;
 
     bool Open(const std::string& filename);
     bool IsOpen() const;
@@ -76,10 +81,10 @@ private:
     friend CDIFile;
     friend CDIDirectory;
 
-    std::ifstream disc;
-    DiscHeader header;
-    DiscSubheader subheader;
-    CDIDirectory rootDirectory;
+    std::ifstream m_disc;
+    DiscHeader m_header;
+    DiscSubheader m_subheader;
+    CDIDirectory m_rootDirectory;
 
     bool LoadFileSystem();
 
@@ -97,8 +102,8 @@ private:
     uint32_t GetLong();
     std::string GetString(uint16_t length = 128, const char delim = ' ');
 
-    inline bool IsEmptySector() const { return !(subheader.submode & cdiany) && !subheader.channelNumber && !subheader.codingInformation; };
-    inline uint16_t GetSectorDataSize() const { return (subheader.submode & cdiform) ? 2324 : 2048; }
+    inline bool IsEmptySector() const { return !(m_subheader.submode & cdiany) && !m_subheader.channelNumber && !m_subheader.codingInformation; };
+    inline uint16_t GetSectorDataSize() const { return (m_subheader.submode & cdiform) ? 2324 : 2048; }
 };
 
 #endif // CDI_CDIDISC_HPP

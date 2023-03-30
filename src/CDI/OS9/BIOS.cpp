@@ -42,14 +42,13 @@ ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
 
 /** \brief OS9 BIOS.
  * \param bios The BIOS data.
- * \param sz The size of the BIOS data.
- * \param bs The base address of the BIOS in the memory map.
+ * \param base The base address of the BIOS in the memory map.
  */
-BIOS::BIOS(const void* bios, const uint32_t sz, const uint32_t bs)
-    : base(bs)
-    , size(sz)
-    , modules()
-    , memory((uint8_t*)bios, (uint8_t*)bios + size)
+BIOS::BIOS(std::span<const uint8_t> bios, const uint32_t base)
+    : m_base(base)
+    , m_size(bios.size())
+    , m_modules()
+    , m_memory(bios.begin(), bios.end())
 {
     LoadModules();
 }
@@ -60,18 +59,18 @@ BIOS::~BIOS()
 
 void BIOS::LoadModules()
 {
-    for(uint32_t i = 0; i < size; i += 2)
+    for(uint32_t i = 0; i < m_size; i += 2)
     {
-        if(memory[i] == 0x4A && memory[i + 1] == 0xFC)
+        if(m_memory[i] == 0x4A && m_memory[i + 1] == 0xFC)
         {
             uint16_t parity = 0xFFFF; // Header Parity Check
             for(int j = 0; j < 0x30; j += 2)
             {
-                const uint16_t word = (uint16_t)memory[i + j] << 8 | memory[i + j + 1];
+                const uint16_t word = (uint16_t)m_memory[i + j] << 8 | m_memory[i + j + 1];
                 parity ^= word;
             }
             if(parity == 0)
-                modules.emplace_back(&memory[i], i);
+                m_modules.emplace_back(&m_memory[i], i);
         }
     }
 }
@@ -82,7 +81,7 @@ void BIOS::LoadModules()
  */
 std::string BIOS::GetModuleNameAt(const uint32_t offset) const
 {
-    for(const ModuleHeader& header : modules)
+    for(const ModuleHeader& header : m_modules)
     {
         if(offset >= header.begin && offset < header.end)
             return header.name;
@@ -95,7 +94,7 @@ std::string BIOS::GetModuleNameAt(const uint32_t offset) const
  */
 Boards BIOS::GetBoardType() const
 {
-    const uint8_t id = memory[size - 4];
+    const uint8_t id = m_memory[m_size - 4];
     switch(id >> 4 & 0xF)
     {
     case 2: return Boards::MiniMMC;
@@ -113,11 +112,11 @@ Boards BIOS::GetBoardType() const
  */
 bool BIOS::Has8KBNVRAM() const
 {
-    for(const OS9::ModuleHeader& mod : modules)
+    for(const OS9::ModuleHeader& mod : m_modules)
     {
         if(mod.name == "nvr")
         {
-            uint16_t size = (uint16_t)memory[mod.begin + 74] << 8 | memory[mod.begin + 75];
+            uint16_t size = (uint16_t)m_memory[mod.begin + 74] << 8 | m_memory[mod.begin + 75];
             if(size == 0x1FF8) // 8KB
                 return true;
         }

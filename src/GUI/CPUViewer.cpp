@@ -86,7 +86,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
     });
     m_auiManager.AddPane(m_disassemblerList, wxAuiPaneInfo().Center().Caption("Disassembler").CloseButton(false).Floatable().Resizable());
 
-    m_cedimu.m_cdi.callbacks.SetOnLogDisassembler([&] (const LogInstruction& inst) {
+    m_cedimu.SetOnLogDisassembler([&] (const LogInstruction& inst) {
         std::lock_guard<std::mutex> lock(this->m_instructionsMutex);
         if(this->m_flushInstructions)
         {
@@ -121,13 +121,13 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
     m_auiManager.AddPane(m_uartTextCtrl, wxAuiPaneInfo().Bottom().Caption("UART out").CloseButton(false).Floatable().Resizable().BestSize(-1, 200));
     m_uartTextCtrl->Bind(wxEVT_KEY_DOWN, [&] (wxKeyEvent& event) {
         const int key = event.GetKeyCode();
-        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
         if(key < 128)
-            if(this->m_cedimu.m_cdi.board)
-                this->m_cedimu.m_cdi.board->cpu.SendUARTIn(key);
+            if(this->m_cedimu.m_cdi)
+                this->m_cedimu.m_cdi->m_cpu.SendUARTIn(key);
     });
 
-    m_cedimu.m_cdi.callbacks.SetOnUARTOut([&] (uint8_t d) {
+    m_cedimu.SetOnUARTOut([&] (uint8_t d) {
         this->m_cedimu.m_uartOut.put(d);
         if(!((this->m_lastByte == '\r' && d == '\n') || (this->m_lastByte == '\n' && d == '\r')))
         {
@@ -145,8 +145,8 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
 CPUViewer::~CPUViewer()
 {
-    m_cedimu.m_cdi.callbacks.SetOnLogDisassembler(nullptr);
-    m_cedimu.m_cdi.callbacks.SetOnUARTOut(nullptr);
+    m_cedimu.SetOnLogDisassembler(nullptr);
+    m_cedimu.SetOnUARTOut(nullptr);
     m_auiManager.UnInit();
     m_mainFrame->m_cpuViewer = nullptr;
 }
@@ -165,11 +165,11 @@ void CPUViewer::UpdateManager(wxTimerEvent&)
 
 void CPUViewer::UpdateInternal()
 {
-    std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-    if(!m_cedimu.m_cdi.board)
+    std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
+    if(!m_cedimu.m_cdi)
         return;
 
-    std::vector<InternalRegister> internal = m_cedimu.m_cdi.board->cpu.GetInternalRegisters();
+    std::vector<InternalRegister> internal = m_cedimu.m_cdi->m_cpu.GetInternalRegisters();
     long i = 0;
     if(internal.size() != (size_t)m_internalList->GetItemCount())
     {
@@ -193,11 +193,11 @@ void CPUViewer::UpdateInternal()
 
 void CPUViewer::UpdateRegisters()
 {
-    std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-    if(!m_cedimu.m_cdi.board)
+    std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
+    if(!m_cedimu.m_cdi)
         return;
 
-    std::map<SCC68070::Register, uint32_t> cpuRegs = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
+    std::map<SCC68070::Register, uint32_t> cpuRegs = m_cedimu.m_cdi->m_cpu.GetCPURegisters();
     int i = 0;
     for(std::pair<SCC68070::Register, uint32_t> reg : cpuRegs)
     {

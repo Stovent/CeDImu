@@ -33,10 +33,10 @@ namespace HLE
 
 #define SET_INT(reg) registers[ISR] |= INT_MASK[reg]; \
                      if(registers[IMR] & INT_MASK[reg]) \
-                         cdi.board->cpu.IN2();
+                         cdi.m_cpu.IN2();
 
 #define DELAY_RSP(channel, rsp) { delayedRsp[channel] = &rsp; \
-                                delayedRspFrame[channel] = cdi.board->GetTotalFrameCount() + 2; }
+                                delayedRspFrame[channel] = cdi.GetTotalFrameCount() + 2; }
 
 IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Class deviceClass)
     : ISlave(idc, busbase, deviceClass)
@@ -65,7 +65,7 @@ void IKAT::IncrementTime(const size_t ns)
 
     for(int channel = CHA; channel <= CHD; channel++)
     {
-        if(delayedRsp[channel] != nullptr && delayedRspFrame[channel] == cdi.board->GetTotalFrameCount())
+        if(delayedRsp[channel] != nullptr && delayedRspFrame[channel] == cdi.GetTotalFrameCount())
         {
             channelOut[channel].clear();
             channelOut[channel].insert(channelOut[channel].begin(), delayedRsp[channel]->begin(), delayedRsp[channel]->end());
@@ -97,16 +97,16 @@ uint8_t IKAT::GetByte(const uint8_t addr)
             UNSET_REMTY(CHA_SR + channel)
     }
 
-    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Get", getPortName(addr), cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
+    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+            cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Get", getPortName(addr), cdi.m_cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
 
     return registers[addr];
 }
 
 void IKAT::SetByte(const uint8_t addr, const uint8_t data)
 {
-    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Set", getPortName(addr), cdi.board->cpu.currentPC, busBase + (addr << 1) + 1, data});)
+    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+            cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Set", getPortName(addr), cdi.m_cpu.currentPC, busBase + (addr << 1) + 1, data});)
 
     if(addr == IMR)
         registers[addr] = data;

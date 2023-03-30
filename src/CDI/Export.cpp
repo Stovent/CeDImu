@@ -15,9 +15,9 @@ bool CDIDisc::ExportAudio(const std::string& path)
     if(!IsOpen())
         return false;
 
-    std::string currentPath = path + "/" + gameName + "/audio/";
+    std::string currentPath = path + "/" + m_gameName + "/audio/";
 
-    rootDirectory.ExportAudio(currentPath);
+    m_rootDirectory.ExportAudio(currentPath);
 
     return true;
 }
@@ -35,9 +35,9 @@ bool CDIDisc::ExportFiles(const std::string& path)
     ExportSectorsInfo(path);
     ExportFileSystem(path);
 
-    std::string currentPath = path + "/" + gameName + "/files/";
+    std::string currentPath = path + "/" + m_gameName + "/files/";
 
-    rootDirectory.ExportFiles(currentPath);
+    m_rootDirectory.ExportFiles(currentPath);
 
     return true;
 }
@@ -52,12 +52,12 @@ bool CDIDisc::ExportFileSystem(const std::string& path)
     if(!IsOpen())
         return false;
 
-    std::string dir = path + "/" + gameName + "/";
+    std::string dir = path + "/" + m_gameName + "/";
     std::filesystem::create_directories(dir);
 
     std::ofstream out(dir + "files_info.txt");
 
-    out << rootDirectory.GetChildrenTree().str();
+    out << m_rootDirectory.GetChildrenTree().str();
 
     out.close();
 
@@ -74,9 +74,9 @@ bool CDIDisc::ExportVideo(const std::string& path)
     if(!IsOpen())
         return false;
 
-    std::string currentPath = path + "/" + gameName + "/video/";
+    std::string currentPath = path + "/" + m_gameName + "/video/";
 
-    rootDirectory.ExportVideo(currentPath);
+    m_rootDirectory.ExportVideo(currentPath);
 
     return true;
 }
@@ -91,9 +91,9 @@ bool CDIDisc::ExportRawVideo(const std::string& path)
     if(!IsOpen())
         return false;
 
-    std::string currentPath = path + "/" + gameName + "/rawvideo/";
+    std::string currentPath = path + "/" + m_gameName + "/rawvideo/";
 
-    rootDirectory.ExportRawVideo(currentPath);
+    m_rootDirectory.ExportRawVideo(currentPath);
 
     return true;
 }
@@ -108,7 +108,7 @@ bool CDIDisc::ExportSectorsInfo(const std::string& path)
     if(!IsOpen())
         return false;
 
-    std::string dir = path + "/" + gameName + "/";
+    std::string dir = path + "/" + m_gameName + "/";
     std::filesystem::create_directories(dir);
 
     const uint32_t pos = Tell();
@@ -121,17 +121,17 @@ bool CDIDisc::ExportSectorsInfo(const std::string& path)
     while(Good())
     {
         out << std::right << std::setw(6) << std::to_string(LBN++) \
-            << std::setw(4) << std::to_string(header.minute) \
-            << std::setw(5) << std::to_string(header.second) \
-            << std::setw(5) << std::to_string(header.sector) \
-            << std::setw(5) << std::to_string(header.mode) \
-            << std::setw(5) << std::to_string(subheader.fileNumber) \
-            << std::setw(8) << std::to_string(subheader.channelNumber) \
-            << std::setw(9) << toBinString(subheader.submode, 8) \
-            << std::setw(11) << toBinString(subheader.codingInformation, 8) << std::endl;
+            << std::setw(4) << std::to_string(m_header.minute) \
+            << std::setw(5) << std::to_string(m_header.second) \
+            << std::setw(5) << std::to_string(m_header.sector) \
+            << std::setw(5) << std::to_string(m_header.mode) \
+            << std::setw(5) << std::to_string(m_subheader.fileNumber) \
+            << std::setw(8) << std::to_string(m_subheader.channelNumber) \
+            << std::setw(9) << toBinString(m_subheader.submode, 8) \
+            << std::setw(11) << toBinString(m_subheader.codingInformation, 8) << std::endl;
         GotoNextSector();
     }
-    disc.clear();
+    m_disc.clear();
 
     out.close();
     Seek(pos);

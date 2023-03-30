@@ -23,8 +23,8 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr)
             internal[URHR] = 0;
 
         lock.unlock();
-        if(cdi.callbacks.HasOnLogDisassembler())
-            cdi.callbacks.OnLogDisassembler({currentPC, "", "URHR: 0x" + toHex(internal[URHR])}); // this or data ?
+        if(cdi.m_callbacks.HasOnLogDisassembler())
+            cdi.m_callbacks.OnLogDisassembler({currentPC, "", "URHR: 0x" + toHex(internal[URHR])}); // this or data ?
     }
 
     return internal[addr];
@@ -60,10 +60,10 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
 
     case UTHR:
         internal[USR] |= 0x08; // set TXEMT bit
-        cdi.callbacks.OnUARTOut(data);
+        cdi.m_callbacks.OnUARTOut(data);
         internal[UTHR] = data;
-        if(cdi.callbacks.HasOnLogDisassembler())
-            cdi.callbacks.OnLogDisassembler({currentPC, "", "UTHR: 0x" + toHex(internal[UTHR])});
+        if(cdi.m_callbacks.HasOnLogDisassembler())
+            cdi.m_callbacks.OnLogDisassembler({currentPC, "", "UTHR: 0x" + toHex(internal[UTHR])});
         break;
 
     case TSR:

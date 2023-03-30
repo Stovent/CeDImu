@@ -132,7 +132,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
     });
     memoryPanelSizer->Add(m_memoryLogsList, wxSizerFlags().Expand().Proportion(1));
 
-    m_cedimu.m_cdi.callbacks.SetOnLogMemoryAccess([&] (const LogMemoryAccess& log) {
+    m_cedimu.SetOnLogMemoryAccess([&] (const LogMemoryAccess& log) {
         if((log.location == MemoryAccessLocation::CPU   && this->m_logCpu->GetValue())   ||
            (log.location == MemoryAccessLocation::BIOS  && this->m_logBios->GetValue())  ||
            (log.location == MemoryAccessLocation::RAM   && this->m_logRam->GetValue())   ||
@@ -211,7 +211,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
     });
     m_auiManager.AddPane(m_exceptionsList, wxAuiPaneInfo().Bottom().Caption("Exceptions stack").CloseButton(false).Floatable().Resizable());
 
-    m_cedimu.m_cdi.callbacks.SetOnLogException([&] (const LogSCC68070Exception& log) {
+    m_cedimu.SetOnLogException([&] (const LogSCC68070Exception& log) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
         const size_t trap = log.vector >= SCC68070::Trap0Instruction && log.vector <= SCC68070::Trap15Instruction ? ++m_trapCount : 0;
@@ -221,7 +221,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
             m_cedimu.WriteException(log, trap);
     });
 
-    m_cedimu.m_cdi.callbacks.SetOnLogRTE([&] (uint32_t pc, uint16_t format) {
+    m_cedimu.SetOnLogRTE([&] (uint32_t pc, uint16_t format) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
         for(std::vector<std::pair<size_t, LogSCC68070Exception>>::const_reverse_iterator it = this->m_exceptions.crbegin();
@@ -230,7 +230,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
             if(pc == it->second.returnAddress && it->second.vector == SCC68070::Trap0Instruction)
             {
                 size_t index = it->first;
-                const std::map<SCC68070::Register, uint32_t> registers = m_cedimu.m_cdi.board->cpu.GetCPURegisters();
+                const std::map<SCC68070::Register, uint32_t> registers = m_cedimu.m_cdi->m_cpu.GetCPURegisters();
                 const bool cc = registers.at(SCC68070::Register::SR) & 1;
                 char error[64] = {0};
                 std::string outputs;
@@ -242,7 +242,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
                 }
                 else
                 {
-                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [&] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi.board->GetPointer(addr); });
+                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [&] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi->GetPointer(addr); });
                 }
 
                 const OS9::SystemCall syscall = {it->second.systemCall.type, "", "", cc ? std::string(error) : outputs};
@@ -264,9 +264,9 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
 
 DebugFrame::~DebugFrame()
 {
-    m_cedimu.m_cdi.callbacks.SetOnLogMemoryAccess(nullptr);
-    m_cedimu.m_cdi.callbacks.SetOnLogException(nullptr);
-    m_cedimu.m_cdi.callbacks.SetOnLogRTE(nullptr);
+    m_cedimu.SetOnLogMemoryAccess(nullptr);
+    m_cedimu.SetOnLogException(nullptr);
+    m_cedimu.SetOnLogRTE(nullptr);
     m_auiManager.UnInit();
     m_mainFrame->m_debugFrame = nullptr;
 }

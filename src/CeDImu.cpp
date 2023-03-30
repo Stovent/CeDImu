@@ -53,7 +53,7 @@ bool CeDImu::OnInit()
 
 int CeDImu::OnExit()
 {
-    m_cdi.UnloadBoard();
+    m_cdi.reset();
     return 0;
 }
 
@@ -91,51 +91,78 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     else
         std::cout << "Warning: no NVRAM file associated with the system BIOS used" << std::endl;
 
-    std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
-    m_cdi.config.has32KBNVRAM = biosConfig.has32KbNvram;
-    m_cdi.config.PAL = biosConfig.PAL;
-    if(biosConfig.initialTime.size() == 0)
-        m_cdi.config.initialTime = time(NULL);
-    else
-        m_cdi.config.initialTime = stoi(biosConfig.initialTime);
+    const CDIConfig config {
+        .PAL = biosConfig.PAL,
+        .initialTime = biosConfig.initialTime.empty() ? time(NULL) : stoi(biosConfig.initialTime),
+        .has32KBNVRAM = biosConfig.has32KbNvram,
+    };
 
-    m_cdi.callbacks.SetOnSaveNVRAM([&] (const void* data, size_t size) {
+    SetOnSaveNVRAM([&] (const void* data, size_t size) {
         std::ofstream out(biosConfig.nvramFileName, std::ios::out | std::ios::binary);
         out.write((char*)data, size);
         out.close();
     });
 
-    if(!m_cdi.LoadBoard(bios.get(), biosSize, nvram, biosConfig.boardType))
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_disc.IsOpen())
+        m_cdi = CDI::NewCDI(biosConfig.boardType, std::span(bios.get(), biosSize), nvram, config, m_callbacks, std::move(m_disc));
+    else
+        m_cdi = CDI::NewCDI(biosConfig.boardType, std::span(bios.get(), biosSize), nvram, config, m_callbacks);
+
+    if(!m_cdi)
     {
         wxMessageBox("Failed to load system BIOS '" + biosConfig.biosFilePath + "': unsupported board type.");
         return false;
     }
 
-    m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
+    m_cdi->m_cpu.SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
     return true;
+}
+
+bool CeDImu::OpenDisc(const std::string& filename)
+{
+    if(m_cdi)
+        return m_cdi->m_disc.Open(filename);
+
+    return m_disc.Open(filename);
+}
+
+void CeDImu::CloseDisc()
+{
+    m_disc.Close();
+    if(m_cdi)
+        m_cdi->m_disc.Close();
+}
+
+CDIDisc& CeDImu::GetDisc()
+{
+    if(m_cdi)
+        return m_cdi->m_disc;
+
+    return m_disc;
 }
 
 void CeDImu::StartEmulation()
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
-    if(m_cdi.board)
-        m_cdi.board->cpu.Run(true);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_cpu.Run(true);
 }
 
 void CeDImu::StopEmulation()
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
-    if(m_cdi.board)
-        m_cdi.board->cpu.Stop(true);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_cpu.Stop(true);
 }
 
 void CeDImu::IncreaseEmulationSpeed()
 {
     if(m_cpuSpeed < MAX_CPU_SPEED)
     {
-        std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
-        if(m_cdi.board)
-            m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[++m_cpuSpeed]);
+        std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+        if(m_cdi)
+            m_cdi->m_cpu.SetEmulationSpeed(CPU_SPEEDS[++m_cpuSpeed]);
     }
 }
 
@@ -143,9 +170,9 @@ void CeDImu::DecreaseEmulationSpeed()
 {
     if(m_cpuSpeed > 0)
     {
-        std::lock_guard<std::recursive_mutex> lock(m_cdiBoardMutex);
-        if(m_cdi.board)
-            m_cdi.board->cpu.SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
+        std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+        if(m_cdi)
+            m_cdi->m_cpu.SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
     }
 }
 
@@ -219,4 +246,68 @@ void CeDImu::WriteMemoryAccess(const LogMemoryAccess& log)
                       << std::setw(10) << std::dec << log.data << "  0x"
                       << std::hex << log.data
                       << std::endl;
+}
+
+void CeDImu::SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback)
+{
+    m_callbacks.SetOnLogDisassembler(callback);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_callbacks.SetOnLogDisassembler(callback);
+}
+
+void CeDImu::SetOnUARTOut(const std::function<void(uint8_t)>& callback)
+{
+    m_callbacks.SetOnUARTOut(callback);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_callbacks.SetOnUARTOut(callback);
+}
+
+void CeDImu::SetOnFrameCompleted(const std::function<void(const Video::Plane&)>& callback)
+{
+    m_callbacks.SetOnFrameCompleted(callback);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_callbacks.SetOnFrameCompleted(callback);
+}
+
+void CeDImu::SetOnSaveNVRAM(const std::function<void(const void*, size_t)>& callback)
+{
+    m_callbacks.SetOnSaveNVRAM(callback);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_callbacks.SetOnSaveNVRAM(callback);
+}
+
+void CeDImu::SetOnLogICADCA(const std::function<void(Video::ControlArea, LogICADCA)>& callback)
+{
+    m_callbacks.SetOnLogICADCA(callback);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_callbacks.SetOnLogICADCA(callback);
+}
+
+void CeDImu::SetOnLogMemoryAccess(const std::function<void(const LogMemoryAccess&)>& callback)
+{
+    m_callbacks.SetOnLogMemoryAccess(callback);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_callbacks.SetOnLogMemoryAccess(callback);
+}
+
+void CeDImu::SetOnLogException(const std::function<void(const LogSCC68070Exception&)>& callback)
+{
+    m_callbacks.SetOnLogException(callback);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_callbacks.SetOnLogException(callback);
+}
+
+void CeDImu::SetOnLogRTE(const std::function<void(uint32_t, uint16_t)>& callback)
+{
+    m_callbacks.SetOnLogRTE(callback);
+    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+    if(m_cdi)
+        m_cdi->m_callbacks.SetOnLogRTE(callback);
 }

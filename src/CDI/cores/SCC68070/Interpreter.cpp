@@ -31,13 +31,13 @@ void SCC68070::Interpreter()
                 }
             }
 
-            if(cdi.callbacks.HasOnLogException())
+            if(cdi.m_callbacks.HasOnLogException())
             {
                 const uint32_t returnAddress = ex.vector == 32 || ex.vector == 45 || ex.vector == 47 ? PC + 2 : PC;
                 const OS9::SystemCallType syscallType = OS9::SystemCallType(ex.vector == Trap0Instruction ? ex.data : -1);
-                const std::string inputs = ex.vector == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->cdi.board->GetPointer(addr); }) : "";
-                const OS9::SystemCall syscall = {syscallType, cdi.board->GetBIOS().GetModuleNameAt(currentPC - cdi.board->GetBIOS().base), inputs, ""};
-                cdi.callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
+                const std::string inputs = ex.vector == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->cdi.GetPointer(addr); }) : "";
+                const OS9::SystemCall syscall = {syscallType, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOS().m_base), inputs, ""};
+                cdi.m_callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
             }
 //            DumpCPURegisters();
             executionCycles += ProcessException(ex.vector);
@@ -57,10 +57,10 @@ void SCC68070::Interpreter()
             try {
                 currentPC = PC;
                 currentOpcode = GetNextWord(Trigger);
-                if(cdi.callbacks.HasOnLogDisassembler())
+                if(cdi.m_callbacks.HasOnLogDisassembler())
                 {
-                    const LogInstruction inst = {currentPC, cdi.board->GetBIOS().GetModuleNameAt(currentPC - cdi.board->GetBIOS().base), (this->*DLUT[currentOpcode])(currentPC)};
-                    cdi.callbacks.OnLogDisassembler(inst);
+                    const LogInstruction inst = {currentPC, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOS().m_base), (this->*DLUT[currentOpcode])(currentPC)};
+                    cdi.m_callbacks.OnLogDisassembler(inst);
                 }
                 executionCycles += (this->*ILUT[currentOpcode])();
             }
@@ -73,7 +73,7 @@ void SCC68070::Interpreter()
 
         const double ns = executionCycles * cycleDelay;
         IncrementTimer(ns);
-        cdi.board->IncrementTime(ns);
+        cdi.IncrementTime(ns);
 
         if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
             loop = false;

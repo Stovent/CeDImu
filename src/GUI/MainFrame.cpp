@@ -16,7 +16,7 @@
 #include <filesystem>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-    EVT_TIMER(wxID_ANY, MainFrame::UpdateUI)
+    EVT_TIMER(wxID_ANY, MainFrame::OnUpdateUI)
     EVT_CLOSE(MainFrame::OnClose)
     EVT_MENU(IDMainFrameOnOpenDisc, MainFrame::OnOpenDisc)
     EVT_MENU(IDMainFrameOnCloseDisc, MainFrame::OnCloseDisc)
@@ -133,37 +133,44 @@ void MainFrame::CreateBiosMenu()
     m_reloadCoreMenuItem->Enable(false); // In case the currently loaded BIOS is deleted from the settings.
 }
 
-void MainFrame::UpdateTitle()
+void MainFrame::OnUpdateUI(wxTimerEvent&)
 {
-    const std::string disc = m_cedimu.m_cdi.disc.gameName.length() ? m_cedimu.m_cdi.disc.gameName + " | " : "";
-    const std::string bios = m_cedimu.m_cdi.board ? m_cedimu.m_cdi.board->name + " (" + m_cedimu.m_biosName + ") | " : "";
-    SetTitle(disc + bios + "CeDImu");
+    UpdateUI();
 }
 
-void MainFrame::UpdateStatusBar()
+void MainFrame::UpdateUI()
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
-
+    std::string biosTitle;
+    std::string discTitle;
     uint64_t cycleRate = 0;
     uint32_t frameRate = 0;
-    if(m_cedimu.m_cdi.board)
-    {
-        cycleRate = m_cedimu.m_cdi.board->cpu.totalCycleCount - m_oldCycleCount;
-        m_oldCycleCount = m_cedimu.m_cdi.board->cpu.totalCycleCount;
 
-        const uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
-        frameRate = fc - m_oldFrameCount;
-        m_oldFrameCount = fc;
+    {
+        if(!m_cedimu.m_disc.m_gameName.empty())
+            discTitle = m_cedimu.m_disc.m_gameName + " | ";
+
+        std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+        if(m_cedimu.m_cdi)
+        {
+            // Title.
+            biosTitle = m_cedimu.m_cdi->m_boardName + " (" + m_cedimu.m_biosName + ") | ";
+            if(!m_cedimu.m_cdi->m_disc.m_gameName.empty())
+                discTitle = m_cedimu.m_cdi->m_disc.m_gameName + " | ";
+
+            // Status bar.
+            cycleRate = m_cedimu.m_cdi->m_cpu.totalCycleCount - m_oldCycleCount;
+            m_oldCycleCount = m_cedimu.m_cdi->m_cpu.totalCycleCount;
+
+            const uint32_t fc = m_cedimu.m_cdi->GetTotalFrameCount();
+            frameRate = fc - m_oldFrameCount;
+            m_oldFrameCount = fc;
+        }
     }
+
+    SetTitle(discTitle + biosTitle + "CeDImu");
 
     SetStatusText(std::to_string(int(CPU_SPEEDS[m_cedimu.m_cpuSpeed] * 100)) + "% (" + std::to_string(cycleRate) + " Hz)", 1);
     SetStatusText(std::to_string(m_oldFrameCount) + " / " + std::to_string(frameRate) + " FPS", 2);
-}
-
-void MainFrame::UpdateUI(wxTimerEvent&)
-{
-    UpdateTitle();
-    UpdateStatusBar();
 }
 
 void MainFrame::OnStartBios(wxCommandEvent& event)
@@ -192,26 +199,26 @@ void MainFrame::OnOpenDisc(wxCommandEvent&)
 {
     wxFileDialog fileDlg(this, wxFileSelectorPromptStr, Config::discDirectory, wxEmptyString, "Binary files (*.bin;*.iso)|*.bin;*.iso|All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if(fileDlg.ShowModal() == wxID_OK)
-        if(!m_cedimu.m_cdi.disc.Open(fileDlg.GetPath().ToStdString()))
+        if(!m_cedimu.OpenDisc(fileDlg.GetPath().ToStdString()))
             wxMessageBox("Failed to open disc");
 }
 
 void MainFrame::OnCloseDisc(wxCommandEvent&)
 {
-    m_cedimu.m_cdi.disc.Close();
+    m_cedimu.CloseDisc();
 }
 
 void MainFrame::OnScreenshot(wxCommandEvent&)
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
-    if(!m_cedimu.m_cdi.board)
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+    if(!m_cedimu.m_cdi)
         return;
 
     const bool isRunning = !m_pauseMenuItem->IsChecked();
     if(isRunning)
         m_cedimu.StopEmulation();
 
-    uint32_t fc = m_cedimu.m_cdi.board->GetTotalFrameCount();
+    uint32_t fc = m_cedimu.m_cdi->GetTotalFrameCount();
     wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "frame_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if(fileDlg.ShowModal() == wxID_OK)
         if(!m_gamePanel->SaveScreenshot(fileDlg.GetPath().ToStdString()))
@@ -250,33 +257,33 @@ void MainFrame::OnSingleStep(wxCommandEvent&)
 {
     if(m_pauseMenuItem->IsChecked())
     {
-        std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
-        if(m_cedimu.m_cdi.board)
-            m_cedimu.m_cdi.board->cpu.Run(false);
+        std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+        if(m_cedimu.m_cdi)
+            m_cedimu.m_cdi->m_cpu.Run(false);
     }
 }
 
 void MainFrame::OnFrameAdvance(wxCommandEvent&)
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
-    if(m_cedimu.m_cdi.board)
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+    if(m_cedimu.m_cdi)
     {
         m_gamePanel->m_stopOnNextFrame = true;
-        if(!m_cedimu.m_cdi.board->cpu.IsRunning())
-            m_cedimu.m_cdi.board->cpu.Run(true);
+        if(!m_cedimu.m_cdi->m_cpu.IsRunning())
+            m_cedimu.m_cdi->m_cpu.Run(true);
     }
 }
 
 void MainFrame::OnIncreaseSpeed(wxCommandEvent&)
 {
     m_cedimu.IncreaseEmulationSpeed();
-    UpdateStatusBar();
+    UpdateUI();
 }
 
 void MainFrame::OnDecreaseSpeed(wxCommandEvent&)
 {
     m_cedimu.DecreaseEmulationSpeed();
-    UpdateStatusBar();
+    UpdateUI();
 }
 
 void MainFrame::OnReloadCore(wxCommandEvent&)
@@ -309,13 +316,15 @@ void MainFrame::OnResizeView(wxCommandEvent&)
 
 void MainFrame::OnExportAudio(wxCommandEvent&)
 {
-    if(m_cedimu.m_cdi.disc.IsOpen())
+    CDIDisc& disc = m_cedimu.GetDisc();
+
+    if(disc.IsOpen())
     {
         wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
         try
         {
             if(dirDlg.ShowModal() == wxID_OK)
-                m_cedimu.m_cdi.disc.ExportAudio(dirDlg.GetPath().ToStdString());
+                disc.ExportAudio(dirDlg.GetPath().ToStdString());
         }
         catch(const std::filesystem::filesystem_error& e)
         {
@@ -331,13 +340,15 @@ void MainFrame::OnExportAudio(wxCommandEvent&)
 
 void MainFrame::OnExportFiles(wxCommandEvent&)
 {
-    if(m_cedimu.m_cdi.disc.IsOpen())
+    CDIDisc& disc = m_cedimu.GetDisc();
+
+    if(disc.IsOpen())
     {
         wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
         try
         {
             if(dirDlg.ShowModal() == wxID_OK)
-                m_cedimu.m_cdi.disc.ExportFiles(dirDlg.GetPath().ToStdString());
+                disc.ExportFiles(dirDlg.GetPath().ToStdString());
         }
         catch(const std::filesystem::filesystem_error& e)
         {
@@ -353,13 +364,15 @@ void MainFrame::OnExportFiles(wxCommandEvent&)
 
 void MainFrame::OnExportVideo(wxCommandEvent&)
 {
-    if(m_cedimu.m_cdi.disc.IsOpen())
+    CDIDisc& disc = m_cedimu.GetDisc();
+
+    if(disc.IsOpen())
     {
         wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
         try
         {
             if(dirDlg.ShowModal() == wxID_OK)
-                m_cedimu.m_cdi.disc.ExportVideo(dirDlg.GetPath().ToStdString());
+                disc.ExportVideo(dirDlg.GetPath().ToStdString());
         }
         catch(const std::filesystem::filesystem_error& e)
         {
@@ -375,13 +388,15 @@ void MainFrame::OnExportVideo(wxCommandEvent&)
 
 void MainFrame::OnExportRawVideo(wxCommandEvent&)
 {
-    if(m_cedimu.m_cdi.disc.IsOpen())
+    CDIDisc& disc = m_cedimu.GetDisc();
+
+    if(disc.IsOpen())
     {
         wxDirDialog dirDlg(this, wxDirSelectorPromptStr, wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
         try
         {
             if(dirDlg.ShowModal() == wxID_OK)
-                m_cedimu.m_cdi.disc.ExportRawVideo(dirDlg.GetPath().ToStdString());
+                disc.ExportRawVideo(dirDlg.GetPath().ToStdString());
         }
         catch(const std::filesystem::filesystem_error& e)
         {

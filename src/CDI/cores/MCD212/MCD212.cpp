@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <cstring>
 
-MCD212::MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL)
-    : BIOS(bios, size, 0x400000)
+MCD212::MCD212(CDI& idc, std::span<const uint8_t> systemBios, const bool PAL)
+    : BIOS(systemBios, 0x400000)
     , totalFrameCount(0)
     , cdi(idc)
     , isPAL(PAL)
@@ -83,8 +83,8 @@ void MCD212::ExecuteICA1()
     {
         const uint32_t ica = GetLong(addr);
 
-        if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(Video::ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
+        if(cdi.m_callbacks.HasOnLogICADCA())
+            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
         addr += 4;
 
         switch(ica >> 28)
@@ -114,7 +114,7 @@ void MCD212::ExecuteICA1()
         case 6: // INTERRUPT
             SetIT1();
             if(!GetDI1())
-                cdi.board->cpu.INT1();
+                cdi.m_cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -150,8 +150,8 @@ void MCD212::ExecuteDCA1()
         const uint32_t dca = GetLong(addr);
         SetDCP1(addr + 4);
 
-        if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(Video::ControlArea::DCA1, { totalFrameCount + 1, lineNumber, dca });
+        if(cdi.m_callbacks.HasOnLogICADCA())
+            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, { totalFrameCount + 1, lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -180,7 +180,7 @@ void MCD212::ExecuteDCA1()
         case 6: // INTERRUPT
             SetIT1();
             if(!GetDI1())
-                cdi.board->cpu.INT1();
+                cdi.m_cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -216,8 +216,8 @@ void MCD212::ExecuteICA2()
     {
         const uint32_t ica = GetLong(addr);
 
-        if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(Video::ControlArea::ICA2, { totalFrameCount + 1, 0, ica });
+        if(cdi.m_callbacks.HasOnLogICADCA())
+            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA2, { totalFrameCount + 1, 0, ica });
         addr += 4;
 
         switch(ica >> 28)
@@ -247,7 +247,7 @@ void MCD212::ExecuteICA2()
         case 6: // INTERRUPT
             SetIT2();
             if(!GetDI2())
-                cdi.board->cpu.INT1();
+                cdi.m_cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
@@ -276,8 +276,8 @@ void MCD212::ExecuteDCA2()
         const uint32_t dca = GetLong(addr);
         SetDCP2(addr + 4);
 
-        if(cdi.callbacks.HasOnLogICADCA())
-            cdi.callbacks.OnLogICADCA(Video::ControlArea::DCA2, { totalFrameCount + 1, lineNumber, dca });
+        if(cdi.m_callbacks.HasOnLogICADCA())
+            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, { totalFrameCount + 1, lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -306,7 +306,7 @@ void MCD212::ExecuteDCA2()
         case 6: // INTERRUPT
             SetIT2();
             if(!GetDI2())
-                cdi.board->cpu.INT1();
+                cdi.m_cpu.INT1();
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS

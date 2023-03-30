@@ -3,6 +3,27 @@
 
 #include <cstring>
 
+CDIDisc::CDIDisc()
+    : m_mainModule()
+    , m_gameName()
+    , m_disc()
+    , m_header()
+    , m_subheader()
+    , m_rootDirectory(1, "/", 0, 1, 1)
+{
+}
+
+CDIDisc::CDIDisc(const std::string& filename)
+    : m_mainModule()
+    , m_gameName()
+    , m_disc()
+    , m_header()
+    , m_subheader()
+    , m_rootDirectory(1, "/", 0, 1, 1)
+{
+    Open(filename);
+}
+
 /** \brief Open a disc.
  *
  * \param  filename The path to the file to open.
@@ -12,8 +33,8 @@ bool CDIDisc::Open(const std::string& filename)
 {
     Close();
 
-    disc.open(filename, std::ios::in | std::ios::binary);
-    if(!disc.is_open())
+    m_disc.open(filename, std::ios::in | std::ios::binary);
+    if(!m_disc.is_open())
         return false;
 
     if(!LoadFileSystem())
@@ -31,19 +52,19 @@ bool CDIDisc::Open(const std::string& filename)
  */
 bool CDIDisc::IsOpen() const
 {
-    return disc.is_open();
+    return m_disc.is_open();
 }
 
 /** \brief Close the opened disc.
  */
 void CDIDisc::Close()
 {
-    disc.close();
-    rootDirectory.Clear();
-    mainModule = "";
-    gameName = "";
-    memset(&header, 0, sizeof(header));
-    memset(&subheader, 0, sizeof(subheader));
+    m_disc.close();
+    m_rootDirectory.Clear();
+    m_mainModule = "";
+    m_gameName = "";
+    memset(&m_header, 0, sizeof(m_header));
+    memset(&m_subheader, 0, sizeof(m_subheader));
 }
 
 /** \brief Check if the disc is readable.
@@ -52,10 +73,10 @@ void CDIDisc::Close()
  */
 bool CDIDisc::Good()
 {
-    if(disc.peek() == EOF)
+    if(m_disc.peek() == EOF)
         return false;
-    else
-        return disc.good();
+
+    return m_disc.good();
 }
 
 /** \brief Get the location on the disc of the current sector.
@@ -64,10 +85,10 @@ bool CDIDisc::Good()
 DiscTime CDIDisc::GetTime()
 {
     return {
-        header.minute,
-        header.second,
-        header.sector,
-        (header.minute * 60u * 75u) + ((header.second - 2) * 75u) + header.sector, // 75 = sectors per second, 60 = seconds per minutes
+        m_header.minute,
+        m_header.second,
+        m_header.sector,
+        (m_header.minute * 60u * 75u) + ((m_header.second - 2) * 75u) + m_header.sector, // 75 = sectors per second, 60 = seconds per minutes
         Tell(),
     };
 }
@@ -76,21 +97,21 @@ DiscTime CDIDisc::GetTime()
  */
 void CDIDisc::UpdateSectorInfo()
 {
-    const uint32_t tmp = disc.tellg();
-    disc.seekg(tmp - (tmp % 2352) + 12);
+    const uint32_t tmp = m_disc.tellg();
+    m_disc.seekg(tmp - (tmp % 2352) + 12);
     char s[8];
-    disc.read(s, 8);
+    m_disc.read(s, 8);
 
-    header.minute = PBCDToByte(s[0]);
-    header.second = PBCDToByte(s[1]);
-    header.sector = PBCDToByte(s[2]);
-    header.mode = s[3];
-    subheader.fileNumber = s[4];
-    subheader.channelNumber = s[5];
-    subheader.submode = s[6];
-    subheader.codingInformation = s[7];
+    m_header.minute = PBCDToByte(s[0]);
+    m_header.second = PBCDToByte(s[1]);
+    m_header.sector = PBCDToByte(s[2]);
+    m_header.mode = s[3];
+    m_subheader.fileNumber = s[4];
+    m_subheader.channelNumber = s[5];
+    m_subheader.submode = s[6];
+    m_subheader.codingInformation = s[7];
 
-    disc.seekg(tmp);
+    m_disc.seekg(tmp);
 }
 
 /** \brief Load every file and directory from the disc.
@@ -106,17 +127,17 @@ bool CDIDisc::LoadFileSystem()
 
     Seek(38, std::ios_base::cur); // reserved
 
-    gameName = GetString();
+    m_gameName = GetString();
 
-    Seek(256, std::ios_base::cur); // goto application identifier
+    Seek(256, std::ios_base::cur); // go to application identifier
 
-    mainModule = GetString();
+    m_mainModule = GetString();
 
     GotoLBN(lbn); //go to path table
 
     while((Tell() % 2352) < 2072) // read the directories on the whole sector
     {
-        if(disc.fail())
+        if(m_disc.fail())
             return false;
         uint8_t nameSize = GetByte();
         if(nameSize == 0)
@@ -134,14 +155,14 @@ bool CDIDisc::LoadFileSystem()
 
         if(dirname[0] == '\0')
         {
-            rootDirectory.LBN = lbn;
+            m_rootDirectory.LBN = lbn;
         }
     }
-    rootDirectory.LoadContent(*this);
+    m_rootDirectory.LoadContent(*this);
 
     Seek(pos);
 
-    if((rootDirectory.GetFile(mainModule)) == nullptr)
+    if((m_rootDirectory.GetFile(m_mainModule)) == nullptr)
         return false;
 
     return true;
@@ -157,7 +178,7 @@ bool CDIDisc::LoadFileSystem()
  */
 CDIFile* CDIDisc::GetFile(std::string path)
 {
-    return rootDirectory.GetFile(path);
+    return m_rootDirectory.GetFile(path);
 }
 
 /** \brief Get the current file cursor position.
@@ -166,7 +187,7 @@ CDIFile* CDIDisc::GetFile(std::string path)
  */
 uint32_t CDIDisc::Tell()
 {
-    return disc.tellg();
+    return m_disc.tellg();
 }
 
 /** \brief Set the file cursor position.
@@ -177,8 +198,8 @@ uint32_t CDIDisc::Tell()
  */
 bool CDIDisc::Seek(const uint32_t offset, std::ios::seekdir direction)
 {
-    disc.clear();
-    disc.seekg(offset, direction);
+    m_disc.clear();
+    m_disc.seekg(offset, direction);
     UpdateSectorInfo();
     return Good();
 }
@@ -194,8 +215,8 @@ bool CDIDisc::Seek(const uint32_t offset, std::ios::seekdir direction)
  */
 bool CDIDisc::GotoLBN(const uint32_t lbn, const uint32_t offset)
 {
-    disc.clear();
-    disc.seekg(lbn * 2352 + 24 + offset);
+    m_disc.clear();
+    m_disc.seekg(lbn * 2352 + 24 + offset);
     UpdateSectorInfo();
     return Good();
 }
@@ -217,13 +238,13 @@ bool CDIDisc::GotoNextSector(uint8_t submodeMask)
     {
         do
         {
-            disc.seekg(2376 - disc.tellg() % 2352, std::ios::cur);
+            m_disc.seekg(2376 - m_disc.tellg() % 2352, std::ios::cur);
             UpdateSectorInfo();
-        } while(!(subheader.submode & submodeMask) && Good());
+        } while(!(m_subheader.submode & submodeMask) && Good());
     }
     else
     {
-        disc.seekg(2376 - disc.tellg() % 2352, std::ios::cur);
+        m_disc.seekg(2376 - m_disc.tellg() % 2352, std::ios::cur);
         UpdateSectorInfo();
     }
     return Good();
@@ -247,18 +268,18 @@ bool CDIDisc::GetData(uint8_t* dst, uint32_t& size, const bool includeEmptySecto
     uint32_t index = 0;
     if(!includeEmptySectors && IsEmptySector())
         GotoNextSector(cdiany);
-    while(size && disc.good())
+    while(size && m_disc.good())
     {
         uint16_t length = GetSectorDataSize();
         length = (size == 2048) ? length : ((size < length) ? size : length);
-        disc.read((char*)&dst[index], length);
+        m_disc.read((char*)&dst[index], length);
         index += length;
         size -= (size < 2048) ? size : 2048;
         if(size) // to make sure GetData let the file cursor at the last read data and not at the next sector
             includeEmptySectors ? GotoNextSector() : GotoNextSector(cdiany);
     }
     size = index;
-    return disc.good();
+    return m_disc.good();
 }
 
 /** \brief Read raw data from the disc.
@@ -271,8 +292,8 @@ bool CDIDisc::GetData(uint8_t* dst, uint32_t& size, const bool includeEmptySecto
  */
 bool CDIDisc::GetRaw(uint8_t* dst, uint32_t size)
 {
-    disc.read((char*)dst, size);
-    return disc.good();
+    m_disc.read((char*)dst, size);
+    return m_disc.good();
 }
 
 /** \brief Get the next byte value.
@@ -282,7 +303,7 @@ bool CDIDisc::GetRaw(uint8_t* dst, uint32_t size)
 uint8_t CDIDisc::GetByte()
 {
     char c;
-    disc.get(c);
+    m_disc.get(c);
     return c;
 }
 
@@ -296,8 +317,8 @@ uint16_t CDIDisc::GetWord()
 {
     uint16_t var = 0;
     char c;
-    disc.get(c); var |= (uint8_t)c << 8;
-    disc.get(c); var |= (uint8_t)c;
+    m_disc.get(c); var |= (uint8_t)c << 8;
+    m_disc.get(c); var |= (uint8_t)c;
     return var;
 }
 
@@ -311,10 +332,10 @@ uint32_t CDIDisc::GetLong()
 {
     uint32_t var = 0;
     char c;
-    disc.get(c); var |= (uint8_t)c << 24;
-    disc.get(c); var |= (uint8_t)c << 16;
-    disc.get(c); var |= (uint8_t)c << 8;
-    disc.get(c); var |= (uint8_t)c;
+    m_disc.get(c); var |= (uint8_t)c << 24;
+    m_disc.get(c); var |= (uint8_t)c << 16;
+    m_disc.get(c); var |= (uint8_t)c << 8;
+    m_disc.get(c); var |= (uint8_t)c;
     return var;
 }
 
@@ -334,7 +355,7 @@ std::string CDIDisc::GetString(uint16_t length, const char delim)
 {
     char* str = new (std::nothrow) char[length];
 
-    disc.read(str, length);
+    m_disc.read(str, length);
     for(; str[--length] == delim && length;);
 
     return std::string(str, length+1);

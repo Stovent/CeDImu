@@ -325,12 +325,12 @@ uint16_t SCC68070::PeekNextWord()
 void SCC68070::ResetOperation()
 {
     RESET_INTERNAL()
-    cdi.board->Reset(false);
+    cdi.Reset(false);
 }
 
 void SCC68070::DumpCPURegisters()
 {
-    if(!cdi.callbacks.HasOnLogDisassembler())
+    if(!cdi.m_callbacks.HasOnLogDisassembler())
         return;
 
     const std::map<Register, uint32_t>& regs = GetCPURegisters();
@@ -338,7 +338,7 @@ void SCC68070::DumpCPURegisters()
     {
         char s[30];
         snprintf(s, 30, "%s: 0x%08X", CPURegisterToString(reg.first), reg.second);
-        cdi.callbacks.OnLogDisassembler({currentPC, "", s});
+        cdi.m_callbacks.OnLogDisassembler({currentPC, "", s});
     }
 }
 

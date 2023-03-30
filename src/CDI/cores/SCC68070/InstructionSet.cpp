@@ -12,8 +12,8 @@ uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
 
     if(vectorNumber == ResetSSPPC)
     {
-        SSP = cdi.board->GetLong(0, Trigger);
-        PC = cdi.board->GetLong(4, Trigger);
+        SSP = cdi.GetLong(0, Trigger);
+        PC = cdi.GetLong(4, Trigger);
         SR = 0x2700;
         USP = 0;
         stop = false;
@@ -2386,8 +2386,8 @@ uint16_t SCC68070::RTE()
         PushException(FormatError);
     }
 
-    if(cdi.callbacks.HasOnLogRTE())
-        cdi.callbacks.OnLogRTE(PC, format);
+    if(cdi.m_callbacks.HasOnLogRTE())
+        cdi.m_callbacks.OnLogRTE(PC, format);
 
     return calcTime;
 }

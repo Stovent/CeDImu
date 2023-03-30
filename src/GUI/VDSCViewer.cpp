@@ -210,14 +210,14 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(!this->m_imgPlaneA.IsOk())
             return;
 
-        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-        if(!this->m_cedimu.m_cdi.board)
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
+        if(!this->m_cedimu.m_cdi)
             return;
 
         const bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
         if(isRunning)
             this->m_cedimu.StopEmulation();
-        uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
+        uint32_t fc = this->m_cedimu.m_cdi->GetTotalFrameCount();
 
         wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "planeA_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if(fileDlg.ShowModal() == wxID_OK)
@@ -237,14 +237,14 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(!this->m_imgPlaneB.IsOk())
             return;
 
-        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-        if(!this->m_cedimu.m_cdi.board)
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
+        if(!this->m_cedimu.m_cdi)
             return;
 
         const bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
         if(isRunning)
             this->m_cedimu.StopEmulation();
-        uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
+        uint32_t fc = this->m_cedimu.m_cdi->GetTotalFrameCount();
 
         wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "planeB_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if(fileDlg.ShowModal() == wxID_OK)
@@ -264,14 +264,14 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(!this->m_imgCursor.IsOk())
             return;
 
-        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-        if(!this->m_cedimu.m_cdi.board)
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
+        if(!this->m_cedimu.m_cdi)
             return;
 
         const bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
         if(isRunning)
             this->m_cedimu.StopEmulation();
-        uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
+        uint32_t fc = this->m_cedimu.m_cdi->GetTotalFrameCount();
 
         wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "cursor_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if(fileDlg.ShowModal() == wxID_OK)
@@ -291,14 +291,14 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
         if(!this->m_imgBackgd.IsOk())
             return;
 
-        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiBoardMutex);
-        if(!this->m_cedimu.m_cdi.board)
+        std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
+        if(!this->m_cedimu.m_cdi)
             return;
 
         const bool isRunning = !this->m_mainFrame->m_pauseMenuItem->IsChecked();
         if(isRunning)
             this->m_cedimu.StopEmulation();
-        uint32_t fc = this->m_cedimu.m_cdi.board->GetTotalFrameCount();
+        uint32_t fc = this->m_cedimu.m_cdi->GetTotalFrameCount();
 
         wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "background_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if(fileDlg.ShowModal() == wxID_OK)
@@ -317,7 +317,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
     Show();
     m_updateTimer.Start(16);
 
-    m_cedimu.m_cdi.callbacks.SetOnLogICADCA([&] (Video::ControlArea area, LogICADCA inst) {
+    m_cedimu.SetOnLogICADCA([&] (Video::ControlArea area, LogICADCA inst) {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
         if(this->m_flushIcadca)
         {
@@ -349,7 +349,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
 VDSCViewer::~VDSCViewer()
 {
-    m_cedimu.m_cdi.callbacks.SetOnLogICADCA(nullptr);
+    m_cedimu.SetOnLogICADCA(nullptr);
     m_mainFrame->m_vdscViewer = nullptr;
 }
 
@@ -375,15 +375,15 @@ void VDSCViewer::UpdateNotebook(wxTimerEvent&)
 
 void VDSCViewer::UpdateRegisters()
 {
-    std::unique_lock<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
-    if(!m_cedimu.m_cdi.board)
+    std::unique_lock<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+    if(!m_cedimu.m_cdi)
     {
         m_internalRegistersList->DeleteAllItems();
         m_controlRegistersList->DeleteAllItems();
         return;
     }
 
-    std::vector<InternalRegister> iregs = m_cedimu.m_cdi.board->GetInternalRegisters();
+    std::vector<InternalRegister> iregs = m_cedimu.m_cdi->GetVDSCInternalRegisters();
     long i = 0;
     if(iregs.size() != (size_t)m_internalRegistersList->GetItemCount())
     {
@@ -404,7 +404,7 @@ void VDSCViewer::UpdateRegisters()
         }
     }
 
-    std::vector<InternalRegister> cregs = m_cedimu.m_cdi.board->GetControlRegisters();
+    std::vector<InternalRegister> cregs = m_cedimu.m_cdi->GetVDSCControlRegisters();
     i = 0;
     if(cregs.size() != (size_t)m_controlRegistersList->GetItemCount())
     {
@@ -439,12 +439,12 @@ void VDSCViewer::UpdateIcadca()
 
 void VDSCViewer::UpdatePanels()
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiBoardMutex);
-    if(!m_cedimu.m_cdi.board)
+    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+    if(!m_cedimu.m_cdi)
         return;
 
     std::lock_guard<std::mutex> lock2(m_imgMutex);
-    const Video::Plane& planeA = m_cedimu.m_cdi.board->GetPlaneA();
+    const Video::Plane& planeA = m_cedimu.m_cdi->GetPlaneA();
     m_imgPlaneA.Create(planeA.width, planeA.height);
     if(m_imgPlaneA.IsOk())
     {
@@ -457,7 +457,7 @@ void VDSCViewer::UpdatePanels()
         dc.DrawBitmap(wxBitmap(m_imgPlaneA.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
     }
 
-    const Video::Plane& planeB = m_cedimu.m_cdi.board->GetPlaneB();
+    const Video::Plane& planeB = m_cedimu.m_cdi->GetPlaneB();
     m_imgPlaneB.Create(planeB.width, planeB.height);
     if(m_imgPlaneB.IsOk())
     {
@@ -470,7 +470,7 @@ void VDSCViewer::UpdatePanels()
         dc.DrawBitmap(wxBitmap(m_imgPlaneB.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
     }
 
-    const Video::Plane& cursor = m_cedimu.m_cdi.board->GetCursor();
+    const Video::Plane& cursor = m_cedimu.m_cdi->GetCursor();
     m_imgCursor.Create(cursor.width, cursor.height);
     if(m_imgCursor.IsOk())
     {
@@ -482,7 +482,7 @@ void VDSCViewer::UpdatePanels()
         dc.DrawBitmap(wxBitmap(m_imgCursor), 0, 0);
     }
 
-    const Video::Plane& backgd = m_cedimu.m_cdi.board->GetBackground();
+    const Video::Plane& backgd = m_cedimu.m_cdi->GetBackground();
     m_imgBackgd.Create(backgd.width, backgd.height);
     if(m_imgBackgd.IsOk())
     {

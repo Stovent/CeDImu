@@ -1,7 +1,7 @@
 #include "ProgrammableTimer.hpp"
 
 /** \brief New programmable timer.
- * \param timerCallback The argument is true if output compare level is high, false for low.
+ * \param outputCompareCallback The argument is true if output compare level is high, false for low.
  */
 ProgrammableTimer::ProgrammableTimer(std::function<void(bool)> outputCompareCallback)
     : controlRegister(0)

@@ -7,6 +7,7 @@ class CDI;
 #include "../../OS9/BIOS.hpp"
 
 #include <array>
+#include <span>
 #include <vector>
 
 class MCD212
@@ -16,7 +17,7 @@ public:
     uint32_t totalFrameCount;
 
     MCD212() = delete;
-    explicit MCD212(CDI& idc, const void* bios, const uint32_t size, const bool PAL);
+    MCD212(CDI& idc, std::span<const uint8_t> systemBios, const bool PAL);
     ~MCD212();
 
     void Reset();

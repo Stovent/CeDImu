@@ -1,21 +1,23 @@
 #ifndef CDI_BOARDS_MONO3_MONO3_HPP
 #define CDI_BOARDS_MONO3_MONO3_HPP
 
-#include "../Board.hpp"
+#include "../../CDI.hpp"
 #include "../../cores/MCD212/MCD212.hpp"
 #include "../../HLE/CIAP/CIAP.hpp"
 
 #include <span>
 
-class Mono3 : public Board
+class Mono3 : public CDI
 {
-    MCD212 mcd212;
-    HLE::CIAP ciap;
-    const uint32_t nvramMaxAddress;
+    MCD212 m_mcd212;
+    HLE::CIAP m_ciap;
+    const uint32_t m_nvramMaxAddress;
 
 public:
-    Mono3(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, const CDIConfig& conf);
+    Mono3() = delete;
+    Mono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc(), std::string_view boardName = "Mono-III");
     virtual ~Mono3();
+
     virtual void Reset(const bool resetCPU) override;
     virtual void IncrementTime(const double ns) override;
 
@@ -34,8 +36,8 @@ public:
     virtual uint32_t GetTotalFrameCount() override;
     virtual const OS9::BIOS& GetBIOS() const override;
 
-    virtual std::vector<InternalRegister> GetInternalRegisters() override;
-    virtual std::vector<InternalRegister> GetControlRegisters() override;
+    virtual std::vector<InternalRegister> GetVDSCInternalRegisters() override;
+    virtual std::vector<InternalRegister> GetVDSCControlRegisters() override;
     virtual const Video::Plane& GetScreen() override;
     virtual const Video::Plane& GetPlaneA() override;
     virtual const Video::Plane& GetPlaneB() override;

@@ -74,7 +74,7 @@ DS1216::~DS1216()
     memcpy(nv, sram.data(), sram.size());
     memcpy(&nv[0x8000], clock.data(), 8);
 
-    cdi.callbacks.OnSaveNVRAM(nv, 0x8008);
+    cdi.m_callbacks.OnSaveNVRAM(nv, 0x8008);
 }
 
 /** \brief Move the internal clock to SRAM.
@@ -181,8 +181,8 @@ uint8_t DS1216::GetByte(const uint16_t addr)
 {
     if(patternCount < 0)
     {
-        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "SRAM", cdi.board->cpu.currentPC, addr, sram[addr]});)
+        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "SRAM", cdi.m_cpu.currentPC, addr, sram[addr]});)
         return sram[addr];
     }
 
@@ -190,8 +190,8 @@ uint8_t DS1216::GetByte(const uint16_t addr)
     const uint8_t shift = patternCount % 8;
     const bool bit = clock[reg] & (1 << shift);
 
-    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "clock", cdi.board->cpu.currentPC, addr, bit});)
+    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+            cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "clock", cdi.m_cpu.currentPC, addr, bit});)
 
     IncrementClockAccess();
     return bit;
@@ -201,8 +201,8 @@ void DS1216::SetByte(const uint16_t addr, const uint8_t data)
 {
     if(patternCount < 0)
     {
-        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "SRAM", cdi.board->cpu.currentPC, addr, data});)
+        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "SRAM", cdi.m_cpu.currentPC, addr, data});)
         sram[addr] = data;
         PushPattern(data & 1);
     }
@@ -212,8 +212,8 @@ void DS1216::SetByte(const uint16_t addr, const uint8_t data)
         const uint8_t shift = patternCount % 8;
         const bool bit = data & 1;
 
-        LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-                cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "clock", cdi.board->cpu.currentPC, addr, bit});)
+        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "clock", cdi.m_cpu.currentPC, addr, bit});)
 
         clock[reg] &= ~(1 << shift);
         clock[reg] |= bit << shift;

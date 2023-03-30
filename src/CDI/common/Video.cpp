@@ -1,4 +1,5 @@
 #include "Video.hpp"
+#include "utils.hpp"
 #include "../cores/MCD212/MCD212.hpp"
 
 namespace Video
@@ -28,15 +29,11 @@ uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* da
     if(codingMethod == ImageCodingMethod::DYUV)
     {
         uint32_t previous = initialDYUV;
-        for(uint16_t x = 0; x < width;)
+        for(uint16_t x = 0; x < width; x += 2)
         {
             uint16_t pixel = dataB[index++] << 8;
             pixel |= dataB[index++];
-            Video::decodeDYUV(pixel, &line[x++ * 4], previous);
-
-            previous  = line[x * 4 + 1] << 16;
-            previous |= line[x * 4 + 2] << 8;
-            previous |= line[x++ * 4 + 3];
+            Video::decodeDYUV(pixel, &line[x * 4], previous);
         }
     }
     else if(codingMethod == ImageCodingMethod::RGB555)
@@ -143,6 +140,18 @@ void decodeRGB555(const uint16_t pixel, uint8_t pixels[4])
     pixels[3] = pixel << 3 & 0xF8;
 }
 
+static void matrixRGB(int Y, int U, int V, uint8_t pixels[4])
+{
+    int y = Y * 256;
+    int u = U - 128;
+    int v = V - 128;
+
+    pixels[0] = 0xFF;
+    pixels[1] = limu8((y + 351*v) >> 8);
+    pixels[2] = limu8((y * (86*u + 179*v)) >> 8);
+    pixels[3] = limu8((y + 444*u) >> 8);
+}
+
 /** \brief Convert DYUV to ARGB.
  *
  * \param pixel The pixel to decode.
@@ -151,30 +160,24 @@ void decodeRGB555(const uint16_t pixel, uint8_t pixels[4])
  *
  * TODO: interpolate u2 and v2 with the next u1 and v1.
 */
-void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], const uint32_t previous) // static uint32_r previous ?
+void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous)
 {
-    uint8_t y1, u1, v1, y2, u2, v2, py, pu, pv;
-    u1 = (pixel & 0xF000) >> 12;
-    y1 = (pixel & 0x0F00) >> 8;
-    v1 = (pixel & 0x00F0) >> 4;
-    y2 =  pixel & 0x000F;
-    py = previous >> 16;
-    pu = previous >> 8;
-    pv = previous;
+    uint8_t u1 = pixel >> 12 & 0xF;
+    uint8_t y1 = pixel >> 8 & 0xF;
+    uint8_t v1 = pixel >> 4 & 0xF;
+    uint8_t y2 = pixel & 0xF;
+    uint8_t py = previous >> 16;
+    uint8_t pu = previous >> 8;
+    uint8_t pv = previous;
 
-    y1 = (py + dequantizer[y1]) % 256;
-    u2 = u1 = (pu + dequantizer[u1]) % 256; // Interpolation should be done after the line is drawn.
-    v2 = v1 = (pv + dequantizer[v1]) % 256; // Interpolation should be done after the line is drawn.
-    y2 = (y1 + dequantizer[y2]) % 256;
+    y1 = py + dequantizer[y1];
+    uint8_t u2 = u1 = pu + dequantizer[u1]; // Interpolation should be done after the line is drawn.
+    uint8_t v2 = v1 = pv + dequantizer[v1]; // Interpolation should be done after the line is drawn.
+    y2 = y1 + dequantizer[y2];
+    previous = (uint32_t)y2 << 16 | (uint32_t)u2 << 8 | v2;
 
-    pixels[0] = 0xFF;
-    pixels[1] = y1 + (v1 - 128) * 1.371; // R1
-    pixels[3] = y1 + (u1 - 128) * 1.733; // B1
-    pixels[2] = (y1 - 0.299 * pixels[1] - 0.114 * pixels[3]) / 0.587; // G1
-    pixels[4] = 0xFF;
-    pixels[5] = y2 + (v2 - 128) * 1.371; // R2
-    pixels[7] = y2 + (u2 - 128) * 1.733; // B2
-    pixels[6] = (y2 - 0.299 * pixels[5] - 0.114 * pixels[7]) / 0.587; // G2
+    matrixRGB(y1, u1, v1, pixels);
+    matrixRGB(y2, u2, v2, &pixels[4]);
 }
 
 /** \brief Convert CLUT color to ARGB.

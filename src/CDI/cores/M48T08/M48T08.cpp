@@ -58,7 +58,7 @@ M48T08::M48T08(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime
 M48T08::~M48T08()
 {
     ClockToSRAM();
-    cdi.callbacks.OnSaveNVRAM(sram.data(), sram.size());
+    cdi.m_callbacks.OnSaveNVRAM(sram.data(), sram.size());
 }
 
 /** \brief Move the internal clock to SRAM.
@@ -123,8 +123,8 @@ void M48T08::IncrementClock(const double ns)
  */
 uint8_t M48T08::GetByte(const uint16_t addr)
 {
-    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "Byte", cdi.board->cpu.currentPC, addr, sram[addr]});)
+    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+            cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "Byte", cdi.m_cpu.currentPC, addr, sram[addr]});)
     return sram[addr];
 }
 
@@ -138,8 +138,8 @@ uint8_t M48T08::GetByte(const uint16_t addr)
  */
 void M48T08::SetByte(const uint16_t addr, const uint8_t data)
 {
-    LOG(if(cdi.callbacks.HasOnLogMemoryAccess()) \
-            cdi.callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "Byte", cdi.board->cpu.currentPC, addr, data});)
+    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+            cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "Byte", cdi.m_cpu.currentPC, addr, data});)
     if(addr == Control)
     {
         if(data & 0x40 && !(sram[Control] & 0x40))

@@ -1,102 +1,105 @@
 #include "CDI.hpp"
-#include "boards/MiniMMC/MiniMMC.hpp"
-#include "boards/Mono2/Mono2.hpp"
 #include "boards/Mono3/Mono3.hpp"
-#include "cores/M48T08/M48T08.hpp"
-#include "OS9/BIOS.hpp"
 
-/** \brief Create a new empty CD-i context.
- * \param conf The configuration of the player.
- * \param calls The user callbacks.
- */
-CDI::CDI(const CDIConfig& conf, const Callbacks& calls)
-    : config(conf)
-    , disc()
-    , board()
-    , callbacks(calls)
-{
-}
-
-/** \brief Create a new CD-i context.
- * \param vdscBios System BIOS data.
- * \param vdscSize System BIOS data size.
- * \param nvram NVRAM data from saved file.
- * \param brd The type of board to use.
- * \param conf The configuration of the player.
- * \param calls The user callbacks.
+/** \brief Creates a new CD-i instance.
+ * \param board The type of board to use.
+ * \param systemBios System BIOS data.
+ * \param nvram The initial state of the NVRAM, or an empty span to use a clean NVRAM.
+ * \param config The player configuration.
+ * \param callbacks The user callbacks to use.
+ * \param disc The disc to load (optional).
+ * \return nullptr if it failed to initialize the new CDI.
  *
- * See description of CDI::LoadBoard.
- * On failure, CDI::board is a nullptr. On success CDI::board is a valid pointer.
- */
-CDI::CDI(const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, Boards brd, const CDIConfig& conf, const Callbacks& calls)
-    : config(conf)
-    , disc()
-    , board()
-    , callbacks(calls)
-{
-    LoadBoard(vdscBios, vdscSize, nvram, brd);
-}
-
-CDI::~CDI()
-{
-    UnloadBoard();
-    disc.Close();
-}
-
-/** \brief Loads a new player type.
- * \param vdscBios System BIOS data.
- * \param vdscSize System BIOS data size.
- * \param nvram NVRAM data from saved file, or an empty span to use default initialization.
- * \param boardDetect The type of board to use.
- * \return True if successful, false otherwise.
+ * If \p board is Boards::AutoDetect, then the board type will be guessed from the BIOS data.
+ * It may not be accurate so when possible, consider providing yourself the board type.
  *
- * On failure, CDI::board is a nullptr. On success CDI::board is a valid pointer.
- * If \p boardDetect is Boards::AutoDetect, then the board type will be guessed from the BIOS data.
- * It may not be accurate so always privilege providing yourself the board type.
+ * If you choose not to load a disc, you can load it later by accessing CDI::m_disc.
  *
  * User needs to ensure the NVRAM data size corresponds to the NVRAM size in the config (or auto-detected).
  */
-bool CDI::LoadBoard(const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, Boards boardDetect)
+std::unique_ptr<CDI> CDI::NewCDI(Boards board, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
-    UnloadBoard();
-    const OS9::BIOS bios(vdscBios, vdscSize, 0);
-
-    Boards brd;
-    if(boardDetect == Boards::AutoDetect)
+    if(board == Boards::AutoDetect)
     {
-        brd = bios.GetBoardType();
+        const OS9::BIOS bios(systemBios, 0);
+        board = bios.GetBoardType();
         config.has32KBNVRAM = !bios.Has8KBNVRAM();
     }
-    else
-        brd = boardDetect;
 
-    switch(brd)
+    switch(board)
     {
-//    case Boards::MiniMMC:
-//        board = std::make_unique<MiniMMC>(*this, vdscBios, vdscSize, config);
-//        break;
-
-//    case Boards::Mono2:
-//        board = std::make_unique<Mono2>(*this, vdscBios, vdscSize, nvram, config);
-//        break;
-
     case Boards::Mono3:
-    case Boards::Mono4:
-    case Boards::Roboco:
-        board = std::make_unique<Mono3>(*this, vdscBios, vdscSize, nvram, config);
-        break;
+        return NewMono3(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
 
-    default:
-        LOG(printf("Failed to init board: %d\n", (int)brd);)
-        board = nullptr;
+    case Boards::Mono4:
+        return NewMono4(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
+
+    case Boards::Roboco:
+        return NewRoboco(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
     }
 
-    return (bool)board;
+    return nullptr;
 }
 
-void CDI::UnloadBoard()
+/** \brief Creates a new Mono3 player.
+ * See CDI::NewCDI for a description of the parameters.
+ */
+std::unique_ptr<CDI> CDI::NewMono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
-    if(board)
-        board->cpu.Stop(true);
-    board.reset();
+    return std::make_unique<Mono3>(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
+}
+
+/** \brief Creates a new Mono4 player.
+ * See CDI::NewCDI for a description of the parameters.
+ */
+std::unique_ptr<CDI> CDI::NewMono4(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+{
+    return std::make_unique<Mono3>(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc), "Mono-IV");
+}
+
+/** \brief Creates a new Roboco player.
+ * See CDI::NewCDI for a description of the parameters.
+ */
+std::unique_ptr<CDI> CDI::NewRoboco(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+{
+    return std::make_unique<Mono3>(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc), "Roboco");
+}
+
+CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+    : m_boardName(boardName)
+    , m_config(std::move(config))
+    , m_disc(std::move(disc))
+    , m_callbacks(std::move(callbacks))
+    , m_cpu(*this, m_config.PAL ? SCC68070::PAL_FREQUENCY : SCC68070::NTSC_FREQUENCY)
+    , m_slave()
+    , m_timekeeper()
+{
+}
+
+CDI::~CDI() = default;
+
+/** \brief Returns a pointer to the given address.
+ */
+const uint8_t* CDI::GetPointer(uint32_t addr) const
+{
+    const RAMBank ram1 = GetRAMBank1();
+    const RAMBank ram2 = GetRAMBank2();
+    const OS9::BIOS& bios = GetBIOS();
+
+    if(addr >= ram1.base && addr < ram1.base + ram1.data.size())
+        return &ram1.data[addr - ram1.base];
+
+    if(addr >= ram2.base && addr < ram2.base + ram2.data.size())
+        return &ram2.data[addr - ram2.base];
+
+    if(addr >= bios.m_base && addr < bios.m_base + bios.m_size)
+        return bios(addr - bios.m_base);
+
+    return nullptr;
+}
+
+void CDI::IncrementTime(double ns)
+{
+    m_slave->IncrementTime(ns);
+    m_timekeeper->IncrementClock(ns);
 }
