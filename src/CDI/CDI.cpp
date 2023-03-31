@@ -76,7 +76,10 @@ CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDID
 {
 }
 
-CDI::~CDI() = default;
+CDI::~CDI()
+{
+    m_cpu.Stop(true);
+}
 
 /** \brief Returns a pointer to the given address.
  */

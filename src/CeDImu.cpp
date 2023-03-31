@@ -53,6 +53,8 @@ bool CeDImu::OnInit()
 
 int CeDImu::OnExit()
 {
+    if(m_cdi)
+        m_cdi->m_cpu.Stop(true);
     m_cdi.reset();
     return 0;
 }

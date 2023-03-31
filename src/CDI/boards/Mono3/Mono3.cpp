@@ -20,6 +20,7 @@ Mono3::Mono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram
 
 Mono3::~Mono3()
 {
+    m_cpu.Stop(true);
 }
 
 void Mono3::Reset(const bool resetCPU)
