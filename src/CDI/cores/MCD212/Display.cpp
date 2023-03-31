@@ -109,11 +109,11 @@ void MCD212::DrawLinePlaneA()
         {
             const Video::ImageCodingMethod codingMethod = ICM_LUT_A[controlRegisters[ImageCodingMethod] & 0x00000F];
             const uint32_t* clut = codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data();
-            bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], planeA.width, nullptr, &memory[GetVSR1()], clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
+            bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], nullptr, &memory[GetVSR1()], planeA.width, clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
         }
         else if(fileType == 2)
         {
-            bytes = Video::decodeRunLengthLine(&planeA[lineNumber * planeA.width * 4], planeA.width, &memory[GetVSR1()], CLUT.data(), GetCM1());
+            bytes = Video::decodeRunLengthLine(&planeA[lineNumber * planeA.width * 4], &memory[GetVSR1()], planeA.width, CLUT.data(), GetCM1());
         }
         else
         {
@@ -132,11 +132,11 @@ void MCD212::DrawLinePlaneB()
         if(fileType <= 1)
         {
             const Video::ImageCodingMethod codingMethod = ICM_LUT_B[controlRegisters[ImageCodingMethod] >> 8 & 0x00000F];
-            bytes = Video::decodeBitmapLine(&planeB[lineNumber * planeB.width * 4], planeB.width, &memory[GetVSR1()], &memory[GetVSR2()], &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
+            bytes = Video::decodeBitmapLine(&planeB[lineNumber * planeB.width * 4], &memory[GetVSR1()], &memory[GetVSR2()], planeB.width, &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
         }
         else if(fileType == 2)
         {
-            bytes = Video::decodeRunLengthLine(&planeB[lineNumber * planeB.width * 4], planeB.width, &memory[GetVSR2()], &CLUT[128], GetCM2());
+            bytes = Video::decodeRunLengthLine(&planeB[lineNumber * planeB.width * 4], &memory[GetVSR2()], planeB.width, &CLUT[128], GetCM2());
         }
         else
         {

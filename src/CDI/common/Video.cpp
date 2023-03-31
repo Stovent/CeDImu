@@ -1,87 +1,90 @@
 #include "Video.hpp"
 #include "utils.hpp"
-#include "../cores/MCD212/MCD212.hpp"
 
 namespace Video
 {
 
-constexpr uint8_t dequantizer[16] = {0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
+constexpr std::array<uint8_t, 16> dequantizer{0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
 uint32_t CLUT[256] = {0};
+
+constexpr std::array<int, 256> generateVToR()
+{
+    std::array<int, 256> array;
+    for(int i = 0; i < 256; i++)
+        array[i] = (351 * (i - 128)) / 256;
+    return array;
+}
+
+constexpr std::array<int, 256> generateVToG()
+{
+    std::array<int, 256> array;
+    for(int i = 0; i < 256; i++)
+        array[i] = (179 * (i - 128)) / 256;
+    return array;
+}
+
+constexpr std::array<int, 256> generateUToG()
+{
+    std::array<int, 256> array;
+    for(int i = 0; i < 256; i++)
+        array[i] = (86 * (i - 128)) / 256;
+    return array;
+}
+
+constexpr std::array<int, 256> generateUToB()
+{
+    std::array<int, 256> array;
+    for(int i = 0; i < 256; i++)
+        array[i] = (444 * (i - 128)) / 256;
+    return array;
+}
+
+static constexpr std::array<int, 256> matrixVToR = generateVToR();
+static constexpr std::array<int, 256> matrixVToG = generateVToG();
+static constexpr std::array<int, 256> matrixUToG = generateUToG();
+static constexpr std::array<int, 256> matrixUToB = generateUToB();
 
 /** \brief Decode a bitmap file line.
  *
- * \param line Where the decoded line will be written to in ARGB.
- * \param width The width of the line.
+ * \param dst Where the decoded line will be written to in ARGB.
  * \param dataA See below.
  * \param dataB See below.
+ * \param width The width of the line.
  * \param CLUTTable The CLUT table to use.
  * \param initialDYUV The initial value to be used by the DYUV decoder.
- * \param codingMethod The coding method of the file.
+ * \param icm The coding method of the file.
  * \return The number of raw bytes read from dataB (and dataA in RGB555).
+ *
+ * If \p icm is ImageCodingMethod::CLUT77 or the video plane is plane B, then sent `&CLUT[128]` as the \p CLUTTable.
  *
  * If the coding method is RGB555, dataA must contain the channel A data and dataB must contain the channel B data.
  * If it is not RGB555, dataB is the source data and dataA remain unused.
-*/
-uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const ImageCodingMethod codingMethod)
+ */
+uint16_t decodeBitmapLine(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm)
 {
-    uint16_t index = 0;
+    if(icm == ImageCodingMethod::DYUV)
+        return decodeDYUVLine(dst, dataB, width, initialDYUV);
 
-    if(codingMethod == ImageCodingMethod::DYUV)
-    {
-        uint32_t previous = initialDYUV;
-        for(uint16_t x = 0; x < width; x += 2)
-        {
-            uint16_t pixel = dataB[index++] << 8;
-            pixel |= dataB[index++];
-            Video::decodeDYUV(pixel, &line[x * 4], previous);
-        }
-    }
-    else if(codingMethod == ImageCodingMethod::RGB555)
-    {
-        for(uint16_t x = 0; x < width;)
-        {
-            uint16_t pixel = dataA[index] << 8;
-            pixel |= dataB[index++];
-            Video::decodeRGB555(pixel, &line[x++ * 4]);
-        }
-    }
-    else if(codingMethod == ImageCodingMethod::CLUT4)
-    {
-        for(uint16_t x = 0; x < width;)
-        {
-            const uint8_t color1 = dataB[index] >> 4 & 0x0F;
-            const uint8_t color2 = dataB[index++] & 0x0F;
-            Video::decodeCLUT(color1, &line[x++ * 4], CLUTTable);
-            Video::decodeCLUT(color2, &line[x++ * 4 + 1], CLUTTable);
-        }
-    }
-    else
-    {
-        const uint8_t colorMask = codingMethod == ImageCodingMethod::CLUT8 ? 0xFF : 0x7F;
-        for(uint16_t x = 0; x < width;)
-        {
-            const uint8_t color = dataB[index++] & colorMask;
-            Video::decodeCLUT(color, &line[x++ * 4], CLUTTable);
-        }
-    }
+    if(icm == ImageCodingMethod::RGB555)
+        return decodeRGB555Line(dst, dataA, dataB, width);
 
-    return index;
+    return decodeCLUTLine(dst, dataB, width, CLUTTable, icm);
 }
 
 /** \brief Decode a Run-length file line.
  *
- * \param line Where the decoded line will be written in ARGB.
- * \param width The width of the line.
+ * \param dst Where the decoded line will be written in ARGB.
  * \param data The raw input data to be decoded.
+ * \param width The width of the line.
  * \param CLUTTable The CLUT table to use.
- * \param cm true for RL3, false for RL7.
+ * \param is4BPP true for RL3, false for RL7.
  * \return The number of raw bytes read from data.
-*/
-uint16_t decodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t* data, const uint32_t* CLUTTable, const bool cm)
+ */
+uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP)
 {
     uint16_t index = 0;
 
-    if(cm) // RL3
+    if(is4BPP) // RL3
     {
         for(int x = 0; x < width;)
         {
@@ -98,8 +101,8 @@ uint16_t decodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t*
 
             for(int i = 0; i < count; i++)
             {
-                Video::decodeCLUT(color1, &line[x++ * 4], CLUTTable);
-                Video::decodeCLUT(color2, &line[x++ * 4], CLUTTable);
+                Video::decodeCLUT(color1, &dst[x++ * 4], CLUTTable);
+                Video::decodeCLUT(color2, &dst[x++ * 4], CLUTTable);
             }
         }
     }
@@ -119,8 +122,88 @@ uint16_t decodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t*
 
             for(int i = 0; i < count; i++)
             {
-                Video::decodeCLUT(color, &line[x++ * 4], CLUTTable);
+                Video::decodeCLUT(color, &dst[x++ * 4], CLUTTable);
             }
+        }
+    }
+
+    return index;
+}
+
+/** \brief Decode a RGB555 line to ARGB.
+ * \param dst Where the ARGB data will be written to.
+ * \param dataA The plane A data (high order byte of the pixel).
+ * \param dataB The plane B data (low order byte of the pixel).
+ * \param width Width of the line in pixels.
+ * \return The number of raw bytes read from each data source.
+ */
+uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width)
+{
+    uint16_t index = 0;
+
+    for(uint16_t x = 0; x < width; x++)
+    {
+        uint16_t pixel = (uint16_t)dataA[index] << 8;
+        pixel |= dataB[index++];
+        Video::decodeRGB555(pixel, &dst[x * 4]);
+    }
+
+    return index;
+}
+
+/** \brief Decode a DYUV line to ARGB.
+ * \param dst Where the ARGB data will be written to.
+ * \param data The source DYUV data.
+ * \param width Width of the line in pixels.
+ * \param initialDYUV The initial value to be used by the DYUV decoder.
+ * \return The number of raw bytes read from data.
+ */
+uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint16_t initialDYUV)
+{
+    uint16_t index = 0;
+    uint32_t previous = initialDYUV;
+
+    for(uint16_t x = 0; x < width; x += 2)
+    {
+        uint16_t pixel = (uint16_t)data[index++] << 8;
+        pixel |= data[index++];
+        Video::decodeDYUV(pixel, &dst[x * 4], previous);
+    }
+
+    return index;
+}
+
+/** \brief Decode a CLUT line to ARGB.
+ * \param dst Where the ARGB data will be written to.
+ * \param data The source CLUT data.
+ * \param width Width of the line in pixels.
+ * \param CLUTTable The CLUT to use when decoding.
+ * \param icm The coding method (non-CLUT values are ignored and treated as CLUT7).
+ * \return The number of raw bytes read from data.
+ *
+ * If \p icm is ImageCodingMethod::CLUT77 or the video plane is plane B, then sent `&CLUT[128]` as the \p CLUTTable.
+ */
+uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm)
+{
+    uint16_t index = 0;
+
+    if(icm == ImageCodingMethod::CLUT4)
+    {
+        for(uint16_t x = 0; x < width;)
+        {
+            const uint8_t color1 = data[index] >> 4;
+            const uint8_t color2 = data[index++] & 0x0F;
+            Video::decodeCLUT(color1, &dst[x++ * 4], CLUTTable);
+            Video::decodeCLUT(color2, &dst[x++ * 4], CLUTTable);
+        }
+    }
+    else
+    {
+        const uint8_t colorMask = icm == ImageCodingMethod::CLUT8 ? 0xFF : 0x7F;
+        for(uint16_t x = 0; x < width;)
+        {
+            const uint8_t color = data[index++] & colorMask;
+            Video::decodeCLUT(color, &dst[x++ * 4], CLUTTable);
         }
     }
 
@@ -131,7 +214,7 @@ uint16_t decodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t*
  *
  * \param pixel The pixel to decode.
  * \param pixels Where the pixel will be written to. pixels[0] = transparency, pixels[1] = red, pixels[2] = green, pixels[3] = blue.
-*/
+ */
 void decodeRGB555(const uint16_t pixel, uint8_t pixels[4])
 {
     pixels[0] = (pixel & 0x8000) ? 0xFF : 0;
@@ -140,40 +223,36 @@ void decodeRGB555(const uint16_t pixel, uint8_t pixels[4])
     pixels[3] = pixel << 3 & 0xF8;
 }
 
-static void matrixRGB(int Y, int U, int V, uint8_t pixels[4])
+static constexpr inline void matrixRGB(int Y, int U, int V, uint8_t pixels[4])
 {
-    int y = Y * 256;
-    int u = U - 128;
-    int v = V - 128;
-
     pixels[0] = 0xFF;
-    pixels[1] = limu8((y + 351*v) >> 8);
-    pixels[2] = limu8((y * (86*u + 179*v)) >> 8);
-    pixels[3] = limu8((y + 444*u) >> 8);
+    pixels[1] = limu8(Y + matrixVToR[V]);
+    pixels[2] = limu8(Y - (matrixUToG[U] + matrixVToG[V]));
+    pixels[3] = limu8(Y + matrixUToB[U]);
 }
 
 /** \brief Convert DYUV to ARGB.
  *
  * \param pixel The pixel to decode.
- * \param pixels Where the pixels will be written to.  pixels[0,4] = 0xFF, pixels[1,5] = red, pixels[2,6] = green, pixels[3,7] = blue.
+ * \param pixels Where the pixels will be written to. pixels[0,4] = 0xFF, pixels[1,5] = red, pixels[2,6] = green, pixels[3,7] = blue.
  * \param previous The previous pixel colors.
- *
- * TODO: interpolate u2 and v2 with the next u1 and v1.
-*/
+ */
 void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous)
 {
-    uint8_t u1 = pixel >> 12 & 0xF;
+    uint8_t u2 = pixel >> 12 & 0xF;
     uint8_t y1 = pixel >> 8 & 0xF;
-    uint8_t v1 = pixel >> 4 & 0xF;
+    uint8_t v2 = pixel >> 4 & 0xF;
     uint8_t y2 = pixel & 0xF;
     uint8_t py = previous >> 16;
     uint8_t pu = previous >> 8;
     uint8_t pv = previous;
 
     y1 = py + dequantizer[y1];
-    uint8_t u2 = u1 = pu + dequantizer[u1]; // Interpolation should be done after the line is drawn.
-    uint8_t v2 = v1 = pv + dequantizer[v1]; // Interpolation should be done after the line is drawn.
+    u2 = pu + dequantizer[u2];
+    v2 = pv + dequantizer[v2];
     y2 = y1 + dequantizer[y2];
+    uint8_t u1 = ((uint16_t)pu + (uint16_t)u2) >> 1;
+    uint8_t v1 = ((uint16_t)pv + (uint16_t)v2) >> 1;
     previous = (uint32_t)y2 << 16 | (uint32_t)u2 << 8 | v2;
 
     matrixRGB(y1, u1, v1, pixels);
@@ -186,10 +265,10 @@ void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous)
  * \param pixels Where the pixel will be written to. pixels[0] = 0xFF, pixels[1] = red, pixels[2] = green, pixels[3] = blue.
  * \param CLUTTable The CLUT table to use.
  *
- * pixel must have an offset of 128 (or passing &CLUT[128] when either:
+ * pixel must have an offset of 128 (or passing &CLUT[128]) when either:
  * - plane B is the plane being drawn.
  * - bit 22 (CLUT select) of register ImageCodingMethod is set for CLUT7+7.
-*/
+ */
 void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable)
 {
     pixels[0] = 0xFF;
@@ -206,7 +285,7 @@ void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTabl
  * \param rgb The destination RGB channel.
  *
  * A nullptr in a channel will not write to it.
-*/
+ */
 void splitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uint8_t* rgb)
 {
     if(alpha != nullptr && rgb != nullptr)
@@ -251,7 +330,7 @@ void splitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uin
  * \param yOffset The y offset in pixels where the paste will occur on dst.
  *
  * If the source does not fit in the destination, only the pixels that fit in the destination are copied.
-*/
+ */
 void paste(uint8_t* dst, const uint16_t dstWidth, const uint16_t dstHeight, const uint8_t* src, const uint16_t srcWidth, const uint16_t srcHeight, const uint16_t xOffset, const uint16_t yOffset)
 {
     for(uint16_t dy = yOffset, sy = 0; dy < dstHeight && sy < srcHeight; dy++, sy++)

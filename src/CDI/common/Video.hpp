@@ -1,6 +1,7 @@
 #ifndef CDI_COMMON_VIDEO_HPP
 #define CDI_COMMON_VIDEO_HPP
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -59,11 +60,16 @@ struct Plane : public std::vector<uint8_t>
     uint8_t* operator()(size_t line, size_t pixelSize) { return data() + line * width * pixelSize; }
 };
 
-extern const uint8_t dequantizer[16];
+extern const std::array<uint8_t, 16> dequantizer;
 extern uint32_t CLUT[256];
 
-uint16_t decodeBitmapLine(uint8_t* line, const uint16_t width, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, const uint32_t initialDYUV, const ImageCodingMethod codingMethod);
-uint16_t decodeRunLengthLine(uint8_t* line, const uint16_t width, const uint8_t* data, const uint32_t* CLUTTable, const bool cm);
+// Display file decoders.
+uint16_t decodeBitmapLine(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm);
+uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP);
+
+uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width);
+uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint16_t initialDYUV);
+uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm);
 
 // Real-Time Decoders (set pixels in ARGB format)
 void decodeRGB555(const uint16_t pixel, uint8_t pixels[4]);

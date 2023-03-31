@@ -10,7 +10,7 @@
  * \param data The PBCD to convert.
  * \return The converted PBCD to byte.
  */
-inline uint8_t PBCDToByte(const uint8_t data)
+constexpr inline uint8_t PBCDToByte(const uint8_t data)
 {
     return (data >> 4) * 10 + (data & 0x0F);
 }
@@ -23,7 +23,7 @@ inline uint8_t PBCDToByte(const uint8_t data)
  * Because PBCD are stored on one byte, if the input is greater than 99,
  * the conversion is modulo 100. e.g. a byte value of 103 or 203 will become 3 in PBCD.
  */
-inline uint8_t byteToPBCD(uint8_t data)
+constexpr inline uint8_t byteToPBCD(uint8_t data)
 {
     data %= 100;
     return ((data / 10) << 4) | (data % 10);
@@ -35,7 +35,7 @@ inline uint8_t byteToPBCD(uint8_t data)
  * \return The sign-extended number (which type is the second template parameter R).
  */
 template<typename T, typename R>
-inline R signExtend(const T data)
+constexpr inline R signExtend(const T data)
 {
     return data;
 }
@@ -45,7 +45,7 @@ inline R signExtend(const T data)
  * \param number The number to check.
  * \return true if the number is even, false if it is odd.
  */
-inline bool isEven(const int number)
+constexpr inline bool isEven(const int number)
 {
     return !(number & 1);
 }
@@ -104,7 +104,7 @@ inline uint32_t binStringToInt(const std::string& s)
  * \param data The input to truncate.
  * \return the input if if fits in the range, 0 if input is lower, 255 if input is greater.
  */
-inline uint8_t limu8(const int data)
+constexpr inline uint8_t limu8(const int data)
 {
     if(data > 255)
         return 255;
@@ -120,7 +120,7 @@ inline uint8_t limu8(const int data)
  * \param data The input to truncate.
  * \return the input if if fits in the range, INT16_MIN if input is lower, INT16_MAX if input is greater.
  */
-inline int16_t lim16(const int32_t data)
+constexpr inline int16_t lim16(const int32_t data)
 {
     if(data > INT16_MAX)
         return INT16_MAX;

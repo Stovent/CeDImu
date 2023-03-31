@@ -292,7 +292,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
         {
             while(index < data.size())
             {
-                index += Video::decodeRunLengthLine(&pixels[width * 4 * y], width, &data[index], Video::CLUT, coding & 0x3);
+                index += Video::decodeRunLengthLine(&pixels[width * 4 * y], &data[index], width, Video::CLUT, coding & 0x3);
                 y++;
                 if(y >= height)
                 {
@@ -308,7 +308,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
         {
             while(index < data.size())
             {
-                index += Video::decodeBitmapLine(&pixels[width * 4 * y], width, nullptr, &data[index], Video::CLUT, 0, codingLookUp[coding]);
+                index += Video::decodeBitmapLine(&pixels[width * 4 * y], nullptr, &data[index], width, Video::CLUT, 0x00108080, codingLookUp[coding]);
                 y++;
                 if(y >= height)
                 {
