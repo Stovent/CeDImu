@@ -13,10 +13,13 @@ namespace HLE
 class IKAT : public ISlave
 {
 public:
-    IKAT() = delete;
-    IKAT(const IKAT&) = delete;
     IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Class deviceClass);
+
+    IKAT(const IKAT&) = delete;
     IKAT& operator=(const IKAT&) = delete;
+
+    IKAT(IKAT&&) = delete;
+    IKAT& operator=(IKAT&&) = delete;
 
     virtual void UpdatePointerState() override;
     virtual void IncrementTime(const size_t ns) override;

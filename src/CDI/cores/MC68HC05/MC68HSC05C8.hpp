@@ -6,6 +6,7 @@
 #include <array>
 #include <functional>
 #include <optional>
+#include <span>
 
 class MC68HSC05C8 : protected MC68HC05
 {
@@ -22,10 +23,10 @@ public:
         TCAP, /**< Timer Capture. Only as input. */
     };
 
-    MC68HSC05C8() = delete;
-    MC68HSC05C8(const MC68HSC05C8&) = delete;
-    MC68HSC05C8(const void* internalMemory, uint16_t size, std::function<void(Port, size_t, bool)> outputPinCallback = [] (Port, size_t, bool) {});
-    ~MC68HSC05C8();
+    MC68HSC05C8(std::span<const uint8_t> internalMemory, std::function<void(Port, size_t, bool)> outputPinCallback = [] (Port, size_t, bool) {});
+
+    MC68HSC05C8(const MC68HSC05C8&) = default;
+    MC68HSC05C8(MC68HSC05C8&&) = default;
 
     void Reset() override;
     void IRQ();

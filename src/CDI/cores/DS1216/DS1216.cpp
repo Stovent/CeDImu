@@ -65,7 +65,7 @@ DS1216::DS1216(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime
 }
 
 /** \brief Destroys the timekeeper.
- * Calls the \p OnSaveNVRAM callback.
+ * Calls Callbacks::OnSaveNVRAM.
  */
 DS1216::~DS1216()
 {

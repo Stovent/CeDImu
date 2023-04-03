@@ -53,10 +53,6 @@ BIOS::BIOS(std::span<const uint8_t> bios, const uint32_t base)
     LoadModules();
 }
 
-BIOS::~BIOS()
-{
-}
-
 void BIOS::LoadModules()
 {
     for(uint32_t i = 0; i < m_size; i += 2)

@@ -35,13 +35,13 @@ public:
     static std::unique_ptr<CDI> NewMono4(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
     static std::unique_ptr<CDI> NewRoboco(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
 
+    virtual ~CDI();
+
     CDI(const CDI&) = delete;
     CDI& operator=(const CDI&) = delete;
 
-    CDI(CDI&&) = default;
-    CDI& operator=(CDI&&) = default;
-
-    virtual ~CDI();
+    CDI(CDI&&) = delete;
+    CDI& operator=(CDI&&) = delete;
 
     virtual uint32_t GetRAMSize() const = 0;
     virtual RAMBank GetRAMBank1() const = 0;

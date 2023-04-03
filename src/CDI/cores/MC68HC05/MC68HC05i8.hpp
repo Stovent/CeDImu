@@ -10,6 +10,7 @@
 #include <array>
 #include <deque>
 #include <functional>
+#include <span>
 
 class MC68HC05i8 : protected MC68HC05
 {
@@ -24,15 +25,16 @@ public:
         PortF,
         SCI1, /**< SCI receive/transmit 1. The data is the 2nd arg (pin) of the callback. */
         SCI2, /**< SCI receive/transmit 2. The data is the 2nd arg (pin) of the callback. */
-        TCMP, /**< Timer Compare. Only as output. */
-        TCAP1, /**< Timer Capture 1. Only as input. */
-        TCAP2, /**< Timer Capture 2. Only as input. */
-        M68KInterface, /**< Used when an interrupt to the CPU has to be triggered. */
+        TCMP, /**< Timer Compare. Only as output. Other arguments are unused. */
+        TCAP1, /**< Timer Capture 1. Only as input. Other arguments are unused. */
+        TCAP2, /**< Timer Capture 2. Only as input. Other arguments are unused. */
+        M68KInterface, /**< Used when an interrupt to the CPU has to be triggered. Other arguments are unused. */
     };
 
-    MC68HC05i8() = delete;
-    MC68HC05i8(const MC68HC05i8&) = delete;
-    MC68HC05i8(const void* internalMemory, uint16_t size, std::function<void(Port, size_t, bool)> outputPinCallback = [] (Port, size_t, bool) {});
+    explicit MC68HC05i8(std::span<const uint8_t> internalMemory, std::function<void(Port, size_t, bool)> outputPinCallback = [] (Port, size_t, bool) {});
+
+    MC68HC05i8(const MC68HC05i8&) = default;
+    MC68HC05i8(MC68HC05i8&&) = default;
 
     void Reset() override;
     void IRQ();

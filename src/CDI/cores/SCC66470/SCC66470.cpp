@@ -26,10 +26,6 @@ SCC66470::SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32
     memorySwapCount = 0;
 }
 
-SCC66470::~SCC66470()
-{
-}
-
 void SCC66470::Reset()
 {
     MemorySwap();

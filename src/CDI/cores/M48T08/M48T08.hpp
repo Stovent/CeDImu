@@ -11,10 +11,14 @@
 class M48T08 : public IRTC
 {
 public:
-    M48T08() = delete;
-    M48T08(M48T08&) = delete;
     explicit M48T08(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime = 0);
     ~M48T08();
+
+    M48T08(const M48T08&) = delete;
+    M48T08& operator=(const M48T08&) = delete;
+
+    M48T08(M48T08&&) = delete;
+    M48T08& operator=(M48T08&&) = delete;
 
     void IncrementClock(const double ns) override;
 

@@ -1,5 +1,19 @@
 #include "MC68HC05.hpp"
 
+MC68HC05::MC68HC05(uint16_t memorysize)
+    : memorySize(memorysize)
+    , irqPin(true)
+    , stop(false)
+    , wait(false)
+    , A(0)
+    , X(0)
+    , SP(0xFF)
+    , PC(0)
+    , CCR(0b1110'0000)
+    , maskableInterrupts()
+{
+}
+
 /** \brief Triggers the RESET pin.
  *
  * Default implementation fetches the PC from the RESET vector and sets \ref MC68HC05.wait and \ref MC68HC05.stop to false.
@@ -16,9 +30,6 @@ void MC68HC05::Reset()
  */
 size_t MC68HC05::Interpreter()
 {
-    if(wait || stop)
-        return 0;
-
     static constexpr void* ITC[256] = {
         &&BRSET0_DIR, &&BRCLR0_DIR, &&BRSET1_DIR, &&BRCLR1_DIR, &&BRSET2_DIR, &&BRCLR2_DIR, &&BRSET3_DIR, &&BRCLR3_DIR, &&BRSET4_DIR, &&BRCLR4_DIR, &&BRSET5_DIR, &&BRCLR5_DIR, &&BRSET6_DIR, &&BRCLR6_DIR, &&BRSET7_DIR, &&BRCLR7_DIR, // 0x0X
         &&BSET0_DIR,  &&BCLR0_DIR,  &&BSET1_DIR,  &&BCLR1_DIR,  &&BSET2_DIR,  &&BCLR2_DIR,  &&BSET3_DIR,  &&BCLR3_DIR,  &&BSET4_DIR,  &&BCLR4_DIR,  &&BSET5_DIR,  &&BCLR5_DIR,  &&BSET6_DIR,  &&BCLR6_DIR,  &&BSET7_DIR,  &&BCLR7_DIR,  // 0x1X
@@ -37,6 +48,9 @@ size_t MC68HC05::Interpreter()
         &&SUB_IX1,    &&CMP_IX1,    &&SBC_IX1,    &&CPX_IX1,    &&AND_IX1,    &&BIT_IX1,    &&LDA_IX1,    &&STA_IX1,    &&EOR_IX1,    &&ADC_IX1,    &&ORA_IX1,    &&ADD_IX1,    &&JMP_IX1,    &&JSR_IX1,    &&LDX_IX1,    &&STX_IX1,    // 0xEX
         &&SUB_IX,     &&CMP_IX,     &&SBC_IX,     &&CPX_IX,     &&AND_IX,     &&BIT_IX,     &&LDA_IX,     &&STA_IX,     &&EOR_IX,     &&ADC_IX,     &&ORA_IX,     &&ADD_IX,     &&JMP_IX,     &&JSR_IX,     &&LDX_IX,     &&STX_IX,     // 0xFX
     };
+
+    if(wait || stop)
+        return 0;
 
     if(!CCR[CCRI] && !maskableInterrupts.empty())
     {

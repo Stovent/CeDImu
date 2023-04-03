@@ -148,7 +148,7 @@ void MCD212::DrawLinePlaneB()
 
 void MCD212::DrawLineBackground()
 {
-    // The point is that the pixels of a line are all the same, so backgroundPlane only contains the color of each line.
+    // The pixels of a line are all the same, so backgroundPlane only contains the color of each line.
     backgroundPlane[lineNumber * 4]     = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
     backgroundPlane[lineNumber * 4 + 1] = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
     backgroundPlane[lineNumber * 4 + 2] = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
@@ -436,7 +436,7 @@ void MCD212::DecodeMosaicLineA() // TODO
         }
         else // CLUT
         {
-            Video::decodeCLUT(data[index++] + (codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000) ? 128 : 0, &pixels[x * 4], CLUT.data());
+            Video::decodeCLUT(data[index++] + ((codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000) ? 128 : 0), &pixels[x * 4], CLUT.data());
             for(uint16_t i = 1; i < GetMF12_1(); i++)
                 memcpy(&pixels[(i + x) * 4], &pixels[x * 4], 4);
             x += GetMF12_1();

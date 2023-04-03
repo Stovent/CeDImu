@@ -41,7 +41,7 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     GenerateInstructionSet();
 }
 
-/** \brief Destroy the CPU, releasing its ressources.
+/** \brief Destroy the CPU. Stops and wait for the emulation thread to stop if it is running.
  */
 SCC68070::~SCC68070()
 {

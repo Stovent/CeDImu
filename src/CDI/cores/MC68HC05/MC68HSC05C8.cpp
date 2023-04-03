@@ -1,12 +1,13 @@
 #include "MC68HSC05C8.hpp"
 
-#include <cstring>
+#include <algorithm>
+#include <stdexcept>
 
 /** \brief Creates a new MC68HSC05C8 MCU.
  *
- * \param internalMemory The initial memory of the MCU.
- * \param size The size of the \p internalMemory array. Should be 8KB.
+ * \param internalMemory The initial memory of the MCU. Should be 8192 bytes long.
  * \param outputPinCallback Called by the MCU when one of its output pin changes state or to send serial data.
+ * \throw std::length_error if internalMemory is greater than 8192.
  *
  * When the port is \ref Port::SPI, this means a SPI transfert has been done. The callback is called with this port by the master of the SPI,
  * the receiver of the SPI has to send its own byte back to its master during the callback. The byte is sent in the 2nd parameter (pin).
@@ -15,7 +16,7 @@
  * and the value sent is in the 2nd (size_t) parameter of the callback. This value can be 8 or 9 bits depending on the configuration.
  * Reciprocally, to send data to the SCI receiver, use \ref Port::SCI as the port and put the data in the 2nd parameter.
  */
-MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::function<void(Port, size_t, bool)> outputPinCallback)
+MC68HSC05C8::MC68HSC05C8(std::span<const uint8_t> internalMemory, std::function<void(Port, size_t, bool)> outputPinCallback)
     : MC68HC05(memory.size())
     , memory{0}
     , SetOutputPin(outputPinCallback)
@@ -38,12 +39,11 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     , outputCompareInhibited(false)
     , tcapPin(false)
 {
-    if(internalMemory != nullptr)
-    {
-        if(size > memory.size())
-            size = memory.size();
-        memcpy(memory.data(), internalMemory, size);
-    }
+    if(internalMemory.size() > memory.size())
+        throw std::length_error("Invalid MC68HSC05C8's internalMemory size (must not be greater than 8192 bytes).");
+
+    if(!internalMemory.empty())
+        std::copy(internalMemory.begin(), internalMemory.end(), memory.begin());
 
     Reset();
     memory[PortAData] = 0; // UUUUUUUU
@@ -56,10 +56,6 @@ MC68HSC05C8::MC68HSC05C8(const void* internalMemory, uint16_t size, std::functio
     memory[InputCaptureLow] = 0; // UUUUUUUU
     memory[OutputCompareHigh] = 0; // UUUUUUUU
     memory[OutputCompareLow] = 0; // UUUUUUUU
-}
-
-MC68HSC05C8::~MC68HSC05C8()
-{
 }
 
 void MC68HSC05C8::Reset()

@@ -11,9 +11,14 @@ public:
     PointingDevice pointingDevice;
     const uint32_t busBase;
 
-    ISlave() = delete;
     ISlave(CDI& idc, uint32_t busbase, PointingDevice::Class deviceClass) : cdi(idc), pointingDevice(*this, deviceClass), busBase(busbase) {}
-    virtual ~ISlave() {}
+    virtual ~ISlave() = default;
+
+    ISlave(const ISlave&) = delete;
+    ISlave& operator=(const ISlave&) = delete;
+
+    ISlave(ISlave&&) = delete;
+    ISlave& operator=(ISlave&&) = delete;
 
     virtual void UpdatePointerState() = 0;
     virtual void IncrementTime(const size_t ns) = 0;

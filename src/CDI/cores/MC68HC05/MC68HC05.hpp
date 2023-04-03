@@ -25,10 +25,11 @@ protected:
         CCRH,
     };
 
-    MC68HC05() = delete;
-    MC68HC05(const MC68HC05&) = delete;
-    explicit MC68HC05(uint16_t memorysize) : memorySize(memorysize), irqPin(true), stop(false), wait(false), A(0), X(0), SP(0xFF), PC(0), CCR(0b1110'0000), maskableInterrupts() {}
-    virtual ~MC68HC05() {}
+    explicit MC68HC05(uint16_t memorysize);
+    virtual ~MC68HC05() = default;
+
+    MC68HC05(const MC68HC05&) = default;
+    MC68HC05(MC68HC05&&) = default;
 
     const uint16_t memorySize;
     bool irqPin; /**< Physical state of the IRQ pin. Has to be set by the derived class. */

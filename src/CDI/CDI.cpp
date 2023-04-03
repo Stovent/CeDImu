@@ -36,9 +36,10 @@ std::unique_ptr<CDI> CDI::NewCDI(Boards board, std::span<const uint8_t> systemBi
 
     case Boards::Roboco:
         return NewRoboco(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
-    }
 
-    return nullptr;
+    default:
+        return nullptr;
+    }
 }
 
 /** \brief Creates a new Mono3 player.
@@ -76,6 +77,8 @@ CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDID
 {
 }
 
+/** \brief Destroys the CDI. Stops and wait for the emulation thread to stop if it is running.
+ */
 CDI::~CDI()
 {
     m_cpu.Stop(true);

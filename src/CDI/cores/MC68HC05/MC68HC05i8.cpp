@@ -1,10 +1,20 @@
 #include "MC68HC05i8.hpp"
 
-#include <cstring>
+#include <algorithm>
+#include <stdexcept>
 
-#define MEMSET_RANGE(beg, endIncluded, val) memset(&memory[beg], val, endIncluded - beg + 1)
+#define MEMSET_RANGE(beg, endIncluded, val) memset(&memory[(beg)], (val), (endIncluded) - (beg) + 1)
 
-MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<void(Port, size_t, bool)> outputPinCallback)
+/** \brief Creates a new MC68HC05i8 microcontroller.
+ * \param internalMemory The initial state of the MCU's memory. Should be 16384 bytes long.
+ * \param outputPinCallback The callback called by the MCU when a pin state or a peripheral changes.
+ * \throw std::length_error if internalMemory is greater than 16384.
+ *
+ * For \p outputPinCallback the first argument is the port where the pin changed, the second argument is the pin number
+ * and the third is the state of the pin (true = high, false = low).
+ * See MC68HC05i8::Port for the meaning of the peripheral arguments.
+ */
+MC68HC05i8::MC68HC05i8(std::span<const uint8_t> internalMemory, std::function<void(Port, size_t, bool)> outputPinCallback)
     : MC68HC05(memory.size())
     , memory{0}
     , SetOutputPin(outputPinCallback)
@@ -17,12 +27,11 @@ MC68HC05i8::MC68HC05i8(const void* internalMemory, uint16_t size, std::function<
     , sci1([this] (uint16_t data) { SetOutputPin(Port::SCI1, data, false); })
     , sci2([this] (uint16_t data) { SetOutputPin(Port::SCI2, data, false); })
 {
-    if(internalMemory != nullptr)
-    {
-        if(size > memory.size())
-            size = memory.size();
-        memcpy(memory.data(), internalMemory, size);
-    }
+    if(internalMemory.size() > memory.size())
+        throw std::length_error("Invalid MC68HC05i8's internalMemory size (must not be greater than 16384 bytes).");
+
+    if(!internalMemory.empty())
+        std::copy(internalMemory.begin(), internalMemory.end(), memory.begin());
 
     Reset();
     MEMSET_RANGE(PortAData, PortDData, 0);

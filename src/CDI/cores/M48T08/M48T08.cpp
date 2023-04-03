@@ -51,9 +51,9 @@ M48T08::M48T08(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime
     sram[Control] = 0;
 }
 
-/** \brief Destroy the timekeeper.
+/** \brief Destroys the timekeeper.
  *
- * Calls the \p OnSaveNVRAM callback.
+ * Calls Callbacks::OnSaveNVRAM.
  */
 M48T08::~M48T08()
 {

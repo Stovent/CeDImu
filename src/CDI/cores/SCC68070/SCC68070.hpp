@@ -132,9 +132,6 @@ public:
 
     std::vector<uint32_t> breakpoints;
 
-    SCC68070() = delete;
-    SCC68070(SCC68070&) = delete;
-    SCC68070(SCC68070&&) = delete;
     SCC68070(CDI& idc, const uint32_t clockFrequency);
     ~SCC68070();
 

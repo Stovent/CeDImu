@@ -10,10 +10,14 @@
 class DS1216 : public IRTC
 {
 public:
-    DS1216() = delete;
-    DS1216(DS1216&) = delete;
     explicit DS1216(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime = 0);
     ~DS1216();
+
+    DS1216(const DS1216&) = delete;
+    DS1216& operator=(const DS1216&) = delete;
+
+    DS1216(DS1216&&) = delete;
+    DS1216& operator=(DS1216&&) = delete;
 
     void IncrementClock(const double ns) override;
 

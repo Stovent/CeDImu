@@ -56,12 +56,6 @@ public:
     CDIDisc();
     explicit CDIDisc(const std::string& filename);
 
-    CDIDisc(const CDIDisc&) = delete;
-    CDIDisc& operator=(const CDIDisc&) = delete;
-
-    CDIDisc(CDIDisc&&) = default;
-    CDIDisc& operator=(CDIDisc&&) = default;
-
     bool Open(const std::string& filename);
     bool IsOpen() const;
     void Close();

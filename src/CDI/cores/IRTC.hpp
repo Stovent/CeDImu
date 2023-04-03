@@ -18,10 +18,14 @@ public:
     static constexpr std::time_t defaultTime = 599616000; // 1989/01/01 00:00:00
     CDI& cdi;
 
-    IRTC() = delete;
-    IRTC(IRTC&) = delete;
-    IRTC(CDI& idc) : cdi(idc) {}
+    explicit IRTC(CDI& idc) : cdi(idc) {}
     virtual ~IRTC() = default;
+
+    IRTC(const IRTC&) = delete;
+    IRTC& operator=(const IRTC&) = delete;
+
+    IRTC(IRTC&&) = delete;
+    IRTC& operator=(IRTC&&) = delete;
 
     virtual void IncrementClock(const double ns) = 0;
 

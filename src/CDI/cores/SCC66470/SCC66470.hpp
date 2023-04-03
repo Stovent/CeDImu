@@ -16,10 +16,9 @@ public:
     OS9::BIOS BIOS;
     uint32_t totalFrameCount;
 
-    SCC66470() = delete;
-    SCC66470(const SCC66470&) = delete;
     SCC66470(CDI& idc, const bool ismaster, const void* bios, const uint32_t size);
-    ~SCC66470();
+
+    SCC66470(const SCC66470&) = delete;
 
     void Reset();
     void IncrementTime(const double ns);

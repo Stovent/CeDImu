@@ -9,14 +9,15 @@
 
 class Mono3 : public CDI
 {
-    MCD212 m_mcd212;
-    HLE::CIAP m_ciap;
-    const uint32_t m_nvramMaxAddress;
-
 public:
-    Mono3() = delete;
     Mono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc(), std::string_view boardName = "Mono-III");
     virtual ~Mono3();
+
+    Mono3(const Mono3&) = delete;
+    Mono3& operator=(const Mono3&) = delete;
+
+    Mono3(Mono3&&) = delete;
+    Mono3& operator=(Mono3&&) = delete;
 
     virtual void Reset(const bool resetCPU) override;
     virtual void IncrementTime(const double ns) override;
@@ -43,6 +44,11 @@ public:
     virtual const Video::Plane& GetPlaneB() override;
     virtual const Video::Plane& GetBackground() override;
     virtual const Video::Plane& GetCursor() override;
+
+private:
+    MCD212 m_mcd212;
+    HLE::CIAP m_ciap;
+    const uint32_t m_nvramMaxAddress;
 };
 
 #endif // CDI_BOARDS_MONO3_MONO3_HPP

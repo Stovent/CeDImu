@@ -22,17 +22,13 @@ MCD212::MCD212(CDI& idc, std::span<const uint8_t> systemBios, const bool PAL)
     , controlRegisters{0}
     , CLUT{0}
     , cursorPatterns{0}
-    , regionFlags{0}
+    , regionFlags{}
     , currentRegionControl(RegionControl - 1)
     , internalRegisters{0}
     , registerCSR1R(0)
     , registerCSR2R(0)
     , lineNumber(0)
     , verticalLines(0)
-{
-}
-
-MCD212::~MCD212()
 {
 }
 
