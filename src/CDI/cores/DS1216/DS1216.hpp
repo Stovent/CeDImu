@@ -4,13 +4,15 @@
 #include "../IRTC.hpp"
 
 #include <array>
+#include <chrono>
 #include <deque>
+#include <optional>
 #include <span>
 
 class DS1216 : public IRTC
 {
 public:
-    explicit DS1216(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime = 0);
+    explicit DS1216(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time_t> initialTime);
     ~DS1216();
 
     DS1216(const DS1216&) = delete;
@@ -27,7 +29,9 @@ public:
 private:
     std::array<uint8_t, 0x8000> sram; // 32KB
     std::array<uint8_t, 8> clock;
-    Clock internalClock;
+
+    double m_nsec; /**< Counts the nanoseconds when IncrementClock() is called. */
+    std::chrono::time_point<std::chrono::system_clock> m_internalClock; /**< The SRAM internal clock. */
 
     void ClockToSRAM();
     void SRAMToClock();

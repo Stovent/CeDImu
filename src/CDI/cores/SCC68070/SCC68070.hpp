@@ -103,7 +103,6 @@ public:
         uint16_t data;
 
         Exception() = delete;
-        Exception(const Exception&) = default;
         explicit Exception(const uint8_t vec, const uint16_t d = 0) : vector(vec), priority(GetPriority(vec)), data(d) {}
 
         bool operator<(const Exception& other) const

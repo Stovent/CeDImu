@@ -147,7 +147,7 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
     // Initial timestamp
     m_initialTime = new wxTextCtrl(biosConfigPage, wxID_ANY);
     wxStaticText* initialTimeHelperText = new wxStaticText(biosConfigPage, wxID_ANY, " Initial time (in UNIX timestamp format)");
-    wxStaticText* initialTimeHelperText2 = new wxStaticText(biosConfigPage, wxID_ANY, "Leave empty to use the current time.");
+    wxStaticText* initialTimeHelperText2 = new wxStaticText(biosConfigPage, wxID_ANY, "Leave empty to use the current UTC time.");
     wxStaticText* initialTimeHelperText3 = new wxStaticText(biosConfigPage, wxID_ANY, "0 to use the previously saved time in the nvram.");
     wxStaticText* initialTimeHelperText4 = new wxStaticText(biosConfigPage, wxID_ANY, "Default is 599616000 (1989/01/01 00:00:00).");
     wxBoxSizer* initialTimeSizer = new wxBoxSizer(wxHORIZONTAL);

@@ -1,6 +1,7 @@
 #include "MC68HC05i8.hpp"
 
 #include <algorithm>
+#include <cstring>
 #include <stdexcept>
 
 #define MEMSET_RANGE(beg, endIncluded, val) memset(&memory[(beg)], (val), (endIncluded) - (beg) + 1)

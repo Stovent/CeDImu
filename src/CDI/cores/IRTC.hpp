@@ -6,12 +6,6 @@ class CDI;
 #include <cstdint>
 #include <ctime>
 
-struct Clock
-{
-    std::time_t sec;
-    double nsec;
-};
-
 class IRTC
 {
 public:

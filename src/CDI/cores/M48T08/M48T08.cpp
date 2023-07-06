@@ -5,50 +5,42 @@
 
 #include <algorithm>
 #include <fstream>
+#include <stdexcept>
 
-enum M48T08Registers
-{
-    Control = 0x1FF8,
-    Seconds,
-    Minutes,
-    Hours,
-    Day,
-    Date,
-    Month,
-    Year,
-};
-
-/** \brief Construct a new M48T08 timekeeper.
+/** \brief Constructs a new M48T08 timekeeper.
  * \param cdi A reference to the CDI context.
- * \param initialTime The timestamp to be used as the initial time.
+ * \param initialTime The UNIX timestamp to be used as the initial time.
  * \param state The initial state of the SRAM, or nullptr for empty SRAM. Must be 8192 bytes long.
+ * \throw std::invalid_argument if \p state is not 8192 bytes long.
  *
- * If \p initialTime is 0, then time will continue from the time stored in the initial state at the 8 last bytes.
+ * If \p initialTime is empty, then time will continue from the time stored in the initial state at the 8 last bytes.
+ * If \p initialTime is empty and no initial state is provided, the initial time used is IRTC::defaultTime.
  */
-M48T08::M48T08(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime)
+M48T08::M48T08(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time_t> initialTime)
     : IRTC(cdi)
-    , sram{}
-    , internalClock{initialTime, 0.0}
+    , m_sram{}
+    , m_nsec(0.0)
+    , m_internalClock(std::chrono::system_clock::from_time_t(initialTime.value_or(IRTC::defaultTime)))
 {
-    if(state.size() > 0)
+    if(!state.empty())
     {
-        std::copy(state.begin(), state.begin() + sram.size(), sram.begin());
-        if(initialTime)
+        if(state.size() != m_sram.size())
+            throw std::invalid_argument("M48T08 initial state size must be 8192 bytes");
+
+        std::copy(state.begin(), state.begin() + m_sram.size(), m_sram.begin());
+        if(initialTime.has_value())
             ClockToSRAM();
         else
             SRAMToClock();
     }
     else
     {
-        sram.fill(0xFF);
-        std::fill(sram.begin() + 0x1FF8, sram.end(), 0);
-
-        if(initialTime == 0)
-            internalClock.sec = IRTC::defaultTime;
+        std::fill(m_sram.begin(), m_sram.begin() + 0x1FF8, 0xFF);
+        std::fill(m_sram.begin() + 0x1FF8, m_sram.end(), 0);
 
         ClockToSRAM();
     }
-    sram[Control] = 0;
+    m_sram[Control] = 0;
 }
 
 /** \brief Destroys the timekeeper.
@@ -58,43 +50,52 @@ M48T08::M48T08(CDI& cdi, std::span<const uint8_t> state, std::time_t initialTime
 M48T08::~M48T08()
 {
     ClockToSRAM();
-    cdi.m_callbacks.OnSaveNVRAM(sram.data(), sram.size());
+    cdi.m_callbacks.OnSaveNVRAM(m_sram.data(), m_sram.size());
 }
 
-/** \brief Move the internal clock to SRAM.
+/** \brief Moves the internal clock to SRAM.
  */
 void M48T08::ClockToSRAM()
 {
-    if(sram[Control] & 0xC0)
+    if(m_sram[Control] & 0xC0)
         return;
 
-    const std::tm* gmt = std::gmtime(&internalClock.sec);
-    sram[Seconds] = byteToPBCD(gmt->tm_sec) | (sram[Seconds] & 0x80);
-    sram[Minutes] = byteToPBCD(gmt->tm_min);
-    sram[Hours]   = byteToPBCD(gmt->tm_hour);
-    sram[Day]     = byteToPBCD(gmt->tm_wday ? gmt->tm_wday : 7) | (sram[Day] & 0x40); // TODO: verify that 1 = monday, 0 = sunday, etc.
-    sram[Date]    = byteToPBCD(gmt->tm_mday);
-    sram[Month]   = byteToPBCD(gmt->tm_mon + 1);
-    sram[Year]    = byteToPBCD(gmt->tm_year);
+    const std::chrono::hh_mm_ss hms(m_internalClock.time_since_epoch());
+    const std::chrono::time_point<std::chrono::system_clock, std::chrono::days> days_duration = std::chrono::floor<std::chrono::days>(m_internalClock);
+    const std::chrono::year_month_day ymd(days_duration);
+    const std::chrono::weekday weekday(days_duration);
+
+    m_sram[Seconds] = byteToPBCD(hms.seconds().count()) | (m_sram[Seconds] & 0x80);
+    m_sram[Minutes] = byteToPBCD(hms.minutes().count());
+    m_sram[Hours]   = byteToPBCD(hms.hours().count() % 24);
+    m_sram[Day]     = weekday.iso_encoding() | (m_sram[Day] & 0x40); // TODO: verify that 7 = sunday.
+    m_sram[Date]    = byteToPBCD(static_cast<unsigned>(ymd.day()));
+    m_sram[Month]   = byteToPBCD(static_cast<unsigned>(ymd.month()));
+    m_sram[Year]    = byteToPBCD(static_cast<int>(ymd.year()) % 100);
 }
 
-/** \brief Move the SRAM clock into the internal clock.
+/** \brief Moves the SRAM clock into the internal clock.
  */
 void M48T08::SRAMToClock()
 {
-    std::tm gmt;
-    gmt.tm_sec  = PBCDToByte(sram[Seconds] & 0x7F);
-    gmt.tm_min  = PBCDToByte(sram[Minutes]);
-    gmt.tm_hour = PBCDToByte(sram[Hours]);
-    gmt.tm_mday = PBCDToByte(sram[Date]);
-    gmt.tm_mon  = PBCDToByte(sram[Month]) - 1;
-    gmt.tm_year = PBCDToByte(sram[Year]); gmt.tm_year += (gmt.tm_year >= 70 ? 0 : 100);
-    gmt.tm_isdst = 0;
-    internalClock.sec = std::mktime(&gmt);
-    internalClock.nsec = 0.0;
+    const std::chrono::seconds seconds = std::chrono::seconds(PBCDToByte(m_sram[Seconds] & 0x7F));
+    const std::chrono::minutes minutes = std::chrono::minutes(PBCDToByte(m_sram[Minutes] & 0x7F));
+    const std::chrono::hours hours = std::chrono::hours(PBCDToByte(m_sram[Hours] & 0x3F));
+    const std::chrono::hh_mm_ss hms(seconds + minutes + hours);
+
+    const std::chrono::day day(PBCDToByte(m_sram[Date]));
+    const std::chrono::month month(PBCDToByte(m_sram[Month]));
+    unsigned y = 1900 + PBCDToByte(m_sram[Year]); // Only the two last digit of the year are stored.
+    if(y < 1970) // Treat 1970 and above as 1970 up to 1999, and below 1970 as being 2000's up to 2069.
+        y += 100;
+    const std::chrono::year year(y);
+    const std::chrono::year_month_day ymd(year, month, day);
+
+    m_internalClock = static_cast<std::chrono::sys_days>(ymd);
+    m_internalClock += hms.to_duration();
 }
 
-/** \brief Increment the internal clock.
+/** \brief Increments the internal clock.
  *
  * \param ns The number of nanoseconds to increment the clock by.
  *
@@ -102,19 +103,19 @@ void M48T08::SRAMToClock()
  */
 void M48T08::IncrementClock(const double ns)
 {
-    if(sram[Seconds] & 0x80) // STOP bit
+    if(m_sram[Seconds] & 0x80) // STOP bit
         return;
 
-    internalClock.nsec += ns;
-    while(internalClock.nsec >= 1'000'000'000.0)
+    m_nsec += ns;
+    while(m_nsec >= 1'000'000'000.0)
     {
-        internalClock.sec++;
-        internalClock.nsec -= 1'000'000'000.0;
+        m_nsec -= 1'000'000'000.0;
+        m_internalClock += std::chrono::seconds(1);
         ClockToSRAM();
     }
 }
 
-/** \brief Get a byte in SRAM.
+/** \brief Returns the byte at the given address in SRAM.
  *
  * \param addr The address of the byte.
  * \return The byte at the given address.
@@ -124,11 +125,11 @@ void M48T08::IncrementClock(const double ns)
 uint8_t M48T08::GetByte(const uint16_t addr)
 {
     LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
-            cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "Byte", cdi.m_cpu.currentPC, addr, sram[addr]});)
-    return sram[addr];
+            cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "Byte", cdi.m_cpu.currentPC, addr, m_sram[addr]});)
+    return m_sram[addr];
 }
 
-/** \brief Set a byte in SRAM.
+/** \brief Sets a byte at the given address in SRAM.
  *
  * \param addr The address of the byte.
  * \param data The value of the byte to set.
@@ -142,11 +143,11 @@ void M48T08::SetByte(const uint16_t addr, const uint8_t data)
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "Byte", cdi.m_cpu.currentPC, addr, data});)
     if(addr == Control)
     {
-        if(data & 0x40 && !(sram[Control] & 0x40))
+        if(data & 0x40 && !(m_sram[Control] & 0x40))
             ClockToSRAM();
-        if(!(data & 0x80) && sram[Control] & 0x80)
+        if(!(data & 0x80) && m_sram[Control] & 0x80)
             SRAMToClock();
     }
 
-    sram[addr] = data;
+    m_sram[addr] = data;
 }

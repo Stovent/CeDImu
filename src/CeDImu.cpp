@@ -61,6 +61,11 @@ int CeDImu::OnExit()
 
 bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
 {
+    {
+        std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
+        m_cdi.reset();
+    }
+
     std::ifstream biosFile(biosConfig.biosFilePath, std::ios::in | std::ios::binary);
     if(!biosFile)
     {
@@ -93,11 +98,19 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     else
         std::cout << "Warning: no NVRAM file associated with the system BIOS used" << std::endl;
 
-    const CDIConfig config {
+    CDIConfig config {
         .PAL = biosConfig.PAL,
-        .initialTime = biosConfig.initialTime.empty() ? time(NULL) : stoi(biosConfig.initialTime),
+        .initialTime = std::nullopt,
         .has32KBNVRAM = biosConfig.has32KbNvram,
     };
+    if(biosConfig.initialTime.empty())
+        config.initialTime = time(NULL);
+    else
+    {
+        const time_t time = stoll(biosConfig.initialTime);
+        if(time != 0)
+            config.initialTime = time;
+    }
 
     SetOnSaveNVRAM([&] (const void* data, size_t size) {
         std::ofstream out(biosConfig.nvramFileName, std::ios::out | std::ios::binary);
@@ -105,11 +118,15 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
         out.close();
     });
 
-    std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
-    if(m_disc.IsOpen())
+    try
+    {
+        std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
         m_cdi = CDI::NewCDI(biosConfig.boardType, std::span(bios.get(), biosSize), nvram, config, m_callbacks, std::move(m_disc));
-    else
-        m_cdi = CDI::NewCDI(biosConfig.boardType, std::span(bios.get(), biosSize), nvram, config, m_callbacks);
+    }
+    catch(const std::exception& e)
+    {
+        wxMessageBox(std::string("Failed to load core: ") + e.what());
+    }
 
     if(!m_cdi)
     {
