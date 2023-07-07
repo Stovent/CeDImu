@@ -11,22 +11,16 @@ jobs:
           ref: actions-test
 
       - name: Install wxWidgets
-        run: vcpkg install wxwidgets:x64-mingw-static
+        run: vcpkg install wxwidgets:x64-windows-static
 
-      - uses: actions/upload-artifact@v3
-        if: ${{ always() }}
-        with:
-          name: logs.txt
-          path: C:\vcpkg\buildtrees\wxwidgets\install-x64-mingw-static-dbg-out.log
-
-      - name: Generate Makefile
-        run: cmake . -G "MinGW Makefiles" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-mingw-static -Wno-dev
+      - name: Configure
+        run: cmake -B build -S . "-DCMAKE_TOOLCHAIN_FILE=C:/Dev/vcpkg/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows-static" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
 
       - name: Build
-        run: mingw32-make
+        run: cmake --build build --config Release
 
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
         with:
           name: CeDImu-windows-x86_64.exe
-          path: .\CeDImu.exe
+          path: ./build/CeDImu.exe
