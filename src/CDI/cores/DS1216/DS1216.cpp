@@ -113,9 +113,9 @@ void DS1216::ClockToSRAM()
     else // 24h format
         hour = byteToPBCD(hour);
 
-    static constexpr unsigned fractional_width = std::chrono::hh_mm_ss<std::chrono::system_clock::duration>::fractional_width;
+    static const unsigned fractional_width = std::chrono::hh_mm_ss<std::chrono::system_clock::duration>::fractional_width;
     static_assert(fractional_width >= 2, "std::chrono::hh_mm_ss must support subsecond precision");
-    static constexpr unsigned hundrethsDivider = pow(10, fractional_width - 2);
+    static const unsigned hundrethsDivider = pow(10, fractional_width - 2);
 
     clock[Hundredths] = byteToPBCD(hms.subseconds().count() / hundrethsDivider);
     clock[Seconds] = byteToPBCD(hms.seconds().count());
