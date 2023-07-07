@@ -78,7 +78,7 @@ Compatible means it is capable of playing discs.
 
 ## How to build
 
-#### Build macros
+### Build macros
 
 `ENABLE_LOG`: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback (default: `OFF`).
 
@@ -86,15 +86,27 @@ The official build of CeDImu always enables it.
 
 ### CMake
 
-#### Variables
+#### CMake options
 
-`LIBRARY_TYPE`: used to build the core as a static or shared library (default: `STATIC`).
+`CEDIMU_BUILD_CDITOOL`: If ON, builds the little `cditool` program (Linux only, requires libcdio) (default: `OFF`).
 
-`BUILD_CDITOOL`: build cditool or not (default: `OFF`).
+`CEDIMU_ENABLE_LTO`: If ON, compiles the executable with link-time optimisations (default: `ON`).
 
 #### Windows
 
-Use CMake-GUI
+First use [vcpkg](https://github.com/microsoft/vcpkg/) to install wxWidgets: `vcpkg.exe install wxwidgets:x64-windows-static`
+
+Then build CeDImu (make sure to change the `DCMAKE_TOOLCHAIN_FILE` to the path your vcpkg install):
+```sh
+cmake -B build -S . "-DCMAKE_TOOLCHAIN_FILE=C:/Dev/vcpkg/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows-static" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+cmake --build .\build\ --config Release
+```
+
+For a Debug build, execute these commands instead:
+```sh
+cmake -B build -S . "-DCMAKE_TOOLCHAIN_FILE=C:/Dev/vcpkg/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows-static" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CONFIGURATION_TYPES=Debug -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
+cmake --build .\build\ --config Debug
+```
 
 #### Linux
 
@@ -105,11 +117,9 @@ Install the dependency, then open a terminal in the root directory of the git an
 ```sh
 mkdir build
 cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j$(nproc --all)
 ```
-
-If you want to have the memory access logs, replace `cmake ..` with `cmake .. -DENABLE_LOG=1`
 
 #### macOS
 

@@ -8,7 +8,6 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DwxDEBUG_LEVEL=0")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
@@ -38,6 +37,14 @@ add_subdirectory(cores)
 add_subdirectory(HLE)
 add_subdirectory(OS9)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_definitions(CeDImu PRIVATE wxDEBUG_LEVEL=0)
+endif()
+
 include(${wxWidgets_USE_FILE})
 target_include_directories(CeDImu PRIVATE ${wxWidgets_INCLUDE_DIRS})
-target_link_libraries(CeDImu ${wxWidgets_LIBRARIES} stdc++fs)
+target_link_libraries(CeDImu PRIVATE ${wxWidgets_LIBRARIES})
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    target_link_libraries(CeDImu PRIVATE stdc++fs)
+endif()

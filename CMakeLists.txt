@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
+
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif()
 
 project(CeDImu)
-
-if(UNIX)
-    set(CMAKE_GENERATOR "Unix Makefiles")
-endif()
 
 option(CEDIMU_BUILD_CDITOOL "Build cditool" OFF)
 
