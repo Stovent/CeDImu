@@ -23,4 +23,4 @@ jobs:
         uses: actions/upload-artifact@v3.1.0
         with:
           name: CeDImu-windows-x86_64.exe
-          path: ./build/CeDImu.exe
+          path: ./build/Release/CeDImu.exe

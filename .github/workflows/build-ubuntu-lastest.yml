@@ -3,7 +3,7 @@ name: Build Ubuntu lastest
 on: [push]
 
 jobs:
-  test-job:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
