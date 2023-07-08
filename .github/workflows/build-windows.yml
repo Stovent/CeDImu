@@ -1,0 +1,26 @@
+name: Build Windows
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3.1.0
+        with:
+          ref: actions-test
+
+      - name: Install wxWidgets
+        run: vcpkg install wxwidgets:x64-windows-static
+
+      - name: Configure
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_CONFIGURATION_TYPES=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Upload build
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: CeDImu-windows-x86_64.exe
+          path: ./build/Release/CeDImu.exe
