@@ -45,6 +45,6 @@ include(${wxWidgets_USE_FILE})
 target_include_directories(CeDImu PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_link_libraries(CeDImu PRIVATE ${wxWidgets_LIBRARIES})
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(CeDImu PRIVATE stdc++fs)
 endif()

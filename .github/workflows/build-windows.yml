@@ -1,6 +1,6 @@
 name: Build Windows
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -22,5 +22,5 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
         with:
-          name: CeDImu-windows-x86_64.exe
+          name: CeDImu-windows-x86_64
           path: ./build/Release/CeDImu.exe

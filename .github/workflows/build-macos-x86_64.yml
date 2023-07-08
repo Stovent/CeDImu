@@ -1,6 +1,6 @@
 name: Build macOS (x86_64)
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build-x86_64:
