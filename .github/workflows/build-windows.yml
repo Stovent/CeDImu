@@ -7,10 +7,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3.1.0
+
+      - name: Cache vcpkg
+        id: cache-vcpkg
+        uses: actions/cache@v3
         with:
-          ref: actions-test
+          path: C:/vcpkg
+          key: ${{ runner.os }}-vcpkg
 
       - name: Install wxWidgets
+        if: steps.cache-vcpkg.outputs.cache-hit != 'true'
         run: vcpkg install wxwidgets:x64-windows-static
 
       - name: Configure

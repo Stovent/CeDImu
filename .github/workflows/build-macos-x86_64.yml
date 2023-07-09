@@ -12,7 +12,7 @@ jobs:
         run: brew install wxwidgets dylibbundler create-dmg
 
       - name: Generate Makefile
-        run: cmake .
+        run: cmake . -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: make -j$(sysctl -n hw.physicalcpu)

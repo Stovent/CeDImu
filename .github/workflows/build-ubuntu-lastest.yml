@@ -8,19 +8,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up
+      - name: Install wxWidgets
         run: |
           sudo apt update
-          sudo apt install cmake libwxgtk3.0-gtk3-dev
-          mkdir ${{github.workspace}}/build
+          sudo apt install libwxgtk3.0-gtk3-dev
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        working-directory: ${{github.workspace}}/build
-        run: |
-          cmake ..
-          make -j$(nproc --all)
+        run: cmake --build build -j$(nproc --all)
 
       - uses: actions/upload-artifact@v3.1.0
         with:
           name: CeDImu-ubuntu-x86_64
-          path: ${{github.workspace}}/build/CeDImu
+          path: build/CeDImu
