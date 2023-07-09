@@ -101,58 +101,45 @@ void MCD212::ExecuteVideoLine()
 
 void MCD212::DrawLinePlaneA()
 {
+    const uint32_t icm = controlRegisters[ImageCodingMethod] & 0x00000F;
+    if(icm == 0) // plane off
+        return;
+
     uint16_t bytes = 0;
-    if(controlRegisters[ImageCodingMethod] & 0x00000F) // plane on
+    const uint8_t fileType = GetFT12_1();
+    if(fileType <= 1)
     {
-        const uint8_t fileType = GetFT12_1();
-        if(fileType <= 1)
-        {
-            const Video::ImageCodingMethod codingMethod = ICM_LUT_A[controlRegisters[ImageCodingMethod] & 0x00000F];
-            const uint32_t* clut = codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data();
-            bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], nullptr, &memory[GetVSR1()], planeA.width, clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
-        }
-        else if(fileType == 2)
-        {
-            bytes = Video::decodeRunLengthLine(&planeA[lineNumber * planeA.width * 4], &memory[GetVSR1()], planeA.width, CLUT.data(), GetCM1());
-        }
-        else
-        {
-            DecodeMosaicLineA();
-        }
+        const Video::ImageCodingMethod codingMethod = ICM_LUT_A[icm];
+        const uint32_t* clut = codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data();
+        bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], nullptr, &memory[GetVSR1()], planeA.width, clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
     }
+    else if(fileType == 2)
+        bytes = Video::decodeRunLengthLine(&planeA[lineNumber * planeA.width * 4], &memory[GetVSR1()], planeA.width, CLUT.data(), GetCM1());
+    else
+        DecodeMosaicLineA();
+
     SetVSR1(GetVSR1() + bytes);
 }
 
 void MCD212::DrawLinePlaneB()
 {
-    uint16_t bytes = 0;
-    if(controlRegisters[ImageCodingMethod] & 0x000F00) // plane on
-    {
-        const uint8_t fileType = GetFT12_2();
-        if(fileType <= 1)
-        {
-            const Video::ImageCodingMethod codingMethod = ICM_LUT_B[controlRegisters[ImageCodingMethod] >> 8 & 0x00000F];
-            bytes = Video::decodeBitmapLine(&planeB[lineNumber * planeB.width * 4], &memory[GetVSR1()], &memory[GetVSR2()], planeB.width, &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
-        }
-        else if(fileType == 2)
-        {
-            bytes = Video::decodeRunLengthLine(&planeB[lineNumber * planeB.width * 4], &memory[GetVSR2()], planeB.width, &CLUT[128], GetCM2());
-        }
-        else
-        {
-            DecodeMosaicLineB();
-        }
-    }
-    SetVSR2(GetVSR2() + bytes);
-}
+    const uint32_t icm = controlRegisters[ImageCodingMethod] >> 8 & 0x00000F;
+    if(icm == 0) // plane off
+        return;
 
-void MCD212::DrawLineBackground()
-{
-    // The pixels of a line are all the same, so backgroundPlane only contains the color of each line.
-    backgroundPlane[lineNumber * 4]     = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-    backgroundPlane[lineNumber * 4 + 1] = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-    backgroundPlane[lineNumber * 4 + 2] = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-    backgroundPlane[lineNumber * 4 + 3] = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
+    uint16_t bytes = 0;
+    const uint8_t fileType = GetFT12_2();
+    if(fileType <= 1)
+    {
+        const Video::ImageCodingMethod codingMethod = ICM_LUT_B[icm];
+        bytes = Video::decodeBitmapLine(&planeB[lineNumber * planeB.width * 4], &memory[GetVSR1()], &memory[GetVSR2()], planeB.width, &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
+    }
+    else if(fileType == 2)
+        bytes = Video::decodeRunLengthLine(&planeB[lineNumber * planeB.width * 4], &memory[GetVSR2()], planeB.width, &CLUT[128], GetCM2());
+    else
+        DecodeMosaicLineB();
+
+    SetVSR2(GetVSR2() + bytes);
 }
 
 void MCD212::DrawLineCursor()
@@ -186,6 +173,15 @@ void MCD212::DrawLineCursor()
         }
         mask >>= 1;
     }
+}
+
+void MCD212::DrawLineBackground()
+{
+    // The pixels of a line are all the same, so backgroundPlane only contains the color of each line.
+    backgroundPlane[lineNumber * 4]     = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
+    backgroundPlane[lineNumber * 4 + 1] = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
+    backgroundPlane[lineNumber * 4 + 2] = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
+    backgroundPlane[lineNumber * 4 + 3] = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
 }
 
 void MCD212::OverlayMix()

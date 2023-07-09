@@ -33,7 +33,7 @@ static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, b
         {
             if(stereo && su & 1)
             {
-                const int16_t sample = lim16((sd[su][ss] * gain) + ((rk0*K0[filters[su]] + rk1*K1[filters[su]]) / 256));
+                const int16_t sample = lims16((sd[su][ss] * gain) + ((rk0*K0[filters[su]] + rk1*K1[filters[su]]) / 256));
                 rk1 = rk0;
                 rk0 = sample;
                 right.push_back(sample);
@@ -41,7 +41,7 @@ static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, b
             }
             else
             {
-                const int16_t sample = lim16((sd[su][ss] * gain) + ((lk0*K0[filters[su]] + lk1*K1[filters[su]]) / 256));
+                const int16_t sample = lims16((sd[su][ss] * gain) + ((lk0*K0[filters[su]] + lk1*K1[filters[su]]) / 256));
                 lk1 = lk0;
                 lk0 = sample;
                 left.push_back(sample);

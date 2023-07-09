@@ -1,6 +1,7 @@
 #ifndef CDI_COMMON_UTILS_HPP
 #define CDI_COMMON_UTILS_HPP
 
+#include <algorithm>
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -37,7 +38,7 @@ constexpr inline uint8_t byteToPBCD(uint8_t data)
 template<typename T, typename R>
 constexpr inline R signExtend(const T data)
 {
-    return data;
+    return static_cast<R>(data);
 }
 
 /** \brief Checks if a number is even.
@@ -45,9 +46,10 @@ constexpr inline R signExtend(const T data)
  * \param number The number to check.
  * \return true if the number is even, false if it is odd.
  */
-constexpr inline bool isEven(const int number)
+template<typename T>
+constexpr inline bool isEven(const T number)
 {
-    return !(number & 1);
+    return (number & 1) == 0;
 }
 
 /** \brief Converts a number to a hexadecimal string.
@@ -99,36 +101,26 @@ inline uint32_t binStringToInt(const std::string& s)
     return ret;
 }
 
-/** \brief Truncate the input if is greater or lower than the uint8_t range.
+/** \brief Limits the input to the uint8_t range.
  *
- * \param data The input to truncate.
+ * \param d The input to limit.
  * \return the input if if fits in the range, 0 if input is lower, 255 if input is greater.
  */
-constexpr inline uint8_t limu8(const int data)
+template<typename T>
+constexpr inline uint8_t limu8(const T d)
 {
-    if(data > 255)
-        return 255;
-
-    if(data < 0)
-        return 0;
-
-    return data;
+    return static_cast<uint8_t>(std::clamp<T>(d, 0, UINT8_MAX));
 }
 
-/** \brief Truncate the input if is greater or lower than the int16_t range.
+/** \brief Limits the input to the int16_t range.
  *
- * \param data The input to truncate.
+ * \param d The input to limit.
  * \return the input if if fits in the range, INT16_MIN if input is lower, INT16_MAX if input is greater.
  */
-constexpr inline int16_t lim16(const int32_t data)
+template<typename T>
+constexpr inline int16_t lims16(const T d)
 {
-    if(data > INT16_MAX)
-        return INT16_MAX;
-
-    if(data < INT16_MIN)
-        return INT16_MIN;
-
-    return data;
+    return static_cast<int16_t>(std::clamp<T>(d, INT16_MIN, INT16_MAX));
 }
 
 /** \brief Checks if an array is contained in another.

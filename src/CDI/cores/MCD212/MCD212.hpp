@@ -149,8 +149,8 @@ private:
     uint32_t GetDCP1() const;
     uint32_t GetDCP2() const;
 
-    void SetIT1(const bool it = 1);
-    void SetIT2(const bool it = 1);
+    void SetIT1(const bool it = true);
+    void SetIT2(const bool it = true);
     void SetDCP1(const uint32_t value);
     void SetVSR1(const uint32_t value);
     void SetDCP2(const uint32_t value);

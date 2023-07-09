@@ -582,7 +582,7 @@ inline const char* CPURegisterToString(const SCC68070::Register reg)
 #define UNSET_TX_READY() internal[USR] &= ~0x04;
 #define UNSET_RX_READY() internal[USR] &= ~0x01;
 
-#define RESET_INTERNAL() internal = {0}; SET_TX_READY()
+#define RESET_INTERNAL() { internal = {0}; SET_TX_READY() }
 #define CLEAR_PRIORITY_QUEUE(queue) while(queue.size()) queue.pop();
 
 #define SR_UPPER_MASK (0xA700)
