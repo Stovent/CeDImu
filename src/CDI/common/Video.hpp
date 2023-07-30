@@ -38,8 +38,7 @@ enum class ControlArea
     DCA2,
 };
 
-/** \struct Plane
- * \brief Represent a video plane.
+/** \brief Helper class representing a video plane.
  */
 struct Plane : public std::vector<uint8_t>
 {
@@ -48,16 +47,23 @@ struct Plane : public std::vector<uint8_t>
     static constexpr size_t CURSOR_WIDTH  = 16;
     static constexpr size_t CURSOR_HEIGHT = 16;
 
-    static constexpr size_t RGB_SIZE   = MAX_WIDTH * MAX_HEIGHT * 3;
-    static constexpr size_t ARGB_SIZE  = MAX_WIDTH * MAX_HEIGHT * 4;
+    static constexpr size_t RGB_MAX_SIZE   = MAX_WIDTH * MAX_HEIGHT * 3;
+    static constexpr size_t ARGB_MAX_SIZE  = MAX_WIDTH * MAX_HEIGHT * 4;
     static constexpr size_t CURSOR_ARGB_SIZE = CURSOR_WIDTH * CURSOR_HEIGHT * 4;
 
-    uint16_t width; /**< Width of the plane. */
-    uint16_t height; /**< Height of the plane. */
+    uint16_t m_width; /**< Width of the plane. */
+    uint16_t m_height; /**< Height of the plane. */
+    uint16_t m_bpp; /**< Bytes per pixels. */
 
-    explicit Plane(const size_t sz = ARGB_SIZE, uint16_t w = 0, uint16_t h = 0) : std::vector<uint8_t>(sz, 0), width(w), height(h) {}
-    const uint8_t* operator()(size_t line, size_t pixelSize) const { return data() + line * width * pixelSize; }
-    uint8_t* operator()(size_t line, size_t pixelSize) { return data() + line * width * pixelSize; }
+    Plane() = delete;
+    Plane(const uint16_t bpp, const uint16_t w = 0, const uint16_t h = 0, const size_t size = ARGB_MAX_SIZE)
+        : std::vector<uint8_t>(size, 0), m_width(w), m_height(h), m_bpp(bpp)
+    {}
+
+    /** \brief Returns a const pointer to the beginning of the given line. */
+    const uint8_t* operator()(const size_t line) const { return data() + line * m_width * m_bpp; }
+    /** \brief Returns a pointer to the beginning of the given line. */
+    uint8_t* operator()(const size_t line) { return data() + line * m_width * m_bpp; }
 };
 
 extern const std::array<uint8_t, 16> dequantizer;

@@ -36,9 +36,9 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu)
         }
 
         std::lock_guard<std::mutex> __(this->m_screenMutex);
-        if(this->m_screen.Create(plane.width, plane.height))
+        if(this->m_screen.Create(plane.m_width, plane.m_height))
         {
-            memcpy(this->m_screen.GetData(), plane.data(), plane.width * plane.height * 3);
+            memcpy(this->m_screen.GetData(), plane.data(), plane.m_width * plane.m_height * 3);
             this->Refresh();
         }
     });

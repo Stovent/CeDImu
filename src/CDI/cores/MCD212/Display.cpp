@@ -31,14 +31,10 @@ void MCD212::ExecuteVideoLine()
         if(verticalLines == 1 && GetDE()) // TODO: how to do this on every vertical line?
         {
             if(GetIC1())
-            {
                 ExecuteICA1();
-            }
 
             if(GetIC2())
-            {
                 ExecuteICA2();
-            }
         }
         return;
     }
@@ -47,9 +43,9 @@ void MCD212::ExecuteVideoLine()
 
     if(lineNumber == 0)
     {
-        screen.width = planeA.width = GetHorizontalResolution1();
-        planeB.width = GetHorizontalResolution2();
-        screen.height = backgroundPlane.height = planeB.height = planeA.height = GetVerticalResolution();
+        screen.m_width = planeA.m_width = GetHorizontalResolution1();
+        planeB.m_width = GetHorizontalResolution2();
+        screen.m_height = backgroundPlane.m_height = planeB.m_height = planeA.m_height = GetVerticalResolution();
     }
 
     if(GetSM() && !isEven(lineNumber)) // not even because my line count starts at 0.
@@ -67,14 +63,10 @@ void MCD212::ExecuteVideoLine()
         OverlayMix();
 
         if(GetIC1() && GetDC1())
-        {
             ExecuteDCA1();
-        }
 
         if(GetIC2() && GetDC2())
-        {
             ExecuteDCA2();
-        }
     }
 
     lineNumber++;
@@ -86,7 +78,7 @@ void MCD212::ExecuteVideoLine()
             {
                 const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // TODO: address is in double resolution mode
                 const uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
-                Video::paste(screen.data(), screen.width, screen.height, cursorPlane.data(), Video::Plane::CURSOR_WIDTH, Video::Plane::CURSOR_HEIGHT, x, y);
+                Video::paste(screen.data(), screen.m_width, screen.m_height, cursorPlane.data(), cursorPlane.CURSOR_WIDTH, cursorPlane.CURSOR_HEIGHT, x, y);
             }
         }
 
@@ -111,10 +103,10 @@ void MCD212::DrawLinePlaneA()
     {
         const Video::ImageCodingMethod codingMethod = ICM_LUT_A[icm];
         const uint32_t* clut = codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data();
-        bytes = Video::decodeBitmapLine(&planeA[lineNumber * planeA.width * 4], nullptr, &memory[GetVSR1()], planeA.width, clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
+        bytes = Video::decodeBitmapLine(planeA(lineNumber), nullptr, &memory[GetVSR1()], planeA.m_width, clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
     }
     else if(fileType == 2)
-        bytes = Video::decodeRunLengthLine(&planeA[lineNumber * planeA.width * 4], &memory[GetVSR1()], planeA.width, CLUT.data(), GetCM1());
+        bytes = Video::decodeRunLengthLine(planeA(lineNumber), &memory[GetVSR1()], planeA.m_width, CLUT.data(), GetCM1());
     else
         DecodeMosaicLineA();
 
@@ -132,14 +124,24 @@ void MCD212::DrawLinePlaneB()
     if(fileType <= 1)
     {
         const Video::ImageCodingMethod codingMethod = ICM_LUT_B[icm];
-        bytes = Video::decodeBitmapLine(&planeB[lineNumber * planeB.width * 4], &memory[GetVSR1()], &memory[GetVSR2()], planeB.width, &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
+        bytes = Video::decodeBitmapLine(planeB(lineNumber), &memory[GetVSR1()], &memory[GetVSR2()], planeB.m_width, &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
     }
     else if(fileType == 2)
-        bytes = Video::decodeRunLengthLine(&planeB[lineNumber * planeB.width * 4], &memory[GetVSR2()], planeB.width, &CLUT[128], GetCM2());
+        bytes = Video::decodeRunLengthLine(planeB(lineNumber), &memory[GetVSR2()], planeB.m_width, &CLUT[128], GetCM2());
     else
         DecodeMosaicLineB();
 
     SetVSR2(GetVSR2() + bytes);
+}
+
+void MCD212::DrawLineBackground()
+{
+    // The pixels of a line are all the same, so backgroundPlane only contains the color of each line.
+    uint8_t* bg = backgroundPlane(lineNumber);
+    *bg++ = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
+    *bg++ = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
+    *bg++ = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
+    *bg++ = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
 }
 
 void MCD212::DrawLineCursor()
@@ -149,7 +151,7 @@ void MCD212::DrawLineCursor()
         return;
 
     const uint8_t yAddress = lineNumber - yPosition;
-    uint8_t* pixels = &cursorPlane[yAddress * 16 * 4];
+    uint8_t* pixels = cursorPlane(yAddress);
 
     const uint8_t A = (controlRegisters[CursorControl] & 0x000008) ? 255 : 128;
     const uint8_t R = (controlRegisters[CursorControl] & 0x000004) ? 255 : 0;
@@ -175,19 +177,10 @@ void MCD212::DrawLineCursor()
     }
 }
 
-void MCD212::DrawLineBackground()
-{
-    // The pixels of a line are all the same, so backgroundPlane only contains the color of each line.
-    backgroundPlane[lineNumber * 4]     = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-    backgroundPlane[lineNumber * 4 + 1] = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-    backgroundPlane[lineNumber * 4 + 2] = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-    backgroundPlane[lineNumber * 4 + 3] = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
-}
-
 void MCD212::OverlayMix()
 {
-    uint8_t* dst = screen(lineNumber, 3);
-    uint8_t* backgd = backgroundPlane(lineNumber, 4);
+    uint8_t* dst = screen(lineNumber);
+    uint8_t* backgd = backgroundPlane(lineNumber);
     uint8_t* backPlane;
     uint8_t* frontPlane;
 
@@ -197,13 +190,13 @@ void MCD212::OverlayMix()
 
     if(controlRegisters[PlaneOrder] & 1)
     {
-        backPlane = planeA(lineNumber, 4);
-        frontPlane = planeB(lineNumber, 4);
+        backPlane = planeA(lineNumber);
+        frontPlane = planeB(lineNumber);
     }
     else
     {
-        backPlane = planeB(lineNumber, 4);
-        frontPlane = planeA(lineNumber, 4);
+        backPlane = planeB(lineNumber);
+        frontPlane = planeA(lineNumber);
     }
 
     const int abg = *backgd++;
@@ -211,7 +204,7 @@ void MCD212::OverlayMix()
     const int gbg = *backgd++;
     const int bbg = *backgd++;
 
-    for(uint16_t w = 0; w < planeA.width; w++)
+    for(uint16_t w = 0; w < planeA.m_width; w++)
     {
         HandleRegions(w);
 
@@ -374,9 +367,7 @@ void MCD212::HandleRegions(const uint16_t pos)
 
     const uint16_t x = controlRegisters[currentRegionControl + 1] >> 1 & 0x1FF; // double resolution
     if(pos >= x)
-    {
         currentRegionControl++;
-    }
 
     if(currentRegionControl < RegionControl)
         return;
@@ -405,11 +396,11 @@ void MCD212::DecodeMosaicLineA() // TODO
 {
     const Video::ImageCodingMethod codingMethod = ICM_LUT_A[controlRegisters[ImageCodingMethod] & 0x00000F];
     uint8_t* data = &memory[GetVSR1()];
-    uint8_t* pixels = &planeA[lineNumber * planeA.width * 4];
+    uint8_t* pixels = planeA(lineNumber);
     uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneA];
 
-    for(uint16_t x = 0; x < planeA.width;)
+    for(uint16_t x = 0; x < planeA.m_width;)
     {
         if(codingMethod == ICM(DYUV))
         {
@@ -445,11 +436,11 @@ void MCD212::DecodeMosaicLineB() // TODO
     const Video::ImageCodingMethod codingMethod = ICM_LUT_B[controlRegisters[ImageCodingMethod] >> 8 & 0x00000F];
     uint8_t* dataA = &memory[GetVSR1()];
     uint8_t* dataB = &memory[GetVSR2()];
-    uint8_t* pixels = &planeB[lineNumber * planeB.width * 4];
+    uint8_t* pixels = planeB(lineNumber);
     uint16_t index = 0;
     uint32_t previous = controlRegisters[DYUVAbsStartValueForPlaneB];
 
-    for(uint16_t x = 0; x < planeB.width;)
+    for(uint16_t x = 0; x < planeB.m_width;)
     {
         if(codingMethod == ICM(DYUV))
         {

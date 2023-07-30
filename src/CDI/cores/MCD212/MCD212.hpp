@@ -51,8 +51,8 @@ private:
     Video::Plane screen;
     Video::Plane planeA;
     Video::Plane planeB;
-    Video::Plane cursorPlane;
     Video::Plane backgroundPlane;
+    Video::Plane cursorPlane;
 
     std::array<uint32_t, 0x80> controlRegisters;
     std::array<uint32_t, 256> CLUT;
@@ -70,8 +70,8 @@ private:
     void ExecuteVideoLine();
     void DrawLinePlaneA();
     void DrawLinePlaneB();
-    void DrawLineCursor();
     void DrawLineBackground();
+    void DrawLineCursor();
     void OverlayMix();
     void HandleTransparency(uint8_t* pixel, const uint16_t pos, const uint32_t control, const uint32_t color);
     void HandleRegions(const uint16_t pos);

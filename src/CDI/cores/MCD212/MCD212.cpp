@@ -14,11 +14,11 @@ MCD212::MCD212(CDI& idc, std::span<const uint8_t> systemBios, const bool PAL)
     , memorySwapCount(0)
     , timeNs(0.0)
     , memory(0x280000, 0)
-    , screen(Video::Plane::RGB_SIZE)
-    , planeA()
-    , planeB()
-    , cursorPlane(Video::Plane::CURSOR_ARGB_SIZE, 16, 16)
-    , backgroundPlane(Video::Plane::MAX_HEIGHT * 4, 1, Video::Plane::MAX_HEIGHT)
+    , screen(3, 0, 0, Video::Plane::RGB_MAX_SIZE)
+    , planeA(4)
+    , planeB(4)
+    , backgroundPlane(4, 1, Video::Plane::MAX_HEIGHT, Video::Plane::MAX_HEIGHT * 4)
+    , cursorPlane(4, Video::Plane::CURSOR_WIDTH, Video::Plane::CURSOR_HEIGHT, Video::Plane::CURSOR_ARGB_SIZE)
     , controlRegisters{0}
     , CLUT{0}
     , cursorPatterns{0}
