@@ -38,9 +38,13 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_link_libraries(CeDImu PRIVATE stdc++fs)
+    target_link_libraries(CeDImu PUBLIC stdc++fs)
 endif()
 
-target_include_directories(CeDImu PRIVATE "../../submodules/m68000/include")
-target_link_directories(CeDImu PRIVATE "../../submodules/m68000/target/release")
-target_link_libraries(CeDImu PRIVATE m68000-ffi m68000)
+target_include_directories(CeDImu PUBLIC "../../submodules/m68000/include")
+target_link_directories(CeDImu PUBLIC "../../submodules/m68000/target/release")
+target_link_libraries(CeDImu PUBLIC m68000_ffi m68000)
+
+if(WIN32)
+    target_link_libraries(CeDImu PUBLIC NtosKrnl ucrt)
+endif()

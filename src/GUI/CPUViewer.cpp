@@ -197,7 +197,7 @@ void CPUViewer::UpdateRegisters()
     if(!m_cedimu.m_cdi)
         return;
 
-    const Registers* cpuRegs = m_cedimu.m_cdi->m_cpu.CPURegisters();
+    const m68000_registers_t* cpuRegs = m_cedimu.m_cdi->m_cpu.CPURegisters();
     size_t reg = 0;
 
     for(int i = 0; i < 8; i++)

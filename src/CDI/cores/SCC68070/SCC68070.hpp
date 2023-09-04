@@ -79,8 +79,8 @@ public:
     void IN2();
     void SendUARTIn(const uint8_t byte);
 
-    const Registers* CPURegisters() const;
-    Registers* CPURegisters();
+    const m68000_registers_t* CPURegisters() const;
+    m68000_registers_t* CPURegisters();
     std::vector<InternalRegister> GetInternalRegisters() const;
 
 private:
@@ -166,6 +166,7 @@ private:
 
     m68000_scc68070_t* m68000;
     m68000_callbacks_t m68000Callbacks;
+    const m68000_registers_t* m68000Registers;
 
     std::mutex uartInMutex;
     std::deque<uint8_t> uartIn;
@@ -180,15 +181,14 @@ private:
 
     std::array<uint8_t, Peripheral::Size> internal;
 
-    // Direct Memory Access
-    friend m68000_memory_result_t get_byte(uint32_t, void*);
-    friend m68000_memory_result_t get_word(uint32_t, void*);
-    friend m68000_memory_result_t get_long(uint32_t, void*);
-    friend m68000_memory_result_t set_byte(uint32_t, uint8_t, void*);
-    friend m68000_memory_result_t set_word(uint32_t, uint16_t, void*);
-    friend m68000_memory_result_t set_long(uint32_t, uint32_t, void*);
-    friend void reset_instruction(void*);
-    friend void disassembler(uint32_t, const char*, void*);
+    // Memory Access
+    static m68000_memory_result_t getByte(uint32_t, void*);
+    static m68000_memory_result_t getWord(uint32_t, void*);
+    static m68000_memory_result_t getLong(uint32_t, void*);
+    static m68000_memory_result_t setByte(uint32_t, uint8_t, void*);
+    static m68000_memory_result_t setWord(uint32_t, uint16_t, void*);
+    static m68000_memory_result_t setLong(uint32_t, uint32_t, void*);
+    static void resetInstruction(void*);
 
     uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
     uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);

@@ -1,11 +1,10 @@
 #ifndef CDI_OS9_SYSTEMCALLS_HPP
 #define CDI_OS9_SYSTEMCALLS_HPP
 
-#include "../cores/SCC68070/SCC68070.hpp"
+#include "m68000/m68000.h"
 
 #include <cstdint>
 #include <functional>
-#include <map>
 #include <string>
 
 namespace OS9
@@ -264,12 +263,12 @@ struct SystemCall
 };
 
 std::string eventNameToString(const Event evt);
-std::string eventInputsToString(const Event evt, const Registers* regs, const std::function<const uint8_t*(const uint32_t)>& get);
-std::string eventOutputsToString(const Event evt, const Registers* regs, const std::function<const uint8_t*(const uint32_t)>& get);
+std::string eventInputsToString(const Event evt, const m68000_registers_t* regs, const std::function<const uint8_t*(const uint32_t)>& get);
+std::string eventOutputsToString(const Event evt, const m68000_registers_t* regs, const std::function<const uint8_t*(const uint32_t)>& get);
 
 std::string systemCallNameToString(const SystemCallType call);
-std::string systemCallInputsToString(const SystemCallType call, const Registers* regs, const std::function<const uint8_t*(const uint32_t)>& get);
-std::string systemCallOutputsToString(const SystemCallType call, const Registers* regs, const std::function<const uint8_t*(const uint32_t)>& get);
+std::string systemCallInputsToString(const SystemCallType call, const m68000_registers_t* regs, const std::function<const uint8_t*(const uint32_t)>& get);
+std::string systemCallOutputsToString(const SystemCallType call, const m68000_registers_t* regs, const std::function<const uint8_t*(const uint32_t)>& get);
 
 std::string errorNameToString(const Error error);
 

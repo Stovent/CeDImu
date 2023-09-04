@@ -6,15 +6,18 @@
 #include <functional>
 #include <iterator>
 
-m68000_memory_result_t get_byte(uint32_t addr, void* user_data)
+m68000_memory_result_t SCC68070::getByte(uint32_t addr, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
-    try {
+    try
+    {
         return m68000_memory_result_t {
             .data = self->GetByte(addr),
             .exception = 0,
         };
-    } catch(SCC68070::Exception& ex) {
+    }
+    catch(Exception& ex)
+    {
         return m68000_memory_result_t {
             .data = 0,
             .exception = ex.vector,
@@ -22,19 +25,22 @@ m68000_memory_result_t get_byte(uint32_t addr, void* user_data)
     }
 }
 
-m68000_memory_result_t get_word(uint32_t addr, void* user_data)
+m68000_memory_result_t SCC68070::getWord(uint32_t addr, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
     uint8_t flags = Trigger;
-    if(m68000_scc68070_registers(self->m68000)->pc != addr)
+    if(self->m68000Registers->pc != addr)
         flags |= Log; // Do not log instruction read.
 
-    try {
+    try
+    {
         return m68000_memory_result_t {
             .data = self->GetWord(addr, flags),
             .exception = 0,
         };
-    } catch(SCC68070::Exception& ex) {
+    }
+    catch(Exception& ex)
+    {
         return m68000_memory_result_t {
             .data = 0,
             .exception = ex.vector,
@@ -42,15 +48,18 @@ m68000_memory_result_t get_word(uint32_t addr, void* user_data)
     }
 }
 
-m68000_memory_result_t get_long(uint32_t addr, void* user_data)
+m68000_memory_result_t SCC68070::getLong(uint32_t addr, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
-    try {
+    try
+    {
         return m68000_memory_result_t {
             .data = self->GetLong(addr),
             .exception = 0,
         };
-    } catch(SCC68070::Exception& ex) {
+    }
+    catch(Exception& ex)
+    {
         return m68000_memory_result_t {
             .data = 0,
             .exception = ex.vector,
@@ -58,40 +67,49 @@ m68000_memory_result_t get_long(uint32_t addr, void* user_data)
     }
 }
 
-m68000_memory_result_t set_byte(uint32_t addr, uint8_t data, void* user_data)
+m68000_memory_result_t SCC68070::setByte(uint32_t addr, uint8_t data, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
-    try {
+    try
+    {
         self->SetByte(addr, data);
         return m68000_memory_result_t {0, 0};
-    } catch(SCC68070::Exception& ex) {
+    }
+    catch(Exception& ex)
+    {
         return m68000_memory_result_t {0, ex.vector};
     }
 }
 
-m68000_memory_result_t set_word(uint32_t addr, uint16_t data, void* user_data)
+m68000_memory_result_t SCC68070::setWord(uint32_t addr, uint16_t data, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
-    try {
+    try
+    {
         self->SetWord(addr, data);
         return m68000_memory_result_t {0, 0};
-    } catch(SCC68070::Exception& ex) {
+    }
+    catch(Exception& ex)
+    {
         return m68000_memory_result_t {0, ex.vector};
     }
 }
 
-m68000_memory_result_t set_long(uint32_t addr, uint32_t data, void* user_data)
+m68000_memory_result_t SCC68070::setLong(uint32_t addr, uint32_t data, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
-    try {
+    try
+    {
         self->SetLong(addr, data);
         return m68000_memory_result_t {0, 0};
-    } catch(SCC68070::Exception& ex) {
+    }
+    catch(Exception& ex)
+    {
         return m68000_memory_result_t {0, ex.vector};
     }
 }
 
-void reset_instruction(void* user_data)
+void SCC68070::resetInstruction(void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
     self->ResetOperation();
@@ -109,15 +127,16 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     , executionThread()
     , m68000(m68000_scc68070_new())
     , m68000Callbacks{
-        .get_byte = get_byte,
-        .get_word = get_word,
-        .get_long = get_long,
-        .set_byte = set_byte,
-        .set_word = set_word,
-        .set_long = set_long,
-        .reset_instruction = reset_instruction,
+        .get_byte = getByte,
+        .get_word = getWord,
+        .get_long = getLong,
+        .set_byte = setByte,
+        .set_word = setWord,
+        .set_long = setLong,
+        .reset_instruction = resetInstruction,
         .user_data = this,
     }
+    , m68000Registers(m68000_scc68070_registers(m68000))
     , uartInMutex()
     , uartIn{}
     , loop(false)
@@ -214,7 +233,7 @@ void SCC68070::INT1()
 {
     const uint8_t level = internal[LIR] >> 4 & 0x07;
     if(level)
-        m68000_scc68070_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + level));
+        m68000_scc68070_exception(m68000, static_cast<m68000_vector_t>(Level1OnChipInterrupt - 1 + level));
 }
 
 /** \brief Trigger interrupt with LIR2 level.
@@ -223,14 +242,14 @@ void SCC68070::INT2()
 {
     const uint8_t level = internal[LIR] & 0x07;
     if(level)
-        m68000_scc68070_exception(m68000, static_cast<Vector>(Level1OnChipInterrupt - 1 + level));
+        m68000_scc68070_exception(m68000, static_cast<m68000_vector_t>(Level1OnChipInterrupt - 1 + level));
 }
 
 /** \brief Trigger level 2 external interrupt vector.
  */
 void SCC68070::IN2()
 {
-    m68000_scc68070_exception(m68000, Vector::Level2Interrupt);
+    m68000_scc68070_exception(m68000, m68000_vector_t::Level2Interrupt);
 }
 
 /** \brief Send a byte through UART.
@@ -245,17 +264,17 @@ void SCC68070::SendUARTIn(const uint8_t byte)
 /** \brief Get the CPU registers through a const pointer.
  * \return A pointer to the CPU registers.
  */
-const Registers* SCC68070::CPURegisters() const
+const m68000_registers_t* SCC68070::CPURegisters() const
 {
-    return m68000_scc68070_registers(m68000);
+    return m68000Registers;
 }
 
 /** \brief Get the CPU registers through a mutable pointer.
  * \return A pointer to the CPU registers.
  */
-Registers* SCC68070::CPURegisters()
+m68000_registers_t* SCC68070::CPURegisters()
 {
-    return m68000_scc68070_registers(m68000);
+    return m68000_scc68070_registers_mut(m68000);
 }
 
 /** \brief Get the internal registers.

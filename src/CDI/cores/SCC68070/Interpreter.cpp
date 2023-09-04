@@ -45,7 +45,7 @@ void SCC68070::Interpreter()
                 cdi.m_callbacks.OnLogException({res.exception, returnAddress, exceptionVectorToString(res.exception), syscall});
             }
 
-            m68000_scc68070_exception(m68000, static_cast<Vector>(res.exception));
+            m68000_scc68070_exception(m68000, static_cast<m68000_vector_t>(res.exception));
         }
 
         const double ns = executionCycles * cycleDelay;

@@ -214,7 +214,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
     m_cedimu.SetOnLogException([&] (const LogSCC68070Exception& log) {
         std::lock_guard<std::mutex> lock(m_exceptionsMutex);
         m_updateExceptions = true;
-        const size_t trap = log.vector >= Vector::Trap0Instruction && log.vector <= Vector::Trap15Instruction ? ++m_trapCount : 0;
+        const size_t trap = log.vector >= m68000_vector_t::Trap0Instruction && log.vector <= m68000_vector_t::Trap15Instruction ? ++m_trapCount : 0;
         m_exceptions.push_back({trap, log});
 
         if(this->m_writeExceptions->GetValue())
@@ -227,10 +227,10 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
         for(std::vector<std::pair<size_t, LogSCC68070Exception>>::const_reverse_iterator it = this->m_exceptions.crbegin();
             it != this->m_exceptions.crend(); it++)
         {
-            if(pc == it->second.returnAddress && it->second.vector == Vector::Trap0Instruction)
+            if(pc == it->second.returnAddress && it->second.vector == m68000_vector_t::Trap0Instruction)
             {
                 size_t index = it->first;
-                const Registers* registers = m_cedimu.m_cdi->m_cpu.CPURegisters();
+                const m68000_registers_t* registers = m_cedimu.m_cdi->m_cpu.CPURegisters();
                 char error[64] = {0};
                 std::string outputs;
                 m_updateExceptions = true;
