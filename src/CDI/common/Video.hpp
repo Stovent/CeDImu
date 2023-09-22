@@ -56,7 +56,7 @@ struct Plane : public std::vector<uint8_t>
     uint16_t m_bpp; /**< Bytes per pixels. */
 
     Plane() = delete;
-    Plane(const uint16_t bpp, const uint16_t w = 0, const uint16_t h = 0, const size_t size = ARGB_MAX_SIZE)
+    explicit Plane(const uint16_t bpp, const uint16_t w = 0, const uint16_t h = 0, const size_t size = ARGB_MAX_SIZE)
         : std::vector<uint8_t>(size, 0), m_width(w), m_height(h), m_bpp(bpp)
     {}
 

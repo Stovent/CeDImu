@@ -11,7 +11,7 @@
  * \param data The PBCD to convert.
  * \return The converted PBCD to byte.
  */
-constexpr inline uint8_t PBCDToByte(const uint8_t data)
+constexpr inline uint8_t PBCDToByte(const uint8_t data) noexcept
 {
     return (data >> 4) * 10 + (data & 0x0F);
 }
@@ -24,7 +24,7 @@ constexpr inline uint8_t PBCDToByte(const uint8_t data)
  * Because PBCD are stored on one byte, if the input is greater than 99,
  * the conversion is modulo 100. e.g. a byte value of 103 or 203 will become 3 in PBCD.
  */
-constexpr inline uint8_t byteToPBCD(uint8_t data)
+constexpr inline uint8_t byteToPBCD(uint8_t data) noexcept
 {
     data %= 100;
     return ((data / 10) << 4) | (data % 10);
@@ -47,7 +47,7 @@ constexpr inline R signExtend(const T data)
  * \return true if the number is even, false if it is odd.
  */
 template<typename T>
-constexpr inline bool isEven(const T number)
+constexpr inline bool isEven(const T number) noexcept
 {
     return (number & 1) == 0;
 }
@@ -107,7 +107,7 @@ inline uint32_t binStringToInt(const std::string& s)
  * \return the input if if fits in the range, 0 if input is lower, 255 if input is greater.
  */
 template<typename T>
-constexpr inline uint8_t limu8(const T d)
+constexpr inline uint8_t limu8(const T d) noexcept
 {
     return static_cast<uint8_t>(std::clamp<T>(d, 0, UINT8_MAX));
 }
@@ -118,7 +118,7 @@ constexpr inline uint8_t limu8(const T d)
  * \return the input if if fits in the range, INT16_MIN if input is lower, INT16_MAX if input is greater.
  */
 template<typename T>
-constexpr inline int16_t lims16(const T d)
+constexpr inline int16_t lims16(const T d) noexcept
 {
     return static_cast<int16_t>(std::clamp<T>(d, INT16_MIN, INT16_MAX));
 }

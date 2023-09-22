@@ -56,8 +56,8 @@ private:
 
     std::array<uint32_t, 0x80> controlRegisters;
     std::array<uint32_t, 256> CLUT;
-    std::array<uint16_t, 16>  cursorPatterns;
-    std::array<std::array<bool, Video::Plane::MAX_WIDTH>, 2> regionFlags;
+    std::array<uint16_t, 16> cursorPatterns;
+    std::array<bool, 2> regionFlags;
     uint8_t currentRegionControl;
 
     std::array<uint16_t, 32> internalRegisters;
@@ -73,7 +73,7 @@ private:
     void DrawLineBackground();
     void DrawLineCursor();
     void OverlayMix();
-    void HandleTransparency(uint8_t* pixel, const uint16_t pos, const uint32_t control, const uint32_t color);
+    void HandleTransparency(uint8_t* pixel, const uint32_t control, const uint32_t color);
     void HandleRegions(const uint16_t pos);
 
     // Display File Decoders
