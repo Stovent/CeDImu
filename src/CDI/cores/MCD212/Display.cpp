@@ -1,7 +1,6 @@
 #include "MCD212.hpp"
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
-#include "../../common/Video.hpp"
 
 #include <cstring>
 
@@ -137,11 +136,12 @@ void MCD212::DrawLinePlaneB()
 void MCD212::DrawLineBackground()
 {
     // The pixels of a line are all the same, so backgroundPlane only contains the color of each line.
+    // Background plane has no transparency (Green book V.5.13).
+    const uint8_t c = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
     uint8_t* bg = backgroundPlane(lineNumber);
-    *bg++ = (controlRegisters[BackdropColor] & 0x000008) ? 255 : 128;
-    *bg++ = (controlRegisters[BackdropColor] & 0x000004) ? 255 : 0;
-    *bg++ = (controlRegisters[BackdropColor] & 0x000002) ? 255 : 0;
-    *bg++ = (controlRegisters[BackdropColor] & 0x000001) ? 255 : 0;
+    *bg++ = (controlRegisters[BackdropColor] & 0x000004) ? c : 0;
+    *bg++ = (controlRegisters[BackdropColor] & 0x000002) ? c : 0;
+    *bg++ = (controlRegisters[BackdropColor] & 0x000001) ? c : 0;
 }
 
 void MCD212::DrawLineCursor()
@@ -198,7 +198,6 @@ void MCD212::OverlayMix()
         frontPlane = planeA(lineNumber);
     }
 
-    const int abg = *backgd++;
     const int rbg = *backgd++;
     const int gbg = *backgd++;
     const int bbg = *backgd++;
@@ -250,29 +249,45 @@ void MCD212::OverlayMix()
 
         if(!(controlRegisters[TransparencyControl] & 0x800000)) // Mixing
         {
+            if(abp == 0) // When mixing transparent pixels are black (V.5.9.1).
+            {
+                rbp = 16;
+                gbp = 16;
+                bbp = 16;
+            }
+
+            if(afp == 0)
+            {
+                rfp = 16;
+                gfp = 16;
+                bfp = 16;
+            }
+
             r = limu8(rbp + rfp - 16);
             g = limu8(gbp + gfp - 16);
             b = limu8(bbp + bfp - 16);
         }
         else // Overlay
         {
-            int ap = afp + abp * (255 - afp);
-            int rp = 16;
-            int gp = 16;
-            int bp = 16;
-
-            if(ap > 0)
+            // Plane transparency is either 0 or 255.
+            if(afp == 0 && abp == 0) // Front and back plane transparent: only show background.
             {
-                rp = (rfp * afp + rbp * abp * (255 - afp)) / ap;
-                gp = (gfp * afp + gbp * abp * (255 - afp)) / ap;
-                bp = (bfp * afp + bbp * abp * (255 - afp)) / ap;
+                r = rbg;
+                g = gbg;
+                b = bbg;
             }
-
-            if(ap >= 256)
-                ap /= 255;
-            r = (rp * ap + rbg * abg * (255 - ap)) / 255;
-            g = (gp * ap + gbg * abg * (255 - ap)) / 255;
-            b = (bp * ap + bbg * abg * (255 - ap)) / 255;
+            else if(afp == 0) // Front plane transparent: show back plane.
+            {
+                r = rbp;
+                g = gbp;
+                b = bbp;
+            }
+            else // Front plane visible: only show front plane.
+            {
+                r = rfp;
+                g = gfp;
+                b = bfp;
+            }
         }
 
         *dst++ = r;

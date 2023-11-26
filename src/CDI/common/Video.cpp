@@ -4,10 +4,9 @@
 namespace Video
 {
 
-constexpr std::array<uint8_t, 16> dequantizer{0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
-uint32_t CLUT[256] = {0};
+static constexpr std::array<uint8_t, 16> dequantizer{0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
 
-constexpr std::array<int, 256> generateVToR()
+static constexpr std::array<int, 256> generateVToR() noexcept
 {
     std::array<int, 256> array;
     for(int i = 0; i < 256; i++)
@@ -15,7 +14,7 @@ constexpr std::array<int, 256> generateVToR()
     return array;
 }
 
-constexpr std::array<int, 256> generateVToG()
+static constexpr std::array<int, 256> generateVToG() noexcept
 {
     std::array<int, 256> array;
     for(int i = 0; i < 256; i++)
@@ -23,7 +22,7 @@ constexpr std::array<int, 256> generateVToG()
     return array;
 }
 
-constexpr std::array<int, 256> generateUToG()
+static constexpr std::array<int, 256> generateUToG() noexcept
 {
     std::array<int, 256> array;
     for(int i = 0; i < 256; i++)
@@ -31,7 +30,7 @@ constexpr std::array<int, 256> generateUToG()
     return array;
 }
 
-constexpr std::array<int, 256> generateUToB()
+static constexpr std::array<int, 256> generateUToB() noexcept
 {
     std::array<int, 256> array;
     for(int i = 0; i < 256; i++)
@@ -55,12 +54,12 @@ static constexpr std::array<int, 256> matrixUToB = generateUToB();
  * \param icm The coding method of the file.
  * \return The number of raw bytes read from dataB (and dataA in RGB555).
  *
- * If \p icm is ImageCodingMethod::CLUT77 or the video plane is plane B, then sent `&CLUT[128]` as the \p CLUTTable.
+ * If \p icm is ImageCodingMethod::CLUT77 or the video plane is plane B, then send `&CLUT[128]` as the \p CLUTTable.
  *
  * If the coding method is RGB555, dataA must contain the channel A data and dataB must contain the channel B data.
  * If it is not RGB555, dataB is the source data and dataA remain unused.
  */
-uint16_t decodeBitmapLine(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm)
+uint16_t decodeBitmapLine(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
 {
     if(icm == ImageCodingMethod::DYUV)
         return decodeDYUVLine(dst, dataB, width, initialDYUV);
@@ -80,7 +79,7 @@ uint16_t decodeBitmapLine(uint8_t* dst, const uint8_t* dataA, const uint8_t* dat
  * \param is4BPP true for RL3, false for RL7.
  * \return The number of raw bytes read from data.
  */
-uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP)
+uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept
 {
     uint16_t index = 0;
 
@@ -94,7 +93,7 @@ uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, 
             uint16_t count = 1;
             if(format & 0x80) // run of pixels pairs
             {
-                count = data[index++];;
+                count = data[index++];
                 if(count == 0)
                     count = width - x;
             }
@@ -115,7 +114,7 @@ uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, 
             uint16_t count = 1;
             if(format & 0x80) // run of single pixels
             {
-                count = data[index++];;
+                count = data[index++];
                 if(count == 0)
                     count = width - x;
             }
@@ -137,7 +136,7 @@ uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, 
  * \param width Width of the line in pixels.
  * \return The number of raw bytes read from each data source.
  */
-uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width)
+uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
 {
     uint16_t index = 0;
 
@@ -158,7 +157,7 @@ uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dat
  * \param initialDYUV The initial value to be used by the DYUV decoder.
  * \return The number of raw bytes read from data.
  */
-uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint16_t initialDYUV)
+uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint16_t initialDYUV) noexcept
 {
     uint16_t index = 0;
     uint32_t previous = initialDYUV;
@@ -183,7 +182,7 @@ uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint1
  *
  * If \p icm is ImageCodingMethod::CLUT77 or the video plane is plane B, then sent `&CLUT[128]` as the \p CLUTTable.
  */
-uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm)
+uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept
 {
     uint16_t index = 0;
 
@@ -215,7 +214,7 @@ uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const
  * \param pixel The pixel to decode.
  * \param pixels Where the pixel will be written to. pixels[0] = transparency, pixels[1] = red, pixels[2] = green, pixels[3] = blue.
  */
-void decodeRGB555(const uint16_t pixel, uint8_t pixels[4])
+void decodeRGB555(const uint16_t pixel, uint8_t pixels[4]) noexcept
 {
     pixels[0] = (pixel & 0x8000) ? 0xFF : 0;
     pixels[1] = pixel >> 7 & 0xF8;
@@ -223,7 +222,7 @@ void decodeRGB555(const uint16_t pixel, uint8_t pixels[4])
     pixels[3] = pixel << 3 & 0xF8;
 }
 
-static constexpr inline void matrixRGB(int Y, int U, int V, uint8_t pixels[4])
+static constexpr inline void matrixRGB(const int Y, const uint8_t U, const uint8_t V, uint8_t pixels[4]) noexcept
 {
     pixels[0] = 0xFF;
     pixels[1] = limu8(Y + matrixVToR[V]);
@@ -237,7 +236,7 @@ static constexpr inline void matrixRGB(int Y, int U, int V, uint8_t pixels[4])
  * \param pixels Where the pixels will be written to. pixels[0,4] = 0xFF, pixels[1,5] = red, pixels[2,6] = green, pixels[3,7] = blue.
  * \param previous The previous pixel colors.
  */
-void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous)
+void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous) noexcept
 {
     uint8_t u2 = pixel >> 12 & 0xF;
     uint8_t y1 = pixel >> 8 & 0xF;
@@ -269,7 +268,7 @@ void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous)
  * - plane B is the plane being drawn.
  * - bit 22 (CLUT select) of register ImageCodingMethod is set for CLUT7+7.
  */
-void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable)
+void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable) noexcept
 {
     pixels[0] = 0xFF;
     pixels[1] = CLUTTable[pixel] >> 16;

@@ -82,8 +82,8 @@ void MainFrame::CreateMenuBar()
     m_pauseMenuItem->Check();
     emulationMenu->Append(IDMainFrameOnSingleStep, "Single step\tG", "Execute a single instruction");
     emulationMenu->Append(IDMainFrameOnFrameAdvance, "Frame advance\tF", "Start emulation until the end of the next frame");
-    emulationMenu->Append(IDMainFrameOnIncreaseSpeed, "Increase Speed", "Increase the emulation speed");
-    emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed", "Decrease the emulation speed");
+    emulationMenu->Append(IDMainFrameOnIncreaseSpeed, "Increase Speed\tKP_PageUp", "Increase the emulation speed");
+    emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed\tKP_PageDown", "Decrease the emulation speed");
     m_reloadCoreMenuItem = emulationMenu->Append(IDMainFrameOnReloadCore, "Reload core\tCtrl+R");
     m_reloadCoreMenuItem->Enable(false);
     emulationMenu->Append(IDMainFrameOnResizeView, "Resize View");
@@ -436,5 +436,5 @@ void MainFrame::OnSettings(wxCommandEvent&)
 
 void MainFrame::OnAbout(wxCommandEvent&)
 {
-    wxMessageBox("CeDImu is a Philips CD-i player emulator, written by Stovent.");
+    wxMessageBox("CeDImu is a Philips CD-i player emulator, written in C++ using wxWidgets.");
 }

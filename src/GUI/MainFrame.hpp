@@ -12,6 +12,8 @@ class VDSCViewer;
 #include <wx/menuitem.h>
 #include <wx/timer.h>
 
+#include <cstdint>
+
 class MainFrame : public wxFrame
 {
 public:

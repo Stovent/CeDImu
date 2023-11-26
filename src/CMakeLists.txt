@@ -53,7 +53,7 @@ endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Bug of wxWidgets 3.2.0 on LLVM's Clang.
-    target_sources(CeDImu
+    target_sources(CeDImu-GUI
         PRIVATE
             ../resources/resource.rc
     )

@@ -3,6 +3,7 @@
 
 class CDIDisc;
 
+#include <cstdint>
 #include <string>
 
 class CDIFile

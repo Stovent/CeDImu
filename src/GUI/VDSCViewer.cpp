@@ -486,9 +486,8 @@ void VDSCViewer::UpdatePanels()
     m_imgBackgd.Create(backgd.m_width, backgd.m_height);
     if(m_imgBackgd.IsOk())
     {
-        if(!m_imgBackgd.HasAlpha())
-            m_imgBackgd.InitAlpha();
-        Video::splitARGB(backgd.data(), backgd.m_width * backgd.m_height * 4, m_imgBackgd.GetAlpha(), m_imgBackgd.GetData());
+        memcpy(m_imgBackgd.GetData(), backgd.data(), backgd.m_width * backgd.m_height * 3);
+
         const wxSize size = m_backgdPanel->GetClientSize();
         wxClientDC dc(m_backgdPanel);
         dc.Clear();

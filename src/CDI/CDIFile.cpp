@@ -3,7 +3,6 @@
 #include "common/Audio.hpp"
 #include "common/utils.hpp"
 #include "common/Video.hpp"
-#include "cores/MCD212/MCD212.hpp"
 
 #include <wx/bitmap.h>
 
@@ -194,6 +193,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
 {
     uint32_t pos = disc.Tell();
     int maxChannel = 0;
+    std::array<uint32_t, 256> CLUT{};
 
     for(int channel = 0; channel <= maxChannel; channel++)
     {
@@ -240,18 +240,18 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
                                 break;
                             }
                             addr -= 0x80;
-                            Video::CLUT[bank + addr]  = disc.GetByte() << 16;
-                            Video::CLUT[bank + addr] |= disc.GetByte() << 8;
-                            Video::CLUT[bank + addr] |= disc.GetByte();
+                            CLUT[bank + addr]  = disc.GetByte() << 16;
+                            CLUT[bank + addr] |= disc.GetByte() << 8;
+                            CLUT[bank + addr] |= disc.GetByte();
                         }
                 }
                 else // simply copy the first 128 colors
                 {
-                    for(int i = 0, j = 0; i < 128*3; j++)
+                    for(int i = 0, j = 0; j < 128; j++)
                     {
-                        Video::CLUT[j]  = data[i++] << 16;
-                        Video::CLUT[j] |= data[i++] << 8;
-                        Video::CLUT[j] |= data[i++];
+                        CLUT[j]  = data[i++] << 16;
+                        CLUT[j] |= data[i++] << 8;
+                        CLUT[j] |= data[i++];
                     }
                 }
 
@@ -292,7 +292,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
         {
             while(index < data.size())
             {
-                index += Video::decodeRunLengthLine(&pixels[width * 4 * y], &data[index], width, Video::CLUT, coding & 0x3);
+                index += Video::decodeRunLengthLine(&pixels[width * 4 * y], &data[index], width, CLUT.data(), coding & 0x3);
                 y++;
                 if(y >= height)
                 {
@@ -308,7 +308,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
         {
             while(index < data.size())
             {
-                index += Video::decodeBitmapLine(&pixels[width * 4 * y], nullptr, &data[index], width, Video::CLUT, 0x00108080, codingLookUp[coding]);
+                index += Video::decodeBitmapLine(&pixels[width * 4 * y], nullptr, &data[index], width, CLUT.data(), 0x00108080, codingLookUp[coding]);
                 y++;
                 if(y >= height)
                 {

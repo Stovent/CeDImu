@@ -40,8 +40,9 @@ enum class ControlArea
 
 /** \brief Helper class representing a video plane.
  */
-struct Plane : public std::vector<uint8_t>
+class Plane final : public std::vector<uint8_t>
 {
+public:
     static constexpr size_t MAX_WIDTH     = 768;
     static constexpr size_t MAX_HEIGHT    = 560;
     static constexpr size_t CURSOR_WIDTH  = 16;
@@ -61,26 +62,23 @@ struct Plane : public std::vector<uint8_t>
     {}
 
     /** \brief Returns a const pointer to the beginning of the given line. */
-    const uint8_t* operator()(const size_t line) const { return data() + line * m_width * m_bpp; }
+    const uint8_t* operator()(const size_t line) const noexcept { return data() + line * m_width * m_bpp; }
     /** \brief Returns a pointer to the beginning of the given line. */
-    uint8_t* operator()(const size_t line) { return data() + line * m_width * m_bpp; }
+    uint8_t* operator()(const size_t line) noexcept { return data() + line * m_width * m_bpp; }
 };
 
-extern const std::array<uint8_t, 16> dequantizer;
-extern uint32_t CLUT[256];
-
 // Display file decoders.
-uint16_t decodeBitmapLine(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm);
-uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP);
+uint16_t decodeBitmapLine(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept;
+uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept;
 
-uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width);
-uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint16_t initialDYUV);
-uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm);
+uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept;
+uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint16_t initialDYUV) noexcept;
+uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept;
 
 // Real-Time Decoders (set pixels in ARGB format)
-void decodeRGB555(const uint16_t pixel, uint8_t pixels[4]);
-void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous);
-void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable);
+void decodeRGB555(const uint16_t pixel, uint8_t pixels[4]) noexcept;
+void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous) noexcept;
+void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable) noexcept;
 
 void splitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uint8_t* rgb);
 void paste(uint8_t* dst, const uint16_t dstWidth, const uint16_t dstHeight, const uint8_t* src, const uint16_t srcWidth, const uint16_t srcHeight, const uint16_t xOffset = 0, const uint16_t yOffset = 0);
