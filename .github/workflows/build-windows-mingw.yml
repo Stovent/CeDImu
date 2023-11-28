@@ -1,25 +1,25 @@
 name: Build Windows MinGW
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3.1.0
+
+      - name: Cache vcpkg
+        id: cache-vcpkg-mingw
+        uses: actions/cache@v3
         with:
-          ref: actions-test
+          path: C:/vcpkg
+          key: ${{ runner.os }}-vcpkg-mingw
 
       - name: Install wxWidgets
+        if: steps.cache-vcpkg-mingw.outputs.cache-hit != 'true'
         run: vcpkg install wxwidgets:x64-mingw-static
 
-      - uses: actions/upload-artifact@v3
-        if: ${{ always() }}
-        with:
-          name: logs.txt
-          path: C:\vcpkg\buildtrees\wxwidgets\install-x64-mingw-static-dbg-out.log
-
-      - name: Generate Makefile
+      - name: Configure
         run: cmake -B build -S . -G "MinGW Makefiles" -DCEDIMU_ENABLE_LTO=0 -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=x64-mingw-static -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -Wno-dev
 
       - name: Build
@@ -28,5 +28,5 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
         with:
-          name: CeDImu-windows-x86_64.exe
-          path: ./build/Release/CeDImu.exe
+          name: CeDImu-windows-mingw-x86_64.exe
+          path: ./build/CeDImu.exe

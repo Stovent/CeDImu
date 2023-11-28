@@ -1,12 +1,12 @@
 name: Build Windows
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3.1.0
 
       - name: Cache vcpkg
         id: cache-vcpkg
@@ -28,5 +28,5 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v3.1.0
         with:
-          name: CeDImu-windows-x86_64
+          name: CeDImu-windows-x86_64.exe
           path: ./build/Release/CeDImu.exe
