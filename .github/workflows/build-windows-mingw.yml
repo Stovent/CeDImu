@@ -20,7 +20,7 @@ jobs:
           path: C:\vcpkg\buildtrees\wxwidgets\install-x64-mingw-static-dbg-out.log
 
       - name: Generate Makefile
-        run: cmake -B build -S . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=x64-mingw-static -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -Wno-dev
+        run: cmake -B build -S . -G "MinGW Makefiles" -DCEDIMU_ENABLE_LTO=0 -DCMAKE_BUILD_TYPE=Release -DVCPKG_TARGET_TRIPLET=x64-mingw-static -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -Wno-dev
 
       - name: Build
         run: cmake --build build --config Release
