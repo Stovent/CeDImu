@@ -6,6 +6,7 @@ class CDI;
 #include "../../common/types.hpp"
 #include "../../common/Video.hpp"
 #include "../../OS9/BIOS.hpp"
+#include "../../Video/Renderer.hpp"
 
 #include <array>
 #include <span>
@@ -47,6 +48,8 @@ private:
     uint8_t memorySwapCount;
     double timeNs; // time counter in nano seconds.
 
+    Video::Renderer renderer;
+
     std::vector<uint8_t> memory;
 
     Video::Plane screen;
@@ -82,6 +85,7 @@ private:
     void DecodeMosaicLineB();
 
     // Control Area
+    // TODO: template this against Video::Renderer::Plane ?
     void ExecuteICA1();
     void ExecuteDCA1();
     void ExecuteICA2();

@@ -45,12 +45,31 @@ void MCD212::ExecuteVideoLine()
         screen.m_width = planeA.m_width = GetHorizontalResolution1();
         planeB.m_width = GetHorizontalResolution2();
         screen.m_height = backgroundPlane.m_height = planeB.m_height = planeA.m_height = GetVerticalResolution();
+        renderer.SetPlaneResolutions(planeA.m_width, planeB.m_width, planeA.m_height);
     }
 
     if(GetSM() && !isEven(lineNumber)) // not even because my line count starts at 0.
         UNSET_PA_BIT()
     else
         SET_PA_BIT()
+
+    if(GetDE())
+    {
+        const uint32_t vsr1 = GetVSR1();
+        const uint32_t vsr2 = GetVSR2();
+        if(totalFrameCount == 240)
+            /*std::pair<uint16_t, uint16_t> bytes = */renderer.DrawLine(&memory[vsr1], &memory[vsr2]);
+        else
+            /*std::pair<uint16_t, uint16_t> bytes = */renderer.DrawLine(&memory[vsr1], &memory[vsr2]);
+        // SetVSR1(vsr1 + bytes.first);
+        // SetVSR2(vsr2 + bytes.second);
+
+    //     if(GetIC1() && GetDC1())
+    //         ExecuteDCA1();
+    //
+    //     if(GetIC2() && GetDC2())
+    //         ExecuteDCA2();
+    }
 
     if(GetDE())
     {
@@ -84,6 +103,8 @@ void MCD212::ExecuteVideoLine()
         verticalLines = 0;
 
         cdi.m_callbacks.OnFrameCompleted(screen);
+        renderer.RenderFrame();
+        // cdi.m_callbacks.OnFrameCompleted(renderer.RenderFrame());
     }
 }
 

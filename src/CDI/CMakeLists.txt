@@ -32,6 +32,7 @@ add_subdirectory(common)
 add_subdirectory(cores)
 add_subdirectory(HLE)
 add_subdirectory(OS9)
+add_subdirectory(Video)
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(CeDImu PRIVATE -Wall -Wextra -Wpedantic)
