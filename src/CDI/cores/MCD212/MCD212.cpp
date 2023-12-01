@@ -16,6 +16,7 @@ MCD212::MCD212(CDI& idc, OS9::BIOS bios, const bool pal)
     , isPAL(pal)
     , memorySwapCount(0)
     , timeNs(0.0)
+    , renderer()
     , memory(0x280000, 0)
     , screen(3, 0, 0, Video::Plane::RGB_MAX_SIZE)
     , planeA(4)
@@ -81,6 +82,7 @@ void MCD212::ExecuteICA1()
     for(size_t i = 0; i < cycles; i++)
     {
         const uint32_t ica = GetControlInstruction(addr);
+        const uint8_t inst = ica >> 24;
 
         if(cdi.m_callbacks.HasOnLogICADCA())
             cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
@@ -137,6 +139,8 @@ void MCD212::ExecuteICA1()
             {
                 controlRegisters[bits<24, 31>(ica) - 0x80] = DCP_PARAMETER(ica);
             }
+            if(inst < 0xCD || inst > 0xCF) // Ignore cursor registers.
+                renderer.ExecuteDCPInstruction<Video::Renderer::A>(ica);
         }
     }
 }
@@ -147,6 +151,7 @@ void MCD212::ExecuteDCA1()
     {
         const uint32_t addr = GetDCP1();
         const uint32_t dca = GetControlInstruction(addr);
+        const uint8_t inst = dca >> 24;
         SetDCP1(addr + 4);
 
         if(cdi.m_callbacks.HasOnLogICADCA())
@@ -203,6 +208,8 @@ void MCD212::ExecuteDCA1()
             {
                 controlRegisters[bits<24, 31>(dca) - 0x80] = DCP_PARAMETER(dca);
             }
+            if(inst < 0xCD || inst > 0xCF) // Ignore cursor registers.
+                renderer.ExecuteDCPInstruction<Video::Renderer::A>(dca);
         }
     }
 }
@@ -263,6 +270,8 @@ void MCD212::ExecuteICA2()
             }
             else
                 controlRegisters[bits<24, 31>(ica) - 0x80] = DCP_PARAMETER(ica);
+
+            renderer.ExecuteDCPInstruction<Video::Renderer::B>(ica);
         }
     }
 }
@@ -322,6 +331,8 @@ void MCD212::ExecuteDCA2()
             }
             else
                 controlRegisters[bits<24, 31>(dca) - 0x80] = DCP_PARAMETER(dca);
+
+            renderer.ExecuteDCPInstruction<Video::Renderer::B>(dca);
         }
     }
 }

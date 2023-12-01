@@ -27,6 +27,7 @@ add_subdirectory(common)
 add_subdirectory(cores)
 add_subdirectory(HLE)
 add_subdirectory(OS9)
+add_subdirectory(Video)
 
 option(CEDIMU_ENABLE_LOG "Allows the library to print some messages in the console and the use of OnLogMemoryAccess callback" OFF)
 if(CEDIMU_ENABLE_LOG)
