@@ -37,6 +37,10 @@ add_subdirectory(cores)
 add_subdirectory(HLE)
 add_subdirectory(OS9)
 
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(CeDImu PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_definitions(CeDImu PRIVATE wxDEBUG_LEVEL=0)
 endif()
