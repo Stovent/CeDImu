@@ -94,7 +94,7 @@ The official build of CeDImu always enables it.
 
 #### Windows
 
-First use [vcpkg](https://github.com/microsoft/vcpkg/) to install wxWidgets: `vcpkg.exe install wxwidgets:x64-windows-static`
+First install [CMake](https://cmake.org/download/) and [vcpkg](https://github.com/microsoft/vcpkg/), and use vcpkg to install wxWidgets: `vcpkg.exe install wxwidgets:x64-windows-static`
 
 Then build CeDImu (make sure to change the `DCMAKE_TOOLCHAIN_FILE` to the path your vcpkg install):
 ```sh
@@ -108,18 +108,20 @@ cmake -B build -S . "-DCMAKE_TOOLCHAIN_FILE=C:/Dev/vcpkg/scripts/buildsystems/vc
 cmake --build .\build\ --config Debug
 ```
 
+The executable will be in the `build` directory.
+
 #### Linux
 
-Package dependency: `libwxgtk3.0-gtk3-dev`
+Package dependency: `cmake libwxgtk3.0-gtk3-dev`
 
 Install the dependency, then open a terminal in the root directory of the git and type:
 
 ```sh
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc --all)
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc --all)
 ```
+
+The executable will be in the `build` directory.
 
 #### macOS
 
@@ -132,7 +134,7 @@ Open a terminal in the root directory of the git and type:
 ```sh
 mkdir build
 cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j$(sysctl -n hw.physicalcpu)
 ```
 
@@ -142,5 +144,5 @@ If I get everything listed upper working, stable and fully functional, the goal 
 
 ## Special Thanks
 
-- [CD-i Fan](https://github.com/cdifan) for his help and his information that made me progress way faster than I could imagine.
--  jongg-eater for the logo.
+- [CD-i Fan](https://www.cdiemu.org/) for his help and his information that made me progress way faster than I could imagine.
+- jongg-eater for the logo.

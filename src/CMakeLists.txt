@@ -12,7 +12,15 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-set(ENABLE_LOG ON)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    SET(CMAKE_CXX_FLAGS_PROFILERELEASE
+        "-O3 -pg -DwxDEBUG_LEVEL=0"
+        CACHE STRING "Flags used by the C++ compiler during profile builds with release optimisations."
+        FORCE
+    )
+endif()
+
+set(CEDIMU_ENABLE_LOG ON)
 
 add_subdirectory(CDI)
 
