@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <sstream>
 #include <string>
+#include <utility>
 
 /** \brief Convert a Packed Binary Coded Decimal number to byte.
  *
@@ -30,16 +31,22 @@ constexpr inline uint8_t byteToPBCD(uint8_t data) noexcept
     return ((data / 10) << 4) | (data % 10);
 }
 
-/** \brief Sign-extend a number.
+/** \brief Shortcut name for `static_cast<R>(data)`.
+ * \tparam R the return type.
+ * \tparam T The input type.
  *
- * \param data The number to sign-extend (which type is the first template parameter T).
- * \return The sign-extended number (which type is the second template parameter R).
+ * Template deduction should allow directly doing `as<R>()` without specifing T.
+ */
+template<typename R, typename T>
+static constexpr inline R as(T&& data)
+{
+    return static_cast<R>(std::forward<T>(data));
+}
+
+/** \brief Sign-extend a number from type T to type R.
  */
 template<typename T, typename R>
-constexpr inline R signExtend(const T data)
-{
-    return static_cast<R>(data);
-}
+constexpr auto signExtend = as<R, T>;
 
 /** \brief Checks if a number is even.
  *
