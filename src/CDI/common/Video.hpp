@@ -9,14 +9,6 @@
 namespace Video
 {
 
-enum CodingInformation : uint8_t
-{
-    ascf       = 0b10000000, // Application Specific Coding Flag
-    eolf       = 0b01000000, // Even/Odd Lines Flag
-    resolution = 0b00110000,
-    coding     = 0b00001111,
-};
-
 #define ICM(method) Video::ImageCodingMethod::method
 
 enum class ImageCodingMethod

@@ -121,10 +121,11 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
                 continue;
             }
 
-            // bool  emph = disc.subheader.codingInformation & Audio::CodingInformation::emphasis;
-                         bps = (disc.m_subheader.codingInformation & Audio::CodingInformation::bps) >> 4;
-            const uint8_t sf = (disc.m_subheader.codingInformation & Audio::CodingInformation::sf) >> 2;
-            const uint8_t ms =  disc.m_subheader.codingInformation & Audio::CodingInformation::ms;
+            // Green Book IV.3.2.4
+//            const bool emph  = bit<6>(disc.m_subheader.codingInformation);
+                         bps = bits<4, 5>(disc.m_subheader.codingInformation);
+            const uint8_t sf = bits<2, 3>(disc.m_subheader.codingInformation);
+            const uint8_t ms = bits<0, 1>(disc.m_subheader.codingInformation);
 
             if(bps > 1 || sf > 1 || ms > 1) // ignore reserved values
             {
@@ -132,9 +133,9 @@ void CDIFile::ExportAudio(const std::string& directoryPath)
                 continue;
             }
 
-            uint8_t data[2304];
-            disc.GetRaw(data, 2304);
-            Audio::decodeAudioSector(bps, ms, data, left, right);
+            std::array<uint8_t, 2304> data;
+            disc.GetRaw(data.data(), data.size());
+            Audio::decodeAudioSector(bps, ms, data.data(), left, right);
 
             wavHeader.channelNumber = ms + 1;
             wavHeader.frequency = sf ? 18900 : 37800;
@@ -173,9 +174,9 @@ void CDIFile::ExportFile(const std::string& directoryPath)
     std::ofstream out(directoryPath + name, std::ios::out | std::ios::binary);
 
     uint32_t size = 0;
-    uint8_t const * const data = GetContent(size);
-    if(data && size)
-        out.write((char*)data, size);
+    uint8_t* data = GetContent(size);
+    if(data != nullptr && size != 0)
+        out.write(reinterpret_cast<char*>(data), size);
     delete[] data;
 
     out.close();
@@ -214,12 +215,13 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
 
             if(disc.m_subheader.submode & cdid) // Get CLUT table from a sector before the video data
             {
-                uint8_t data[2048];
-                disc.GetRaw(data, 2048);
+                std::array<uint8_t, 2048> d;
+                disc.GetRaw(d.data(), d.size());
 
-                char* clut = (char*)subarrayOfArray(data, 2048, "cluts", 5);
+                char* clut = const_cast<char*>(as<const char*>(subarrayOfArray(d.data(), d.size(), "cluts", 5)));
                 if(clut != nullptr)
                 {
+                    // Retro engineering from Link: The Faces of Evil.
                     disc.Seek(-2026, std::ios::cur);
                     const uint16_t offset = disc.GetWord();
 
@@ -240,8 +242,8 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
                                 break;
                             }
                             addr -= 0x80;
-                            CLUT[bank + addr]  = disc.GetByte() << 16;
-                            CLUT[bank + addr] |= disc.GetByte() << 8;
+                            CLUT[bank + addr]  = as<uint32_t>(disc.GetByte()) << 16;
+                            CLUT[bank + addr] |= as<uint32_t>(disc.GetByte()) << 8;
                             CLUT[bank + addr] |= disc.GetByte();
                         }
                 }
@@ -249,9 +251,9 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
                 {
                     for(int i = 0, j = 0; j < 128; j++)
                     {
-                        CLUT[j]  = data[i++] << 16;
-                        CLUT[j] |= data[i++] << 8;
-                        CLUT[j] |= data[i++];
+                        CLUT[j]  = as<uint32_t>(d[i++]) << 16;
+                        CLUT[j] |= as<uint32_t>(d[i++]) << 8;
+                        CLUT[j] |= d[i++];
                     }
                 }
 
@@ -265,10 +267,11 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
                 continue;
             }
 
-            bool ascf = disc.m_subheader.codingInformation & Video::CodingInformation::ascf;
-            // bool eolf = disc.subheader.codingInformation & Video::CodingInformation::eolf;
-            uint8_t resolution  = (disc.m_subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
-            coding = disc.m_subheader.codingInformation & Video::CodingInformation::coding;
+            // Green Book V.6.3.1
+            bool ascf = bit<7>(disc.m_subheader.codingInformation);
+//            bool eolf = bit<6>(disc.m_subheader.codingInformation);
+            uint8_t resolution = bits<4, 5>(disc.m_subheader.codingInformation);
+            coding = bits<0, 3>(disc.m_subheader.codingInformation);
 
             if(ascf || coding > 7 || resolution == 2)
             {
@@ -367,28 +370,28 @@ void CDIFile::ExportRawVideo(const std::string& directoryPath)
                 continue;
             }
 
-            bool ascf_ = disc.m_subheader.codingInformation & Video::CodingInformation::ascf;
+            const bool ascf_ = bit<7>(disc.m_subheader.codingInformation);
             if(ascf >= 0 && ascf != ascf_)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
             }
             ascf = ascf_;
 
-            bool eolf_ = disc.m_subheader.codingInformation & Video::CodingInformation::eolf;
+            const bool eolf_ = bit<6>(disc.m_subheader.codingInformation);
             if(eolf >= 0 && eolf != eolf_)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
             }
             eolf = eolf_;
 
-            uint8_t resolution_ = (disc.m_subheader.codingInformation & Video::CodingInformation::resolution) >> 2;
+            const uint8_t resolution_ = bits<4, 5>(disc.m_subheader.codingInformation);
             if(resolution >= 0 && resolution != resolution_)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
             }
             resolution = resolution_;
 
-            uint8_t coding_ = disc.m_subheader.codingInformation & Video::CodingInformation::coding;
+            const uint8_t coding_ = bits<0, 3>(disc.m_subheader.codingInformation);
             if(coding >= 0 && coding != coding_)
             {
                 writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);

@@ -8,14 +8,6 @@
 namespace Audio
 {
 
-enum CodingInformation : uint8_t
-{
-    emphasis = 0b01000000,
-    bps      = 0b00110000, // bits per sample
-    sf       = 0b00001100, // sampling frequency
-    ms       = 0b00000011  // mono/stereo
-};
-
 struct WAVHeader
 {
     uint16_t channelNumber;

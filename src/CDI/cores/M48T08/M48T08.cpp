@@ -78,13 +78,13 @@ void M48T08::ClockToSRAM()
  */
 void M48T08::SRAMToClock()
 {
-    const std::chrono::seconds seconds = std::chrono::seconds(PBCDToByte(m_sram[Seconds] & 0x7F));
-    const std::chrono::minutes minutes = std::chrono::minutes(PBCDToByte(m_sram[Minutes] & 0x7F));
-    const std::chrono::hours hours = std::chrono::hours(PBCDToByte(m_sram[Hours] & 0x3F));
+    const std::chrono::seconds seconds = std::chrono::seconds(PBCDToByte(bits<0, 6>(m_sram[Seconds])));
+    const std::chrono::minutes minutes = std::chrono::minutes(PBCDToByte(bits<0, 6>(m_sram[Minutes])));
+    const std::chrono::hours hours = std::chrono::hours(PBCDToByte(bits<0, 5>(m_sram[Hours])));
     const std::chrono::hh_mm_ss hms(seconds + minutes + hours);
 
-    const std::chrono::day day(PBCDToByte(m_sram[Date]));
-    const std::chrono::month month(PBCDToByte(m_sram[Month]));
+    const std::chrono::day day(PBCDToByte(bits<0, 5>(m_sram[Date])));
+    const std::chrono::month month(PBCDToByte(bits<0, 4>(m_sram[Month])));
     unsigned y = 1900 + PBCDToByte(m_sram[Year]); // Only the two last digit of the year are stored.
     if(y < 1970) // Treat 1970 and above as 1970 up to 1999, and below 1970 as being 2000's up to 2069.
         y += 100;
@@ -103,7 +103,7 @@ void M48T08::SRAMToClock()
  */
 void M48T08::IncrementClock(const double ns)
 {
-    if(m_sram[Seconds] & 0x80) // STOP bit
+    if(bit<7>(m_sram[Seconds])) // STOP bit
         return;
 
     m_nsec += ns;
@@ -143,9 +143,9 @@ void M48T08::SetByte(const uint16_t addr, const uint8_t data)
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "Byte", cdi.m_cpu.currentPC, addr, data});)
     if(addr == Control)
     {
-        if(data & 0x40 && !(m_sram[Control] & 0x40))
+        if(bit<6>(data) && !bit<6>(m_sram[Control]))
             ClockToSRAM();
-        if(!(data & 0x80) && m_sram[Control] & 0x80)
+        if(!bit<7>(data) && bit<7>(m_sram[Control]))
             SRAMToClock();
     }
 

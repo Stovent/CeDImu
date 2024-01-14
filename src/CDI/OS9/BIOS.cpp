@@ -1,4 +1,5 @@
 #include "BIOS.hpp"
+#include "../common/utils.hpp"
 
 #include <cstring>
 
@@ -35,7 +36,7 @@ ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
     M_Revs(memory[0x15]),
     M_Edit((uint16_t)memory[0x16] << 8 | memory[0x17]),
     extra(&memory[0x30]),
-    name((char*)&memory[M_Name]),
+    name(reinterpret_cast<const char*>(&memory[M_Name])),
     begin(beg),
     end(begin + M_Size)
 {}
@@ -62,7 +63,7 @@ void BIOS::LoadModules()
             uint16_t parity = 0xFFFF; // Header Parity Check
             for(int j = 0; j < 0x30; j += 2)
             {
-                const uint16_t word = (uint16_t)m_memory[i + j] << 8 | m_memory[i + j + 1];
+                const uint16_t word = as<uint16_t>(m_memory[i + j]) << 8 | m_memory[i + j + 1];
                 parity ^= word;
             }
             if(parity == 0)
@@ -91,7 +92,7 @@ std::string BIOS::GetModuleNameAt(const uint32_t offset) const
 Boards BIOS::GetBoardType() const
 {
     const uint8_t id = m_memory[m_size - 4];
-    switch(id >> 4 & 0xF)
+    switch(bits<4, 7>(id))
     {
     case 2: return Boards::MiniMMC;
     case 3: return Boards::Mono1;
@@ -112,7 +113,7 @@ bool BIOS::Has8KBNVRAM() const
     {
         if(mod.name == "nvr")
         {
-            uint16_t size = (uint16_t)m_memory[mod.begin + 74] << 8 | m_memory[mod.begin + 75];
+            uint16_t size = as<uint16_t>(m_memory[mod.begin + 74]) << 8 | m_memory[mod.begin + 75];
             if(size == 0x1FF8) // 8KB
                 return true;
         }

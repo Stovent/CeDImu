@@ -93,7 +93,7 @@ void DS1216::ClockToSRAM()
     const std::chrono::weekday weekday(days_duration);
 
     uint8_t hour = hms.hours().count() % 24;
-    if(clock[Hour] & 0x80) // 12h format
+    if(bit<7>(clock[Hour])) // 12h format
     {
         int h = hour;
         if(h >= 12) // PM
@@ -132,25 +132,25 @@ void DS1216::ClockToSRAM()
 void DS1216::SRAMToClock()
 {
     uint8_t hour;
-    if(clock[Hour] & 0x80) // 12h format
+    if(bit<7>(clock[Hour])) // 12h format
     {
-        hour = PBCDToByte(clock[Hour] & 0x1F);
+        hour = PBCDToByte(bits<0, 4>(clock[Hour]));
         if(hour == 12)
             hour = 0;
-        if((clock[Hour] & 0x20) != 0) // PM
+        if(bit<5>(clock[Hour])) // PM
             hour += 12;
     }
     else
-        hour = PBCDToByte(clock[Hour] & 0x3F);
+        hour = PBCDToByte(bits<0, 5>(clock[Hour]));
 
     m_nsec = PBCDToByte(clock[Hundredths]) * 10'000'000.0;
-    const std::chrono::seconds seconds = std::chrono::seconds(PBCDToByte(clock[Seconds] & 0x7F));
-    const std::chrono::minutes minutes = std::chrono::minutes(PBCDToByte(clock[Minutes] & 0x7F));
+    const std::chrono::seconds seconds = std::chrono::seconds(PBCDToByte(bits<0, 6>(clock[Seconds])));
+    const std::chrono::minutes minutes = std::chrono::minutes(PBCDToByte(bits<0, 6>(clock[Minutes])));
     const std::chrono::hours hours = std::chrono::hours(hour);
     const std::chrono::hh_mm_ss hms(seconds + minutes + hours);
 
-    const std::chrono::day day(PBCDToByte(clock[Date] & 0x3F));
-    const std::chrono::month month(PBCDToByte(clock[Month] & 0x1F));
+    const std::chrono::day day(PBCDToByte(bits<0, 5>(clock[Date])));
+    const std::chrono::month month(PBCDToByte(bits<0, 4>(clock[Month])));
     unsigned y = 1900 + PBCDToByte(clock[Year]); // Only the two last digit of the year are stored.
     if(y < 1970) // Treat 1970 and above as 1970 up to 1999, and below 1970 as being 2000's up to 2069.
         y += 100;
@@ -182,7 +182,7 @@ void DS1216::IncrementClockAccess()
 
 void DS1216::IncrementClock(const double ns)
 {
-    if(clock[Day] & 0x20) // OSC bit
+    if(bit<5>(clock[Day])) // OSC bit
         return;
 
     m_nsec += ns;
@@ -215,24 +215,25 @@ uint8_t DS1216::GetByte(const uint16_t addr)
 
 void DS1216::SetByte(const uint16_t addr, const uint8_t data)
 {
+    const bool lsb = bit<0>(data);
+
     if(patternCount < 0)
     {
         LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "SRAM", cdi.m_cpu.currentPC, addr, data});)
         sram[addr] = data;
-        PushPattern(data & 1);
+        PushPattern(lsb);
     }
     else
     {
         const uint8_t reg = patternCount / 8;
         const uint8_t shift = patternCount % 8;
-        const bool bit = data & 1;
 
         LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
-                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "clock", cdi.m_cpu.currentPC, addr, bit});)
+                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "clock", cdi.m_cpu.currentPC, addr, lsb});)
 
         clock[reg] &= ~(1 << shift);
-        clock[reg] |= bit << shift;
+        clock[reg] |= lsb << shift;
 
         IncrementClockAccess();
         if(patternCount == -1)

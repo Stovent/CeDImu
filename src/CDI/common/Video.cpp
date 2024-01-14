@@ -4,6 +4,7 @@
 namespace Video
 {
 
+/** \brief Green book Figure V.18 */
 static constexpr std::array<uint8_t, 16> dequantizer{0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
 
 static constexpr std::array<int, 256> generateVToR() noexcept
@@ -88,10 +89,11 @@ uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, 
         for(int x = 0; x < width;)
         {
             const uint8_t format = data[index++];
-            const uint8_t color1 = format >> 4 & 0x07;
-            const uint8_t color2 = format & 0x07;
+            const uint8_t color1 = bits<4, 6>(format);
+            const uint8_t color2 = bits<0, 2>(format);
             uint16_t count = 1;
-            if(format & 0x80) // run of pixels pairs
+
+            if(bit<7>(format)) // run of pixels pairs
             {
                 count = data[index++];
                 if(count == 0)
@@ -110,9 +112,10 @@ uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, 
         for(int x = 0; x < width;)
         {
             const uint8_t format = data[index++];
-            const uint8_t color = format & 0x7F;
+            const uint8_t color = bits<0, 6>(format);
             uint16_t count = 1;
-            if(format & 0x80) // run of single pixels
+
+            if(bit<7>(format)) // run of single pixels
             {
                 count = data[index++];
                 if(count == 0)
@@ -190,8 +193,8 @@ uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const
     {
         for(uint16_t x = 0; x < width;)
         {
-            const uint8_t color1 = data[index] >> 4;
-            const uint8_t color2 = data[index++] & 0x0F;
+            const uint8_t color1 = bits<4, 7>(data[index]);
+            const uint8_t color2 = bits<0, 3>(data[index++]);
             Video::decodeCLUT(color1, &dst[x++ * 4], CLUTTable);
             Video::decodeCLUT(color2, &dst[x++ * 4], CLUTTable);
         }
@@ -238,21 +241,23 @@ static constexpr inline void matrixRGB(const int Y, const uint8_t U, const uint8
  */
 void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous) noexcept
 {
-    uint8_t u2 = pixel >> 12 & 0xF;
-    uint8_t y1 = pixel >> 8 & 0xF;
-    uint8_t v2 = pixel >> 4 & 0xF;
-    uint8_t y2 = pixel & 0xF;
-    uint8_t py = previous >> 16;
-    uint8_t pu = previous >> 8;
+    // Green book V.4.4.2
+    uint8_t u2 = bits<12, 15>(pixel);
+    uint8_t y1 = bits<8, 11>(pixel);
+    uint8_t v2 = bits<4, 7>(pixel);
+    uint8_t y2 = bits<0, 3>(pixel);
+
+    uint8_t py = bits<16, 23>(previous);
+    uint8_t pu = bits<8, 15>(previous);
     uint8_t pv = previous;
 
     y1 = py + dequantizer[y1];
     u2 = pu + dequantizer[u2];
     v2 = pv + dequantizer[v2];
     y2 = y1 + dequantizer[y2];
-    uint8_t u1 = ((uint16_t)pu + (uint16_t)u2) >> 1;
-    uint8_t v1 = ((uint16_t)pv + (uint16_t)v2) >> 1;
-    previous = (uint32_t)y2 << 16 | (uint32_t)u2 << 8 | v2;
+    uint8_t u1 = (as<uint16_t>(pu) + as<uint16_t>(u2)) >> 1;
+    uint8_t v1 = (as<uint16_t>(pv) + as<uint16_t>(v2)) >> 1;
+    previous = as<uint32_t>(y2) << 16 | as<uint32_t>(u2) << 8 | v2;
 
     matrixRGB(y1, u1, v1, pixels);
     matrixRGB(y2, u2, v2, &pixels[4]);
@@ -271,8 +276,8 @@ void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous) noe
 void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTable) noexcept
 {
     pixels[0] = 0xFF;
-    pixels[1] = CLUTTable[pixel] >> 16;
-    pixels[2] = CLUTTable[pixel] >> 8;
+    pixels[1] = bits<16, 23>(CLUTTable[pixel]);
+    pixels[2] = bits<8, 15>(CLUTTable[pixel]);
     pixels[3] = CLUTTable[pixel];
 }
 

@@ -292,7 +292,7 @@ bool CDIDisc::GetData(uint8_t* dst, uint32_t& size, const bool includeEmptySecto
  */
 bool CDIDisc::GetRaw(uint8_t* dst, uint32_t size)
 {
-    m_disc.read((char*)dst, size);
+    m_disc.read(reinterpret_cast<char*>(dst), size);
     return m_disc.good();
 }
 

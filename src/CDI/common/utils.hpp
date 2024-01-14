@@ -7,30 +7,6 @@
 #include <string>
 #include <utility>
 
-/** \brief Convert a Packed Binary Coded Decimal number to byte.
- *
- * \param data The PBCD to convert.
- * \return The converted PBCD to byte.
- */
-constexpr inline uint8_t PBCDToByte(const uint8_t data) noexcept
-{
-    return (data >> 4) * 10 + (data & 0x0F);
-}
-
-/** \brief Convert a byte to Packed Binary Coded Decimal.
- *
- * \param data The byte to convert.
- * \return The converted byte to PBCD.
- *
- * Because PBCD are stored on one byte, if the input is greater than 99,
- * the conversion is modulo 100. e.g. a byte value of 103 or 203 will become 3 in PBCD.
- */
-constexpr inline uint8_t byteToPBCD(uint8_t data) noexcept
-{
-    data %= 100;
-    return ((data / 10) << 4) | (data % 10);
-}
-
 /** \brief Shortcut name for `static_cast<R>(data)`.
  * \tparam R the return type.
  * \tparam T The input type.
@@ -47,6 +23,57 @@ static constexpr inline R as(T&& data)
  */
 template<typename T, typename R>
 constexpr auto signExtend = as<R, T>;
+
+/** \brief Tests if a bit is set.
+ * \tparam BITNUM The bit number to check.
+ * \tparam T The type of the data.
+ * \return true if the bit is set, false if it is clear.
+ */
+template<size_t BITNUM, typename T>
+constexpr inline bool bit(const T data) noexcept
+{
+    return (data & (1 << BITNUM)) != 0;
+}
+
+/** \brief Extracts the given bit range inclusive.
+ * \tparam BITFIRST The first bit number to extract.
+ * \tparam BITLAST The last bit number to extract (inclusive).
+ * \tparam T The type of the data.
+ * \return The extracted bits.
+ */
+template<size_t BITFIRST, size_t BITLAST, typename T>
+constexpr inline T bits(const T data) noexcept
+{
+    static_assert(BITFIRST <= BITLAST);
+    static_assert(BITLAST < (sizeof(T) * 8));
+
+    constexpr T mask = (1 << (BITLAST + 1 - BITFIRST)) - 1;
+    return data >> BITFIRST & mask;
+}
+
+/** \brief Convert a Packed Binary Coded Decimal number to byte.
+ *
+ * \param data The PBCD to convert.
+ * \return The converted PBCD to byte.
+ */
+constexpr inline uint8_t PBCDToByte(const uint8_t data) noexcept
+{
+    return bits<4, 7>(data) * 10 + bits<0, 3>(data);
+}
+
+/** \brief Convert a byte to Packed Binary Coded Decimal.
+ *
+ * \param data The byte to convert.
+ * \return The converted byte to PBCD.
+ *
+ * Because PBCD are stored on one byte, if the input is greater than 99,
+ * the conversion is modulo 100. e.g. a byte value of 103 or 203 will become 3 in PBCD.
+ */
+constexpr inline uint8_t byteToPBCD(uint8_t data) noexcept
+{
+    data %= 100;
+    return ((data / 10) << 4) | (data % 10);
+}
 
 /** \brief Checks if a number is even.
  *
@@ -141,8 +168,8 @@ constexpr inline int16_t lims16(const T d) noexcept
  */
 inline const void* subarrayOfArray(const void* container, size_t containerSize, const void* contained, size_t containedSize)
 {
-    const uint8_t* ner = (const uint8_t*)container;
-    const uint8_t* ned = (const uint8_t*)contained;
+    const uint8_t* ner = as<const uint8_t*>(container);
+    const uint8_t* ned = as<const uint8_t*>(contained);
     for(size_t j = 0; j < containerSize; j++)
     {
         if(ner[j] == ned[0])

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-find_package(wxWidgets REQUIRED COMPONENTS base)
+find_package(wxWidgets REQUIRED COMPONENTS core base)
 
 if(NOT wxWidgets_FOUND)
     message(FATAL_ERROR "wxWidgets not found")
@@ -46,7 +46,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 include(${wxWidgets_USE_FILE})
-target_include_directories(CeDImu PRIVATE ${wxWidgets_INCLUDE_DIRS})
+target_include_directories(CeDImu PUBLIC ${wxWidgets_INCLUDE_DIRS})
 target_link_libraries(CeDImu PRIVATE ${wxWidgets_LIBRARIES})
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

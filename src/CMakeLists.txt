@@ -52,7 +52,7 @@ target_include_directories(CeDImu-GUI PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_link_libraries(CeDImu-GUI CeDImu ${wxWidgets_LIBRARIES})
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(CeDImu-GUI PRIVATE -Wall -Wextra)
+    target_compile_options(CeDImu-GUI PRIVATE -Wall -Wextra -Wpedantic)
     target_link_options(CeDImu-GUI PRIVATE -static-libgcc -static-libstdc++)
     target_link_libraries(CeDImu-GUI stdc++fs)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

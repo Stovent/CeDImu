@@ -22,10 +22,20 @@ void resetAudioFiltersDelay()
     rk1 = 0;
 }
 
-template<int SU, int GAIN>
+/** \brief Implements the ADPCM decoder.
+ * \tparam SU The number of sound units (4 for level A, 8 for level BC).
+ * \tparam GAIN Base exponent for the gain (8 for level A, 12 for level BC).
+ * \param sd The sound datas.
+ * \param ranges The ranges.
+ * \param filters The filters.
+ * \param stereo true for stereo, false for mono.
+ * \param left Where the decoded samples for left channel will be written (used in mono).
+ * \param right Where the decoded samples for right channel will be written (unused in mono).
+ * \return The number of samples decoded (should be 112 for level A and 224 for level BC).
+ */
+template<int SU, uint8_t GAIN>
 static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, bool stereo, std::vector<int16_t>& left, std::vector<int16_t>& right)
 {
-    uint8_t index = 0;
     for(int su = 0; su < SU; su++)
     {
         const uint16_t gain = 2 << (GAIN - ranges[su]);
@@ -37,7 +47,6 @@ static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, b
                 rk1 = rk0;
                 rk0 = sample;
                 right.push_back(sample);
-                index++;
             }
             else
             {
@@ -45,12 +54,11 @@ static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, b
                 lk1 = lk0;
                 lk0 = sample;
                 left.push_back(sample);
-                index++;
             }
         }
     }
 
-    return index;
+    return 28 * SU;
 }
 
 /** \brief Decode a raw audio sector into 16-bit PCM.
@@ -95,23 +103,21 @@ uint16_t decodeAudioSector(const bool levelA, const bool stereo, const uint8_t d
  */
 uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::vector<int16_t>& left, std::vector<int16_t>& right)
 {
-    uint8_t index = 16;
     uint8_t range[4];
     uint8_t filter[4];
-     int8_t SD[4][28]; // sound data
-
     for(uint8_t i = 0; i < 4; i++)
     {
-        range[i] = data[i] & 0x0F;
-        filter[i] = data[i] >> 4;
+        range[i] = bits<0, 3>(data[i]);
+        filter[i] = bits<4, 7>(data[i]);
     }
 
+    uint8_t index = 16;
+    int8_t SD[4][28]; // sound data
     for(uint8_t ss = 0; ss < 28; ss++) // sound sample
         for(uint8_t su = 0; su < 4; su++) // sound unit
             SD[su][ss] = data[index++];
 
-    index = decodeADPCM<4, 8>(SD, range, filter, stereo, left, right);
-    return index;
+    return decodeADPCM<4, 8>(SD, range, filter, stereo, left, right);
 }
 
 /** \brief Decode a Level B or C sound group.
@@ -124,32 +130,34 @@ uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::
  */
 uint8_t decodeLevelBCSoundGroup(const bool stereo, const uint8_t data[128], std::vector<int16_t>& left, std::vector<int16_t>& right)
 {
-    uint8_t index = 4;
     uint8_t range[8];
     uint8_t filter[8];
-     int8_t SD[8][28]; // sound data
-
     for(uint16_t i = 0; i < 8; i++)
     {
-        range[i] = data[i + index] & 0x0F;
-        filter[i] = data[i + index] >> 4;
+        range[i] = bits<0, 3>(data[i + 4]);
+        filter[i] = bits<4, 7>(data[i + 4]);
     }
 
-    index = 16;
+    uint8_t index = 16;
+    int8_t SD[8][28]; // sound data
     for(uint8_t ss = 0; ss < 28; ss++) // sound sample
-        for(uint8_t su = 0; su < 8; su += 2) // sound unit
+        for(uint8_t su = 0; su < 8;) // sound unit
         {
             const uint8_t SB = data[index++];
-            SD[su][ss] = SB & 0x0F;
-            if(SD[su][ss] >= 8)
-                SD[su][ss] -= 16;
-            SD[su+1][ss] = SB >> 4;
-            if(SD[su+1][ss] >= 8)
-                SD[su+1][ss] -= 16;
+
+            int8_t SD0 = bits<0, 3>(SB);
+            if(SD0 >= 8)
+                SD0 -= 16;
+
+            int8_t SD1 = bits<4, 7>(SB);
+            if(SD1 >= 8)
+                SD1 -= 16;
+
+            SD[su++][ss] = SD0;
+            SD[su++][ss] = SD1;
         }
 
-    index = decodeADPCM<8, 12>(SD, range, filter, stereo, left, right);
-    return index;
+    return decodeADPCM<8, 12>(SD, range, filter, stereo, left, right);
 }
 
 /** \brief Writes the audio data (16 bit signed PCM) in the given file.
