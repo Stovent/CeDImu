@@ -5,6 +5,10 @@
 #include <algorithm>
 #include <cstring>
 
+#define DCP_PARAMETER(inst) (bits<0, 23>(inst))
+#define DCP_POINTER(inst) (inst & 0x003FFFFCu)
+#define ICA_VSR_POINTER(inst) (bits<0, 21>(inst))
+
 MCD212::MCD212(CDI& idc, std::span<const uint8_t> systemBios, const bool PAL)
     : BIOS(systemBios, 0x400000)
     , totalFrameCount(0)
@@ -91,19 +95,19 @@ void MCD212::ExecuteICA1()
             break;
 
         case 2: // RELOAD DCP
-            SetDCP1(ica & 0x003FFFFC);
+            SetDCP1(DCP_POINTER(ica));
             break;
 
         case 3: // RELOAD DCP AND STOP
-            SetDCP1(ica & 0x003FFFFC);
+            SetDCP1(DCP_POINTER(ica));
             return;
 
         case 4: // RELOAD ICA
-            addr = ica & 0x003FFFFF;
+            addr = ICA_VSR_POINTER(ica);
             break;
 
         case 5: // RELOAD VSR AND STOP
-            SetVSR1(ica & 0x003FFFFF);
+            SetVSR1(ICA_VSR_POINTER(ica));
             return;
 
         case 6: // INTERRUPT
@@ -113,25 +117,25 @@ void MCD212::ExecuteICA1()
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
-            ReloadDisplayParameters1((ica >> 4) & 1, (ica >> 2) & 3, ica & 3);
+            ReloadDisplayParameters1(bit<4>(ica), bits<2, 3>(ica), bits<0, 1>(ica));
             break;
 
         default:
             if(ica < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                const uint8_t index = (uint8_t)(ica >> 24) - 0x80;
-                CLUT[bank + index] = ica & 0x00FFFFFF;
+                const uint8_t index = bits<24, 31>(ica) - 0x80;
+                CLUT[bank + index] = DCP_PARAMETER(ica);
             }
             else if((ica & 0xFF000000) == 0xCF000000) // Cursor Pattern
             {
-                const uint8_t reg = ica >> 16 & 0xF;
+                const uint8_t reg = bits<16, 19>(ica);
                 cursorPatterns[reg] = ica;
-                controlRegisters[CursorPattern] = ica & 0x00FFFFFF;
+                controlRegisters[CursorPattern] = DCP_PARAMETER(ica);
             }
             else
             {
-                controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
+                controlRegisters[bits<24, 31>(ica) - 0x80] = DCP_PARAMETER(ica);
             }
         }
     }
@@ -157,19 +161,19 @@ void MCD212::ExecuteDCA1()
             break;
 
         case 2: // RELOAD DCP
-            SetDCP1(dca & 0x003FFFFC);
+            SetDCP1(DCP_POINTER(dca));
             break;
 
         case 3: // RELOAD DCP AND STOP
-            SetDCP1(dca & 0x003FFFFC);
+            SetDCP1(DCP_POINTER(dca));
             return;
 
         case 4: // RELOAD VSR
-            SetVSR1(dca & 0x003FFFFF);
+            SetVSR1(ICA_VSR_POINTER(dca));
             break;
 
         case 5: // RELOAD VSR AND STOP
-            SetVSR1(dca & 0x003FFFFF);
+            SetVSR1(ICA_VSR_POINTER(dca));
             return;
 
         case 6: // INTERRUPT
@@ -179,25 +183,25 @@ void MCD212::ExecuteDCA1()
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
-            ReloadDisplayParameters1((dca >> 4) & 1, (dca >> 2) & 3, dca & 3);
+            ReloadDisplayParameters1(bit<4>(dca), bits<2, 3>(dca), bits<0, 1>(dca));
             break;
 
         default:
             if(dca < 0xC0000000) // CLUT RAM
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                const uint8_t index = (uint8_t)(dca >> 24) - 0x80;
-                CLUT[bank + index] = dca & 0x00FFFFFF;
+                const uint8_t index = bits<24, 31>(dca) - 0x80;
+                CLUT[bank + index] = DCP_PARAMETER(dca);
             }
             else if((dca & 0xFF000000) == 0xCF000000) // Cursor Pattern
             {
-                const uint8_t reg = dca >> 16 & 0xF;
+                const uint8_t reg = bits<16, 19>(dca);
                 cursorPatterns[reg] = dca;
-                controlRegisters[CursorPattern] = dca & 0x00FFFFFF;
+                controlRegisters[CursorPattern] = DCP_PARAMETER(dca);
             }
             else
             {
-                controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
+                controlRegisters[bits<24, 31>(dca) - 0x80] = DCP_PARAMETER(dca);
             }
         }
     }
@@ -224,19 +228,19 @@ void MCD212::ExecuteICA2()
             break;
 
         case 2: // RELOAD DCP
-            SetDCP2(ica & 0x003FFFFC);
+            SetDCP2(DCP_POINTER(ica));
             break;
 
         case 3: // RELOAD DCP AND STOP
-            SetDCP2(ica & 0x003FFFFC);
+            SetDCP2(DCP_POINTER(ica));
             return;
 
         case 4: // RELOAD ICA
-            addr = ica & 0x003FFFFF;
+            addr = ICA_VSR_POINTER(ica);
             break;
 
         case 5: // RELOAD VSR AND STOP
-            SetVSR2(ica & 0x003FFFFF);
+            SetVSR2(ICA_VSR_POINTER(ica));
             return;
 
         case 6: // INTERRUPT
@@ -246,7 +250,7 @@ void MCD212::ExecuteICA2()
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
-            ReloadDisplayParameters2((ica >> 4) & 1, (ica >> 2) & 3, ica & 3);
+            ReloadDisplayParameters2(bit<4>(ica), bits<2, 3>(ica), bits<0, 1>(ica));
             break;
 
         default:
@@ -254,11 +258,11 @@ void MCD212::ExecuteICA2()
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
                 LOG(if(bank < 2) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
-                const uint8_t index = (uint8_t)(ica >> 24) - 0x80;
-                CLUT[bank + index] = ica & 0x00FFFFFF;
+                const uint8_t index = bits<24, 31>(ica) - 0x80;
+                CLUT[bank + index] = DCP_PARAMETER(ica);
             }
             else
-                controlRegisters[(uint8_t)(ica >> 24) - 0x80] = ica & 0x00FFFFFF;
+                controlRegisters[bits<24, 31>(ica) - 0x80] = DCP_PARAMETER(ica);
         }
     }
 }
@@ -283,19 +287,19 @@ void MCD212::ExecuteDCA2()
             break;
 
         case 2: // RELOAD DCP
-            SetDCP2(dca & 0x003FFFFC);
+            SetDCP2(DCP_POINTER(dca));
             break;
 
         case 3: // RELOAD DCP AND STOP
-            SetDCP2(dca & 0x003FFFFC);
+            SetDCP2(DCP_POINTER(dca));
             return;
 
         case 4: // RELOAD VSR
-            SetVSR2(dca & 0x003FFFFF);
+            SetVSR2(ICA_VSR_POINTER(dca));
             break;
 
         case 5: // RELOAD VSR AND STOP
-            SetVSR2(dca & 0x003FFFFF);
+            SetVSR2(ICA_VSR_POINTER(dca));
             return;
 
         case 6: // INTERRUPT
@@ -305,7 +309,7 @@ void MCD212::ExecuteDCA2()
             break;
 
         case 7: // RELOAD DISPLAY PARAMETERS
-            ReloadDisplayParameters2((dca >> 4) & 1, (dca >> 2) & 3, dca & 3);
+            ReloadDisplayParameters2(bit<4>(dca), bits<2, 3>(dca), bits<0, 1>(dca));
             break;
 
         default:
@@ -313,11 +317,11 @@ void MCD212::ExecuteDCA2()
             {
                 const uint8_t bank = controlRegisters[CLUTBank] << 6;
                 LOG(if(bank < 2) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
-                const uint8_t index = (uint8_t)(dca >> 24) - 0x80;
-                CLUT[bank + index] = dca & 0x00FFFFFF;
+                const uint8_t index = bits<24, 31>(dca) - 0x80;
+                CLUT[bank + index] = DCP_PARAMETER(dca);
             }
             else
-                controlRegisters[(uint8_t)(dca >> 24) - 0x80] = dca & 0x00FFFFFF;
+                controlRegisters[bits<24, 31>(dca) - 0x80] = DCP_PARAMETER(dca);
         }
     }
 }

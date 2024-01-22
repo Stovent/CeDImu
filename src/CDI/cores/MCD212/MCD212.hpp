@@ -2,6 +2,7 @@
 #define CDI_CORES_MCD212_MCD212_HPP
 
 class CDI;
+#include "../../common/utils.hpp"
 #include "../../common/types.hpp"
 #include "../../common/Video.hpp"
 #include "../../OS9/BIOS.hpp"
@@ -90,20 +91,6 @@ private:
     uint32_t GetLong(const uint32_t addr);
 
     // internal registers
-    uint16_t GetCSR1RRegister() const;
-    uint16_t GetCSR1WRegister() const;
-    uint16_t GetDCR1Register() const;
-    uint16_t GetVSR1Register() const;
-    uint16_t GetDDR1Register() const;
-    uint16_t GetDCP1Register() const;
-
-    uint16_t GetCSR2RRegister() const;
-    uint16_t GetCSR2WRegister() const;
-    uint16_t GetDCR2Register() const;
-    uint16_t GetVSR2Register() const;
-    uint16_t GetDDR2Register() const;
-    uint16_t GetDCP2Register() const;
-
     std::string DisassembleCSR1RRegister() const;
     std::string DisassembleCSR1WRegister() const;
     std::string DisassembleDCR1Register() const;
@@ -118,36 +105,48 @@ private:
     std::string DisassembleDDR2Register() const;
     std::string DisassembleDCP2Register() const;
 
-    bool GetDA() const;
-    bool GetPA() const;
-    bool GetIT1() const;
-    bool GetIT2() const;
-    bool GetBE_R() const;
-    bool GetBE_W() const;
-    bool GetDI1() const;
-    uint8_t GetDD12() const;
-    bool GetTD() const;
-    bool GetDD() const;
-    bool GetST() const;
-    bool GetDI2() const;
-    bool GetDE() const;
-    bool GetCF() const;
-    bool GetFD() const;
-    bool GetSM() const;
-    bool GetCM1() const;
-    bool GetIC1() const;
-    bool GetDC1() const;
-    bool GetCM2() const;
-    bool GetIC2() const;
-    bool GetDC2() const;
-    uint8_t GetMF12_1() const;
-    uint8_t GetFT12_1() const;
-    uint8_t GetMF12_2() const;
-    uint8_t GetFT12_2() const;
-    uint32_t GetVSR1() const;
-    uint32_t GetVSR2() const;
-    uint32_t GetDCP1() const;
-    uint32_t GetDCP2() const;
+    // CSR1R
+    bool GetDA() const { return bit<7>(registerCSR1R); }
+    bool GetPA() const { return bit<5>(registerCSR1R); }
+    // CSR2R
+    bool GetIT1() const { return bit<2>(registerCSR2R); }
+    bool GetIT2() const { return bit<1>(registerCSR2R); }
+    bool GetBE_R() const { return bit<0>(registerCSR2R); }
+
+    // CSR1W
+    bool GetDI1() const { return bit<15>(internalRegisters[CSR1W]); }
+    uint8_t GetDD12() const { return bits<8, 9>(internalRegisters[CSR1W]); }
+    bool GetTD() const { return bit<5>(internalRegisters[CSR1W]); }
+    bool GetDD() const { return bit<3>(internalRegisters[CSR1W]); }
+    bool GetST() const { return bit<1>(internalRegisters[CSR1W]); }
+    bool GetBE_W() const { return bit<0>(internalRegisters[CSR1W]); }
+    // CSR2W
+    bool GetDI2() const { return bit<15>(internalRegisters[CSR2W]); }
+
+    // DCR1
+    bool GetDE() const { return bit<15>(internalRegisters[DCR1]); }
+    bool GetCF() const { return bit<14>(internalRegisters[DCR1]); }
+    bool GetFD() const { return bit<13>(internalRegisters[DCR1]); }
+    bool GetSM() const { return bit<12>(internalRegisters[DCR1]); }
+    bool GetCM1() const { return bit<11>(internalRegisters[DCR1]); }
+    bool GetIC1() const { return bit<9>(internalRegisters[DCR1]); }
+    bool GetDC1() const { return bit<8>(internalRegisters[DCR1]); }
+    // DCR2
+    bool GetCM2() const { return bit<11>(internalRegisters[DCR2]); }
+    bool GetIC2() const { return bit<9>(internalRegisters[DCR2]); }
+    bool GetDC2() const { return bit<8>(internalRegisters[DCR2]); }
+
+    // DDR1
+    uint8_t GetMF12_1() const { return bits<10, 11>(internalRegisters[DDR1]); }
+    uint8_t GetFT12_1() const { return bits<8, 9>(internalRegisters[DDR1]); }
+    // DDR2
+    uint8_t GetMF12_2() const { return bits<10, 11>(internalRegisters[DDR2]); }
+    uint8_t GetFT12_2() const { return bits<8, 9>(internalRegisters[DDR2]); }
+
+    uint32_t GetVSR1() const { return as<uint32_t>(bits<0, 5>(internalRegisters[DCR1])) << 16 | internalRegisters[VSR1]; }
+    uint32_t GetVSR2() const { return as<uint32_t>(bits<0, 5>(internalRegisters[DCR2])) << 16 | internalRegisters[VSR2]; }
+    uint32_t GetDCP1() const { return as<uint32_t>(bits<0, 5>(internalRegisters[DDR1])) << 16 | internalRegisters[DCP1]; }
+    uint32_t GetDCP2() const { return as<uint32_t>(bits<0, 5>(internalRegisters[DDR2])) << 16 | internalRegisters[DCP2]; }
 
     void SetIT1(const bool it = true);
     void SetIT2(const bool it = true);
@@ -158,15 +157,15 @@ private:
     void ReloadDisplayParameters1(const bool dm, const uint8_t MF, const uint8_t FT);
     void ReloadDisplayParameters2(const bool dm, const uint8_t MF, const uint8_t FT);
 
-    inline uint16_t GetHorizontalResolution1() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM1() ? a*2 : a; }
-    inline uint16_t GetHorizontalResolution2() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }
-    inline uint16_t GetVerticalResolution() const { return GetFD() ? 240 : (GetST() ? 240 : 280); }
+    uint16_t GetHorizontalResolution1() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM1() ? a*2 : a; }
+    uint16_t GetHorizontalResolution2() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }
+    uint16_t GetVerticalResolution() const { return GetFD() ? 240 : (GetST() ? 240 : 280); }
 
-    inline size_t GetHorizontalCycles() const { return GetCF() ? 120 : 112; } // Table 5.5
-    inline size_t GetTotalVerticalLines() const { return GetFD() ? 262 : 312; } // Table 5.6
-    inline size_t GetVerticalRetraceLines() const { return GetFD() ? 22 : (GetST() ? 72 : 32); }
+    size_t GetHorizontalCycles() const { return GetCF() ? 120 : 112; } // Table 5.5
+    size_t GetTotalVerticalLines() const { return GetFD() ? 262 : 312; } // Table 5.6
+    size_t GetVerticalRetraceLines() const { return GetFD() ? 22 : (GetST() ? 72 : 32); }
 
-    inline size_t GetLineDisplayTime() const // as nano seconds
+    size_t GetLineDisplayTime() const // as nano seconds
     {
         return isPAL || !GetCF() ? 64000 : 63560;
     }

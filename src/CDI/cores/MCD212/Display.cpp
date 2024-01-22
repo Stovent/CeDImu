@@ -71,14 +71,11 @@ void MCD212::ExecuteVideoLine()
     lineNumber++;
     if(verticalLines >= GetTotalVerticalLines())
     {
-        if(GetDE())
+        if(GetDE() && controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
         {
-            if(controlRegisters[CursorControl] & 0x800000) // Cursor enable bit
-            {
-                const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // TODO: address is in double resolution mode
-                const uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
-                Video::paste(screen.data(), screen.m_width, screen.m_height, cursorPlane.data(), cursorPlane.CURSOR_WIDTH, cursorPlane.CURSOR_HEIGHT, x, y);
-            }
+            const uint16_t x = (controlRegisters[CursorPosition] & 0x0003FF) >> 1; // TODO: address is in double resolution mode
+            const uint16_t y = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
+            Video::paste(screen.data(), screen.m_width, screen.m_height, cursorPlane.data(), cursorPlane.CURSOR_WIDTH, cursorPlane.CURSOR_HEIGHT, x, y);
         }
 
         UNSET_DA_BIT()
@@ -98,18 +95,19 @@ void MCD212::DrawLinePlaneA()
 
     uint16_t bytes = 0;
     const uint8_t fileType = GetFT12_1();
+    const uint32_t vsr1 = GetVSR1();
     if(fileType <= 1)
     {
         const Video::ImageCodingMethod codingMethod = ICM_LUT_A[icm];
         const uint32_t* clut = codingMethod == ICM(CLUT77) && controlRegisters[ImageCodingMethod] & 0x400000 ? &CLUT[128] : CLUT.data();
-        bytes = Video::decodeBitmapLine(planeA(lineNumber), nullptr, &memory[GetVSR1()], planeA.m_width, clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
+        bytes = Video::decodeBitmapLine(planeA(lineNumber), nullptr, &memory[vsr1], planeA.m_width, clut, controlRegisters[DYUVAbsStartValueForPlaneA], codingMethod);
     }
     else if(fileType == 2)
-        bytes = Video::decodeRunLengthLine(planeA(lineNumber), &memory[GetVSR1()], planeA.m_width, CLUT.data(), GetCM1());
+        bytes = Video::decodeRunLengthLine(planeA(lineNumber), &memory[vsr1], planeA.m_width, CLUT.data(), GetCM1());
     else
         DecodeMosaicLineA();
 
-    SetVSR1(GetVSR1() + bytes);
+    SetVSR1(vsr1 + bytes);
 }
 
 void MCD212::DrawLinePlaneB()
@@ -120,17 +118,19 @@ void MCD212::DrawLinePlaneB()
 
     uint16_t bytes = 0;
     const uint8_t fileType = GetFT12_2();
+    const uint32_t vsr2 = GetVSR2();
     if(fileType <= 1)
     {
         const Video::ImageCodingMethod codingMethod = ICM_LUT_B[icm];
-        bytes = Video::decodeBitmapLine(planeB(lineNumber), &memory[GetVSR1()], &memory[GetVSR2()], planeB.m_width, &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
+        const uint32_t vsr1 = GetVSR1();
+        bytes = Video::decodeBitmapLine(planeB(lineNumber), &memory[vsr1], &memory[vsr2], planeB.m_width, &CLUT[128], controlRegisters[DYUVAbsStartValueForPlaneB], codingMethod);
     }
     else if(fileType == 2)
-        bytes = Video::decodeRunLengthLine(planeB(lineNumber), &memory[GetVSR2()], planeB.m_width, &CLUT[128], GetCM2());
+        bytes = Video::decodeRunLengthLine(planeB(lineNumber), &memory[vsr2], planeB.m_width, &CLUT[128], GetCM2());
     else
         DecodeMosaicLineB();
 
-    SetVSR2(GetVSR2() + bytes);
+    SetVSR2(vsr2 + bytes);
 }
 
 void MCD212::DrawLineBackground()
