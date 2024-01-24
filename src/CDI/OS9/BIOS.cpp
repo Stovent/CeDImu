@@ -45,31 +45,10 @@ ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
  * \param bios The BIOS data.
  * \param base The base address of the BIOS in the memory map.
  */
-BIOS::BIOS(std::span<const uint8_t> bios, const uint32_t base)
-    : m_base(base)
-    , m_size(bios.size())
-    , m_modules()
-    , m_memory(bios.begin(), bios.end())
+BIOS::BIOS(std::span<const uint8_t> bios)
+    : m_memory(bios.begin(), bios.end())
 {
     LoadModules();
-}
-
-void BIOS::LoadModules()
-{
-    for(uint32_t i = 0; i < m_size; i += 2)
-    {
-        if(m_memory[i] == 0x4A && m_memory[i + 1] == 0xFC)
-        {
-            uint16_t parity = 0xFFFF; // Header Parity Check
-            for(int j = 0; j < 0x30; j += 2)
-            {
-                const uint16_t word = as<uint16_t>(m_memory[i + j]) << 8 | m_memory[i + j + 1];
-                parity ^= word;
-            }
-            if(parity == 0)
-                m_modules.emplace_back(&m_memory[i], i);
-        }
-    }
 }
 
 /** \brief Get the module name the position is in.
@@ -91,8 +70,8 @@ std::string BIOS::GetModuleNameAt(const uint32_t offset) const
  */
 Boards BIOS::GetBoardType() const
 {
-    const uint8_t id = m_memory[m_size - 4];
-    switch(bits<4, 7>(id))
+    const uint8_t id = bits<4, 7>(m_memory[GetSize() - 4]);
+    switch(id)
     {
     case 2: return Boards::MiniMMC;
     case 3: return Boards::Mono1;
@@ -119,6 +98,24 @@ bool BIOS::Has8KBNVRAM() const
         }
     }
     return false;
+}
+
+void BIOS::LoadModules()
+{
+    for(uint32_t i = 0; i < GetSize(); i += 2)
+    {
+        if(m_memory[i] == 0x4A && m_memory[i + 1] == 0xFC)
+        {
+            uint16_t parity = 0xFFFF; // Header Parity Check
+            for(int j = 0; j < 0x30; j += 2)
+            {
+                const uint16_t word = as<uint16_t>(m_memory[i + j]) << 8 | m_memory[i + j + 1];
+                parity ^= word;
+            }
+            if(parity == 0)
+                m_modules.emplace_back(&m_memory[i], i);
+        }
+    }
 }
 
 } // nampespace OS9

@@ -30,6 +30,11 @@ void MiniMMC::IncrementTime(const double ns)
     slaveVDSC.IncrementTime(ns);
 }
 
+uint32_t MiniMMC::GetBIOSBaseAddress() const
+{
+    return 0x180000;
+}
+
 uint32_t MiniMMC::GetTotalFrameCount()
 {
     return masterVDSC.totalFrameCount;

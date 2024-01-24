@@ -16,8 +16,10 @@ public:
     Mono2(const Mono2&) = delete;
     Mono2(CDI& cdi, const void* vdscBios, const uint32_t vdscSize, std::span<const uint8_t> nvram, const CDIConfig& conf);
     virtual ~Mono2();
+
     virtual void Reset(const bool resetCPU) override;
     virtual void IncrementTime(const double ns) override;
+    virtual uint32_t GetBIOSBaseAddress() const override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;

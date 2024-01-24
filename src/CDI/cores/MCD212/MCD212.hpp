@@ -17,7 +17,7 @@ public:
     OS9::BIOS BIOS;
     uint32_t totalFrameCount;
 
-    MCD212(CDI& idc, std::span<const uint8_t> systemBios, const bool PAL);
+    MCD212(CDI& idc, OS9::BIOS bios, const bool pal);
 
     MCD212(const MCD212&) = delete;
 

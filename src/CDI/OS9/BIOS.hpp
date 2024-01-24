@@ -49,23 +49,20 @@ struct ModuleHeader
 class BIOS
 {
 public:
-    const uint32_t m_base; /**< Base address of the BIOS in the memory map. */
-    const uint32_t m_size; /**< Size of the BIOS in bytes. */
-
-    std::vector<ModuleHeader> m_modules; /**< OS9 modules inside the BIOS. */
-
-    BIOS(std::span<const uint8_t> bios, uint32_t base);
+    explicit BIOS(std::span<const uint8_t> bios);
 
     BIOS(const BIOS&) = default;
     BIOS(BIOS&&) = default;
 
+    uint32_t GetSize() const { return m_memory.size(); }
+
     /** \brief Returns the byte at \p offset.
         \param offset The location of the byte in the BIOS area. */
-    inline uint8_t operator[](const uint32_t offset) const { return m_memory[offset]; }
+    uint8_t operator[](const uint32_t offset) const { return m_memory[offset]; }
 
     /** \brief Returns a pointer to the location \p pos.
         \param pos The location of the desired  pointer in the BIOS area. */
-    inline const uint8_t* operator()(const uint32_t pos = 0) const { return &m_memory[pos]; }
+    const uint8_t* operator()(const uint32_t pos = 0) const { return &m_memory[pos]; }
 
     std::string GetModuleNameAt(const uint32_t offset) const;
 
@@ -75,6 +72,7 @@ public:
 
 private:
     const std::vector<uint8_t> m_memory;
+    std::vector<ModuleHeader> m_modules{}; /**< OS9 modules inside the BIOS. */
 
     void LoadModules();
 };

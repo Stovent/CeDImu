@@ -4,9 +4,9 @@
 #include "../../cores/DS1216/DS1216.hpp"
 #include "../../cores/M48T08/M48T08.hpp"
 
-Mono3::Mono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc, std::string_view boardName)
+Mono3::Mono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc, std::string_view boardName)
     : CDI(boardName, config, std::move(callbacks), std::move(disc))
-    , m_mcd212(*this, systemBios, config.PAL)
+    , m_mcd212(*this, std::move(bios), config.PAL)
     , m_ciap(*this)
     , m_nvramMaxAddress(config.has32KBNVRAM ? 0x330000 : 0x324000)
 {
@@ -35,6 +35,11 @@ void Mono3::IncrementTime(const double ns)
     CDI::IncrementTime(ns);
     m_mcd212.IncrementTime(ns);
     m_ciap.IncrementTime(ns);
+}
+
+uint32_t Mono3::GetBIOSBaseAddress() const
+{
+    return 0x400000;
 }
 
 uint32_t Mono3::GetTotalFrameCount()

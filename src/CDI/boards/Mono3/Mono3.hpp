@@ -10,7 +10,7 @@
 class Mono3 : public CDI
 {
 public:
-    Mono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc(), std::string_view boardName = "Mono-III");
+    Mono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc(), std::string_view boardName = "Mono-III");
     virtual ~Mono3();
 
     Mono3(const Mono3&) = delete;
@@ -21,6 +21,7 @@ public:
 
     virtual void Reset(const bool resetCPU) override;
     virtual void IncrementTime(const double ns) override;
+    virtual uint32_t GetBIOSBaseAddress() const override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;

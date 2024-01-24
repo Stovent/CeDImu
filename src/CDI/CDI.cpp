@@ -19,9 +19,10 @@
  */
 std::unique_ptr<CDI> CDI::NewCDI(Boards board, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
+    const OS9::BIOS bios(systemBios);
+
     if(board == Boards::AutoDetect)
     {
-        const OS9::BIOS bios(systemBios, 0);
         board = bios.GetBoardType();
         config.has32KBNVRAM = !bios.Has8KBNVRAM();
     }
@@ -29,13 +30,13 @@ std::unique_ptr<CDI> CDI::NewCDI(Boards board, std::span<const uint8_t> systemBi
     switch(board)
     {
     case Boards::Mono3:
-        return NewMono3(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
+        return NewMono3(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 
     case Boards::Mono4:
-        return NewMono4(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
+        return NewMono4(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 
     case Boards::Roboco:
-        return NewRoboco(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
+        return NewRoboco(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 
     default:
         return nullptr;
@@ -45,25 +46,25 @@ std::unique_ptr<CDI> CDI::NewCDI(Boards board, std::span<const uint8_t> systemBi
 /** \brief Creates a new Mono3 player.
  * See CDI::NewCDI for a description of the parameters.
  */
-std::unique_ptr<CDI> CDI::NewMono3(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+std::unique_ptr<CDI> CDI::NewMono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
-    return std::make_unique<Mono3>(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc));
+    return std::make_unique<Mono3>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 }
 
 /** \brief Creates a new Mono4 player.
  * See CDI::NewCDI for a description of the parameters.
  */
-std::unique_ptr<CDI> CDI::NewMono4(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+std::unique_ptr<CDI> CDI::NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
-    return std::make_unique<Mono3>(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc), "Mono-IV");
+    return std::make_unique<Mono3>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc), "Mono-IV");
 }
 
 /** \brief Creates a new Roboco player.
  * See CDI::NewCDI for a description of the parameters.
  */
-std::unique_ptr<CDI> CDI::NewRoboco(std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+std::unique_ptr<CDI> CDI::NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
-    return std::make_unique<Mono3>(systemBios, nvram, std::move(config), std::move(callbacks), std::move(disc), "Roboco");
+    return std::make_unique<Mono3>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc), "Roboco");
 }
 
 CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc)
@@ -89,17 +90,17 @@ CDI::~CDI()
 const uint8_t* CDI::GetPointer(uint32_t addr) const
 {
     const RAMBank ram1 = GetRAMBank1();
-    const RAMBank ram2 = GetRAMBank2();
-    const OS9::BIOS& bios = GetBIOS();
-
     if(addr >= ram1.base && addr < ram1.base + ram1.data.size())
         return &ram1.data[addr - ram1.base];
 
+    const RAMBank ram2 = GetRAMBank2();
     if(addr >= ram2.base && addr < ram2.base + ram2.data.size())
         return &ram2.data[addr - ram2.base];
 
-    if(addr >= bios.m_base && addr < bios.m_base + bios.m_size)
-        return bios(addr - bios.m_base);
+    const OS9::BIOS& bios = GetBIOS();
+    const uint32_t base = GetBIOSBaseAddress();
+    if(addr >= base && addr < base + bios.GetSize())
+        return bios(addr - base);
 
     return nullptr;
 }
