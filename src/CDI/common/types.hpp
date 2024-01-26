@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <span>
 #include <string>
+#include <string_view>
 
 enum BusFlags
 {
@@ -46,6 +47,10 @@ struct InternalRegister
     uint32_t address;
     uint32_t value;
     std::string disassembledValue;
+
+    InternalRegister(std::string_view name, uint32_t address, uint32_t value, std::string_view disassembledValue)
+        : name(name), address(address), value(value), disassembledValue(disassembledValue)
+    {}
 };
 
 struct RAMBank

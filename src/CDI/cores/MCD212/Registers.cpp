@@ -79,7 +79,7 @@ std::vector<InternalRegister> MCD212::GetInternalRegisters() const
 
 std::vector<InternalRegister> MCD212::GetControlRegisters() const
 {
-    std::vector<::InternalRegister> registers;
+    std::vector<InternalRegister> registers;
     for(uint32_t i = 0; i < 256; i++)
         registers.emplace_back("CLUT Color " + std::to_string(i), i, CLUT[i], "");
     registers.emplace_back("Image Coding Method",              ImageCodingMethod          + 0x80, controlRegisters[ImageCodingMethod], "");
