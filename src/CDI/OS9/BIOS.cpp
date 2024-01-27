@@ -10,14 +10,14 @@ namespace OS9
  * \param memory A pointer to the beginning of the additional header.
  */
 ModuleExtraHeader::ModuleExtraHeader(const uint8_t* memory) :
-    M_Exec((uint32_t)memory[0x00] << 24 | memory[0x01] << 16 | memory[0x02] << 8 | memory[0x03]),
-    M_Excpt((uint32_t)memory[0x04] << 24 | memory[0x05] << 16 | memory[0x06] << 8 | memory[0x07]),
-    M_Mem((uint32_t)memory[0x08] << 24 | memory[0x09] << 16 | memory[0x0A] << 8 | memory[0x0B]),
-    M_Stack((uint32_t)memory[0x0C] << 24 | memory[0x0D] << 16 | memory[0x0E] << 8 | memory[0x0F]),
-    M_IData((uint32_t)memory[0x10] << 24 | memory[0x11] << 16 | memory[0x12] << 8 | memory[0x13]),
-    M_IRefs((uint32_t)memory[0x14] << 24 | memory[0x15] << 16 | memory[0x16] << 8 | memory[0x17]),
-    M_Init((uint32_t)memory[0x18] << 24 | memory[0x19] << 16 | memory[0x1A] << 8 | memory[0x1B]),
-    M_Term((uint32_t)memory[0x1C] << 24 | memory[0x1D] << 16 | memory[0x1E] << 8 | memory[0x1F])
+    M_Exec(GET_ARRAY32(memory, 0x00)),
+    M_Excpt(GET_ARRAY32(memory, 0x04)),
+    M_Mem(GET_ARRAY32(memory, 0x08)),
+    M_Stack(GET_ARRAY32(memory, 0x0C)),
+    M_IData(GET_ARRAY32(memory, 0x10)),
+    M_IRefs(GET_ARRAY32(memory, 0x14)),
+    M_Init(GET_ARRAY32(memory, 0x18)),
+    M_Term(GET_ARRAY32(memory, 0x1C))
 {}
 
 /** \brief OS9 Module Header.
@@ -25,16 +25,16 @@ ModuleExtraHeader::ModuleExtraHeader(const uint8_t* memory) :
  * \param beg Its location in the BIOS memory area.
  */
 ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
-    M_SysRev((uint16_t)memory[0x02] << 8 | memory[0x03]),
-    M_Size((uint32_t)memory[0x04] << 24 | memory[0x05] << 16 | memory[0x06] << 8 | memory[0x07]),
-    M_Owner((uint32_t)memory[0x08] << 24 | memory[0x09] << 16 | memory[0x0A] << 8 | memory[0x0B]),
-    M_Name((uint32_t)memory[0x0C] << 24 | memory[0x0D] << 16 | memory[0x0E] << 8 | memory[0x0F]),
-    M_Accs((uint16_t)memory[0x10] << 8 | memory[0x11]),
+    M_SysRev(GET_ARRAY16(memory, 0x02)),
+    M_Size(GET_ARRAY32(memory, 0x04)),
+    M_Owner(GET_ARRAY32(memory, 0x08)),
+    M_Name(GET_ARRAY32(memory, 0x0C)),
+    M_Accs(GET_ARRAY16(memory, 0x10)),
     M_Type(memory[0x12]),
     M_Lang(memory[0x13]),
     M_Attr(memory[0x14]),
     M_Revs(memory[0x15]),
-    M_Edit((uint16_t)memory[0x16] << 8 | memory[0x17]),
+    M_Edit(GET_ARRAY16(memory, 0x16)),
     extra(&memory[0x30]),
     name(reinterpret_cast<const char*>(&memory[M_Name])),
     begin(beg),
@@ -43,7 +43,6 @@ ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
 
 /** \brief OS9 BIOS.
  * \param bios The BIOS data.
- * \param base The base address of the BIOS in the memory map.
  */
 BIOS::BIOS(std::span<const uint8_t> bios)
     : m_memory(bios.begin(), bios.end())
@@ -92,7 +91,7 @@ bool BIOS::Has8KBNVRAM() const
     {
         if(mod.name == "nvr")
         {
-            uint16_t size = as<uint16_t>(m_memory[mod.begin + 74]) << 8 | m_memory[mod.begin + 75];
+            const uint16_t size = GET_ARRAY16(m_memory, mod.begin + 74);
             if(size == 0x1FF8) // 8KB
                 return true;
         }
@@ -109,7 +108,7 @@ void BIOS::LoadModules()
             uint16_t parity = 0xFFFF; // Header Parity Check
             for(int j = 0; j < 0x30; j += 2)
             {
-                const uint16_t word = as<uint16_t>(m_memory[i + j]) << 8 | m_memory[i + j + 1];
+                const uint16_t word = GET_ARRAY16(m_memory, i + j);
                 parity ^= word;
             }
             if(parity == 0)

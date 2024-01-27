@@ -247,16 +247,16 @@ void decodeDYUV(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous) noe
     uint8_t v2 = bits<4, 7>(pixel);
     uint8_t y2 = bits<0, 3>(pixel);
 
-    uint8_t py = bits<16, 23>(previous);
-    uint8_t pu = bits<8, 15>(previous);
-    uint8_t pv = previous;
+    const uint8_t py = bits<16, 23>(previous);
+    const uint8_t pu = bits<8, 15>(previous);
+    const uint8_t pv = previous;
 
     y1 = py + dequantizer[y1];
     u2 = pu + dequantizer[u2];
     v2 = pv + dequantizer[v2];
     y2 = y1 + dequantizer[y2];
-    uint8_t u1 = (as<uint16_t>(pu) + as<uint16_t>(u2)) >> 1;
-    uint8_t v1 = (as<uint16_t>(pv) + as<uint16_t>(v2)) >> 1;
+    const uint8_t u1 = (as<uint16_t>(pu) + as<uint16_t>(u2)) >> 1;
+    const uint8_t v1 = (as<uint16_t>(pv) + as<uint16_t>(v2)) >> 1;
     previous = as<uint32_t>(y2) << 16 | as<uint32_t>(u2) << 8 | v2;
 
     matrixRGB(y1, u1, v1, pixels);

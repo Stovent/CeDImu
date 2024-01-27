@@ -49,7 +49,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
     if(memorySwapCount < 4 && flags & Trigger)
     {
         memorySwapCount++;
-        return as<uint16_t>(BIOS[addr]) << 8 | BIOS[addr + 1];
+        return GET_ARRAY16(BIOS, addr);
     }
 
     uint16_t data;
@@ -57,12 +57,12 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr < 0x400000)
     {
-        data = as<uint16_t>(memory[addr]) << 8 | memory[addr + 1];
+        data = GET_ARRAY16(memory, addr);
         LOG(location = MemoryAccessLocation::RAM;)
     }
     else if(addr < 0x4FFC00)
     {
-        data = as<uint16_t>(BIOS[addr - 0x400000]) << 8 | BIOS[addr - 0x3FFFFF];
+        data = GET_ARRAY16(BIOS, addr - 0x400000);
         LOG(location = MemoryAccessLocation::BIOS;)
     }
     else if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
