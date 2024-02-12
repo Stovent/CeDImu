@@ -130,7 +130,7 @@ uint16_t SCC68070::ABCD()
 template<typename T, typename UT, typename VT, typename UVT>
 static inline uint8_t add(const T src, const T dst, T* result, const VT min, const VT max, const UVT umax)
 {
-    const UVT uvres = signExtend<UT, UVT>(src) + signExtend<UT, UVT>(dst);
+    const UVT uvres = zeroExtend<UT, UVT>(src) + zeroExtend<UT, UVT>(dst);
     const VT vres = (VT)src + (VT)dst;
     const T res = vres;
 

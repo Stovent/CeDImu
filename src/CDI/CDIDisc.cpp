@@ -317,8 +317,8 @@ uint16_t CDIDisc::GetWord()
 {
     uint16_t var = 0;
     char c;
-    m_disc.get(c); var |= (uint8_t)c << 8;
-    m_disc.get(c); var |= (uint8_t)c;
+    m_disc.get(c); var |= zeroExtend<uint8_t, uint16_t>(c) << 8;
+    m_disc.get(c); var |= zeroExtend<uint8_t, uint16_t>(c);
     return var;
 }
 
@@ -332,10 +332,10 @@ uint32_t CDIDisc::GetLong()
 {
     uint32_t var = 0;
     char c;
-    m_disc.get(c); var |= (uint8_t)c << 24;
-    m_disc.get(c); var |= (uint8_t)c << 16;
-    m_disc.get(c); var |= (uint8_t)c << 8;
-    m_disc.get(c); var |= (uint8_t)c;
+    m_disc.get(c); var |= zeroExtend<uint8_t, uint32_t>(c) << 24;
+    m_disc.get(c); var |= zeroExtend<uint8_t, uint32_t>(c) << 16;
+    m_disc.get(c); var |= zeroExtend<uint8_t, uint32_t>(c) << 8;
+    m_disc.get(c); var |= zeroExtend<uint8_t, uint32_t>(c);
     return var;
 }
 

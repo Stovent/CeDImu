@@ -2,6 +2,7 @@
 #define CDI_COMMON_UTILS_HPP
 
 #include <algorithm>
+#include <concepts>
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -19,17 +20,26 @@ static constexpr inline R as(T&& data)
     return static_cast<R>(std::forward<T>(data));
 }
 
-/** \brief Sign-extend a number from type T to type R.
+/** \brief Sign-extends a number from type T to type R.
+ *
+ * This function makes sure the source type is signed.
  */
-template<typename T, typename R>
+template<std::signed_integral T, std::integral R>
 constexpr auto signExtend = as<R, T>;
+
+/** \brief Zero-extends a number from type T to type R.
+ *
+ * This function makes sure the source type is unsigned.
+ */
+template<std::unsigned_integral T, std::integral R>
+constexpr auto zeroExtend = as<R, T>;
 
 /** \brief Tests if a bit is set.
  * \tparam BITNUM The bit number to check.
  * \tparam T The type of the data.
  * \return true if the bit is set, false if it is clear.
  */
-template<size_t BITNUM, typename T>
+template<size_t BITNUM, std::integral T>
 constexpr inline bool bit(const T data) noexcept
 {
     return (data & (1 << BITNUM)) != 0;
@@ -41,7 +51,7 @@ constexpr inline bool bit(const T data) noexcept
  * \tparam T The type of the data.
  * \return The extracted bits.
  */
-template<size_t BITFIRST, size_t BITLAST, typename T>
+template<size_t BITFIRST, size_t BITLAST, std::integral T>
 constexpr inline T bits(const T data) noexcept
 {
     static_assert(BITFIRST <= BITLAST);
@@ -80,7 +90,7 @@ constexpr inline uint8_t byteToPBCD(uint8_t data) noexcept
  * \param number The number to check.
  * \return true if the number is even, false if it is odd.
  */
-template<typename T>
+template<std::integral T>
 constexpr inline bool isEven(const T number) noexcept
 {
     return (number & 1) == 0;
@@ -140,7 +150,7 @@ inline uint32_t binStringToInt(const std::string& s)
  * \param d The input to limit.
  * \return the input if if fits in the range, 0 if input is lower, 255 if input is greater.
  */
-template<typename T>
+template<std::integral T>
 constexpr inline uint8_t limu8(const T d) noexcept
 {
     return static_cast<uint8_t>(std::clamp<T>(d, 0, UINT8_MAX));
@@ -151,7 +161,7 @@ constexpr inline uint8_t limu8(const T d) noexcept
  * \param d The input to limit.
  * \return the input if if fits in the range, INT16_MIN if input is lower, INT16_MAX if input is greater.
  */
-template<typename T>
+template<std::integral T>
 constexpr inline int16_t lims16(const T d) noexcept
 {
     return static_cast<int16_t>(std::clamp<T>(d, INT16_MIN, INT16_MAX));
