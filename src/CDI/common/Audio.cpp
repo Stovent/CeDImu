@@ -7,24 +7,10 @@ namespace Audio
 static constexpr int K0[4] = {0, 240, 460, 392};
 static constexpr int K1[4] = {0, 0, -208, -220};
 
-static int lk0 = 0;
-static int rk0 = 0;
-static int lk1 = 0;
-static int rk1 = 0;
-
-/** \brief Reset to 0 the delay used by the filters k0 and k1.
- */
-void resetAudioFiltersDelay()
-{
-    lk0 = 0;
-    rk0 = 0;
-    lk1 = 0;
-    rk1 = 0;
-}
-
 /** \brief Implements the ADPCM decoder.
  * \tparam SU The number of sound units (4 for level A, 8 for level BC).
  * \tparam GAIN Base exponent for the gain (8 for level A, 12 for level BC).
+ * \param delay The struct that holds the samples delayed for the k0/k1 filters.
  * \param sd The sound datas.
  * \param ranges The ranges.
  * \param filters The filters.
@@ -34,7 +20,7 @@ void resetAudioFiltersDelay()
  * \return The number of samples decoded (should be 112 for level A and 224 for level BC).
  */
 template<int SU, uint8_t GAIN>
-static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, bool stereo, std::vector<int16_t>& left, std::vector<int16_t>& right)
+static uint8_t decodeADPCM(SamplesDelay& delay, int8_t sd[][28], uint8_t* ranges, uint8_t* filters, bool stereo, std::vector<int16_t>& left, std::vector<int16_t>& right)
 {
     for(int su = 0; su < SU; su++)
     {
@@ -43,16 +29,16 @@ static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, b
         {
             if(stereo && su & 1)
             {
-                const int16_t sample = lims16((sd[su][ss] * gain) + ((rk0*K0[filters[su]] + rk1*K1[filters[su]]) / 256));
-                rk1 = rk0;
-                rk0 = sample;
+                const int16_t sample = lims16((sd[su][ss] * gain) + ((delay.rk0*K0[filters[su]] + delay.rk1*K1[filters[su]]) / 256));
+                delay.rk1 = delay.rk0;
+                delay.rk0 = sample;
                 right.push_back(sample);
             }
             else
             {
-                const int16_t sample = lims16((sd[su][ss] * gain) + ((lk0*K0[filters[su]] + lk1*K1[filters[su]]) / 256));
-                lk1 = lk0;
-                lk0 = sample;
+                const int16_t sample = lims16((sd[su][ss] * gain) + ((delay.lk0*K0[filters[su]] + delay.lk1*K1[filters[su]]) / 256));
+                delay.lk1 = delay.lk0;
+                delay.lk0 = sample;
                 left.push_back(sample);
             }
         }
@@ -62,46 +48,45 @@ static uint8_t decodeADPCM(int8_t sd[][28], uint8_t* ranges, uint8_t* filters, b
 }
 
 /** \brief Decode a raw audio sector into 16-bit PCM.
- *
- * \param  levelA True if input data is encoded in Level A audio, false if Level B or C.
- * \param  stereo True if input data is stereo, false if mono.
- * \param  data Raw input data from the disc.
- * \param  left Destination left audio channel. If audio is mono, it will contain the decoded data and right will remain untouched.
- * \param  right Destination right audio channel. If audio is mono, NULL can be passed safely.
+ * \param levelA True if input data is encoded in Level A audio, false if Level B or C.
+ * \param stereo True if input data is stereo, false if mono.
+ * \param data Raw input data from the disc.
+ * \param left Destination left audio channel. If audio is mono, it will contain the decoded data and right will remain untouched.
+ * \param right Destination right audio channel. If audio is mono, NULL can be passed safely.
  * \return number of samples decoded (should always be 4032).
  */
-uint16_t decodeAudioSector(const bool levelA, const bool stereo, const uint8_t data[2304], std::vector<int16_t>& left, std::vector<int16_t>& right)
+uint16_t decodeAudioSector(SamplesDelay& delay, const bool levelA, const bool stereo, const uint8_t data[2304], std::vector<int16_t>& left, std::vector<int16_t>& right)
 {
     uint16_t index = 0;
     if(levelA) // Level A (8 bits per sample)
     {
         for(uint8_t sg = 0; sg < 18; sg++)
         {
-            index += decodeLevelASoundGroup(stereo, &data[128 * sg], left, right);
+            index += decodeLevelASoundGroup(delay, stereo, &data[128 * sg], left, right);
         }
     }
     else // Level B and C (4 bits per sample)
     {
         for(uint8_t sg = 0; sg < 18; sg++)
         {
-            index += decodeLevelBCSoundGroup(stereo, &data[128 * sg], left, right);
+            index += decodeLevelBCSoundGroup(delay, stereo, &data[128 * sg], left, right);
         }
     }
     return index;
 }
 
 /** \brief Decode a Level A sound group.
- *
- * \param  stereo True if input data is stereo, false if mono.
- * \param  data Raw sound group.
- * \param  left Destination left audio channel. If audio is mono, it will contain the decoded data and right will remain untouched.
- * \param  right Destination right audio channel. If audio is mono, it will remain untouched.
+ * \param delay The struct that holds the samples delayed for the k0/k1 filters.
+ * \param stereo True if input data is stereo, false if mono.
+ * \param data Raw sound group.
+ * \param left Destination left audio channel. If audio is mono, it will contain the decoded data and right will remain untouched.
+ * \param right Destination right audio channel. If audio is mono, it will remain untouched.
  * \return number of samples decoded.
  *
  * Special thanks to this thread (http://www.cdinteractive.co.uk/forums/cdinteractive/viewtopic.php?t=3191)
  * for making me understand how the k0 and k1 filters worked in ADCPM decoder
  */
-uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::vector<int16_t>& left, std::vector<int16_t>& right)
+uint8_t decodeLevelASoundGroup(SamplesDelay& delay, const bool stereo, const uint8_t data[128], std::vector<int16_t>& left, std::vector<int16_t>& right)
 {
     uint8_t range[4];
     uint8_t filter[4];
@@ -117,18 +102,18 @@ uint8_t decodeLevelASoundGroup(const bool stereo, const uint8_t data[128], std::
         for(uint8_t su = 0; su < 4; su++) // sound unit
             SD[su][ss] = data[index++];
 
-    return decodeADPCM<4, 8>(SD, range, filter, stereo, left, right);
+    return decodeADPCM<4, 8>(delay, SD, range, filter, stereo, left, right);
 }
 
 /** \brief Decode a Level B or C sound group.
- *
- * \param  stereo True if input data is stereo, false if mono.
- * \param  data Raw sound group.
- * \param  left Destination left audio channel. If audio is mono, it will contain the decoded data and right will remain untouched.
- * \param  right Destination right audio channel. If audio is mono, it will remain untouched.
+ * \param delay The struct that holds the samples delayed for the k0/k1 filters.
+ * \param stereo True if input data is stereo, false if mono.
+ * \param data Raw sound group.
+ * \param left Destination left audio channel. If audio is mono, it will contain the decoded data and right will remain untouched.
+ * \param right Destination right audio channel. If audio is mono, it will remain untouched.
  * \return number of samples decoded.
  */
-uint8_t decodeLevelBCSoundGroup(const bool stereo, const uint8_t data[128], std::vector<int16_t>& left, std::vector<int16_t>& right)
+uint8_t decodeLevelBCSoundGroup(SamplesDelay& delay, const bool stereo, const uint8_t data[128], std::vector<int16_t>& left, std::vector<int16_t>& right)
 {
     uint8_t range[8];
     uint8_t filter[8];
@@ -157,7 +142,7 @@ uint8_t decodeLevelBCSoundGroup(const bool stereo, const uint8_t data[128], std:
             SD[su++][ss] = SD1;
         }
 
-    return decodeADPCM<8, 12>(SD, range, filter, stereo, left, right);
+    return decodeADPCM<8, 12>(delay, SD, range, filter, stereo, left, right);
 }
 
 static std::string getAudioLevel(const bool bps, const uint32_t fs)

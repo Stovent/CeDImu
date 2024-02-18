@@ -97,6 +97,7 @@ void CDIFile::ExportAudio(const std::string& directoryPath) const
         uint8_t sf;
         uint8_t ms;
         uint8_t record;
+        Audio::SamplesDelay delay;
         std::vector<int16_t> left; // If left if empty, right must be empty.
         std::vector<int16_t> right;
     };
@@ -115,9 +116,6 @@ void CDIFile::ExportAudio(const std::string& directoryPath) const
         if(bps > 1 || sf > 1 || ms > 1) // ignore reserved values.
             return;
 
-        // TODO: one filter delay per channel.
-        Audio::resetAudioFiltersDelay();
-
         AudioInfo& a = audio[sector.subheader.channelNumber];
         if(!a.left.empty() &&
            (a.bps != bps ||
@@ -129,7 +127,7 @@ void CDIFile::ExportAudio(const std::string& directoryPath) const
         a.sf = sf;
         a.ms = ms;
 
-        Audio::decodeAudioSector(bps, ms, sector.data.data(), a.left, a.right);
+        Audio::decodeAudioSector(a.delay, bps, ms, sector.data.data(), a.left, a.right);
 
         if(sector.subheader.submode & cdieor)
             Audio::writeWAV(directoryPath + name, a.left, a.right, sector.subheader.channelNumber, a.record++, a.bps, a.sf, a.ms);
