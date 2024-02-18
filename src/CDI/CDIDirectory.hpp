@@ -4,9 +4,15 @@
 class CDIDisc;
 #include "CDIFile.hpp"
 
+#include <functional>
 #include <map>
 #include <string>
+#include <string_view>
 
+/** \brief CD-I directory on disc.
+ *
+ * The root directory has a nameSize of 0 and a name of "".
+ */
 class CDIDirectory
 {
 public:
@@ -21,13 +27,15 @@ public:
 
     void Clear();
     void LoadContent(CDIDisc& disc);
-    CDIFile* GetFile(std::string filename);
+    const CDIFile* GetFile(std::string filename);
 
     std::stringstream GetChildrenTree() const;
     void ExportAudio(std::string basePath) const;
     void ExportFiles(std::string basePath) const;
     void ExportVideo(std::string basePath) const;
     void ExportRawVideo(std::string basePath) const;
+
+    void ForEachFile(const std::string& path, std::function<void(std::string_view, const CDIFile&)> f) const;
 
 private:
     std::map<std::string, CDIFile> files;

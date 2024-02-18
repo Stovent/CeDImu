@@ -10,6 +10,11 @@
 #include <fstream>
 #include <vector>
 
+/** \brief The max number of channels (Green book Appendix II.1.2). */
+static constexpr size_t MAX_CHANNEL_NUMBER = 32;
+/** \brief The max number of channels on audio sectors (Green book Appendix II.1.2). */
+static constexpr size_t MAX_AUDIO_CHANNEL_NUMBER = 16;
+
 static constexpr Video::ImageCodingMethod codingLookUp[16] = {
     ICM(CLUT4), ICM(CLUT7), ICM(CLUT8), ICM(OFF),
     ICM(OFF), ICM(DYUV), ICM(RGB555), ICM(RGB555),
@@ -27,15 +32,6 @@ CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t name
     , parent(parentRelpos)
     , disc(cdidisc)
 {}
-
-static std::string getAudioLevel(const bool bps, const uint32_t fs)
-{
-    if(fs == 18900)
-        return "C";
-    if(bps)
-        return "A";
-    return "B";
-}
 
 static std::string codingMethodToString(const uint8_t method)
 {
@@ -73,6 +69,7 @@ static std::string resolutionToString(const uint8_t resolution)
     }
 }
 
+/** \brief Clears \p data after being written. */
 static void writeRawVideo(std::vector<uint8_t>& data, const std::string& basename, int channel, int record, bool ascf, bool eolf, uint8_t resolution, uint8_t coding)
 {
     std::ofstream out(basename + "_" + std::to_string(channel) + "_" + std::to_string(record) + \
@@ -92,92 +89,74 @@ static void writeRawVideo(std::vector<uint8_t>& data, const std::string& basenam
  * Converts and writes the audio data from the disc to 16-bit PCM.
  * Each channel and logical records are exported individualy.
  */
-void CDIFile::ExportAudio(const std::string& directoryPath)
+void CDIFile::ExportAudio(const std::string& directoryPath) const
 {
-    uint32_t pos = disc.Tell();
-    int maxChannel = 0;
-
-    for(int channel = 0; channel <= maxChannel; channel++)
+    struct AudioInfo
     {
-        Audio::resetAudioFiltersDelay();
-        Audio::WAVHeader wavHeader;
-        std::vector<int16_t> left;
+        uint8_t bps;
+        uint8_t sf;
+        uint8_t ms;
+        uint8_t record;
+        std::vector<int16_t> left; // If left if empty, right must be empty.
         std::vector<int16_t> right;
-        uint8_t bps = 3;
+    };
+    std::array<AudioInfo, MAX_AUDIO_CHANNEL_NUMBER> audio{};
 
-        disc.GotoLBN(LBN);
+    ForEachSector([&] (const CDISector& sector) {
+        if((sector.subheader.submode & cdia) == 0)
+            return;
 
-        uint8_t record = 0;
-        int32_t sizeLeft = size;
-        while(sizeLeft > 0)
-        {
-            sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-            if(disc.m_subheader.channelNumber > maxChannel)
-                maxChannel = disc.m_subheader.channelNumber;
+        // Green Book IV.3.2.4
+//         const bool emph  = bit<6>(disc.m_subheader.codingInformation);
+        const uint8_t bps = bits<4, 5>(disc.m_subheader.codingInformation);
+        const uint8_t sf = bits<2, 3>(disc.m_subheader.codingInformation);
+        const uint8_t ms = bits<0, 1>(disc.m_subheader.codingInformation);
 
-            if(!(disc.m_subheader.submode & cdia) || disc.m_subheader.channelNumber != channel)
-            {
-                disc.GotoNextSector();
-                continue;
-            }
+        if(bps > 1 || sf > 1 || ms > 1) // ignore reserved values.
+            return;
 
-            // Green Book IV.3.2.4
-//            const bool emph  = bit<6>(disc.m_subheader.codingInformation);
-                         bps = bits<4, 5>(disc.m_subheader.codingInformation);
-            const uint8_t sf = bits<2, 3>(disc.m_subheader.codingInformation);
-            const uint8_t ms = bits<0, 1>(disc.m_subheader.codingInformation);
+        // TODO: one filter delay per channel.
+        Audio::resetAudioFiltersDelay();
 
-            if(bps > 1 || sf > 1 || ms > 1) // ignore reserved values
-            {
-                disc.GotoNextSector();
-                continue;
-            }
+        AudioInfo& a = audio[sector.subheader.channelNumber];
+        if(!a.left.empty() &&
+           (a.bps != bps ||
+            a.sf != sf ||
+            a.ms != ms))
+            Audio::writeWAV(directoryPath + name, a.left, a.right, sector.subheader.channelNumber, a.record++, a.bps, a.sf, a.ms);
 
-            std::array<uint8_t, 2304> data;
-            disc.GetRaw(data.data(), data.size());
-            Audio::decodeAudioSector(bps, ms, data.data(), left, right);
+        a.bps = bps;
+        a.sf = sf;
+        a.ms = ms;
 
-            wavHeader.channelNumber = ms + 1;
-            wavHeader.frequency = sf ? 18900 : 37800;
+        Audio::decodeAudioSector(bps, ms, sector.data.data(), a.left, a.right);
 
-            if(disc.m_subheader.submode & cdieor)
-            {
-                std::ofstream out(directoryPath + name + '_' + std::to_string(channel) + "_" + std::to_string(record++) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
-                Audio::writeWAV(out, wavHeader, left, right);
-                out.close();
-                left.clear();
-                right.clear();
-            }
+        if(sector.subheader.submode & cdieor)
+            Audio::writeWAV(directoryPath + name, a.left, a.right, sector.subheader.channelNumber, a.record++, a.bps, a.sf, a.ms);
+    });
 
-            disc.GotoNextSector();
-        }
-
-        if(left.size())
-        {
-            std::ofstream out(directoryPath + name + '_' + std::to_string(channel) + "_" + std::to_string(record) + "_" + getAudioLevel(bps, wavHeader.frequency) + ".wav", std::ios::binary | std::ios::out);
-            Audio::writeWAV(out, wavHeader, left, right);
-            out.close();
-        }
+    int channel = 0;
+    for(AudioInfo& a : audio)
+    {
+        if(!a.left.empty())
+            Audio::writeWAV(directoryPath + name, a.left, a.right, channel, a.record++, a.bps, a.sf, a.ms);
+        channel++;
     }
-
-    disc.Seek(pos);
 }
 
 /** \brief Exports the content of the file (as stored in the disc).
  *
  * \param  directoryPath Path to the directory where the file will be written. Must end with a '/' (or '\' on Windows).
  */
-void CDIFile::ExportFile(const std::string& directoryPath)
+void CDIFile::ExportFile(const std::string& directoryPath) const
 {
     const uint32_t pos = disc.Tell();
 
     std::ofstream out(directoryPath + name, std::ios::out | std::ios::binary);
 
-    uint32_t size = 0;
-    uint8_t* data = GetContent(size);
-    if(data != nullptr && size != 0)
-        out.write(reinterpret_cast<char*>(data), size);
-    delete[] data;
+    std::vector<uint8_t> data = GetContent();
+    if(!data.empty())
+        out.write(reinterpret_cast<char*>(data.data()), data.size());
 
     out.close();
     disc.Seek(pos);
@@ -190,7 +169,7 @@ void CDIFile::ExportFile(const std::string& directoryPath)
  * Converts and writes the video data from the disc.
  * Each channel are exported individualy.
  */
-void CDIFile::ExportVideo(const std::string& directoryPath)
+void CDIFile::ExportVideo(const std::string& directoryPath) const
 {
     uint32_t pos = disc.Tell();
     int maxChannel = 0;
@@ -216,8 +195,9 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
             if(disc.m_subheader.submode & cdid) // Get CLUT table from a sector before the video data
             {
                 std::array<uint8_t, 2048> d;
-                disc.GetRaw(d.data(), d.size());
+                disc.GetRaw(d);
 
+                // const_cast is safe because `d` is not const.
                 char* clut = const_cast<char*>(as<const char*>(subarrayOfArray(d.data(), d.size(), "cluts", 5)));
                 if(clut != nullptr)
                 {
@@ -284,7 +264,7 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
             width = resolution == 0 ? 384 : 768;
             height = resolution == 3 ? 480 : 242;
 
-            disc.GetRaw(d.data(), d.size());
+            disc.GetRaw(d);
             data.insert(data.end(), d.begin(), d.end());
 
             disc.GotoNextSector();
@@ -344,101 +324,82 @@ void CDIFile::ExportVideo(const std::string& directoryPath)
  * Only writes the raw video data from the file.
  * Each channel and logical records are exported individualy.
  */
-void CDIFile::ExportRawVideo(const std::string& directoryPath)
+void CDIFile::ExportRawVideo(const std::string& directoryPath) const
 {
-    const uint32_t pos = disc.Tell();
-    int maxChannel = 0;
-
-    for(int channel = 0; channel <= maxChannel; channel++)
+    struct VideoInfo
     {
+        bool ascf;
+        bool eolf;
+        uint8_t resolution;
+        uint8_t coding;
+        uint8_t record;
         std::vector<uint8_t> data;
-        int ascf = -1, eolf = -1, resolution = -1, coding = -1;
+    };
+    std::array<VideoInfo, MAX_CHANNEL_NUMBER> video{};
 
-        disc.GotoLBN(LBN);
+    ForEachSector([&] (const CDISector& sector) {
+        if((sector.subheader.submode & cdiv) == 0)
+            return;
 
-        int record = 0;
-        int32_t sizeLeft = size;
-        while(sizeLeft > 0)
-        {
-            sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-            if(disc.m_subheader.channelNumber > maxChannel)
-                maxChannel = disc.m_subheader.channelNumber;
+        const bool ascf = bit<7>(sector.subheader.codingInformation);
+        const bool eolf = bit<6>(sector.subheader.codingInformation);
+        const uint8_t resolution = bits<4, 5>(sector.subheader.codingInformation);
+        const uint8_t coding = bits<0, 3>(sector.subheader.codingInformation);
 
-            if(!(disc.m_subheader.submode & cdiv) || disc.m_subheader.channelNumber != channel)
-            {
-                disc.GotoNextSector();
-                continue;
-            }
+        VideoInfo& v = video[sector.subheader.channelNumber];
+        if(!v.data.empty() &&
+           (v.ascf != ascf ||
+            v.eolf != eolf ||
+            v.resolution != resolution ||
+            v.coding != coding))
+            writeRawVideo(v.data, directoryPath + name, sector.subheader.channelNumber, v.record++, v.ascf, v.eolf, v.resolution, v.coding);
 
-            const bool ascf_ = bit<7>(disc.m_subheader.codingInformation);
-            if(ascf >= 0 && ascf != ascf_)
-            {
-                writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
-            }
-            ascf = ascf_;
+        v.ascf = ascf;
+        v.eolf = eolf;
+        v.resolution = resolution;
+        v.coding = coding;
 
-            const bool eolf_ = bit<6>(disc.m_subheader.codingInformation);
-            if(eolf >= 0 && eolf != eolf_)
-            {
-                writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
-            }
-            eolf = eolf_;
+        v.data.insert(v.data.end(), sector.data.begin(), sector.data.end());
 
-            const uint8_t resolution_ = bits<4, 5>(disc.m_subheader.codingInformation);
-            if(resolution >= 0 && resolution != resolution_)
-            {
-                writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
-            }
-            resolution = resolution_;
+        if(sector.subheader.submode & cdieor)
+            writeRawVideo(v.data, directoryPath + name, sector.subheader.channelNumber, v.record++, v.ascf, v.eolf, v.resolution, v.coding);
+    });
 
-            const uint8_t coding_ = bits<0, 3>(disc.m_subheader.codingInformation);
-            if(coding >= 0 && coding != coding_)
-            {
-                writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
-            }
-            coding = coding_;
-
-            std::array<uint8_t, 2324> d;
-
-            disc.GetRaw(d.data(), d.size());
-            data.insert(data.end(), d.begin(), d.end());
-
-            if(disc.m_subheader.submode & cdieor)
-            {
-                writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
-            }
-
-            disc.GotoNextSector();
-        }
-
-        if(data.size())
-        {
-            writeRawVideo(data, directoryPath + name, channel, record++, ascf, eolf, resolution, coding);
-        }
+    int channel = 0;
+    for(VideoInfo& v : video)
+    {
+        if(!v.data.empty())
+            writeRawVideo(v.data, directoryPath + name, channel, v.record++, v.ascf, v.eolf, v.resolution, v.coding);
+        channel++;
     }
-
-    disc.Seek(pos);
 }
 
 /** \brief Get the file content.
- *
- * \param  size A reference to a uint32_t that will contain the size of the returned array.
- * \return An array containing the file content, or nullptr if memory allocation failed. It is the caller's responsability to delete the returned array (allocated with new[]).
+ * \return A vector containing the file content.
  */
-uint8_t* CDIFile::GetContent(uint32_t& size)
+std::vector<uint8_t> CDIFile::GetContent() const
 {
-    const uint32_t pos = disc.Tell();
+    uint32_t readSize = as<uint64_t>(size) * 2324 / 2048;
+    std::vector<uint8_t> data;
+    data.reserve(readSize);
 
-    uint32_t readSize = (double)this->size / 2048.0 * 2324.0;
-    uint8_t* data = new (std::nothrow) uint8_t[readSize];
-    if(data == nullptr)
-        return nullptr;
+    readSize = size;
+    ForEachSector([&] (const CDISector& sector) {
+        const uint16_t sectorSize = sector.GetSectorDataSize();
+        const uint32_t sz = readSize < sectorSize ? readSize : sectorSize;
+        // std::vector<uint8_t>::const_iterator begin = sector.data.begin();
+        decltype(sector.data)::const_iterator begin = sector.data.begin();
 
-    readSize = this->size;
-    disc.GotoLBN(LBN);
-    disc.GetData(data, readSize, true);
-    size = readSize;
+        data.insert(data.end(), begin, begin + sz);
+    });
 
-    disc.Seek(pos);
     return data;
+}
+
+/** \brief Calls the given function on each sector or the file.
+ * \param f The function to call.
+ */
+void CDIFile::ForEachSector(std::function<void(const CDISector&)> f) const
+{
+    disc.ForEachFileSector(LBN, std::move(f));
 }

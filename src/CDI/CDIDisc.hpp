@@ -5,6 +5,10 @@
 #include "CDIFile.hpp"
 
 #include <fstream>
+#include <functional>
+#include <span>
+#include <string>
+#include <string_view>
 
 struct DiscHeader
 {
@@ -47,6 +51,21 @@ enum SubmodeBits : uint8_t
     cdiany  = 0b00001110, // Any type of sector
 };
 
+struct CDISector
+{
+    DiscHeader header;
+    DiscSubheader subheader;
+    std::vector<uint8_t> data;
+
+    uint16_t GetSectorDataSize() const { return (subheader.submode & cdiform) ? 2324 : 2048; }
+};
+
+/** \brief Encapsulates an ISO of a CD-I disc.
+ *
+ * This class is not thread-safe.
+ *
+ * TODO: should I use const and mutable because the disc is actually immutable ?
+ */
 class CDIDisc
 {
 public:
@@ -62,7 +81,7 @@ public:
     bool Good();
     DiscTime GetTime();
 
-    CDIFile* GetFile(std::string path);
+    const CDIFile* GetFile(std::string path);
 
     bool ExportAudio(const std::string& path);
     bool ExportFiles(const std::string& path);
@@ -71,33 +90,37 @@ public:
     bool ExportRawVideo(const std::string& path);
     bool ExportSectorsInfo(const std::string& path);
 
+    void ForEachFile(std::function<void(std::string_view, const CDIFile&)> f);
+    void ForEachSector(std::function<void(const CDISector&)> f);
+
 private:
     friend CDIFile;
     friend CDIDirectory;
 
     std::ifstream m_disc;
+    CDISector m_currentSector;
     DiscHeader m_header;
     DiscSubheader m_subheader;
     CDIDirectory m_rootDirectory;
 
-    bool LoadFileSystem();
-
     void UpdateSectorInfo();
+    void UpdateCurrentSector();
+
+    bool LoadFileSystem();
 
     uint32_t Tell();
     bool Seek(const uint32_t offset, std::ios::seekdir direction = std::ios::beg);
     bool GotoLBN(const uint32_t lbn, const uint32_t offset = 0);
     bool GotoNextSector(uint8_t submodeMask = 0);
+    bool GotoNextFileSector(uint8_t fileNumber);
 
-    bool GetData(uint8_t* dst, uint32_t& size, const bool includeEmptySectors = true);
-    bool GetRaw(uint8_t* dst, uint32_t size);
+    bool GetRaw(std::span<uint8_t> dst);
     uint8_t  GetByte();
     uint16_t GetWord();
     uint32_t GetLong();
     std::string GetString(uint16_t length = 128, const char delim = ' ');
 
-    inline bool IsEmptySector() const { return !(m_subheader.submode & cdiany) && !m_subheader.channelNumber && !m_subheader.codingInformation; };
-    inline uint16_t GetSectorDataSize() const { return (m_subheader.submode & cdiform) ? 2324 : 2048; }
+    void ForEachFileSector(uint32_t lbn, std::function<void(const CDISector&)> f);
 };
 
 #endif // CDI_CDIDISC_HPP

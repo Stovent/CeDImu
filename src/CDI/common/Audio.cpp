@@ -160,12 +160,28 @@ uint8_t decodeLevelBCSoundGroup(const bool stereo, const uint8_t data[128], std:
     return decodeADPCM<8, 12>(SD, range, filter, stereo, left, right);
 }
 
+static std::string getAudioLevel(const bool bps, const uint32_t fs)
+{
+    if(fs == 18900)
+        return "C";
+    if(bps)
+        return "A";
+    return "B";
+}
+
 /** \brief Writes the audio data (16 bit signed PCM) in the given file.
+ * \param basename The full path including file name of the output file.
+ * \param left The left audio channel.
+ * \param right The right audio channel.
+ * \param channel The channel number of the data to write.
+ * \param record The record number of the data to write.
+ * \param bps bits per second flag of the coding information byte.
+ * \param sf sampling frequency flag of the coding information byte.
+ * \param ms mono/stereo flag of the coding information byte.
  *
- * \param  out The output where the data will be written to.
- * \param  wavHeader a struct that holds information on the audio data.
- * \param  left The left audio channel.
- * \param  right The right audio channel.
+ * \p left and \p right are cleared after being written.
+ *
+ * Note: This code only works on little-endian archs.
  *
  * Writes the WAV header in the file using {wavHeader}, and then writes the audio data.
  * The file is written in little endian format.
@@ -173,12 +189,17 @@ uint8_t decodeLevelBCSoundGroup(const bool stereo, const uint8_t data[128], std:
  * If {right} and {left} have different size, writes only the
  * first min(left.size(), right.size()) samples from both audio channels.
  */
-void writeWAV(std::ofstream& out, const Audio::WAVHeader& wavHeader, const std::vector<int16_t>& left, const std::vector<int16_t>& right)
+void writeWAV(const std::string& basename, std::vector<int16_t>& left, std::vector<int16_t>& right, uint8_t channel, int record, uint8_t bps, uint8_t sf, uint8_t ms)
 {
-    uint16_t bytePerBloc = wavHeader.channelNumber * 2;
-    uint32_t bytePerSec = wavHeader.frequency * bytePerBloc;
-    uint32_t dataSize = left.size()*2 + right.size()*2;
-    uint32_t wavSize = 36 + dataSize;
+    const uint16_t channelNumber = ms + 1;
+    const uint32_t frequency = sf ? 18900 : 37800;
+
+    const uint16_t bytePerBloc = channelNumber * 2;
+    const uint32_t bytePerSec = frequency * bytePerBloc;
+    const uint32_t dataSize = left.size()*2 + right.size()*2;
+    const uint32_t wavSize = 36 + dataSize;
+
+    std::ofstream out(basename + '_' + std::to_string(channel) + '_' + std::to_string(record) + '_' + getAudioLevel(bps, frequency) + ".wav", std::ios::binary | std::ios::out);
 
     out.write("RIFF", 4);
     out.write((char*)&wavSize, 4);
@@ -187,8 +208,8 @@ void writeWAV(std::ofstream& out, const Audio::WAVHeader& wavHeader, const std::
     out.write("\x10\0\0\0", 4);
     out.write("\1\0", 2); // audio format
 
-    out.write((char*)&wavHeader.channelNumber, 2);
-    out.write((char*)&wavHeader.frequency, 4);
+    out.write((char*)&channelNumber, 2);
+    out.write((char*)&frequency, 4);
     out.write((char*)&bytePerSec, 4);
     out.write((char*)&bytePerBloc, 2);
     out.write("\x10\0", 2);
@@ -207,6 +228,9 @@ void writeWAV(std::ofstream& out, const Audio::WAVHeader& wavHeader, const std::
     {
         out.write((char*)&left[0], left.size() * 2);
     }
+
+    left.clear();
+    right.clear();
 }
 
 } // namespace Audio

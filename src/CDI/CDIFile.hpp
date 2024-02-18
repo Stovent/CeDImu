@@ -2,9 +2,12 @@
 #define CDI_CDIFILE_HPP
 
 class CDIDisc;
+struct CDISector;
 
 #include <cstdint>
+#include <functional>
 #include <string>
+#include <vector>
 
 class CDIFile
 {
@@ -20,11 +23,13 @@ public:
     CDIFile() = delete;
     CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos);
 
-    void ExportAudio(const std::string& directoryPath);
-    void ExportFile(const std::string& directoryPath);
-    void ExportVideo(const std::string& directoryPath);
-    void ExportRawVideo(const std::string& directoryPath);
-    uint8_t* GetContent(uint32_t& size);
+    void ExportAudio(const std::string& directoryPath) const;
+    void ExportFile(const std::string& directoryPath) const;
+    void ExportVideo(const std::string& directoryPath) const;
+    void ExportRawVideo(const std::string& directoryPath) const;
+    std::vector<uint8_t> GetContent() const;
+
+    void ForEachSector(std::function<void(const CDISector&)> f) const;
 
 private:
     CDIDisc& disc;

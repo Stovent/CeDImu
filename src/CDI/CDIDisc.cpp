@@ -9,17 +9,12 @@ CDIDisc::CDIDisc()
     , m_disc()
     , m_header()
     , m_subheader()
-    , m_rootDirectory(1, "/", 0, 1, 1)
+    , m_rootDirectory(0, "", 0, 1, 1)
 {
 }
 
 CDIDisc::CDIDisc(const std::string& filename)
-    : m_mainModule()
-    , m_gameName()
-    , m_disc()
-    , m_header()
-    , m_subheader()
-    , m_rootDirectory(1, "/", 0, 1, 1)
+    : CDIDisc()
 {
     Open(filename);
 }
@@ -93,6 +88,42 @@ DiscTime CDIDisc::GetTime()
     };
 }
 
+/** \brief Get file from its path on the disc.
+ *
+ * \param  path The full path from the root directory of the disc to the file.
+ * \return A pointer to the file, or nullptr is not found.
+ *
+ * The path must not start with a '/'.
+ * e.g. "CMDS/cdi_gate" for file "cdi_gate" in the "CMDS" folder in the root directory.
+ */
+const CDIFile* CDIDisc::GetFile(std::string path)
+{
+    return m_rootDirectory.GetFile(path);
+}
+
+/** \brief Calls the given function on each file of the root directory of the disc.
+ * \param f The function to call.
+ *
+ * The function is given the directory pathlist (e.g. `/CMDS/`) and the file itself.
+ */
+void CDIDisc::ForEachFile(std::function<void(std::string_view, const CDIFile&)> f)
+{
+    m_rootDirectory.ForEachFile("", std::move(f));
+}
+
+/** \brief Calls the given function on each sector of the disc.
+ * \param f The function to call.
+ */
+void CDIDisc::ForEachSector(std::function<void(const CDISector&)> f)
+{
+    uint32_t lbn = 0;
+
+    while(GotoLBN(lbn++))
+        f(m_currentSector);
+
+    m_disc.clear(); // Here we are at the end of the disc so we clear all errors for the next use.
+}
+
 /** \brief Update header and subheader with the current sector info.
  */
 void CDIDisc::UpdateSectorInfo()
@@ -112,6 +143,32 @@ void CDIDisc::UpdateSectorInfo()
     m_subheader.codingInformation = s[7];
 
     m_disc.seekg(tmp);
+}
+
+/** \brief Update header and subheader with the current sector info.
+ */
+void CDIDisc::UpdateCurrentSector()
+{
+    const uint32_t pos = m_disc.tellg();
+    m_disc.seekg(pos - (pos % 2352) + 12);
+    char s[12];
+    m_disc.read(s, 12);
+
+    m_currentSector.header.minute = PBCDToByte(s[0]);
+    m_currentSector.header.second = PBCDToByte(s[1]);
+    m_currentSector.header.sector = PBCDToByte(s[2]);
+    m_currentSector.header.mode = s[3];
+
+    m_currentSector.subheader.fileNumber = s[4];
+    m_currentSector.subheader.channelNumber = s[5];
+    m_currentSector.subheader.submode = s[6];
+    m_currentSector.subheader.codingInformation = s[7];
+
+    const uint16_t size = m_currentSector.GetSectorDataSize();
+    m_currentSector.data.resize(size);
+    m_disc.read(reinterpret_cast<char*>(m_currentSector.data.data()), size);
+
+    m_disc.seekg(pos);
 }
 
 /** \brief Load every file and directory from the disc.
@@ -168,19 +225,6 @@ bool CDIDisc::LoadFileSystem()
     return true;
 }
 
-/** \brief Get file from its path on the disc.
- *
- * \param  path The full path from the root directory of the disc to the file.
- * \return A pointer to the file, or nullptr is not found.
- *
- * The path must not start with a '/'.
- * e.g. "CMDS/cdi_gate" for file "cdi_gate" in the "CMDS" folder in the root directory.
- */
-CDIFile* CDIDisc::GetFile(std::string path)
-{
-    return m_rootDirectory.GetFile(path);
-}
-
 /** \brief Get the current file cursor position.
  *
  * \return The current file cursor position.
@@ -218,6 +262,7 @@ bool CDIDisc::GotoLBN(const uint32_t lbn, const uint32_t offset)
     m_disc.clear();
     m_disc.seekg(lbn * 2352 + 24 + offset);
     UpdateSectorInfo();
+    UpdateCurrentSector();
     return Good();
 }
 
@@ -238,6 +283,7 @@ bool CDIDisc::GotoNextSector(uint8_t submodeMask)
     {
         do
         {
+            // 2376 = 2352 + 24 (sector size + offset to sector data).
             m_disc.seekg(2376 - m_disc.tellg() % 2352, std::ios::cur);
             UpdateSectorInfo();
         } while(!(m_subheader.submode & submodeMask) && Good());
@@ -250,49 +296,34 @@ bool CDIDisc::GotoNextSector(uint8_t submodeMask)
     return Good();
 }
 
-/** \brief Read data from the data section of the sectors.
- *
- * \param  dst The destination buffer.
- * \param  size See detailed description.
- * \param  includeEmptySectors If true, empty sectors will not be read and will not count in size.
- * \return true if successfully read, false otherwise.
- *
- * Read {size} bytes from sectors only, starting at the current file cursor position.
- * If {size} is greater than the sector data size, then it will continue reading on
- * the data section of the next sector.
- * Returns true if no problems occured, false otherwise.
- * After execution, {size} is set to the actual data size read from the disc.
+/** \brief Sets the file cursor position at the data section of the next sector of the given file.
+ * \param fileNumber The file number.
+ * \return true if the disc is readable, false otherwise.
  */
-bool CDIDisc::GetData(uint8_t* dst, uint32_t& size, const bool includeEmptySectors)
+bool CDIDisc::GotoNextFileSector(uint8_t fileNumber)
 {
-    uint32_t index = 0;
-    if(!includeEmptySectors && IsEmptySector())
-        GotoNextSector(cdiany);
-    while(size && m_disc.good())
+    do
     {
-        uint16_t length = GetSectorDataSize();
-        length = (size == 2048) ? length : ((size < length) ? size : length);
-        m_disc.read((char*)&dst[index], length);
-        index += length;
-        size -= (size < 2048) ? size : 2048;
-        if(size) // to make sure GetData let the file cursor at the last read data and not at the next sector
-            includeEmptySectors ? GotoNextSector() : GotoNextSector(cdiany);
-    }
-    size = index;
-    return m_disc.good();
+        // 2376 = 2352 + 24 (sector size + offset to sector data).
+        m_disc.seekg(2376 - m_disc.tellg() % 2352, std::ios::cur);
+        UpdateSectorInfo();
+        UpdateCurrentSector();
+        // EOF should not be happening.
+    } while(m_subheader.fileNumber != fileNumber && !(m_subheader.submode & cdieof) && Good());
+
+    return Good();
 }
 
 /** \brief Read raw data from the disc.
  *
- * \param  dst The destination buffer.
- * \param  size The size of the data to read.
+ * \param dst The destination buffer.
  * \return true if read successfully, false otherwise.
  *
- * Simply reads the next {size} bytes, without any check.
+ * Simply reads the next span.size() bytes, without any check.
  */
-bool CDIDisc::GetRaw(uint8_t* dst, uint32_t size)
+bool CDIDisc::GetRaw(std::span<uint8_t> dst)
 {
-    m_disc.read(reinterpret_cast<char*>(dst), size);
+    m_disc.read(reinterpret_cast<char*>(dst.data()), dst.size());
     return m_disc.good();
 }
 
@@ -359,4 +390,24 @@ std::string CDIDisc::GetString(uint16_t length, const char delim)
     for(; str[--length] == delim && length;);
 
     return std::string(str, length+1);
+}
+
+/** \brief Calls the given function for each sector of the given file LBN.
+ * \param lbn The Logical Block Number where to start.
+ * \param f The function to call.
+ *
+ * This function selects each sector based on the file number of the first sector and stops at the EOF sector.
+ */
+void CDIDisc::ForEachFileSector(const uint32_t lbn, std::function<void(const CDISector&)> f)
+{
+    GotoLBN(lbn);
+
+    const uint8_t fileNumber = m_currentSector.subheader.fileNumber;
+
+    do
+    {
+        f(m_currentSector);
+    } while(!(m_currentSector.subheader.submode & cdieof) && GotoNextFileSector(fileNumber));
+
+    m_disc.clear(); // In case the last file sector is also the last sector of the disc.
 }

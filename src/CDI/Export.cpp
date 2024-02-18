@@ -111,30 +111,23 @@ bool CDIDisc::ExportSectorsInfo(const std::string& path)
     std::string dir = path + "/" + m_gameName + "/";
     std::filesystem::create_directories(dir);
 
-    const uint32_t pos = Tell();
-    uint32_t LBN = 0;
-    Seek(0);
-
     std::ofstream out(dir + "sectors.txt");
     out << "   LBN Min secs sect mode file channel  submode codingInfo" << std::endl;
 
-    while(Good())
-    {
-        out << std::right << std::setw(6) << std::to_string(LBN++) \
-            << std::setw(4) << std::to_string(m_header.minute) \
-            << std::setw(5) << std::to_string(m_header.second) \
-            << std::setw(5) << std::to_string(m_header.sector) \
-            << std::setw(5) << std::to_string(m_header.mode) \
-            << std::setw(5) << std::to_string(m_subheader.fileNumber) \
-            << std::setw(8) << std::to_string(m_subheader.channelNumber) \
-            << std::setw(9) << toBinString(m_subheader.submode, 8) \
-            << std::setw(11) << toBinString(m_subheader.codingInformation, 8) << std::endl;
-        GotoNextSector();
-    }
-    m_disc.clear();
+    uint32_t LBN = 0;
+    ForEachSector([&] (const CDISector& sector) {
+        out << std::right << std::setw(6) << std::to_string(LBN++)
+            << std::setw(4) << std::to_string(sector.header.minute)
+            << std::setw(5) << std::to_string(sector.header.second)
+            << std::setw(5) << std::to_string(sector.header.sector)
+            << std::setw(5) << std::to_string(sector.header.mode)
+            << std::setw(5) << std::to_string(sector.subheader.fileNumber)
+            << std::setw(8) << std::to_string(sector.subheader.channelNumber)
+            << std::setw(9) << toBinString(sector.subheader.submode, 8)
+            << std::setw(11) << toBinString(sector.subheader.codingInformation, 8) << std::endl;
+    });
 
     out.close();
-    Seek(pos);
 
     return true;
 }

@@ -2,6 +2,7 @@
 #include "CDIDisc.hpp"
 #include "common/utils.hpp"
 
+#include <algorithm>
 #include <filesystem>
 #include <string>
 
@@ -94,7 +95,7 @@ void CDIDirectory::LoadContent(CDIDisc& disc)
  * The path must not start with a '/'.
  * e.g. "CMDS/cdi_gate" for file "cdi_gate" in the "CMDS" folder inside this directory.
  */
-CDIFile* CDIDirectory::GetFile(std::string filename)
+const CDIFile* CDIDirectory::GetFile(std::string filename)
 {
     const size_t pos = filename.find('/');
     if(pos == std::string::npos)
@@ -144,8 +145,7 @@ void CDIDirectory::Clear()
 std::stringstream CDIDirectory::GetChildrenTree() const
 {
     std::stringstream ss;
-    std::string dirName = name == "/" ? "" : name;
-    ss << "Dir: " << dirName << "/" << std::endl;
+    ss << "Dir: " << name << "/" << std::endl;
     ss << "LBN: " << LBN << std::endl;
 
     for(const std::pair<std::string, CDIDirectory> dir : subdirectories)
@@ -255,5 +255,26 @@ void CDIDirectory::ExportRawVideo(std::string basePath) const
     for(std::pair<std::string, CDIDirectory> subdir : subdirectories)
     {
         subdir.second.ExportRawVideo(basePath);
+    }
+}
+
+/** \brief Calls the given function on each file of the directory.
+ * \brief path The path to the directory (not including this directory name).
+ * \brief f The function to call.
+ *
+ * The function is given the directory pathlist (e.g. `/CMDS/`) and the file itself.
+ */
+void CDIDirectory::ForEachFile(const std::string& path, std::function<void(std::string_view, const CDIFile&)> f) const
+{
+    const std::string p = path + name + '/';
+
+    for(const std::pair<const std::string, CDIFile>& file : files)
+    {
+        f(p, file.second);
+    }
+
+    for(const std::pair<const std::string, CDIDirectory>& subdirectory : subdirectories)
+    {
+        subdirectory.second.ForEachFile(p, f);
     }
 }
