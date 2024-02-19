@@ -25,7 +25,6 @@ public:
 
     void ExportAudio(const std::string& directoryPath) const;
     void ExportFile(const std::string& directoryPath) const;
-    void ExportVideo(const std::string& directoryPath) const;
     void ExportRawVideo(const std::string& directoryPath) const;
     std::vector<uint8_t> GetContent() const;
 

@@ -7,6 +7,7 @@
 #include "VDSCViewer.hpp"
 #include "../CeDImu.hpp"
 #include "../Config.hpp"
+#include "../export.hpp"
 
 #include <wx/dirdlg.h>
 #include <wx/filedlg.h>
@@ -372,7 +373,7 @@ void MainFrame::OnExportVideo(wxCommandEvent&)
         try
         {
             if(dirDlg.ShowModal() == wxID_OK)
-                disc.ExportVideo(dirDlg.GetPath().ToStdString());
+                exportVideo(disc, dirDlg.GetPath().ToStdString());
         }
         catch(const std::filesystem::filesystem_error& e)
         {

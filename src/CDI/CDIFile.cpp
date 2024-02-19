@@ -4,23 +4,9 @@
 #include "common/utils.hpp"
 #include "common/Video.hpp"
 
-#include <wx/bitmap.h>
-
 #include <array>
 #include <fstream>
 #include <vector>
-
-/** \brief The max number of channels (Green book Appendix II.1.2). */
-static constexpr size_t MAX_CHANNEL_NUMBER = 32;
-/** \brief The max number of channels on audio sectors (Green book Appendix II.1.2). */
-static constexpr size_t MAX_AUDIO_CHANNEL_NUMBER = 16;
-
-static constexpr Video::ImageCodingMethod codingLookUp[16] = {
-    ICM(CLUT4), ICM(CLUT7), ICM(CLUT8), ICM(OFF),
-    ICM(OFF), ICM(DYUV), ICM(RGB555), ICM(RGB555),
-    ICM(OFF), ICM(OFF), ICM(OFF), ICM(OFF),
-    ICM(OFF), ICM(OFF), ICM(OFF), ICM(OFF),
-};
 
 CDIFile::CDIFile(CDIDisc& cdidisc, uint32_t lbn, uint32_t filesize, uint8_t namesize, std::string filename, uint16_t attr, uint8_t filenumber, uint16_t parentRelpos)
     : LBN(lbn)
@@ -160,161 +146,6 @@ void CDIFile::ExportFile(const std::string& directoryPath) const
     disc.Seek(pos);
 }
 
-/** \brief Exports the video data of the file.
- *
- * \param  directoryPath Path to the directory where the files will be written. Must end with a '/' (or '\' on Windows).
- *
- * Converts and writes the video data from the disc.
- * Each channel are exported individualy.
- */
-void CDIFile::ExportVideo(const std::string& directoryPath) const
-{
-    uint32_t pos = disc.Tell();
-    int maxChannel = 0;
-    std::array<uint32_t, 256> CLUT{};
-
-    for(int channel = 0; channel <= maxChannel; channel++)
-    {
-        uint16_t width = 0, height = 0, y = 0;
-        uint8_t coding = 0;
-        uint8_t pixels[768 * 560 * 4] = {0};
-        std::vector<uint8_t> data;
-
-        disc.GotoLBN(LBN);
-
-        uint8_t record = 0;
-        int32_t sizeLeft = size;
-        while(sizeLeft > 0)
-        {
-            sizeLeft -= (sizeLeft < 2048) ? sizeLeft : 2048;
-            if(disc.m_subheader.channelNumber > maxChannel)
-                maxChannel = disc.m_subheader.channelNumber;
-
-            if(disc.m_subheader.submode & cdid) // Get CLUT table from a sector before the video data
-            {
-                std::array<uint8_t, 2048> d;
-                disc.GetRaw(d);
-
-                // const_cast is safe because `d` is not const.
-                char* clut = const_cast<char*>(as<const char*>(subarrayOfArray(d.data(), d.size(), "cluts", 5)));
-                if(clut != nullptr)
-                {
-                    // Retro engineering from Link: The Faces of Evil.
-                    disc.Seek(-2026, std::ios::cur);
-                    const uint16_t offset = disc.GetWord();
-
-                    disc.Seek(0x2A, std::ios::cur);
-                    std::string cluts = disc.GetString(5);
-
-                    if(cluts.compare("cluts") != 0)
-                        continue;
-
-                    disc.Seek(offset - 0x2A - 0x16 - 5 - 2, std::ios::cur);
-                    for(int bank = 0; bank < 256; bank += 64)
-                        for(int i = 0; i < 64; i++)
-                        {
-                            uint8_t addr = disc.GetByte();
-                            if(addr == 0)
-                            {
-                                bank = 256 * 3;
-                                break;
-                            }
-                            addr -= 0x80;
-                            CLUT[bank + addr]  = as<uint32_t>(disc.GetByte()) << 16;
-                            CLUT[bank + addr] |= as<uint32_t>(disc.GetByte()) << 8;
-                            CLUT[bank + addr] |= disc.GetByte();
-                        }
-                }
-                else // simply copy the first 128 colors
-                {
-                    for(int i = 0, j = 0; j < 128; j++)
-                    {
-                        CLUT[j]  = as<uint32_t>(d[i++]) << 16;
-                        CLUT[j] |= as<uint32_t>(d[i++]) << 8;
-                        CLUT[j] |= d[i++];
-                    }
-                }
-
-                disc.GotoNextSector();
-                continue;
-            }
-
-            if(!(disc.m_subheader.submode & cdiv) || disc.m_subheader.channelNumber != channel)
-            {
-                disc.GotoNextSector();
-                continue;
-            }
-
-            // Green Book V.6.3.1
-            bool ascf = bit<7>(disc.m_subheader.codingInformation);
-//            bool eolf = bit<6>(disc.m_subheader.codingInformation);
-            uint8_t resolution = bits<4, 5>(disc.m_subheader.codingInformation);
-            coding = bits<0, 3>(disc.m_subheader.codingInformation);
-
-            if(ascf || coding > 7 || resolution == 2)
-            {
-                disc.GotoNextSector();
-                continue;
-            }
-
-            std::array<uint8_t, 2324> d;
-
-            width = resolution == 0 ? 384 : 768;
-            height = resolution == 3 ? 480 : 242;
-
-            disc.GetRaw(d);
-            data.insert(data.end(), d.begin(), d.end());
-
-            disc.GotoNextSector();
-        }
-
-        size_t index = 0;
-        if(coding == 3 || coding == 4)
-        {
-            while(index < data.size())
-            {
-                index += Video::decodeRunLengthLine(&pixels[width * 4 * y], &data[index], width, CLUT.data(), coding & 0x3);
-                y++;
-                if(y >= height)
-                {
-                    uint8_t* pix = new uint8_t[width * height * 3];
-                    Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-                    wxImage(width, height, pix, true).SaveFile(directoryPath + name + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
-                    delete[] pix;
-                    y = 0;
-                }
-            }
-        }
-        else
-        {
-            while(index < data.size())
-            {
-                index += Video::decodeBitmapLine(&pixels[width * 4 * y], nullptr, &data[index], width, CLUT.data(), 0x00108080, codingLookUp[coding]);
-                y++;
-                if(y >= height)
-                {
-                    uint8_t* pix = new uint8_t[width * height * 3];
-                    Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-                    wxImage(width, height, pix, true).SaveFile(directoryPath + name + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
-                    delete[] pix;
-                    y = 0;
-                }
-            }
-        }
-
-        if(y > 0)
-        {
-            uint8_t* pix = new uint8_t[width * height * 4];
-            Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-            wxImage(width, height, pix, true).SaveFile(directoryPath + name + "_" + std::to_string(channel) + "_" + std::to_string(record++) + ".bmp", wxBITMAP_TYPE_BMP);
-            delete[] pix;
-            y = 0;
-        }
-    }
-
-    disc.Seek(pos);
-}
-
 /** \brief Exports the raw video data of the file (unconverted).
  *
  * \param  directoryPath Path to the directory where the files will be written. Must end with a '/' (or '\' on Windows).
@@ -330,7 +161,7 @@ void CDIFile::ExportRawVideo(const std::string& directoryPath) const
         bool eolf;
         uint8_t resolution;
         uint8_t coding;
-        uint8_t record;
+        size_t record;
         std::vector<uint8_t> data;
     };
     std::array<VideoInfo, MAX_CHANNEL_NUMBER> video{};

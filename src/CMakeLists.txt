@@ -29,6 +29,8 @@ add_executable(CeDImu-GUI WIN32
     CeDImu.hpp
     Config.cpp
     Config.hpp
+    export.cpp
+    export.hpp
     main.cpp
 )
 add_subdirectory(GUI)

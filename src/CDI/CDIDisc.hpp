@@ -10,6 +10,11 @@
 #include <string>
 #include <string_view>
 
+/** \brief The max number of channels (Green book Appendix II.1.2). */
+static constexpr size_t MAX_CHANNEL_NUMBER = 32;
+/** \brief The max number of channels on audio sectors (Green book Appendix II.1.2). */
+static constexpr size_t MAX_AUDIO_CHANNEL_NUMBER = 16;
+
 struct DiscHeader
 {
     uint8_t minute;
@@ -86,7 +91,6 @@ public:
     bool ExportAudio(const std::string& path);
     bool ExportFiles(const std::string& path);
     bool ExportFileSystem(const std::string& path);
-    bool ExportVideo(const std::string& path);
     bool ExportRawVideo(const std::string& path);
     bool ExportSectorsInfo(const std::string& path);
 

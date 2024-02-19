@@ -64,23 +64,6 @@ bool CDIDisc::ExportFileSystem(const std::string& path)
     return true;
 }
 
-/** \brief Exports the video data in the disc.
- * \param path The directory where to write the data.
- * \return true if the disc was opened, false if no disc was opened.
- * \throw std::filesystem::filesystem_error if it cannot create directories.
- */
-bool CDIDisc::ExportVideo(const std::string& path)
-{
-    if(!IsOpen())
-        return false;
-
-    std::string currentPath = path + "/" + m_gameName + "/video/";
-
-    m_rootDirectory.ExportVideo(currentPath);
-
-    return true;
-}
-
 /** \brief Exports the raw video data from the disc.
  * \param path The directory where to write the data.
  * \return false if no disc has been opened or if it could not create subfolders, true otherwise.

@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-find_package(wxWidgets REQUIRED COMPONENTS core base)
-
-if(NOT wxWidgets_FOUND)
-    message(FATAL_ERROR "wxWidgets not found")
-endif()
+project(libCeDImu)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,14 +36,6 @@ add_subdirectory(OS9)
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(CeDImu PRIVATE -Wall -Wextra -Wpedantic)
 endif()
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_definitions(CeDImu PRIVATE wxDEBUG_LEVEL=0)
-endif()
-
-include(${wxWidgets_USE_FILE})
-target_include_directories(CeDImu PUBLIC ${wxWidgets_INCLUDE_DIRS})
-target_link_libraries(CeDImu PRIVATE ${wxWidgets_LIBRARIES})
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(CeDImu PRIVATE stdc++fs)
