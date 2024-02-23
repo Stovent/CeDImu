@@ -6,7 +6,7 @@ jobs:
   build-x86_64:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install wxWidgets
         run: brew install wxwidgets dylibbundler create-dmg
@@ -32,7 +32,7 @@ jobs:
         run: create-dmg --volname "CeDImu Installer" --volicon "resources/CeDImu-v3.icns" --hide-extension "CeDImu.app" --window-pos 200 120 --window-size 800 400 --icon-size 100 --app-drop-link 600 185 "CeDImu-Installer.dmg" "./CeDImu.app/"
 
       - name: Upload build
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4
         with:
           name: CeDImu-Installer-x86_64.dmg
           path: ./CeDImu-Installer.dmg
