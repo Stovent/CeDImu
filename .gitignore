@@ -1,7 +1,8 @@
-# Exclude everything except .C .C++ headers and Makefile
+# Exclude everything except the actual code
 /*
 
 !.gitignore
+!.gitmodules
 !CMakeLists.txt
 !Doxyfile
 !MANUAL.md
@@ -9,6 +10,6 @@
 
 !/.github
 !/cditool
+!/externals
 !/resources
 !/src
-!/submodules
