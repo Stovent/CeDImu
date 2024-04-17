@@ -10,6 +10,8 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: dtolnay/rust-toolchain@nightly
+
       - name: Install wxWidgets
         run: |
           sudo apt update
