@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 
 project(libCeDImu)
 
@@ -11,6 +11,16 @@ option(CEDIMU_ENABLE_LOG "Allows the library to print some messages in the conso
 if(CEDIMU_ENABLE_LOG)
     add_definitions(-DENABLE_LOG)
 endif()
+
+include(FetchContent)
+FetchContent_Declare(
+    Corrosion
+    GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+    GIT_TAG v0.4.7
+)
+FetchContent_MakeAvailable(Corrosion)
+
+corrosion_import_crate(MANIFEST_PATH ../../externals/m68000/Cargo.toml)
 
 add_library(CeDImu ${LIBRARY_TYPE}
     CDI.cpp
@@ -41,9 +51,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(CeDImu PUBLIC stdc++fs)
 endif()
 
-target_include_directories(CeDImu PUBLIC "../../submodules/m68000/include")
-target_link_directories(CeDImu PUBLIC "../../submodules/m68000/target/release")
-target_link_libraries(CeDImu PUBLIC m68000_ffi m68000)
+target_include_directories(CeDImu PUBLIC "../../externals/m68000/include")
+# target_link_directories(CeDImu PUBLIC "../../externals/m68000/target/release")
+target_link_libraries(CeDImu PUBLIC m68000 m68000_ffi)
 
 if(WIN32)
     target_link_libraries(CeDImu PUBLIC NtosKrnl ucrt)

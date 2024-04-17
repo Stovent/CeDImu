@@ -17,12 +17,15 @@ void SCC68070::Interpreter()
         m68000_exception_result_t res;
         if(cdi.m_callbacks.HasOnLogDisassembler())
         {
-            char str[64]{0};
-            res = m68000_scc68070_disassembler_interpreter_exception(m68000, &m68000Callbacks, str, 64);
+            std::array<char, 32> str{0};
+            const m68000_disassembler_exception_result_t r = m68000_scc68070_disassembler_interpreter_exception(m68000, &m68000Callbacks, str.data(), str.size());
+            res.cycles = r.cycles;
+            res.exception = r.exception;
+            currentPC = r.pc;
 
             if(res.cycles > 0)
             {
-                const LogInstruction inst = {currentPC, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOS().m_base), str};
+                const LogInstruction inst = {currentPC, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOSBaseAddress()), str.data()};
                 cdi.m_callbacks.OnLogDisassembler(inst);
             }
         }
