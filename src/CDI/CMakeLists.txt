@@ -52,9 +52,4 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 target_include_directories(CeDImu PUBLIC "../../externals/m68000/include")
-# target_link_directories(CeDImu PUBLIC "../../externals/m68000/target/release")
 target_link_libraries(CeDImu PUBLIC m68000 m68000_ffi)
-
-if(WIN32)
-    target_link_libraries(CeDImu PUBLIC NtosKrnl ucrt)
-endif()
