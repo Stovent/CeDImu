@@ -237,7 +237,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
 
                 if(registers->sr.c)
                 {
-                    snprintf(error, 64, "carry=1 d1.w=%s ", OS9::errorNameToString(static_cast<OS9::Error>((uint16_t)registers->d[1])).c_str());
+                    snprintf(error, 64, "carry=1 d1.w=%s ", OS9::errorNameToString(as<OS9::Error>(as<uint16_t>(registers->d[1]))).c_str());
                 }
                 else
                 {

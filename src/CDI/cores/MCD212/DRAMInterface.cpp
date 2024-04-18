@@ -49,7 +49,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
     if(memorySwapCount < 4 && flags & Trigger)
     {
         memorySwapCount++;
-        return (uint16_t)BIOS[addr] << 8 | BIOS[addr + 1];
+        return GET_ARRAY16(BIOS, addr);
     }
 
     uint16_t data;
@@ -57,12 +57,12 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr < 0x400000)
     {
-        data = (uint16_t)memory[addr] << 8 | memory[addr + 1];
+        data = GET_ARRAY16(memory, addr);
         LOG(location = MemoryAccessLocation::RAM;)
     }
     else if(addr < 0x4FFC00)
     {
-        data = (uint16_t)BIOS[addr - 0x400000] << 8 | BIOS[addr - 0x3FFFFF];
+        data = GET_ARRAY16(BIOS, addr - 0x400000);
         LOG(location = MemoryAccessLocation::BIOS;)
     }
     else if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
@@ -92,7 +92,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t MCD212::GetLong(const uint32_t addr)
 {
-    return (uint32_t)GetWord(addr, Trigger) << 16 | GetWord(addr + 2, Trigger);
+    return as<uint32_t>(GetWord(addr, Trigger)) << 16 | GetWord(addr + 2, Trigger);
 }
 
 void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
@@ -110,7 +110,7 @@ void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flag
         if(isEven(addr))
         {
             internalRegisters[addr - 0x4FFFE0] &= 0x00FF;
-            internalRegisters[addr - 0x4FFFE0] |= (uint16_t)data << 8;
+            internalRegisters[addr - 0x4FFFE0] |= as<uint16_t>(data) << 8;
         }
         else
         {
@@ -132,7 +132,7 @@ void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fla
 {
     if(addr < 0x400000)
     {
-        memory[addr]     = data >> 8;
+        memory[addr]     = bits<8, 15>(data);
         memory[addr + 1] = data;
         LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RAM, "Set", "Word", cdi.m_cpu.currentPC, addr, data}); })
