@@ -5,14 +5,15 @@ class CDI;
 #include "../../common/types.hpp"
 
 #include <array>
-#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <string>
-#include <thread>
+#include <utility>
 #include <vector>
 
 class SCC68070
@@ -98,9 +99,9 @@ public:
 
     struct Exception
     {
-        ExceptionVector vector;
+        ExceptionVector vector; /**< The exception vector. */
         uint8_t priority; /**< Group and priority. */
-        uint16_t data;
+        uint16_t data; /**< Additional data (used to store the syscall in Trap 0 instructions). */
 
         Exception() = delete;
         Exception(const ExceptionVector vec, const uint16_t d = 0) : vector(vec), priority(GetPriority(vec)), data(d) {}
@@ -128,18 +129,17 @@ public:
 
     uint32_t currentPC;
     uint64_t totalCycleCount;
+    const double cycleDelay; // Time between two clock cycles in nanoseconds
 
     std::vector<uint32_t> breakpoints;
 
     SCC68070(CDI& idc, const uint32_t clockFrequency);
     ~SCC68070();
 
-    bool IsRunning() const;
-    void SetEmulationSpeed(const double speed);
-
-    void Run(const bool loop = true);
-    void Stop(const bool wait = true);
+    size_t SingleStep(size_t stopCycles);
+    std::pair<size_t, std::optional<ExceptionVector>> SingleStepException(size_t stopCycles);
     void Reset();
+    void PushException(ExceptionVector vector, uint16_t data = 0);
 
     void INT1();
     void INT2();
@@ -229,19 +229,14 @@ private:
     };
 
     CDI& cdi;
-    std::thread executionThread;
 
     std::mutex uartInMutex;
     std::deque<uint8_t> uartIn;
 
-    std::atomic_bool loop;
     bool stop;
-    std::atomic_bool isRunning;
 
     void DumpCPURegisters();
 
-    const double cycleDelay; // Time between two clock cycles in nanoseconds
-    double speedDelay; // used for emulation speed.
     const double timerDelay;
     double timerCounter; // Counts the nanosconds when incrementing the timer.
 
@@ -280,7 +275,6 @@ private:
     // Exceptions
     std::priority_queue<Exception> exceptions;
 
-    void PushException(ExceptionVector vector, uint16_t data = 0);
     uint16_t ProcessException(ExceptionVector vector);
     static std::string exceptionVectorToString(ExceptionVector vector);
 
@@ -365,7 +359,6 @@ private:
     std::string DisassembleConditionalCode(const uint8_t cc) const;
 
     // Instruction Set
-    void Interpreter();
     void ResetOperation();
     typedef uint16_t    (SCC68070::*ILUTFunctionPointer)();
     typedef std::string (SCC68070::*DLUTFunctionPointer)(const uint32_t) const;

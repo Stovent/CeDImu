@@ -13,16 +13,12 @@
 SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     : currentPC(0)
     , totalCycleCount(0)
+    , cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
     , breakpoints{}
     , cdi(idc)
-    , executionThread()
     , uartInMutex()
     , uartIn{}
-    , loop(false)
     , stop(false)
-    , isRunning(false)
-    , cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
-    , speedDelay(cycleDelay)
     , timerDelay(cycleDelay * 96)
     , timerCounter(0)
     , internal{0}
@@ -45,69 +41,6 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
  */
 SCC68070::~SCC68070()
 {
-    Stop(true);
-}
-
-/** \brief Check if the CPU is running.
- *
- * \return true if it is running, false otherwise.
- */
-bool SCC68070::IsRunning() const
-{
-    return isRunning;
-}
-
-/** \brief Set the CPU emulated speed.
- *
- * \param speed The speed multiplier based on the clock frequency used in the constructor.
- *
- * This method only changes the emulation speed, not the clock frequency.
- * A multiplier of 2 will make the CPU runs twice as fast, the GPU to run at twice the framerate,
- * the timekeeper to increment twice as fast, etc.
- */
-void SCC68070::SetEmulationSpeed(const double speed)
-{
-    speedDelay = cycleDelay / speed;
-}
-
-/** \brief Start emulation.
- *
- * \param loop If true, will run indefinitely as a thread. If false, will execute a single instruction.
- *
- * If loop = true, executes indefinitely in a thread (non-blocking).
- * If loop = false, executes a single instruction and returns when it is executed (blocking).
- */
-void SCC68070::Run(const bool loop)
-{
-    if(!isRunning)
-    {
-        if(executionThread.joinable())
-            executionThread.join();
-
-        this->loop = loop;
-        if(loop)
-            executionThread = std::thread(&SCC68070::Interpreter, this);
-        else
-            Interpreter();
-    }
-}
-
-/** \brief Stop emulation.
- *
- * \param wait If true, will wait for the thread to join. If false, detach the thread while it stops.
- *
- * If this is invoked during a callback, false must be sent to prevent any dead lock.
- */
-void SCC68070::Stop(const bool wait)
-{
-    loop = false;
-    if(executionThread.joinable())
-    {
-        if(wait)
-            executionThread.join();
-        else
-            executionThread.detach();
-    }
 }
 
 /** \brief Resets the CPU (as if the RESET and HALT pins are driven LOW).
@@ -122,6 +55,7 @@ void SCC68070::Reset()
 
 /** \brief Requests the CPU to process the given exception.
  * \param vector The vector number of the exception.
+ * \param data An additional data stored in the Exception.
  */
 void SCC68070::PushException(const ExceptionVector vector, const uint16_t data)
 {

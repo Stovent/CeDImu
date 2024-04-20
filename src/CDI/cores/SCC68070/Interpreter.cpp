@@ -2,18 +2,36 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
-#include <algorithm>
-#include <chrono>
-
-void SCC68070::Interpreter()
+/** \brief Exectutes a single instruction.
+ * \param stopCycles The number of cycles to run if the CPU is stopped.
+ * \return The number of CPU cycle executed.
+ *
+ * A cycle count of 0 means the CPU is stopped.
+ * When the CPU is stopped, \p stopCycles is used to advance the internal timer.
+ */
+size_t SCC68070::SingleStep(const size_t stopCycles)
 {
-    isRunning = true;
-    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
-    std::priority_queue<Exception> unprocessedExceptions; // Used to store the interrupts that can't be processed because their priority is too low.
+    std::pair<size_t, std::optional<ExceptionVector>> res = SingleStepException(stopCycles);
+    if(res.second)
+        PushException(*res.second);
 
-    do
+    return res.first;
+}
+
+/** \brief Executes a single instruction and returns the exception if any.
+ * \param stopCycles The number of cycles to run if the CPU is stopped.
+ * \return The cycle count and the exception that occured if any.
+ *
+ * A cycle count of 0 means the CPU is stopped.
+ */
+std::pair<size_t, std::optional<SCC68070::ExceptionVector>> SCC68070::SingleStepException(const size_t stopCycles)
+{
+    size_t executionCycles = 0;
+    std::optional<ExceptionVector> exception;
+
+    if(!exceptions.empty())
     {
-        size_t executionCycles = 0;
+        std::priority_queue<Exception> unprocessedExceptions; // Used to store the interrupts that can't be processed because their priority is too low.
 
         while(exceptions.size())
         {
@@ -21,7 +39,7 @@ void SCC68070::Interpreter()
             exceptions.pop();
 
             if((ex.vector >= Level1ExternalInterruptAutovector && ex.vector <= Level7ExternalInterruptAutovector) ||
-               (ex.vector >= Level1OnChipInterruptAutovector && ex.vector <= Level7OnChipInterruptAutovector))
+                (ex.vector >= Level1OnChipInterruptAutovector && ex.vector <= Level7OnChipInterruptAutovector))
             {
                 const uint8_t level = ex.vector & 0x7;
                 if(level != 7 && level <= GetIPM())
@@ -39,7 +57,7 @@ void SCC68070::Interpreter()
                 const OS9::SystemCall syscall = {syscallType, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOSBaseAddress()), inputs, ""};
                 cdi.m_callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
             }
-//            DumpCPURegisters();
+//             DumpCPURegisters();
             executionCycles += ProcessException(ex.vector);
         }
         while(unprocessedExceptions.size())
@@ -47,42 +65,35 @@ void SCC68070::Interpreter()
             exceptions.push(unprocessedExceptions.top());
             unprocessedExceptions.pop();
         }
+    }
 
-        if(stop)
+    if(stop)
+    {
+        executionCycles += stopCycles;
+    }
+    else
+    {
+        try
         {
-            executionCycles += 25;
+            currentPC = PC;
+            currentOpcode = GetNextWord(Trigger);
+            if(cdi.m_callbacks.HasOnLogDisassembler())
+            {
+                const LogInstruction inst = {currentPC, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOSBaseAddress()), (this->*DLUT[currentOpcode])(currentPC)};
+                cdi.m_callbacks.OnLogDisassembler(inst);
+            }
+            executionCycles += (this->*ILUT[currentOpcode])();
         }
-        else
+        catch(const Exception& e)
         {
-            try
-            {
-                currentPC = PC;
-                currentOpcode = GetNextWord(Trigger);
-                if(cdi.m_callbacks.HasOnLogDisassembler())
-                {
-                    const LogInstruction inst = {currentPC, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOSBaseAddress()), (this->*DLUT[currentOpcode])(currentPC)};
-                    cdi.m_callbacks.OnLogDisassembler(inst);
-                }
-                executionCycles += (this->*ILUT[currentOpcode])();
-            }
-            catch(const Exception& e)
-            {
-                exceptions.push(e);
-            }
+            exception = e.vector;
         }
+    }
 
-        totalCycleCount += executionCycles;
+    totalCycleCount += executionCycles;
 
-        const double ns = executionCycles * cycleDelay;
-        IncrementTimer(ns);
-        cdi.IncrementTime(ns);
+    const double ns = executionCycles * cycleDelay;
+    IncrementTimer(ns);
 
-        if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
-            loop = false;
-
-        start += std::chrono::duration<double, std::nano>(executionCycles * speedDelay);
-        std::this_thread::sleep_until(start);
-    } while(loop);
-
-    isRunning = false;
+    return std::make_pair(executionCycles, exception);
 }
