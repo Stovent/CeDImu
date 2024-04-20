@@ -75,14 +75,73 @@ CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDID
     , m_cpu(*this, m_config.PAL ? SCC68070::PAL_FREQUENCY : SCC68070::NTSC_FREQUENCY)
     , m_slave()
     , m_timekeeper()
+    , m_schedulerThread()
+    , m_loop(false)
+    , m_isRunning(false)
+    , m_speedDelay(m_cpu.cycleDelay)
 {
 }
 
 /** \brief Destroys the CDI. Stops and wait for the emulation thread to stop if it is running.
+ *
+ * Derived destructors MUST call `Stop(true);` too.
  */
 CDI::~CDI() noexcept
 {
-    m_cpu.Stop(true);
+    Stop(true);
+}
+
+/** \brief Start emulation.
+ *
+ * \param loop If true, will run indefinitely as a thread. If false, will execute a single scheduler cycle.
+ *
+ * If loop = true, executes indefinitely in a thread (non-blocking).
+ * If loop = false, executes a single scheduler cycle and returns when it is executed (blocking).
+ */
+void CDI::Run(const bool loop)
+{
+    if(!m_isRunning)
+    {
+        if(m_schedulerThread.joinable())
+            m_schedulerThread.join();
+
+        this->m_loop = loop;
+        if(loop)
+            m_schedulerThread = std::thread(&CDI::Scheduler, this);
+        else
+            Scheduler();
+    }
+}
+
+/** \brief Stop emulation.
+ *
+ * \param wait If true, will wait for the thread to join. If false, detach the thread while it stops.
+ *
+ * If this is invoked during a callback, false must be sent to prevent any dead lock.
+ */
+void CDI::Stop(const bool wait)
+{
+    m_loop = false;
+    if(m_schedulerThread.joinable())
+    {
+        if(wait)
+            m_schedulerThread.join();
+        else
+            m_schedulerThread.detach();
+    }
+}
+
+/** \brief Set the CPU emulated speed.
+ *
+ * \param speed The speed multiplier based on the clock frequency used in the constructor.
+ *
+ * This method only changes the emulation speed, not the clock frequency.
+ * A multiplier of 2 will make the CPU runs twice as fast, the GPU to run at twice the framerate,
+ * the timekeeper to increment twice as fast, etc.
+ */
+void CDI::SetEmulationSpeed(const double speed)
+{
+    m_speedDelay = m_cpu.cycleDelay / speed;
 }
 
 /** \brief Returns a pointer to the given address.

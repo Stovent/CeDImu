@@ -20,7 +20,28 @@ Mono3::Mono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, C
 
 Mono3::~Mono3() noexcept
 {
-    m_cpu.Stop(true);
+    Stop(true);
+}
+
+void Mono3::Scheduler()
+{
+    m_isRunning = true;
+    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
+
+    do
+    {
+        size_t cycles = m_cpu.SingleStep(25);
+
+        const double ns = cycles * m_cpu.cycleDelay;
+        CDI::IncrementTime(ns);
+        m_mcd212.IncrementTime(ns);
+        m_ciap.IncrementTime(ns);
+
+        start += std::chrono::duration<double, std::nano>(cycles * m_speedDelay);
+        std::this_thread::sleep_until(start);
+    } while(m_loop);
+
+    m_isRunning = false;
 }
 
 void Mono3::Reset(const bool resetCPU)
@@ -28,13 +49,6 @@ void Mono3::Reset(const bool resetCPU)
     m_mcd212.Reset();
     if(resetCPU)
         m_cpu.Reset();
-}
-
-void Mono3::IncrementTime(const double ns)
-{
-    CDI::IncrementTime(ns);
-    m_mcd212.IncrementTime(ns);
-    m_ciap.IncrementTime(ns);
 }
 
 uint32_t Mono3::GetTotalFrameCount()
