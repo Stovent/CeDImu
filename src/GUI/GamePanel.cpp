@@ -32,7 +32,7 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu)
 
         if(this->m_stopOnNextFrame)
         {
-            this->m_cedimu.m_cdi->m_cpu.Stop(false);
+            this->m_cedimu.m_cdi->Stop(false);
             this->m_mainFrame->m_pauseMenuItem->Check();
         }
 

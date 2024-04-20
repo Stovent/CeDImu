@@ -2,18 +2,35 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
-#include <algorithm>
-#include <chrono>
-
-void SCC68070::Interpreter()
+/** \brief Exectutes a single instruction.
+ * \param stopCycles The number of cycles to run if the CPU is stopped.
+ * \return The number of CPU cycle executed (0 when CPU is stopped).
+ *
+ * When the CPU is stopped, \p stopCycles is used to advance the internal timer.
+ */
+size_t SCC68070::SingleStep(const size_t stopCycles)
 {
-    m_isRunning = true;
-    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
-    std::priority_queue<Exception> unprocessedExceptions; // Used to store the interrupts that can't be processed because their priority is too low.
+    std::pair<size_t, std::optional<ExceptionVector>> res = SingleStepException(stopCycles);
+    if(res.second)
+        PushException(*res.second);
 
-    do
+    return res.first;
+}
+
+/** \brief Executes a single instruction and returns the exception if any.
+ * \param stopCycles The number of cycles to run if the CPU is stopped.
+ * \return The cycle count and the exception that occured if any.
+ *
+ * \note A return cycle count of 0 means the CPU is stopped.
+ */
+std::pair<size_t, std::optional<SCC68070::ExceptionVector>> SCC68070::SingleStepException(const size_t stopCycles)
+{
+    size_t executionCycles = 0;
+    std::optional<ExceptionVector> exception;
+
+    if(!m_exceptions.empty())
     {
-        size_t executionCycles = 0;
+        std::priority_queue<Exception> unprocessedExceptions; // Used to store the interrupts that can't be processed because their priority is too low.
 
         while(m_exceptions.size())
         {
@@ -39,7 +56,7 @@ void SCC68070::Interpreter()
                 const OS9::SystemCall syscall = {syscallType, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), inputs, ""};
                 m_cdi.m_callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
             }
-//            DumpCPURegisters();
+//             DumpCPURegisters();
             executionCycles += ProcessException(ex.vector);
         }
         while(unprocessedExceptions.size())
@@ -47,42 +64,35 @@ void SCC68070::Interpreter()
             m_exceptions.push(unprocessedExceptions.top());
             unprocessedExceptions.pop();
         }
+    }
 
-        if(m_stop)
+    if(m_stop)
+    {
+        executionCycles += stopCycles;
+    }
+    else
+    {
+        try
         {
-            executionCycles += 25;
+            currentPC = PC;
+            currentOpcode = GetNextWord(BUS_INSTRUCTION);
+            if(m_cdi.m_callbacks.HasOnLogDisassembler())
+            {
+                const LogInstruction inst = {currentPC, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), (this->*DLUT[currentOpcode])(currentPC)};
+                m_cdi.m_callbacks.OnLogDisassembler(inst);
+            }
+            executionCycles += (this->*ILUT[currentOpcode])();
         }
-        else
+        catch(const Exception& e)
         {
-            try
-            {
-                currentPC = PC;
-                currentOpcode = GetNextWord(BUS_INSTRUCTION);
-                if(m_cdi.m_callbacks.HasOnLogDisassembler())
-                {
-                    const LogInstruction inst = {currentPC, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), (this->*DLUT[currentOpcode])(currentPC)};
-                    m_cdi.m_callbacks.OnLogDisassembler(inst);
-                }
-                executionCycles += (this->*ILUT[currentOpcode])();
-            }
-            catch(const Exception& e)
-            {
-                m_exceptions.push(e);
-            }
+            exception = e.vector;
         }
+    }
 
-        totalCycleCount += executionCycles;
+    totalCycleCount += executionCycles;
 
-        const double ns = executionCycles * m_cycleDelay;
-        IncrementTimer(ns);
-        m_cdi.IncrementTime(ns);
+    const double ns = executionCycles * cycleDelay;
+    IncrementTimer(ns);
 
-        if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
-            m_loop = false;
-
-        start += std::chrono::duration<double, std::nano>(executionCycles * m_speedDelay);
-        std::this_thread::sleep_until(start);
-    } while(m_loop);
-
-    m_isRunning = false;
+    return std::make_pair(executionCycles, exception);
 }

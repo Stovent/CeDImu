@@ -14,17 +14,13 @@
 SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     : currentPC(0)
     , totalCycleCount(0)
+    , cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
     , breakpoints{}
     , m_cdi(idc)
-    , m_executionThread()
     , m_uartInMutex()
     , m_uartIn{}
-    , m_loop(false)
     , m_stop(false)
-    , m_isRunning(false)
-    , m_cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
-    , m_speedDelay(m_cycleDelay)
-    , m_timerDelay(m_cycleDelay * 96)
+    , m_timerDelay(cycleDelay * 96)
     , m_timerCounter(0)
     , m_peripherals{0}
     , currentOpcode(0)
@@ -42,73 +38,10 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     GenerateInstructionSet();
 }
 
-/** \brief Destroy the CPU. Stops and wait for the emulation thread to stop if it is running.
+/** \brief Destroy the CPU.
  */
-SCC68070::~SCC68070()
+SCC68070::~SCC68070() noexcept
 {
-    Stop(true);
-}
-
-/** \brief Check if the CPU is running.
- *
- * \return true if it is running, false otherwise.
- */
-bool SCC68070::IsRunning() const
-{
-    return m_isRunning;
-}
-
-/** \brief Set the CPU emulated speed.
- *
- * \param speed The speed multiplier based on the clock frequency used in the constructor.
- *
- * This method only changes the emulation speed, not the clock frequency.
- * A multiplier of 2 will make the CPU runs twice as fast, the GPU to run at twice the framerate,
- * the timekeeper to increment twice as fast, etc.
- */
-void SCC68070::SetEmulationSpeed(const double speed)
-{
-    m_speedDelay = m_cycleDelay / speed;
-}
-
-/** \brief Start emulation.
- *
- * \param loop If true, will run indefinitely as a thread. If false, will execute a single instruction.
- *
- * If loop = true, executes indefinitely in a thread (non-blocking).
- * If loop = false, executes a single instruction and returns when it is executed (blocking).
- */
-void SCC68070::Run(const bool loop)
-{
-    if(!m_isRunning)
-    {
-        if(m_executionThread.joinable())
-            m_executionThread.join();
-
-        m_loop = loop;
-        if(loop)
-            m_executionThread = std::thread(&SCC68070::Interpreter, this);
-        else
-            Interpreter();
-    }
-}
-
-/** \brief Stop emulation.
- *
- * \param wait If true, will wait for the thread to join. If false, detach the thread while it stops.
- *
- * If this is invoked during a callback, false must be sent to prevent any dead lock.
- */
-void SCC68070::Stop(const bool wait)
-{
-    m_loop = false;
-    if(m_executionThread.joinable())
-    {
-        if(wait)
-            m_executionThread.join();
-        else
-            m_executionThread.detach();
-    }
 }
 
 /** \brief Resets the CPU (as if the RESET and HALT pins are driven LOW).
@@ -135,6 +68,7 @@ void SCC68070::ClearExceptions()
 
 /** \brief Requests the CPU to process the given exception.
  * \param vector The vector number of the exception.
+ * \param data An additional data stored in the Exception.
  */
 void SCC68070::PushException(const ExceptionVector vector, const uint16_t data)
 {

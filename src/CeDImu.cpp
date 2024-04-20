@@ -54,7 +54,7 @@ bool CeDImu::OnInit()
 int CeDImu::OnExit()
 {
     if(m_cdi)
-        m_cdi->m_cpu.Stop(true);
+        m_cdi->Stop(true);
     m_cdi.reset();
     return 0;
 }
@@ -131,7 +131,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     if(!m_cdi)
         return false;
 
-    m_cdi->m_cpu.SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
+    m_cdi->SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
     return true;
 }
 
@@ -162,14 +162,14 @@ void CeDImu::StartEmulation()
 {
     std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
     if(m_cdi)
-        m_cdi->m_cpu.Run(true);
+        m_cdi->Run(true);
 }
 
 void CeDImu::StopEmulation()
 {
     std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
     if(m_cdi)
-        m_cdi->m_cpu.Stop(true);
+        m_cdi->Stop(true);
 }
 
 void CeDImu::IncreaseEmulationSpeed()
@@ -178,7 +178,7 @@ void CeDImu::IncreaseEmulationSpeed()
     {
         std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
         if(m_cdi)
-            m_cdi->m_cpu.SetEmulationSpeed(CPU_SPEEDS[++m_cpuSpeed]);
+            m_cdi->SetEmulationSpeed(CPU_SPEEDS[++m_cpuSpeed]);
     }
 }
 
@@ -188,7 +188,7 @@ void CeDImu::DecreaseEmulationSpeed()
     {
         std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
         if(m_cdi)
-            m_cdi->m_cpu.SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
+            m_cdi->SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
     }
 }
 

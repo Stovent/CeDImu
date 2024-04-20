@@ -272,7 +272,7 @@ void MainFrame::OnSingleStep(wxCommandEvent&)
     {
         std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
         if(m_cedimu.m_cdi)
-            m_cedimu.m_cdi->m_cpu.Run(false);
+            m_cedimu.m_cdi->Run(false);
     }
 }
 
@@ -282,8 +282,8 @@ void MainFrame::OnFrameAdvance(wxCommandEvent&)
     if(m_cedimu.m_cdi)
     {
         m_gamePanel->m_stopOnNextFrame = true;
-        if(!m_cedimu.m_cdi->m_cpu.IsRunning())
-            m_cedimu.m_cdi->m_cpu.Run(true);
+        if(!m_cedimu.m_cdi->IsRunning())
+            m_cedimu.m_cdi->Run(true);
     }
 }
 
