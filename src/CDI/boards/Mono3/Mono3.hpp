@@ -19,8 +19,9 @@ public:
     Mono3(Mono3&&) = delete;
     Mono3& operator=(Mono3&&) = delete;
 
+    virtual void Scheduler() override;
+
     virtual void Reset(const bool resetCPU) override;
-    virtual void IncrementTime(const double ns) override;
     virtual uint32_t GetBIOSBaseAddress() const override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
