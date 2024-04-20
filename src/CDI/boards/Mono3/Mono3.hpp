@@ -13,8 +13,9 @@ public:
     Mono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc(), std::string_view boardName = "Mono-III");
     virtual ~Mono3() noexcept;
 
+    virtual void Scheduler() override;
+
     virtual void Reset(bool resetCPU) override;
-    virtual void IncrementTime(double ns) override;
 
     virtual uint8_t  PeekByte(uint32_t addr) const noexcept override;
     virtual uint16_t PeekWord(uint32_t addr) const noexcept override;

@@ -225,7 +225,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
             std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
             if(m_cedimu.m_cdi)
                 while(count--)
-                    m_cedimu.m_cdi->m_cpu.Run(false);
+                    m_cedimu.m_cdi->Run(false);
         });
         executeSizer->Add(executeButton, wxSizerFlags().CenterVertical());
 

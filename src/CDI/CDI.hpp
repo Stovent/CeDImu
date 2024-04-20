@@ -13,9 +13,11 @@
 #endif // LIBCEDIMU_USE_M68000
 #include "OS9/BIOS.hpp"
 
+#include <atomic>
 #include <memory>
 #include <span>
 #include <string_view>
+#include <thread>
 
 class Mono3;
 
@@ -46,6 +48,15 @@ public:
     CDI(CDI&&) = delete;
     CDI& operator=(CDI&&) = delete;
 
+    void Run(bool loop = true);
+    void Stop(bool wait = true);
+    void SetEmulationSpeed(double speed);
+    bool IsRunning() const { return m_isRunning; }
+
+    virtual uint8_t  PeekByte(uint32_t addr) const noexcept = 0;
+    virtual uint16_t PeekWord(uint32_t addr) const noexcept = 0;
+    virtual uint32_t PeekLong(uint32_t addr) const noexcept = 0;
+
     virtual uint32_t GetRAMSize() const = 0;
     virtual RAMBank GetRAMBank1() const = 0;
     virtual RAMBank GetRAMBank2() const = 0;
@@ -68,18 +79,16 @@ public:
     virtual const Video::Plane& GetCursor() = 0;
 
 protected:
-    friend Mono3;
     friend SCC68070;
 
     CDI() = delete;
     CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());
 
+    /** \brief Runs in a thread and schedule all the components. */
+    virtual void Scheduler() = 0;
+
     virtual void Reset(bool resetCPU) = 0;
     virtual void IncrementTime(double ns);
-
-    virtual uint8_t  PeekByte(uint32_t addr) const noexcept = 0;
-    virtual uint16_t PeekWord(uint32_t addr) const noexcept = 0;
-    virtual uint32_t PeekLong(uint32_t addr) const noexcept = 0;
 
     virtual uint8_t  GetByte(uint32_t addr, BusFlags flags) = 0;
     virtual uint16_t GetWord(uint32_t addr, BusFlags flags) = 0;
@@ -88,6 +97,11 @@ protected:
     virtual void SetByte(uint32_t addr, uint8_t  data, BusFlags flags) = 0;
     virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags) = 0;
     virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags) = 0;
+
+    std::thread m_schedulerThread;
+    std::atomic_bool m_loop; /**< Used by the scheduler to know when to stop executing. */
+    std::atomic_bool m_isRunning; /**< Set by the scheduler to tell if it's running. */
+    double m_speedDelay; // used for emulation speed.
 };
 
 #endif // CDI_CDI_HPP
