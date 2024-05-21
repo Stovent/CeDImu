@@ -63,7 +63,7 @@ struct LogSCC68070Exception
     uint8_t vector; /**< The vector number. */
     uint32_t returnAddress; /**< The program counter where the CPU will continue after a RTE instruction. */
     std::string disassembled; /**< The disassembled value of the exception. */
-    OS9::SystemCall systemCall; /**< If it is a system call, contains its paremeters. */
+    OS9::SystemCall systemCall; /**< If it is a system call, contains its parameters. */
 };
 
 /** \class Callbacks

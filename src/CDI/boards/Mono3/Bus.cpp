@@ -50,7 +50,7 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr >= 0x320000 && addr < m_nvramMaxAddress)
     {
-        return (uint16_t)m_timekeeper->GetByte((addr - 0x320000) >> 1) << 8;
+        return as<uint16_t>(m_timekeeper->GetByte((addr - 0x320000) >> 1)) << 8;
     }
 
     LOG(if(flags & Log) { if(m_callbacks.HasOnLogMemoryAccess()) \
@@ -60,7 +60,7 @@ uint16_t Mono3::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t Mono3::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    return (uint32_t)GetWord(addr, flags) << 16 | GetWord(addr + 2, flags);
+    return as<uint32_t>(GetWord(addr, flags)) << 16 | GetWord(addr + 2, flags);
 }
 
 void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
@@ -75,9 +75,9 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags
     {
         const uint16_t word = m_ciap.GetWord(addr - 0x300000);
         if(isEven(addr))
-            m_ciap.SetWord(addr - 0x300000, (word & 0x00FF) | (uint16_t)data << 8);
+            m_ciap.SetWord(addr - 0x300000, (word & 0x00FF) | as<uint16_t>(data) << 8);
         else
-            m_ciap.SetWord(addr - 0x300000, (word & 0xFF00) | (uint16_t)data);
+            m_ciap.SetWord(addr - 0x300000, (word & 0xFF00) | data);
         return;
     }
 
