@@ -122,7 +122,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
 uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 {
     if(!isEven(addr))
-        throw Exception(AddressError, 0);
+        throw Exception(AddressError);
 
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
@@ -158,7 +158,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
 void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
 {
     if(!isEven(addr))
-        throw Exception(AddressError, 0);
+        throw Exception(AddressError);
 
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {

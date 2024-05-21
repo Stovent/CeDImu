@@ -58,7 +58,7 @@ public:
         TRAPVInstruction,
         PrivilegeViolation,
         Trace,
-        Line0101Emulator,
+        Line1010Emulator,
         Line1111Emulator,
         FormatError = 14,
         UninitializedInterrupt,
@@ -98,12 +98,12 @@ public:
 
     struct Exception
     {
-        uint8_t vector;
-        uint8_t priority; /**< Group and priority merged. */
+        ExceptionVector vector;
+        uint8_t priority; /**< Group and priority. */
         uint16_t data;
 
         Exception() = delete;
-        explicit Exception(const uint8_t vec, const uint16_t d = 0) : vector(vec), priority(GetPriority(vec)), data(d) {}
+        Exception(const ExceptionVector vec, const uint16_t d = 0) : vector(vec), priority(GetPriority(vec)), data(d) {}
 
         bool operator<(const Exception& other) const
         {
@@ -111,7 +111,7 @@ public:
         }
 
     private:
-        static constexpr uint8_t GetPriority(const uint8_t vec)
+        static constexpr uint8_t GetPriority(const ExceptionVector vec)
         {
             if(vec == ResetSSPPC) return 0;
             if(vec == AddressError) return 1;
@@ -280,9 +280,9 @@ private:
     // Exceptions
     std::priority_queue<Exception> exceptions;
 
-    void PushException(const uint8_t vector);
-    uint16_t ProcessException(const uint8_t vectorNumber);
-    static std::string exceptionVectorToString(uint8_t vector);
+    void PushException(ExceptionVector vector, uint16_t data = 0);
+    uint16_t ProcessException(ExceptionVector vector);
+    static std::string exceptionVectorToString(ExceptionVector vector);
 
     // Addressing Modes
     uint32_t GetEffectiveAddress(const uint8_t mode, const uint8_t reg, const uint8_t sizeInBytes, uint16_t& calcTime);

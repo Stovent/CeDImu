@@ -35,7 +35,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const uint8_t flags)
     {
         LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Byte", cdi.m_cpu.currentPC, addr, 0}); })
-        throw SCC68070::Exception(SCC68070::BusError, 0);
+        throw SCC68070::Exception(SCC68070::BusError);
     }
 
     LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
@@ -81,7 +81,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const uint8_t flags)
     {
         LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Word", cdi.m_cpu.currentPC, addr, 0}); })
-        throw SCC68070::Exception(SCC68070::BusError, 0);
+        throw SCC68070::Exception(SCC68070::BusError);
     }
 
     LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
@@ -125,7 +125,7 @@ void MCD212::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flag
     LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Byte", cdi.m_cpu.currentPC, addr, data}); })
 
-    throw SCC68070::Exception(SCC68070::BusError, 0);
+    throw SCC68070::Exception(SCC68070::BusError);
 }
 
 void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
@@ -150,5 +150,5 @@ void MCD212::SetWord(const uint32_t addr, const uint16_t data, const uint8_t fla
     LOG(if(flags & Log) { if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Word", cdi.m_cpu.currentPC, addr, data}); })
 
-    throw SCC68070::Exception(SCC68070::BusError, 0);
+    throw SCC68070::Exception(SCC68070::BusError);
 }

@@ -3,58 +3,57 @@
 #include "../../common/utils.hpp"
 #include "../../OS9/SystemCalls.hpp"
 
-std::string SCC68070::exceptionVectorToString(uint8_t vector)
+std::string SCC68070::exceptionVectorToString(ExceptionVector vector)
 {
     switch(vector)
     {
-        case 0:  return "Reset:Initial SSP";
-        case 1:  return "Reset:Initial PC";
-        case 2:  return "Bus error";
-        case 3:  return "Address error";
-        case 4:  return "Illegal instruction";
-        case 5:  return "Zero divide";
-        case 6:  return "CHK instruction";
-        case 7:  return "TRAPV instruction";
-        case 8:  return "Privilege violation";
-        case 9:  return "Trace";
-        case 10: return "Line 1010 emulator";
-        case 11: return "Line 1111 emulator";
-        case 14: return "Format error";
-        case 15: return "Uninitialized vector interrupt";
-        case 24: return "Spurious interrupt";
-        case 25: return "Level 1 interrupt autovector";
-        case 26: return "Level 2 interrupt autovector";
-        case 27: return "Level 3 interrupt autovector";
-        case 28: return "Level 4 interrupt autovector";
-        case 29: return "Level 5 interrupt autovector";
-        case 30: return "Level 6 interrupt autovector";
-        case 31: return "Level 7 interrupt autovector";
-        case 32: return "TRAP 0 instruction";
-        case 33: return "TRAP 1 instruction";
-        case 34: return "TRAP 2 instruction";
-        case 35: return "TRAP 3 instruction";
-        case 36: return "TRAP 4 instruction";
-        case 37: return "TRAP 5 instruction";
-        case 38: return "TRAP 6 instruction";
-        case 39: return "TRAP 7 instruction";
-        case 40: return "TRAP 8 instruction";
-        case 41: return "TRAP 9 instruction";
-        case 42: return "TRAP 10 instruction";
-        case 43: return "TRAP 11 instruction";
-        case 44: return "TRAP 12 instruction";
-        case 45: return "TRAP 13 instruction";
-        case 46: return "TRAP 14 instruction";
-        case 47: return "TRAP 15 instruction";
-        case 57: return "Level 1 on-chip interrupt autovector";
-        case 58: return "Level 2 on-chip interrupt autovector";
-        case 59: return "Level 3 on-chip interrupt autovector";
-        case 60: return "Level 4 on-chip interrupt autovector";
-        case 61: return "Level 5 on-chip interrupt autovector";
-        case 62: return "Level 6 on-chip interrupt autovector";
-        case 63: return "Level 7 on-chip interrupt autovector";
+        case ResetSSPPC:  return "Reset:Initial SSP/PC";
+        case BusError:  return "Bus error";
+        case AddressError:  return "Address error";
+        case IllegalInstruction:  return "Illegal instruction";
+        case ZeroDivide:  return "Zero divide";
+        case CHKInstruction:  return "CHK instruction";
+        case TRAPVInstruction:  return "TRAPV instruction";
+        case PrivilegeViolation:  return "Privilege violation";
+        case Trace:  return "Trace";
+        case Line1010Emulator: return "Line 1010 emulator";
+        case Line1111Emulator: return "Line 1111 emulator";
+        case FormatError: return "Format error";
+        case UninitializedInterrupt: return "Uninitialized vector interrupt";
+        case SpuriousInterrupt: return "Spurious interrupt";
+        case Level1ExternalInterruptAutovector: return "Level 1 interrupt autovector";
+        case Level2ExternalInterruptAutovector: return "Level 2 interrupt autovector";
+        case Level3ExternalInterruptAutovector: return "Level 3 interrupt autovector";
+        case Level4ExternalInterruptAutovector: return "Level 4 interrupt autovector";
+        case Level5ExternalInterruptAutovector: return "Level 5 interrupt autovector";
+        case Level6ExternalInterruptAutovector: return "Level 6 interrupt autovector";
+        case Level7ExternalInterruptAutovector: return "Level 7 interrupt autovector";
+        case Trap0Instruction: return "TRAP 0 instruction";
+        case Trap1Instruction: return "TRAP 1 instruction";
+        case Trap2Instruction: return "TRAP 2 instruction";
+        case Trap3Instruction: return "TRAP 3 instruction";
+        case Trap4Instruction: return "TRAP 4 instruction";
+        case Trap5Instruction: return "TRAP 5 instruction";
+        case Trap6Instruction: return "TRAP 6 instruction";
+        case Trap7Instruction: return "TRAP 7 instruction";
+        case Trap8Instruction: return "TRAP 8 instruction";
+        case Trap9Instruction: return "TRAP 9 instruction";
+        case Trap10Instruction: return "TRAP 10 instruction";
+        case Trap11Instruction: return "TRAP 11 instruction";
+        case Trap12Instruction: return "TRAP 12 instruction";
+        case Trap13Instruction: return "TRAP 13 instruction";
+        case Trap14Instruction: return "TRAP 14 instruction";
+        case Trap15Instruction: return "TRAP 15 instruction";
+        case Level1OnChipInterruptAutovector: return "Level 1 on-chip interrupt autovector";
+        case Level2OnChipInterruptAutovector: return "Level 2 on-chip interrupt autovector";
+        case Level3OnChipInterruptAutovector: return "Level 3 on-chip interrupt autovector";
+        case Level4OnChipInterruptAutovector: return "Level 4 on-chip interrupt autovector";
+        case Level5OnChipInterruptAutovector: return "Level 5 on-chip interrupt autovector";
+        case Level6OnChipInterruptAutovector: return "Level 6 on-chip interrupt autovector";
+        case Level7OnChipInterruptAutovector: return "Level 7 on-chip interrupt autovector";
         default:
-            if(vector >= 64)
-                return "User interrupt vector " + std::to_string(vector - 64);
+            if(vector >= UserInterrupt)
+                return "User interrupt vector " + std::to_string(vector - UserInterrupt);
             return "Unknown vector " + std::to_string(vector);
     }
 }

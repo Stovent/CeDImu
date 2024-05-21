@@ -54,7 +54,8 @@ void SCC68070::Interpreter()
         }
         else
         {
-            try {
+            try
+            {
                 currentPC = PC;
                 currentOpcode = GetNextWord(Trigger);
                 if(cdi.m_callbacks.HasOnLogDisassembler())
@@ -64,7 +65,8 @@ void SCC68070::Interpreter()
                 }
                 executionCycles += (this->*ILUT[currentOpcode])();
             }
-            catch(const Exception& e) {
+            catch(const Exception& e)
+            {
                 exceptions.push(e);
             }
         }

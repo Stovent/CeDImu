@@ -123,9 +123,9 @@ void SCC68070::Reset()
 /** \brief Requests the CPU to process the given exception.
  * \param vector The vector number of the exception.
  */
-void SCC68070::PushException(const uint8_t vector)
+void SCC68070::PushException(const ExceptionVector vector, const uint16_t data)
 {
-    exceptions.emplace(vector);
+    exceptions.emplace(vector, data);
 }
 
 /** \brief Trigger interrupt with LIR1 level.
@@ -133,8 +133,8 @@ void SCC68070::PushException(const uint8_t vector)
 void SCC68070::INT1()
 {
     const uint8_t level = internal[LIR] >> 4 & 0x07;
-    if(level)
-        PushException(Level1OnChipInterruptAutovector - 1 + level);
+    if(level != 0)
+        PushException(as<ExceptionVector>(Level1OnChipInterruptAutovector - 1 + level));
 }
 
 /** \brief Trigger interrupt with LIR2 level.
@@ -142,8 +142,8 @@ void SCC68070::INT1()
 void SCC68070::INT2()
 {
     const uint8_t level = internal[LIR] & 0x07;
-    if(level)
-        PushException(Level1OnChipInterruptAutovector - 1 + level);
+    if(level != 0)
+        PushException(as<ExceptionVector>(Level1OnChipInterruptAutovector - 1 + level));
 }
 
 /** \brief Trigger level 2 external interrupt vector.

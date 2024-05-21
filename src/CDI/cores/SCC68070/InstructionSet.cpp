@@ -4,13 +4,13 @@
 
 #include <bit>
 
-uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
+uint16_t SCC68070::ProcessException(const ExceptionVector vector)
 {
     uint16_t calcTime = 0;
     uint16_t sr = SR;
     SetS();
 
-    if(vectorNumber == ResetSSPPC)
+    if(vector == ResetSSPPC)
     {
         SSP = cdi.GetLong(0, Trigger);
         PC = cdi.GetLong(4, Trigger);
@@ -20,8 +20,8 @@ uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
         return 43;
     }
 
-    if(vectorNumber == Trace || (vectorNumber >= SpuriousInterrupt && vectorNumber <= Level7ExternalInterruptAutovector) || \
-                                (vectorNumber >= Level1OnChipInterruptAutovector && vectorNumber <= Level7OnChipInterruptAutovector))
+    if(vector == Trace || (vector >= SpuriousInterrupt && vector <= Level7ExternalInterruptAutovector) || \
+                          (vector >= Level1OnChipInterruptAutovector && vector <= Level7OnChipInterruptAutovector))
     {
         stop = false;
     }
@@ -29,7 +29,7 @@ uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
         if(stop)
             return 0;
 
-    if(vectorNumber == BusError || vectorNumber == AddressError) // TODO: implement long Stack format
+    if(vector == BusError || vector == AddressError) // TODO: implement long Stack format
     {
         uint32_t last = lastAddress;
         SetWord(ARIWPr(7, 2), 0); // internal information
@@ -42,15 +42,15 @@ uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
         SetWord(ARIWPr(7, 2), 0); // internal information
         SetWord(ARIWPr(7, 2), 0); // Current Move Multiple Mask
         SetWord(ARIWPr(7, 2), 0); // Special Status Word
-        SetWord(ARIWPr(7, 2), 0xF000 | ((uint16_t)vectorNumber << 2));
+        SetWord(ARIWPr(7, 2), 0xF000 | (as<uint16_t>(vector) << 2));
     }
     else
-        SetWord(ARIWPr(7, 2), (uint16_t)vectorNumber << 2);
+        SetWord(ARIWPr(7, 2), as<uint16_t>(vector) << 2);
 
     SetLong(ARIWPr(7, 4), PC);
     SetWord(ARIWPr(7, 2), sr);
 
-    switch(vectorNumber) // handle Exception Processing Clock Periods
+    switch(vector) // handle Exception Processing Clock Periods
     {
     case BusError: case AddressError:
         calcTime += 158; break;
@@ -64,11 +64,11 @@ uint16_t SCC68070::ProcessException(const uint8_t vectorNumber)
     case ZeroDivide:
         calcTime += 64; break;
     default:
-        if(vectorNumber == 15 || (vectorNumber >= 24 && vectorNumber < 32) || vectorNumber >= 57)
+        if(vector == 15 || (vector >= 24 && vector < 32) || vector >= 57)
             calcTime += 65;
     }
 
-    PC = GetLong(vectorNumber * 4);
+    PC = GetLong(as<uint32_t>(vector) << 2);
     return calcTime;
 }
 
@@ -2870,7 +2870,7 @@ uint16_t SCC68070::TAS()
 uint16_t SCC68070::TRAP()
 {
     const uint8_t vector = currentOpcode & 0x000F;
-    PushException(vector + Trap0Instruction);
+    PushException(as<ExceptionVector>(Trap0Instruction + vector), PeekNextWord());
     return 0;
 }
 
