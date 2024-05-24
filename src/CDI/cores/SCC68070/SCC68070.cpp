@@ -67,12 +67,11 @@ void SCC68070::ClearExceptions()
 }
 
 /** \brief Requests the CPU to process the given exception.
- * \param vector The vector number of the exception.
- * \param data An additional data stored in the Exception.
+ * \param ex The exception to process.
  */
-void SCC68070::PushException(const ExceptionVector vector, const uint16_t data)
+void SCC68070::PushException(const Exception& ex)
 {
-    m_exceptions.emplace(vector, data);
+    m_exceptions.emplace(ex);
 }
 
 /** \brief Trigger interrupt with LIR1 level.
