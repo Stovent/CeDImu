@@ -1,5 +1,6 @@
 #include "CDI.hpp"
 #include "boards/Mono3/Mono3.hpp"
+#include "boards/SoftCDI/SoftCDI.hpp"
 
 /** \brief Creates a new CD-i instance.
  * \param board The type of board to use.
@@ -38,6 +39,9 @@ std::unique_ptr<CDI> CDI::NewCDI(Boards board, std::span<const uint8_t> systemBi
     case Boards::Roboco:
         return NewRoboco(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 
+    case Boards::SoftCDI:
+        return NewSoftCDI(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
+
     default:
         return nullptr;
     }
@@ -65,6 +69,14 @@ std::unique_ptr<CDI> CDI::NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvra
 std::unique_ptr<CDI> CDI::NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
     return std::make_unique<Mono3>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc), "Roboco");
+}
+
+/** \brief Creates a new SoftCDI player.
+ * See CDI::NewCDI for a description of the parameters.
+ */
+std::unique_ptr<CDI> CDI::NewSoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+{
+    return std::make_unique<SoftCDI>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 }
 
 CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc)

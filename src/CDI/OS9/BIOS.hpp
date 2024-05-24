@@ -13,16 +13,16 @@ namespace OS9
 
 struct ModuleExtraHeader
 {
-    explicit ModuleExtraHeader(const uint8_t* memory);
+    explicit ModuleExtraHeader(const uint8_t* memory) noexcept;
 
-    const uint32_t M_Exec;
-    const uint32_t M_Excpt;
-    const uint32_t M_Mem;
-    const uint32_t M_Stack;
-    const uint32_t M_IData;
-    const uint32_t M_IRefs;
-    const uint32_t M_Init;
-    const uint32_t M_Term;
+    uint32_t M_Exec;
+    uint32_t M_Excpt;
+    uint32_t M_Mem;
+    uint32_t M_Stack;
+    uint32_t M_IData;
+    uint32_t M_IRefs;
+    uint32_t M_Init;
+    uint32_t M_Term;
 };
 
 struct ModuleHeader
@@ -44,21 +44,21 @@ struct ModuleHeader
 
     ModuleHeader(const uint8_t* memory, const uint32_t beg);
 
-    const uint16_t   M_SysRev;
-    const uint32_t   M_Size;
-    const uint32_t   M_Owner;
-    const uint32_t   M_Name; // Module Name Offset
-    const uint16_t   M_Accs;
-    const ModuleType M_Type;
-    const uint8_t    M_Lang;
-    const uint8_t    M_Attr;
-    const uint8_t    M_Revs;
-    const uint16_t   M_Edit;
-    const ModuleExtraHeader extra;
+    uint16_t   M_SysRev;
+    uint32_t   M_Size;
+    uint32_t   M_Owner;
+    uint32_t   M_Name; // Module Name Offset
+    uint16_t   M_Accs;
+    ModuleType M_Type;
+    uint8_t    M_Lang;
+    uint8_t    M_Attr;
+    uint8_t    M_Revs;
+    uint16_t   M_Edit;
+    ModuleExtraHeader extra;
 
-    const std::string name;
-    const uint32_t begin;
-    const uint32_t end;
+    std::string name;
+    uint32_t begin;
+    uint32_t end;
 };
 
 class BIOS
@@ -66,15 +66,12 @@ class BIOS
 public:
     explicit BIOS(std::span<const uint8_t> bios);
 
-    BIOS(const BIOS&) = default;
-    BIOS(BIOS&&) = default;
-
     uint32_t GetSize() const noexcept { return m_memory.size(); }
 
     const uint8_t& At(const uint32_t addr) const { return m_memory.at(addr); }
 
     /** \brief Returns the byte at \p offset.
-        \param offset The location of the byte in the BIOS area. */
+     * \param offset The location of the byte in the BIOS area. */
     const uint8_t& operator[](const uint32_t offset) const noexcept { return m_memory[offset]; }
 
     std::string GetModuleNameAt(const uint32_t offset) const;
@@ -85,11 +82,15 @@ public:
 
     const std::vector<ModuleHeader>& GetModules() const noexcept { return m_modules; }
 
+    bool ReplaceModule(std::span<const uint8_t> module);
+
 private:
-    const std::vector<uint8_t> m_memory;
+    std::vector<uint8_t> m_memory;
     std::vector<ModuleHeader> m_modules{}; /**< OS9 modules inside the BIOS. */
 
     void LoadModules();
+
+    using ModuleIterator = decltype(m_modules)::iterator;
 };
 
 } // nampespace OS9
