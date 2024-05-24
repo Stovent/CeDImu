@@ -22,6 +22,7 @@ enum class Boards
     Mono3,
     Mono4,
     Roboco,
+    SoftCDI,
     Fail,
 };
 
@@ -36,6 +37,7 @@ inline const char* BoardsToString(Boards b) noexcept
     case Boards::Mono3: return "Mono3";
     case Boards::Mono4: return "Mono4";
     case Boards::Roboco: return "Roboco";
+    case Boards::SoftCDI: return "SoftCDI";
     case Boards::Fail: return "Fail";
     }
     return "Invalid board type";

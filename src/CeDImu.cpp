@@ -211,7 +211,6 @@ void CeDImu::WriteException(const LogSCC68070Exception& e, size_t trapIndex)
     if(!m_instructionsOut.is_open())
         m_instructionsOut.open("instructions.txt");
 
-
     m_exceptionsOut << std::setiosflags(std::ios::left)
                     << std::setw(8) << std::hex << e.returnAddress
                     << std::setw(12) << (e.vector == SCC68070::Trap0Instruction ? e.systemCall.module : "")
