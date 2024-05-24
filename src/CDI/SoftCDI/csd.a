@@ -1,0 +1,17 @@
+	nam CSD
+	ttl CSD of SoftCDI
+	use c:/DEFS/OSKDEFS.D
+
+typelang	equ	(CSDData<<8)
+attrrevs	equ	(ReEnt<<8)+$99
+edition		equ	0
+stacksize	equ 0
+entrypt		equ csd
+
+	psect csd,typelang,attrrevs,edition,stacksize,entrypt
+
+csd dc.b "1:/cd:",$D
+cse dc.b "2:/ap:",$D
+csf dc.b "3:/vid:LI=\"525\":TV:",$D
+csg dc.b "4:/nvr:",$D,0
+	ends
