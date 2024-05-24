@@ -138,9 +138,9 @@ public:
     ~SCC68070() noexcept;
 
     size_t SingleStep(size_t stopCycles);
-    std::pair<size_t, std::optional<ExceptionVector>> SingleStepException(size_t stopCycles);
+    std::pair<size_t, std::optional<Exception>> SingleStepException(size_t stopCycles);
     void Reset();
-    void PushException(ExceptionVector vector, uint16_t data = 0);
+    void PushException(const Exception& ex);
 
     void INT1();
     void INT2();
