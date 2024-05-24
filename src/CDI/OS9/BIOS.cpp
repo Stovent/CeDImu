@@ -1,6 +1,7 @@
 #include "BIOS.hpp"
 #include "../common/utils.hpp"
 
+#include <algorithm>
 #include <cstring>
 
 namespace OS9
@@ -9,7 +10,7 @@ namespace OS9
 /** \brief OS9 Module Additional Header.
  * \param memory A pointer to the beginning of the additional header.
  */
-ModuleExtraHeader::ModuleExtraHeader(const uint8_t* memory) :
+ModuleExtraHeader::ModuleExtraHeader(const uint8_t* memory) noexcept :
     M_Exec(GET_ARRAY32(memory, 0x00)),
     M_Excpt(GET_ARRAY32(memory, 0x04)),
     M_Mem(GET_ARRAY32(memory, 0x08)),
@@ -96,6 +97,23 @@ bool BIOS::Has8KBNVRAM() const noexcept
                 return true;
         }
     }
+    return false;
+}
+
+bool BIOS::ReplaceModule(std::span<const uint8_t> module)
+{
+    const char* name = reinterpret_cast<const char*>(&module[GET_ARRAY32(module, 0x0C)]);
+    const ModuleIterator old = std::find_if(m_modules.begin(), m_modules.end(), [&] (const ModuleHeader& header) -> bool { return header.name == name; });
+
+    if(old != m_modules.end() && module.size() <= old->M_Size) // Overwrite the old module if the new one fits.
+    {
+        memset(&m_memory[old->begin], 0, old->M_Size);
+        memcpy(&m_memory[old->begin], module.data(), module.size());
+
+        *old = ModuleHeader(&m_memory[old->begin], old->begin);
+        return true;
+    }
+
     return false;
 }
 
