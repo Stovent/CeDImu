@@ -6,7 +6,7 @@
 namespace OS9
 {
 
-enum class SystemCallType
+enum SystemCallType
 {
     F_Link = 0x0000,
     F_Load = 0x0001,
@@ -103,7 +103,7 @@ enum class SystemCallType
     I_Close = 0x008F,
 };
 
-enum class Event
+enum Event
 {
     Ev_Link = 0x0000,
     Ev_UnLnk = 0x0001,
@@ -123,7 +123,7 @@ enum class Event
     Ev_SetR_Ev_All = 0x800B,
 };
 
-enum class Error
+enum Error
 {
     E_1 = 1,
     E_2 = 2,

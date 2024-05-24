@@ -1,12 +1,13 @@
 #ifndef CDI_OS9_STT_HPP
 #define CDI_OS9_STT_HPP
 
+#include <cstdint>
 #include <string>
 
 namespace OS9
 {
 
-enum class FileManagerType
+enum FileManagerType
 {
     DT_SCF  = 0,  // sequential character file type
     DT_RBF  = 1,  // random block file type
@@ -22,7 +23,7 @@ enum class FileManagerType
     DT_GFM  = 11, // graphics file manager
 };
 
-enum class SttFunction
+enum SttFunction
 {
     SS_Opt = 0x00, // read/write PD options
     SS_Ready = 0x01, // check for device ready
@@ -108,6 +109,7 @@ enum class SttFunction
     SS_PT = 0x59, // UCM's pointer status code
     SS_SLink = 0x5A, // UCM link external subroutine module to UCM
     SS_KB = 0x5B, // keyboard status code
+    SS_SL = 0x5C, // MC68HC05 Slave commands
 
     // sockets
     SS_Bind = 0x6C, // bind a socket name
@@ -133,9 +135,11 @@ enum class SttFunction
     SS_AC = 0x8F, // DSM's action cursor functions
     SS_CDFD = 0x90, // CDFM return file descriptor information
     SS_CCHAN = 0x91, // CDFM change channel request
+    SS_FG = 0x92,
+    SS_Sony = 0xA0,
 };
 
-std::string sttFunctionToString(const SttFunction stt);
+std::string sttFunctionToString(uint16_t stt);
 
 } // namespace OS9
 

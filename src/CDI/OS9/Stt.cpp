@@ -3,7 +3,7 @@
 namespace OS9
 {
 
-std::string sttFunctionToString(const SttFunction stt)
+std::string sttFunctionToString(const uint16_t stt)
 {
     switch(stt)
     {
@@ -91,6 +91,7 @@ std::string sttFunctionToString(const SttFunction stt)
     case SttFunction::SS_PT: return "SS_PT";
     case SttFunction::SS_SLink: return "SS_SLink";
     case SttFunction::SS_KB: return "SS_KB";
+    case SttFunction::SS_SL: return "SS_SL";
 
     case SttFunction::SS_Bind: return "SS_Bind";
     case SttFunction::SS_Listen: return "SS_Listen";
@@ -115,7 +116,10 @@ std::string sttFunctionToString(const SttFunction stt)
     case SttFunction::SS_AC: return "SS_AC";
     case SttFunction::SS_CDFD: return "SS_CDFD";
     case SttFunction::SS_CCHAN: return "SS_CCHAN";
-    default: return "Unknown function " + std::to_string((int)stt);
+    case SttFunction::SS_FG: return "SS_FG";
+    case SttFunction::SS_Sony: return "SS_Sony";
+
+    default: return "Unknown function " + std::to_string(stt);
     }
 }
 
