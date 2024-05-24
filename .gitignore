@@ -1,6 +1,7 @@
 # Exclude everything except .C .C++ headers and Makefile
 /*
 
+!.git-blame-ignore-revs
 !.gitignore
 !CMakeLists.txt
 !Doxyfile
