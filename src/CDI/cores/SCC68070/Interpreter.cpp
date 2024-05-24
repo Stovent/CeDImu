@@ -5,13 +5,14 @@
 /** \brief Exectutes a single instruction.
  * \param stopCycles The number of cycles to run if the CPU is stopped.
  * \return The number of CPU cycle executed.
+ * \throw SCC68070::Exception when an exception occured during exception processing.
  *
  * A cycle count of 0 means the CPU is stopped.
  * When the CPU is stopped, \p stopCycles is used to advance the internal timer.
  */
 size_t SCC68070::SingleStep(const size_t stopCycles)
 {
-    std::pair<size_t, std::optional<ExceptionVector>> res = SingleStepException(stopCycles);
+    std::pair<size_t, std::optional<Exception>> res = SingleStepException(stopCycles);
     if(res.second)
         PushException(*res.second);
 
@@ -21,13 +22,15 @@ size_t SCC68070::SingleStep(const size_t stopCycles)
 /** \brief Executes a single instruction and returns the exception if any.
  * \param stopCycles The number of cycles to run if the CPU is stopped.
  * \return The cycle count and the exception that occured if any.
+ * \throw SCC68070::Exception when an exception occured during exception processing.
  *
- * A cycle count of 0 means the CPU is stopped.
+ * A cycle count of 0 means the CPU is stopped. If no exception occured, 0 is returned, otherwise the non-0 vector.
+ * When the CPU is stopped, \p stopCycles is used to advance the internal timer (but still returns 0).
  */
-std::pair<size_t, std::optional<SCC68070::ExceptionVector>> SCC68070::SingleStepException(const size_t stopCycles)
+std::pair<size_t, std::optional<SCC68070::Exception>> SCC68070::SingleStepException(const size_t stopCycles)
 {
     size_t executionCycles = 0;
-    std::optional<ExceptionVector> exception;
+    std::optional<Exception> exception;
 
     if(!exceptions.empty())
     {
@@ -86,7 +89,7 @@ std::pair<size_t, std::optional<SCC68070::ExceptionVector>> SCC68070::SingleStep
         }
         catch(const Exception& e)
         {
-            exception = e.vector;
+            exception = e;
         }
     }
 
