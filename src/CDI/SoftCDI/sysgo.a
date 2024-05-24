@@ -1,0 +1,29 @@
+	nam sysgo
+	use c:\DEFS\OSKDEFS.D
+
+typelang	equ	(Prgrm<<8)+Objct
+attrrevs	equ	(ReEnt<<8)+$99
+edition		equ	0
+stacksize	equ	0
+entrypt		equ	Main
+
+stdin		equ	0
+stdout		equ	1
+stderr		equ	2
+
+	psect sysgo,typelang,attrrevs,edition,stacksize,entrypt
+
+Main:
+* Print Hello world.
+	lea HelloWorld(pc),a0
+	move.w #stdout,d0
+	move.l #HelloWorldEnd,d1
+	os9 I$Write
+
+* Exit program
+	moveq #0,d1	return 0
+	os9 F$Exit
+
+HelloWorld	dc.b	"Hello, world",0
+HelloWorldEnd	equ	*-HelloWorld
+	ends

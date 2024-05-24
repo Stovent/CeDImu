@@ -1,0 +1,50 @@
+	nam nvdrv
+	use c:\DEFS\OSKDEFS.D
+
+typelang	equ	(Drivr<<8)+Objct
+attrrevs	equ	((ReEnt+SupStat)<<8)+$99 Not reentrant
+edition		equ	0
+stacksize	equ	0
+entrypt		equ	EntryTable
+
+	psect nvdrv,typelang,attrrevs,edition,stacksize,entrypt
+
+EntryTable	dc.w	Init
+		dc.w	Read
+		dc.w	Write
+		dc.w	GetStat
+		dc.w	SetStat
+		dc.w	Term
+		dc.w	0	Trap handler
+
+Init
+	trap #1
+	eor.w d0,d0
+	rts
+
+Read
+	trap #2
+	eor.w d0,d0
+	rts
+
+Write
+	trap #3
+	eor.w d0,d0
+	rts
+
+GetStat
+	trap #4
+	eor.w d0,d0
+	rts
+
+SetStat
+	trap #5
+	eor.w d0,d0
+	rts
+
+Term
+	trap #6
+	eor.w d0,d0
+	rts
+
+	ends
