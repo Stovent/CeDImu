@@ -1,1 +1,5 @@
 * text=auto
+*.bat text eol=crlf
+*.sh text eol=lf
+# SoftCDI assembly files are compiled on MS DOS
+src/CDI/SoftCDI/*.a text eol=crlf
