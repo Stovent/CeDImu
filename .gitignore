@@ -2,6 +2,7 @@
 /*
 
 !.git-blame-ignore-revs
+!.gitattributes
 !.gitignore
 !CMakeLists.txt
 !Doxyfile
