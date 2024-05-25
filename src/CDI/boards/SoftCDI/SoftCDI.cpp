@@ -8,6 +8,7 @@
 #include "../../SoftCDI/include/SYSGO.h"
 
 #include <array>
+#include <cstring>
 #include <stdexcept>
 
 /** \brief SoftCDI constructor.
