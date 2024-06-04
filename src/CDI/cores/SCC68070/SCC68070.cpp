@@ -189,11 +189,11 @@ void SCC68070::SetRegister(Register reg, const uint32_t value)
     case Register::A6: A(6) = value; break;
     case Register::A7: A(7) = value; break;
 
+    case Register::USP: USP = A(7); break;
+    case Register::SSP: SSP = A(7); break; // TODO: this is wrong.
+
     case Register::PC: PC = value; break;
     case Register::SR: SR = value; break;
-
-    case Register::USP: USP = A(7); break;
-    case Register::SSP: SSP = A(7); break;
     }
 }
 
@@ -220,10 +220,10 @@ std::map<SCC68070::Register, uint32_t> SCC68070::GetCPURegisters() const
         {Register::A5, A(5)},
         {Register::A6, A(6)},
         {Register::A7, A(7)},
+        {Register::USP, USP},
+        {Register::SSP, SSP},
         {Register::PC, PC},
         {Register::SR, SR},
-        {Register::SSP, SSP},
-        {Register::USP, USP},
     };
 }
 

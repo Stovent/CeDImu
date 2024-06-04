@@ -41,10 +41,10 @@ public:
         A6,
         A7,
 
+        USP,
+        SSP,
         PC,
         SR,
-        SSP,
-        USP,
     };
 
     enum ExceptionVector : uint8_t
