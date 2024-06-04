@@ -78,6 +78,8 @@ Compatible means it is capable of playing discs.
 
 ## How to build
 
+You need a compiler that supports C++20 and wxWidgets 3.1.
+
 ### Build macros
 
 `ENABLE_LOG`: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback (default: `OFF`).
@@ -112,7 +114,9 @@ The executable will be in the `build` directory.
 
 #### Linux
 
-Package dependency: `cmake libwxgtk3.0-gtk3-dev`
+First install cmake and wxWidgets-3.1 (or later).
+
+With apt the command is: `sudo apt install cmake libwxgtk3.2-dev`
 
 Install the dependency, then open a terminal in the root directory of the git and type:
 
