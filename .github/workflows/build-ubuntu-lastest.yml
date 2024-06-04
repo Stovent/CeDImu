@@ -4,14 +4,14 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Install wxWidgets
         run: |
           sudo apt update
-          sudo apt install libwxgtk3.0-gtk3-dev
+          sudo apt install libwxgtk3.2-dev
 
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release

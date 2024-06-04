@@ -129,10 +129,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     }
 
     if(!m_cdi)
-    {
-        wxMessageBox("Failed to load system BIOS '" + biosConfig.biosFilePath + "': unsupported board type.");
         return false;
-    }
 
     m_cdi->m_cpu.SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
     return true;
