@@ -187,31 +187,31 @@ void writeWAV(const std::string& basename, std::vector<int16_t>& left, std::vect
     std::ofstream out(basename + '_' + std::to_string(channel) + '_' + std::to_string(record) + '_' + getAudioLevel(bps, frequency) + ".wav", std::ios::binary | std::ios::out);
 
     out.write("RIFF", 4);
-    out.write((char*)&wavSize, 4);
+    out.write(reinterpret_cast<const char*>(&wavSize), 4);
     out.write("WAVE", 4);
     out.write("fmt ", 4);
     out.write("\x10\0\0\0", 4);
     out.write("\1\0", 2); // audio format
 
-    out.write((char*)&channelNumber, 2);
-    out.write((char*)&frequency, 4);
-    out.write((char*)&bytePerSec, 4);
-    out.write((char*)&bytePerBloc, 2);
+    out.write(reinterpret_cast<const char*>(&channelNumber), 2);
+    out.write(reinterpret_cast<const char*>(&frequency), 4);
+    out.write(reinterpret_cast<const char*>(&bytePerSec), 4);
+    out.write(reinterpret_cast<const char*>(&bytePerBloc), 2);
     out.write("\x10\0", 2);
     out.write("data", 4);
-    out.write((char*)&dataSize, 4);
+    out.write(reinterpret_cast<const char*>(&dataSize), 4);
 
     if(right.size()) // stereo
     {
         for(uint32_t i = 0; i < left.size() && i < right.size(); i++)
         {
-            out.write((char*)&left[i], 2);
-            out.write((char*)&right[i], 2);
+            out.write(reinterpret_cast<const char*>(&left[i]), 2);
+            out.write(reinterpret_cast<const char*>(&right[i]), 2);
         }
     }
     else // mono
     {
-        out.write((char*)&left[0], left.size() * 2);
+        out.write(reinterpret_cast<const char*>(&left[0]), left.size() * 2);
     }
 
     left.clear();

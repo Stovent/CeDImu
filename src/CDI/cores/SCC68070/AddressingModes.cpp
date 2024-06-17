@@ -137,12 +137,12 @@ std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, c
         return "-(A" + std::to_string(eareg) + ")";
 
     case 5:
-        return "(" + std::to_string((int16_t)cdi.GetWord(extWordAddress, NoFlags)) + ",A" + std::to_string(eareg) + ")";
+        return "(" + std::to_string(as<int16_t>(cdi.GetWord(extWordAddress, NoFlags))) + ",A" + std::to_string(eareg) + ")";
 
     case 6:
     {
         const uint16_t bew = cdi.GetWord(extWordAddress, NoFlags);
-        return "(" + std::to_string((int8_t)bew) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
+        return "(" + std::to_string(as<int8_t>(bew)) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
     }
 
     case 7:
@@ -155,12 +155,12 @@ std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, c
             return "(0x" + toHex(cdi.GetLong(extWordAddress, NoFlags)) + ").L";
 
         case 2:
-            return "(" + std::to_string((int16_t)cdi.GetWord(extWordAddress, NoFlags)) + ",PC)";
+            return "(" + std::to_string(as<int16_t>(cdi.GetWord(extWordAddress, NoFlags))) + ",PC)";
 
         case 3:
         {
             const uint16_t bew = cdi.GetWord(extWordAddress, NoFlags);
-            return "(" + std::to_string((int8_t)bew) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
+            return "(" + std::to_string(as<int8_t>(bew)) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
         }
 
         case 4:

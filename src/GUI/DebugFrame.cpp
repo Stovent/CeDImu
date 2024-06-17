@@ -106,7 +106,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
         list->InsertColumn(6, valueHex);
     }, [&] (long item, long column) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_memoryLogsMutex);
-        if(item >= (long)this->m_memoryLogs.size())
+        if(item >= as<long>(this->m_memoryLogs.size()))
             return "";
 
         const LogMemoryAccess& log = this->m_memoryLogs[item];
@@ -194,7 +194,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
         list->InsertColumn(5, outputs);
     }, [&] (long item, long column) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_exceptionsMutex);
-        if(item >= (long)this->m_exceptions.size())
+        if(item >= as<long>(this->m_exceptions.size()))
             return "";
 
         const std::pair<size_t, LogSCC68070Exception>& log = this->m_exceptions[this->m_exceptions.size() - 1 - item];

@@ -79,7 +79,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     biosFile.seekg(0);
 
     std::unique_ptr<uint8_t[]> bios = std::make_unique<uint8_t[]>(biosSize);
-    biosFile.read((char*)bios.get(), biosSize);
+    biosFile.read(reinterpret_cast<char*>(bios.get()), biosSize);
 
     std::unique_ptr<uint8_t[]> nvramBuffer = nullptr;
     m_biosName = biosConfig.name;
@@ -92,7 +92,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
         size_t nvramSize = nvramFile.tellg();
         nvramFile.seekg(0);
         nvramBuffer = std::make_unique<uint8_t[]>(nvramSize);
-        nvramFile.read((char*)nvramBuffer.get(), nvramSize);
+        nvramFile.read(reinterpret_cast<char*>(nvramBuffer.get()), nvramSize);
         nvram = std::span<const uint8_t>(nvramBuffer.get(), nvramSize);
     }
     else
@@ -114,7 +114,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
 
     SetOnSaveNVRAM([&] (const void* data, size_t size) {
         std::ofstream out(biosConfig.nvramFileName, std::ios::out | std::ios::binary);
-        out.write((char*)data, size);
+        out.write(static_cast<const char*>(data), size);
         out.close();
     });
 

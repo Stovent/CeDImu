@@ -63,7 +63,7 @@ static void writeRawVideo(std::vector<uint8_t>& data, const std::string& basenam
                       eolfToString(eolf) + "_" + \
                       resolutionToString(resolution) + "_" + \
                       codingMethodToString(coding), std::ios::out | std::ios::binary);
-    out.write((char*)data.data(), data.size());
+    out.write(reinterpret_cast<const char*>(data.data()), data.size());
     out.close();
     data.clear();
 }

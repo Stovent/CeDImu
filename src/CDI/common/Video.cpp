@@ -145,7 +145,7 @@ uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dat
 
     for(uint16_t x = 0; x < width; x++)
     {
-        uint16_t pixel = (uint16_t)dataA[index] << 8;
+        uint16_t pixel = as<uint16_t>(dataA[index]) << 8;
         pixel |= dataB[index++];
         Video::decodeRGB555(pixel, &dst[x * 4]);
     }
@@ -167,7 +167,7 @@ uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint1
 
     for(uint16_t x = 0; x < width; x += 2)
     {
-        uint16_t pixel = (uint16_t)data[index++] << 8;
+        uint16_t pixel = as<uint16_t>(data[index++]) << 8;
         pixel |= data[index++];
         Video::decodeDYUV(pixel, &dst[x * 4], previous);
     }

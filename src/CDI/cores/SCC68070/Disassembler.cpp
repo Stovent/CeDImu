@@ -116,17 +116,17 @@ std::string SCC68070::DisassembleADDI(const uint32_t pc) const
     if(size == 0)
     {
         size = 1;
-        data = std::to_string((int8_t)cdi.GetByte(pc+3, NoFlags));
+        data = std::to_string(as<int8_t>(cdi.GetByte(pc+3, NoFlags)));
     }
     else if(size == 1)
     {
         size = 2;
-        data = std::to_string((int16_t)cdi.GetWord(pc+2, NoFlags));
+        data = std::to_string(as<int16_t>(cdi.GetWord(pc+2, NoFlags)));
     }
     else
     {
         size = 4;
-        data = std::to_string((int32_t)cdi.GetLong(pc+2, NoFlags));
+        data = std::to_string(as<int32_t>(cdi.GetLong(pc+2, NoFlags)));
     }
 
     return std::string("ADDI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc + (size == 4 ? 6 : 4), eamode, eareg, size);
@@ -259,7 +259,7 @@ std::string SCC68070::DisassembleASr(const uint32_t) const
 std::string SCC68070::DisassembleBcc(const uint32_t pc) const
 {
     const uint8_t condition = (currentOpcode & 0x0F00) >> 8;
-    int16_t disp = (int8_t)(currentOpcode & 0x00FF);
+    int16_t disp = as<int8_t>(currentOpcode & 0x00FF);
 
     if(disp == 0)
         disp = cdi.GetWord(pc+2, NoFlags);
@@ -309,7 +309,7 @@ std::string SCC68070::DisassembleBCLR(const uint32_t pc) const
 
 std::string SCC68070::DisassembleBRA(const uint32_t pc) const
 {
-    int16_t disp = (int8_t)(currentOpcode & 0x00FF);
+    int16_t disp = as<int8_t>(currentOpcode & 0x00FF);
 
     if(disp == 0)
         disp = cdi.GetWord(pc+2, NoFlags);
@@ -339,7 +339,7 @@ std::string SCC68070::DisassembleBSET(const uint32_t pc) const
 
 std::string SCC68070::DisassembleBSR(const uint32_t pc) const
 {
-    int16_t disp = (int8_t)(currentOpcode & 0x00FF);
+    int16_t disp = as<int8_t>(currentOpcode & 0x00FF);
 
     if(disp == 0)
         disp = cdi.GetWord(pc+2, NoFlags);
@@ -433,17 +433,17 @@ std::string SCC68070::DisassembleCMPI(const uint32_t pc) const
     if(size == 0)
     {
         size = 1;
-        data = std::to_string((int8_t)(cdi.GetByte(pc+3, NoFlags)));
+        data = std::to_string(as<int8_t>(cdi.GetByte(pc+3, NoFlags)));
     }
     else if(size == 1)
     {
         size = 2;
-        data = std::to_string((int16_t)(cdi.GetWord(pc+2, NoFlags)));
+        data = std::to_string(as<int16_t>(cdi.GetWord(pc+2, NoFlags)));
     }
     else
     {
         size = 4;
-        data = std::to_string((int32_t)(cdi.GetLong(pc+2, NoFlags)));
+        data = std::to_string(as<int32_t>(cdi.GetLong(pc+2, NoFlags)));
     }
 
     return std::string("CMPI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc + (size == 4 ? 6 : 4), eamode, eareg, size);
@@ -1048,17 +1048,17 @@ std::string SCC68070::DisassembleSUBI(const uint32_t pc) const
     if(size == 0)
     {
         size = 1;
-        data = std::to_string((int8_t)(cdi.GetByte(pc+3, NoFlags)));
+        data = std::to_string(as<int8_t>(cdi.GetByte(pc+3, NoFlags)));
     }
     else if(size == 1)
     {
         size = 2;
-        data = std::to_string((int16_t)(cdi.GetWord(pc+2, NoFlags)));
+        data = std::to_string(as<int16_t>(cdi.GetWord(pc+2, NoFlags)));
     }
     else
     {
         size = 4;
-        data = std::to_string((int32_t)(cdi.GetLong(pc+2, NoFlags)));
+        data = std::to_string(as<int32_t>(cdi.GetLong(pc+2, NoFlags)));
     }
 
     return std::string("SUBI") + (size == 1 ? ".B #" : size == 2 ? ".W #" : ".L #") + data + ", " + DisassembleAddressingMode(pc+ (size == 4 ? 6 : 4), eamode, eareg, size);

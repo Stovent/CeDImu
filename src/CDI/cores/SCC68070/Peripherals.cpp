@@ -83,7 +83,7 @@ void SCC68070::IncrementTimer(const double ns)
     while(timerCounter >= timerDelay)
     {
         timerCounter -= timerDelay;
-        uint16_t T0 = (uint16_t)internal[T0H] << 8 | internal[T0L];
+        uint16_t T0 = as<uint16_t>(internal[T0H]) << 8 | internal[T0L];
 
         if(T0 == 0xFFFF)
         {
@@ -102,7 +102,7 @@ void SCC68070::IncrementTimer(const double ns)
 
         if(internal[TCR] & 0x30) // T1 not inhibited
         {
-            uint16_t T1 = (uint16_t)internal[T1H] << 8 | internal[T1L];
+            uint16_t T1 = as<uint16_t>(internal[T1H]) << 8 | internal[T1L];
 
             if(T1 == 0xFFFF)
             {
@@ -125,7 +125,7 @@ void SCC68070::IncrementTimer(const double ns)
 
         if(internal[TCR] & 0x03) // T2 not inhibited
         {
-            uint16_t T2 = (uint16_t)internal[T2H] << 8 | internal[T2L];
+            uint16_t T2 = as<uint16_t>(internal[T2H]) << 8 | internal[T2L];
 
             if(T2 == 0xFFFF)
             {

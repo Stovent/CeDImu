@@ -130,7 +130,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
     m_dca1List = new GenericList(icadcaPage, dcaListBuilder, [&] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
-        if(item >= (long)this->m_dca1.size())
+        if(item >= as<long>(this->m_dca1.size()))
             return "";
         if(col == 0)
             return std::to_string(this->m_dca1[item].frame);
@@ -142,7 +142,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
     m_ica1List = new GenericList(icadcaPage, icaListBuilder, [&] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
-        if(item >= (long)this->m_ica1.size())
+        if(item >= as<long>(this->m_ica1.size()))
             return "";
         if(col == 0)
             return std::to_string(this->m_ica1[item].frame);
@@ -152,7 +152,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
     m_dca2List = new GenericList(icadcaPage, dcaListBuilder, [&] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
-        if(item >= (long)this->m_dca2.size())
+        if(item >= as<long>(this->m_dca2.size()))
             return "";
         if(col == 0)
             return std::to_string(this->m_dca2[item].frame);
@@ -164,7 +164,7 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
     m_ica2List = new GenericList(icadcaPage, icaListBuilder, [&] (long item, long col) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_icadcaMutex);
-        if(item >= (long)this->m_ica2.size())
+        if(item >= as<long>(this->m_ica2.size()))
             return "";
         if(col == 0)
             return std::to_string(this->m_ica2[item].frame);
@@ -385,7 +385,7 @@ void VDSCViewer::UpdateRegisters()
 
     std::vector<InternalRegister> iregs = m_cedimu.m_cdi->GetVDSCInternalRegisters();
     long i = 0;
-    if(iregs.size() != (size_t)m_internalRegistersList->GetItemCount())
+    if(iregs.size() != as<size_t>(m_internalRegistersList->GetItemCount()))
     {
         m_internalRegistersList->DeleteAllItems();
         for(const InternalRegister& reg : iregs)
@@ -406,7 +406,7 @@ void VDSCViewer::UpdateRegisters()
 
     std::vector<InternalRegister> cregs = m_cedimu.m_cdi->GetVDSCControlRegisters();
     i = 0;
-    if(cregs.size() != (size_t)m_controlRegistersList->GetItemCount())
+    if(cregs.size() != as<size_t>(m_controlRegistersList->GetItemCount()))
     {
         m_controlRegistersList->DeleteAllItems();
         for(const InternalRegister& reg : cregs)

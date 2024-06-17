@@ -144,7 +144,7 @@ public:
     bool HasOnLogDisassembler()
     {
         std::lock_guard<std::mutex> lock(onLogDisassemblerMutex);
-        return (bool)onLogDisassemblerCallback;
+        return static_cast<bool>(onLogDisassemblerCallback);
     }
     void SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback)
     {
@@ -197,7 +197,7 @@ public:
     bool HasOnLogICADCA()
     {
         std::lock_guard<std::mutex> lock(onLogICADCAMutex);
-        return (bool)onLogICADCACallback;
+        return static_cast<bool>(onLogICADCACallback);
     }
     void SetOnLogICADCA(const std::function<void(Video::ControlArea, LogICADCA)>& callback)
     {
@@ -214,7 +214,7 @@ public:
     bool HasOnLogMemoryAccess()
     {
         std::lock_guard<std::mutex> lock(onLogMemoryAccessMutex);
-        return (bool)onLogMemoryAccessCallback;
+        return static_cast<bool>(onLogMemoryAccessCallback);
     }
     void SetOnLogMemoryAccess(const std::function<void(const LogMemoryAccess&)>& callback)
     {
@@ -231,7 +231,7 @@ public:
     bool HasOnLogException()
     {
         std::lock_guard<std::mutex> lock(onLogExceptionMutex);
-        return (bool)onLogExceptionCallback;
+        return static_cast<bool>(onLogExceptionCallback);
     }
     void SetOnLogException(const std::function<void(const LogSCC68070Exception&)>& callback)
     {
@@ -248,7 +248,7 @@ public:
     bool HasOnLogRTE()
     {
         std::lock_guard<std::mutex> lock(onLogRTEMutex);
-        return (bool)onLogRTECallback;
+        return static_cast<bool>(onLogRTECallback);
     }
     void SetOnLogRTE(const std::function<void(uint32_t, uint16_t)>& callback)
     {

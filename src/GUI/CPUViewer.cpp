@@ -73,7 +73,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
         list->InsertColumn(2, instructionCol);
     }, [&] (long item, long column) -> wxString {
         std::lock_guard<std::mutex> lock(this->m_instructionsMutex);
-        if(item >= (long)this->m_instructions.size())
+        if(item >= as<long>(this->m_instructions.size()))
             return "";
         const LogInstruction& inst = this->m_instructions[item];
         switch(column)
@@ -171,7 +171,7 @@ void CPUViewer::UpdateInternal()
 
     std::vector<InternalRegister> internal = m_cedimu.m_cdi->m_cpu.GetInternalRegisters();
     long i = 0;
-    if(internal.size() != (size_t)m_internalList->GetItemCount())
+    if(internal.size() != as<size_t>(m_internalList->GetItemCount()))
     {
         m_internalList->DeleteAllItems();
         for(const InternalRegister& reg : internal)
@@ -201,7 +201,7 @@ void CPUViewer::UpdateRegisters()
     int i = 0;
     for(std::pair<SCC68070::Register, uint32_t> reg : cpuRegs)
     {
-        std::string val = i < 8 ? " : " + std::to_string((int32_t)reg.second) : reg.first == SCC68070::Register::SR ? " : " + toBinString(reg.second, 16) : " : 0x" + toHex(reg.second);
+        std::string val = i < 8 ? " : " + std::to_string(as<int32_t>(reg.second)) : reg.first == SCC68070::Register::SR ? " : " + toBinString(reg.second, 16) : " : 0x" + toHex(reg.second);
         m_registers[i++]->SetValue(CPURegisterToString(reg.first) + val);
     }
 }

@@ -131,7 +131,7 @@ template<typename T, typename UT, typename VT, typename UVT>
 static inline uint8_t add(const T src, const T dst, T* result, const VT min, const VT max, const UVT umax)
 {
     const UVT uvres = zeroExtend<UT, UVT>(src) + zeroExtend<UT, UVT>(dst);
-    const VT vres = (VT)src + (VT)dst;
+    const VT vres = as<VT>(src) + as<VT>(dst);
     const T res = vres;
 
     uint8_t cc = 0;
@@ -175,7 +175,7 @@ uint16_t SCC68070::ADD()
         else
         {
             D[reg] &= 0xFFFFFF00;
-            D[reg] |= (uint8_t)res;
+            D[reg] |= as<uint8_t>(res);
         }
     }
     else if(size == 1) // Word
@@ -195,7 +195,7 @@ uint16_t SCC68070::ADD()
         else
         {
             D[reg] &= 0xFFFF0000;
-            D[reg] |= (uint16_t)res;
+            D[reg] |= as<uint16_t>(res);
         }
     }
     else // Long
@@ -264,7 +264,7 @@ uint16_t SCC68070::ADDI()
         else
         {
             D[eareg] &= 0xFFFFFF00;
-            D[eareg] |= (uint8_t)res;
+            D[eareg] |= as<uint8_t>(res);
         }
     }
     else if(size == 1) // Word
@@ -284,12 +284,12 @@ uint16_t SCC68070::ADDI()
         else
         {
             D[eareg] &= 0xFFFF0000;
-            D[eareg] |= (uint16_t)res;
+            D[eareg] |= as<uint16_t>(res);
         }
     }
     else // Long
     {
-        const int32_t data = (uint32_t)GetNextWord() << 16 | GetNextWord();
+        const int32_t data = as<uint32_t>(GetNextWord()) << 16 | GetNextWord();
         const int32_t  dst = GetLong(eamode, eareg, calcTime);
         int32_t res;
 
@@ -341,7 +341,7 @@ uint16_t SCC68070::ADDQ()
         else
         {
             D[eareg] &= 0xFFFFFF00;
-            D[eareg] |= (uint8_t)res;
+            D[eareg] |= as<uint8_t>(res);
         }
     }
     else if(size == 1) // Word
@@ -360,7 +360,7 @@ uint16_t SCC68070::ADDQ()
         else
         {
             D[eareg] &= 0xFFFF0000;
-            D[eareg] |= (uint16_t)res;
+            D[eareg] |= as<uint16_t>(res);
         }
     }
     else // Long
@@ -413,7 +413,7 @@ uint16_t SCC68070::ADDX()
         else
         {
             D[rx] &= 0xFFFFFF00;
-            D[rx] |= (uint8_t)res;
+            D[rx] |= as<uint8_t>(res);
         }
     }
     else if(size == 1) // Word
@@ -436,7 +436,7 @@ uint16_t SCC68070::ADDX()
         else
         {
             D[rx] &= 0xFFFF0000;
-            D[rx] |= (uint16_t)res;
+            D[rx] |= as<uint16_t>(res);
         }
     }
     else // Long
@@ -943,7 +943,7 @@ uint16_t SCC68070::CLR()
 template<typename T, typename UT, typename VT>
 static inline uint8_t cmp(const T src, const T dst, const VT min, const VT max)
 {
-    const VT vres = (VT)dst - (VT)src;
+    const VT vres = as<VT>(dst) - as<VT>(src);
     const T res = vres;
 
     uint8_t cc = 0;
@@ -953,7 +953,7 @@ static inline uint8_t cmp(const T src, const T dst, const VT min, const VT max)
         cc |= 0b00100;
     if(vres < min || vres > max)
         cc |= 0b00010;
-    if((UT)src > (UT)dst)
+    if(as<UT>(src) > as<UT>(dst))
         cc |= 0b00001;
 
     return cc;
@@ -1015,7 +1015,7 @@ uint16_t SCC68070::CMPA()
     SetN(res < 0);
     SetZ(res == 0);
     SetV(vres < INT32_MIN || vres > INT32_MAX);
-    SetC((uint32_t)src > A(reg));
+    SetC(as<uint32_t>(src) > A(reg));
 
     return calcTime;
 }
@@ -1045,7 +1045,7 @@ uint16_t SCC68070::CMPI()
     }
     else // Long
     {
-        const int32_t data = (uint32_t)GetNextWord() << 16 | GetNextWord();
+        const int32_t data = as<uint32_t>(GetNextWord()) << 16 | GetNextWord();
         const int32_t  dst = GetLong(eamode, eareg, calcTime);
 
         SR &= SR_UPPER_MASK | 0x10;
@@ -1102,7 +1102,7 @@ uint16_t SCC68070::DBcc()
     int16_t counter = D[reg] & 0x0000FFFF;
     counter--;
     D[reg] &= 0xFFFF0000;
-    D[reg] |= (uint16_t)counter;
+    D[reg] |= as<uint16_t>(counter);
     if(counter == -1)
         return 17;
 
@@ -1126,23 +1126,23 @@ uint16_t SCC68070::DIVS()
     }
 
     const int32_t dst = D[reg];
-    const int32_t q = dst / src;
+    const int32_t quot = dst / src;
     calcTime += 169; // LMAO
 
-    if(q < INT16_MIN || q > INT16_MAX)
+    if(quot < INT16_MIN || quot > INT16_MAX)
     {
         SetV();
         return calcTime; // TODO: accuracy of this.
     }
 
-    const int16_t r = dst % src;
+    const int16_t rem = dst % src;
 
-    SetN(q < 0);
-    SetZ(q == 0);
+    SetN(quot < 0);
+    SetZ(quot == 0);
     SetVC(0);
 
-    D[reg]  = (uint16_t)r << 16;
-    D[reg] |= (uint16_t)(int16_t)q;
+    D[reg]  = as<uint16_t>(rem) << 16;
+    D[reg] |= as<uint16_t>(quot);
 
     return calcTime;
 }
@@ -1161,23 +1161,23 @@ uint16_t SCC68070::DIVU()
         return calcTime;
     }
 
-    const uint32_t q = D[reg] / src;
+    const uint32_t quot = D[reg] / src;
     calcTime += 130;
 
-    if(q > UINT16_MAX)
+    if(quot > UINT16_MAX)
     {
         SetV();
         return calcTime; // TODO: accuracy of this.
     }
 
-    const uint16_t r = D[reg] % src;
+    const uint16_t rem = D[reg] % src;
 
-    SetN(q & 0x8000);
-    SetZ(q == 0);
+    SetN(quot & 0x8000);
+    SetZ(quot == 0);
     SetVC(0);
 
-    D[reg]  = r << 16;
-    D[reg] |= q & 0x0000FFFF;
+    D[reg]  = rem << 16;
+    D[reg] |= quot & 0x0000FFFF;
 
     return calcTime;
 }
@@ -1736,7 +1736,7 @@ uint16_t SCC68070::MOVEP()
 
         for(; shift >= 0; shift -= 8, addr += 2)
         {
-            D[dreg] |= (uint32_t)GetByte(addr) << shift;
+            D[dreg] |= as<uint32_t>(GetByte(addr)) << shift;
         }
 
         calcTime = size ? 36 : 22;
@@ -1767,7 +1767,7 @@ uint16_t SCC68070::MULS()
 
     int16_t src = GetWord(eamode, eareg, calcTime);
     int16_t dst = D[reg] & 0x0000FFFF;
-    D[reg] = (int32_t)src * dst;
+    D[reg] = as<int32_t>(src) * dst;
 
     SetN(D[reg] & 0x80000000);
     SetZ(D[reg] == 0);
@@ -1785,7 +1785,7 @@ uint16_t SCC68070::MULU()
 
     uint16_t src = GetWord(eamode, eareg, calcTime);
     uint16_t dst = D[reg] & 0x0000FFFF;
-    D[reg] = (uint32_t)src * dst;
+    D[reg] = as<uint32_t>(src) * dst;
 
     SetN(D[reg] & 0x80000000);
     SetZ(D[reg] == 0);
@@ -2492,7 +2492,7 @@ uint16_t SCC68070::STOP() // TODO: correctly implement it.
 template<typename T, typename UT, typename VT>
 static inline uint8_t sub(const T src, const T dst, T* result, const VT min, const VT max)
 {
-    const VT vres = (VT)dst - (VT)src;
+    const VT vres = as<VT>(dst) - as<VT>(src);
     const T res = vres;
 
     uint8_t cc = 0;
@@ -2502,7 +2502,7 @@ static inline uint8_t sub(const T src, const T dst, T* result, const VT min, con
         cc |= 0b00100;
     if(vres < min || vres > max)
         cc |= 0b00010;
-    if((UT)src > (UT)dst)
+    if(as<UT>(src) > as<UT>(dst))
         cc |= 0b10001;
 
     *result = res;
@@ -2536,7 +2536,7 @@ uint16_t SCC68070::SUB()
         else
         {
             D[reg] &= 0xFFFFFF00;
-            D[reg] |= (uint8_t)res;
+            D[reg] |= as<uint8_t>(res);
         }
     }
     else if(size == 1) // Word
@@ -2556,7 +2556,7 @@ uint16_t SCC68070::SUB()
         else
         {
             D[reg] &= 0xFFFF0000;
-            D[reg] |= (uint16_t)res;
+            D[reg] |= as<uint16_t>(res);
         }
     }
     else // Long
@@ -2625,7 +2625,7 @@ uint16_t SCC68070::SUBI()
         else
         {
             D[eareg] &= 0xFFFFFF00;
-            D[eareg] |= (uint8_t)res;
+            D[eareg] |= as<uint8_t>(res);
         }
     }
     else if(size == 1) // Word
@@ -2645,12 +2645,12 @@ uint16_t SCC68070::SUBI()
         else
         {
             D[eareg] &= 0xFFFF0000;
-            D[eareg] |= (uint16_t)res;
+            D[eareg] |= as<uint16_t>(res);
         }
     }
     else // Long
     {
-        const int32_t data = (uint32_t)GetNextWord() << 16 | GetNextWord();
+        const int32_t data = as<uint32_t>(GetNextWord()) << 16 | GetNextWord();
         const int32_t  dst = GetLong(eamode, eareg, calcTime);
         int32_t res;
 
@@ -2702,7 +2702,7 @@ uint16_t SCC68070::SUBQ()
         else
         {
             D[eareg] &= 0xFFFFFF00;
-            D[eareg] |= (uint8_t)res;
+            D[eareg] |= as<uint8_t>(res);
         }
     }
     else if(size == 1) // Word
@@ -2721,7 +2721,7 @@ uint16_t SCC68070::SUBQ()
         else
         {
             D[eareg] &= 0xFFFF0000;
-            D[eareg] |= (uint16_t)res;
+            D[eareg] |= as<uint16_t>(res);
         }
     }
     else // Long
@@ -2774,7 +2774,7 @@ uint16_t SCC68070::SUBX()
         else
         {
             D[ry] &= 0xFFFFFF00;
-            D[ry] |= (uint8_t)res;
+            D[ry] |= as<uint8_t>(res);
         }
     }
     else if(size == 1) // Word
@@ -2797,7 +2797,7 @@ uint16_t SCC68070::SUBX()
         else
         {
             D[ry] &= 0xFFFF0000;
-            D[ry] |= (uint16_t)res;
+            D[ry] |= as<uint16_t>(res);
         }
     }
     else // Long

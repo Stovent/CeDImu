@@ -6,7 +6,7 @@
 namespace OS9
 {
 
-#define GETSTR(areg) (get(regs.at(SCC68070::Register::areg)) != nullptr ? (char*)get(regs.at(SCC68070::Register::areg)) : "")
+#define GETSTR(areg) (get(regs.at(SCC68070::Register::areg)) != nullptr ? reinterpret_cast<const char*>(get(regs.at(SCC68070::Register::areg))) : "")
 #define REG(reg) regs.at(SCC68070::Register::reg)
 
 std::string eventNameToString(const Event evt)
@@ -29,7 +29,7 @@ std::string eventNameToString(const Event evt)
     case Event::Ev_Set_Ev_All: return "Ev$Set+Ev$All";
     case Event::Ev_SetR:  return "Ev$SetR";
     case Event::Ev_SetR_Ev_All: return "Ev$SetR+Ev$All";
-    default: return "Unknown event " + std::to_string((int)evt);
+    default: return "Unknown event " + std::to_string(static_cast<int>(evt));
     }
 }
 
@@ -54,7 +54,7 @@ std::string eventInputsToString(const Event evt, const std::map<SCC68070::Regist
     case Event::Ev_Set_Ev_All: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
     case Event::Ev_SetR:  snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
     case Event::Ev_SetR_Ev_All: snprintf(event, 256, "d0.l=%d d2.l=%d", REG(D0), REG(D2)); break;
-    default: snprintf(event, 256, "Unknown event %d", (int)evt); break;
+    default: snprintf(event, 256, "Unknown event %d", static_cast<int>(evt)); break;
     }
     return event;
 }
@@ -80,7 +80,7 @@ std::string eventOutputsToString(const Event evt, const std::map<SCC68070::Regis
     case Event::Ev_Set_Ev_All: snprintf(event, 256, "d1.l=%d", REG(D1)); break;
     case Event::Ev_SetR:  snprintf(event, 256, "d1.l=%d", REG(D1)); break;
     case Event::Ev_SetR_Ev_All: snprintf(event, 256, "d1.l=%d", REG(D1)); break;
-    default: snprintf(event, 256, "Unknown event %d", (int)evt); break;
+    default: snprintf(event, 256, "Unknown event %d", static_cast<int>(evt)); break;
     }
     return event;
 }
@@ -182,7 +182,7 @@ std::string systemCallNameToString(const SystemCallType call)
     case SystemCallType::I_GetStt:  return "I$GetStt";
     case SystemCallType::I_SetStt:  return "I$SetStt";
     case SystemCallType::I_Close:   return "I$Close";
-    default: return "Unknown system call " + std::to_string((int)call);
+    default: return "Unknown system call " + std::to_string(static_cast<int>(call));
     }
 }
 
@@ -284,7 +284,7 @@ std::string systemCallInputsToString(const SystemCallType call, const std::map<S
     case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd (%s) d2.w=%hd d3.l=%d a0=0x%X", REG(D0), REG(D1), sttFunctionToString(REG(D1)).c_str(), REG(D2), REG(D3), REG(A0)); break;
     case SystemCallType::I_SetStt:  snprintf(args, 256, "d0.w=%hd d1.w=%hd (%s) d2.l=%d d3.w=%hd d4.l=%d a0=0x%X a1=0x%X", REG(D0), REG(D1), sttFunctionToString(REG(D1)).c_str(), REG(D2), REG(D3), REG(D4), REG(A0), REG(A1)); break;
     case SystemCallType::I_Close:   snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
-    default: snprintf(args, 256, "Unknown system call %d", (int)call);
+    default: snprintf(args, 256, "Unknown system call %d", static_cast<int>(call));
     }
     return args;
 }
@@ -387,7 +387,7 @@ std::string systemCallOutputsToString(const SystemCallType call, const std::map<
     case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.l=%d d1.l=%d d2.l=%d", REG(D0), REG(D1), REG(D2)); break;
     case SystemCallType::I_SetStt:  return "";
     case SystemCallType::I_Close:   return "";
-    default: snprintf(args, 256, "Unknown system call %d", (int)call);
+    default: snprintf(args, 256, "Unknown system call %d", static_cast<int>(call));
     }
     return args;
 }
@@ -519,7 +519,7 @@ std::string errorNameToString(const Error error)
     case Error::E_Share:   return "E$Share";
     case Error::E_DeadLk:  return "E$DeadLk";
     case Error::E_Format:  return "E$Format";
-    default: return "Unknown error " + std::to_string((int)error);
+    default: return "Unknown error " + std::to_string(static_cast<int>(error));
     }
 }
 

@@ -301,10 +301,10 @@ std::vector<InternalRegister> SCC68070::GetInternalRegisters() const
 
     for(uint8_t i = 0; i < 8; i++)
     {
-        v.push_back({"ATTR "         + std::to_string(i), 0x80008040 | (i << 3), (uint16_t)(internal[ATTR + (i << 3)] << 8 | internal[ATTR + (i << 3) + 1]), ""});
-        v.push_back({"SEG LENGTH "   + std::to_string(i), 0x80008042 | (i << 3), (uint16_t)(internal[SEG_LENGTH + (i << 3)] << 8 | internal[SEG_LENGTH + (i << 3) + 1]), ""});
-        v.push_back({"SEG NUMBER "   + std::to_string(i), 0x80008045 | (i << 3), (uint16_t)(internal[SEG_NUMBER + (i << 3)] << 8), ""});
-        v.push_back({"BASE ADDRESS " + std::to_string(i), 0x80008046 | (i << 3), (uint16_t)(internal[BASE_ADDRESS + (i << 3)] << 8 | internal[BASE_ADDRESS + (i << 3) + 1]), ""});
+        v.push_back({"ATTR "         + std::to_string(i), 0x80008040 | (i << 3), as<uint16_t>(internal[ATTR + (i << 3)] << 8 | internal[ATTR + (i << 3) + 1]), ""});
+        v.push_back({"SEG LENGTH "   + std::to_string(i), 0x80008042 | (i << 3), as<uint16_t>(internal[SEG_LENGTH + (i << 3)] << 8 | internal[SEG_LENGTH + (i << 3) + 1]), ""});
+        v.push_back({"SEG NUMBER "   + std::to_string(i), 0x80008045 | (i << 3), as<uint16_t>(internal[SEG_NUMBER + (i << 3)] << 8), ""});
+        v.push_back({"BASE ADDRESS " + std::to_string(i), 0x80008046 | (i << 3), as<uint16_t>(internal[BASE_ADDRESS + (i << 3)] << 8 | internal[BASE_ADDRESS + (i << 3) + 1]), ""});
     }
 
     return v;

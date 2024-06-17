@@ -126,7 +126,7 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
-        const uint16_t data = (uint16_t)GetPeripheral(addr) << 8 | GetPeripheral(addr + 1);
+        const uint16_t data = as<uint16_t>(GetPeripheral(addr)) << 8 | GetPeripheral(addr + 1);
         LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Get", "Word", currentPC, addr, data});)
         return data;
@@ -138,7 +138,7 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
 
 uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
 {
-    return (uint32_t)GetWord(addr, flags) << 16 | GetWord(addr + 2, flags);
+    return as<uint32_t>(GetWord(addr, flags)) << 16 | GetWord(addr + 2, flags);
 }
 
 void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
