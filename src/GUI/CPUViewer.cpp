@@ -46,32 +46,25 @@ static wxString formatRegister(const uint32_t value, const int size, const bool 
     // TODO: std::format().
     std::stringstream stream;
 
+    if(hex)
+        stream << std::hex;
+    else
+        stream << std::dec;
+
     if(size == 0) // Byte
     {
-        if(hex)
-            stream << std::hex << zeroExtend<uint8_t, uint32_t>(value >> 24) << ' '
-                               << zeroExtend<uint8_t, uint32_t>(value >> 16) << ' '
-                               << zeroExtend<uint8_t, uint32_t>(value >> 8) << ' '
-                               << zeroExtend<uint8_t, uint32_t>(value);
-        else
-            stream << std::dec << zeroExtend<uint8_t, uint32_t>(value >> 24) << ' '
-                               << zeroExtend<uint8_t, uint32_t>(value >> 16) << ' '
-                               << zeroExtend<uint8_t, uint32_t>(value >> 8) << ' '
-                               << zeroExtend<uint8_t, uint32_t>(value);
+        stream << zeroExtend<uint8_t, uint32_t>(value >> 24) << ' '
+               << zeroExtend<uint8_t, uint32_t>(value >> 16) << ' '
+               << zeroExtend<uint8_t, uint32_t>(value >> 8) << ' '
+               << zeroExtend<uint8_t, uint32_t>(value);
     }
     else if(size == 1) // Word
     {
-        if(hex)
-            stream << std::hex << as<uint16_t>(value >> 16) << ' ' << as<uint16_t>(value);
-        else
-            stream << std::dec << as<uint16_t>(value >> 16) << ' ' << as<uint16_t>(value);
+        stream << as<uint16_t>(value >> 16) << ' ' << as<uint16_t>(value);
     }
     else // Long
     {
-        if(hex)
-            stream << std::hex << value;
-        else
-            stream << std::dec << value;
+        stream << value;
     }
 
     return stream.str();
