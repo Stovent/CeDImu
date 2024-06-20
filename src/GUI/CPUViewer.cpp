@@ -3,8 +3,10 @@
 #include "../CDI/common/utils.hpp"
 
 #include <wx/button.h>
+#include <wx/listbox.h>
 #include <wx/panel.h>
 #include <wx/stattext.h>
+#include <wx/textdlg.h>
 #include <wx/wrapsizer.h>
 
 #include <iomanip>
@@ -107,7 +109,6 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
     // Internal registers
     {
         m_internalList = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_HRULES | wxLC_VRULES);
-        m_auiManager.AddPane(m_internalList, wxAuiPaneInfo().Left().Caption("Internal registers").CloseButton(false).Floatable().Resizable());
 
         wxListItem nameCol;
         nameCol.SetId(0);
@@ -132,6 +133,8 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
         disCol.SetText("Disassembled value");
         disCol.SetWidth(120);
         m_internalList->InsertColumn(3, disCol);
+
+        m_auiManager.AddPane(m_internalList, wxAuiPaneInfo().Left().Caption("Internal registers").CloseButton(false).Floatable().Resizable());
     }
 
     // Disassembler
@@ -243,7 +246,65 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
         controlsSizer->Add(m_autoscrollDisassembler, wxSizerFlags().Border());
 
         controlsPanel->SetSizerAndFit(controlsSizer);
-        m_auiManager.AddPane(controlsPanel, wxAuiPaneInfo().Bottom().Caption("Controls"));
+        m_auiManager.AddPane(controlsPanel, wxAuiPaneInfo().Left().Caption("Controls"));
+    }
+
+    // Breakpoints
+    {
+        wxPanel* breakpointsPanel = new wxPanel(this);
+        wxBoxSizer* breakpointsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+        wxListBox* listBox = new wxListBox(breakpointsPanel, wxID_ANY);
+
+        // Buttons
+        wxBoxSizer* buttonsSizer = new wxBoxSizer(wxVERTICAL);
+        wxButton* addButton = new wxButton(breakpointsPanel, wxID_ANY, "Add");
+        addButton->Bind(wxEVT_BUTTON, [this, listBox] (wxCommandEvent&) {
+            wxTextEntryDialog* dlg = new wxTextEntryDialog(this, "Enter 32-bits hex address");
+            if(dlg->ShowModal() == wxID_OK)
+            {
+                wxString str = dlg->GetValue();
+
+                unsigned long addr;
+                if(!str.ToULong(&addr, 16)) // Conversion is not valid.
+                    return;
+
+                str = toHex(addr); // Used to trim leading 0.
+
+                if(listBox->FindString(str, false) == wxNOT_FOUND &&
+                   m_cedimu.m_cdi) // unique addresses.
+                {
+                    listBox->Append(str);
+                    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+                    m_cedimu.m_cdi->m_cpu.breakpoints.emplace_back(addr);
+                }
+            }
+        });
+        buttonsSizer->Add(addButton);
+
+        wxButton* removeButton = new wxButton(breakpointsPanel, wxID_ANY, "Remove");
+        removeButton->Bind(wxEVT_BUTTON, [this, listBox] (wxCommandEvent&) {
+            int item = listBox->GetSelection();
+            if(item >= 0 && m_cedimu.m_cdi)
+            {
+                unsigned long addr;
+                listBox->GetString(item).ToULong(&addr, 16); // Should never fail.
+                listBox->Delete(item);
+
+                std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+                auto it = std::find(m_cedimu.m_cdi->m_cpu.breakpoints.begin(), m_cedimu.m_cdi->m_cpu.breakpoints.end(), addr);
+                m_cedimu.m_cdi->m_cpu.breakpoints.erase(it);
+            }
+        });
+        buttonsSizer->Add(removeButton);
+
+        breakpointsSizer->Add(buttonsSizer);
+
+        // Check list
+        breakpointsSizer->Add(listBox, wxSizerFlags().Expand().Proportion(1));
+
+        breakpointsPanel->SetSizerAndFit(breakpointsSizer);
+        m_auiManager.AddPane(breakpointsPanel, wxAuiPaneInfo().Bottom().Caption("Breakpoints"));
     }
 
     // CPU Registers

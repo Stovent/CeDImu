@@ -97,15 +97,31 @@ constexpr inline bool isEven(const T number) noexcept
 }
 
 /** \brief Converts a number to a hexadecimal string.
- *
+ * \tparam T The data type.
  * \param number The number to convert.
  * \return The converted number as a string.
  */
-inline std::string toHex(const uint32_t number)
+template<std::integral T>
+static std::string toHex(const T number)
 {
+    // TODO: use std::format.
     std::stringstream ss;
     ss << std::hex << number;
     return ss.str();
+}
+
+/** \brief Specialisation for char types to print as numbers. */
+template<>
+std::string toHex(const uint8_t number)
+{
+    return toHex<unsigned>(number);
+}
+
+/** \brief Specialisation for char types to print as numbers. */
+template<>
+std::string toHex(const int8_t number)
+{
+    return toHex<int>(number);
 }
 
 /** \brief Converts the binary representation of a number to a string.
