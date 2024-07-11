@@ -37,11 +37,6 @@ void Mono3::IncrementTime(const double ns)
     m_ciap.IncrementTime(ns);
 }
 
-uint32_t Mono3::GetBIOSBaseAddress() const
-{
-    return 0x400000;
-}
-
 uint32_t Mono3::GetTotalFrameCount()
 {
     return m_mcd212.totalFrameCount;
@@ -50,6 +45,11 @@ uint32_t Mono3::GetTotalFrameCount()
 const OS9::BIOS& Mono3::GetBIOS() const
 {
     return m_mcd212.BIOS;
+}
+
+uint32_t Mono3::GetBIOSBaseAddress() const
+{
+    return 0x400000;
 }
 
 std::vector<InternalRegister> Mono3::GetVDSCInternalRegisters()

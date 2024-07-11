@@ -3,6 +3,7 @@
 #include "CPUViewer.hpp"
 #include "DebugFrame.hpp"
 #include "GamePanel.hpp"
+#include "OS9Viewer.hpp"
 #include "SettingsFrame.hpp"
 #include "VDSCViewer.hpp"
 #include "../CeDImu.hpp"
@@ -35,6 +36,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_MENU(IDMainFrameOnExportVideo, MainFrame::OnExportVideo)
     EVT_MENU(IDMainFrameOnExportRawVideo, MainFrame::OnExportRawVideo)
     EVT_MENU(IDMainFrameOnCPUViewer, MainFrame::OnCPUViewer)
+    EVT_MENU(IDMainFrameOnOS9Viewer, MainFrame::OnOS9Viewer)
     EVT_MENU(IDMainFrameOnVDSCViewer, MainFrame::OnVDSCViewer)
     EVT_MENU(IDMainFrameOnDebugFrame, MainFrame::OnDebugFrame)
     EVT_MENU(IDMainFrameOnSettings, MainFrame::OnSettings)
@@ -52,6 +54,7 @@ MainFrame::MainFrame(CeDImu& cedimu)
     , m_gamePanel(new GamePanel(this, m_cedimu))
     , m_cpuViewer(nullptr)
     , m_settingsFrame(nullptr)
+    , m_os9Viewer(nullptr)
     , m_vdscViewer(nullptr)
     , m_debugFrame(nullptr)
     , m_oldCycleCount(0)
@@ -99,6 +102,7 @@ void MainFrame::CreateMenuBar()
 
     wxMenu* toolsMenu = new wxMenu();
     toolsMenu->Append(IDMainFrameOnCPUViewer, "CPU Viewer");
+    toolsMenu->Append(IDMainFrameOnOS9Viewer, "OS-9 Viewer");
     toolsMenu->Append(IDMainFrameOnVDSCViewer, "VDSC Viewer");
     toolsMenu->Append(IDMainFrameOnDebugFrame, "Debug");
     menuBar->Append(toolsMenu, "Tools");
@@ -415,6 +419,12 @@ void MainFrame::OnCPUViewer(wxCommandEvent&)
 {
     if(m_cpuViewer == nullptr)
         m_cpuViewer = new CPUViewer(this, m_cedimu);
+}
+
+void MainFrame::OnOS9Viewer(wxCommandEvent&)
+{
+    if(m_os9Viewer == nullptr && m_cedimu.m_cdi)
+        m_os9Viewer = new OS9Viewer(this, m_cedimu);
 }
 
 void MainFrame::OnVDSCViewer(wxCommandEvent&)

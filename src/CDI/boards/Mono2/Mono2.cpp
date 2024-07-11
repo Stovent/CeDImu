@@ -34,11 +34,6 @@ void Mono2::IncrementTime(const double ns)
     mcd212.IncrementTime(ns);
 }
 
-uint32_t Mono2::GetBIOSBaseAddress() const
-{
-    return 0x400000;
-}
-
 uint32_t Mono2::GetTotalFrameCount()
 {
     return mcd212.totalFrameCount;
@@ -47,6 +42,11 @@ uint32_t Mono2::GetTotalFrameCount()
 const OS9::BIOS& Mono2::GetBIOS() const
 {
     return mcd212.BIOS;
+}
+
+uint32_t Mono2::GetBIOSBaseAddress() const
+{
+    return 0x400000;
 }
 
 std::vector<InternalRegister> Mono2::GetInternalRegisters()

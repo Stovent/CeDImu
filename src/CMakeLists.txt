@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24) # CMake 3.24 fixes wxWidgets detection.
 
-find_package(wxWidgets REQUIRED COMPONENTS aui adv core base)
+find_package(wxWidgets REQUIRED COMPONENTS aui adv propgrid core base)
 
 if(NOT wxWidgets_FOUND)
     message(FATAL_ERROR "wxWidgets not found")

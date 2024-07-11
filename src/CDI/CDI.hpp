@@ -50,6 +50,7 @@ public:
 
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
+    virtual uint32_t GetBIOSBaseAddress() const = 0;
 
     virtual std::vector<InternalRegister> GetVDSCInternalRegisters() = 0;
     virtual std::vector<InternalRegister> GetVDSCControlRegisters() = 0;
@@ -68,7 +69,6 @@ protected:
 
     virtual void Reset(bool resetCPU) = 0;
     virtual void IncrementTime(double ns);
-    virtual uint32_t GetBIOSBaseAddress() const = 0;
 
     virtual uint8_t  GetByte(uint32_t addr, uint8_t flags = Trigger | Log) = 0;
     virtual uint16_t GetWord(uint32_t addr, uint8_t flags = Trigger | Log) = 0;

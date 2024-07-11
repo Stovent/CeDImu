@@ -112,14 +112,14 @@ static std::string toHex(const T number)
 
 /** \brief Specialisation for char types to print as numbers. */
 template<>
-std::string toHex(const uint8_t number)
+inline std::string toHex(const uint8_t number)
 {
     return toHex<unsigned>(number);
 }
 
 /** \brief Specialisation for char types to print as numbers. */
 template<>
-std::string toHex(const int8_t number)
+inline std::string toHex(const int8_t number)
 {
     return toHex<int>(number);
 }

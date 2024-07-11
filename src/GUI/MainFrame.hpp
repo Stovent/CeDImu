@@ -5,6 +5,7 @@ class CeDImu;
 class CPUViewer;
 class DebugFrame;
 class GamePanel;
+class OS9Viewer;
 class SettingsFrame;
 class VDSCViewer;
 
@@ -27,6 +28,7 @@ public:
     GamePanel* m_gamePanel;
     CPUViewer* m_cpuViewer;
     SettingsFrame* m_settingsFrame;
+    OS9Viewer* m_os9Viewer;
     VDSCViewer* m_vdscViewer;
     DebugFrame* m_debugFrame;
 
@@ -63,6 +65,7 @@ public:
     void OnExportRawVideo(wxCommandEvent&);
 
     void OnCPUViewer(wxCommandEvent&);
+    void OnOS9Viewer(wxCommandEvent&);
     void OnVDSCViewer(wxCommandEvent&);
     void OnDebugFrame(wxCommandEvent&);
 

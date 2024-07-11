@@ -15,7 +15,6 @@ public:
 
     virtual void Reset(const bool resetCPU) override;
     virtual void IncrementTime(const double ns) override;
-    virtual uint32_t GetBIOSBaseAddress() const override;
 
     virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
     virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
@@ -31,6 +30,7 @@ public:
 
     virtual uint32_t GetTotalFrameCount() override;
     virtual const OS9::BIOS& GetBIOS() const override;
+    virtual uint32_t GetBIOSBaseAddress() const override;
 
     virtual std::vector<InternalRegister> GetInternalRegisters() override;
     virtual std::vector<InternalRegister> GetControlRegisters() override;

@@ -10,6 +10,8 @@ target_sources(CeDImu-GUI
         GenericList.hpp
         MainFrame.cpp
         MainFrame.hpp
+        OS9Viewer.cpp
+        OS9Viewer.hpp
         SettingsFrame.cpp
         SettingsFrame.hpp
         VDSCViewer.cpp

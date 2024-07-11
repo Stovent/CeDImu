@@ -30,11 +30,6 @@ void MiniMMC::IncrementTime(const double ns)
     slaveVDSC.IncrementTime(ns);
 }
 
-uint32_t MiniMMC::GetBIOSBaseAddress() const
-{
-    return 0x180000;
-}
-
 uint32_t MiniMMC::GetTotalFrameCount()
 {
     return masterVDSC.totalFrameCount;
@@ -43,6 +38,11 @@ uint32_t MiniMMC::GetTotalFrameCount()
 const OS9::BIOS& MiniMMC::GetBIOS() const
 {
     return masterVDSC.BIOS;
+}
+
+uint32_t MiniMMC::GetBIOSBaseAddress() const
+{
+    return 0x180000;
 }
 
 std::vector<InternalRegister> MiniMMC::GetInternalRegisters()

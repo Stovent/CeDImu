@@ -30,7 +30,7 @@ ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
     M_Owner(GET_ARRAY32(memory, 0x08)),
     M_Name(GET_ARRAY32(memory, 0x0C)),
     M_Accs(GET_ARRAY16(memory, 0x10)),
-    M_Type(memory[0x12]),
+    M_Type(static_cast<ModuleType>(memory[0x12])),
     M_Lang(memory[0x13]),
     M_Attr(memory[0x14]),
     M_Revs(memory[0x15]),

@@ -27,18 +27,33 @@ struct ModuleExtraHeader
 
 struct ModuleHeader
 {
+    enum ModuleType : uint8_t
+    {
+        NotUsed,
+        Program,
+        Subroutine,
+        Multi,
+        Data,
+        CSDData,
+        TrapLib = 11,
+        System,
+        FileManager,
+        Driver,
+        Descriptor,
+    };
+
     ModuleHeader(const uint8_t* memory, const uint32_t beg);
 
-    const uint16_t M_SysRev;
-    const uint32_t M_Size;
-    const uint32_t M_Owner;
-    const uint32_t M_Name; // Module Name Offset
-    const uint16_t M_Accs;
-    const uint8_t  M_Type;
-    const uint8_t  M_Lang;
-    const uint8_t  M_Attr;
-    const uint8_t  M_Revs;
-    const uint16_t M_Edit;
+    const uint16_t   M_SysRev;
+    const uint32_t   M_Size;
+    const uint32_t   M_Owner;
+    const uint32_t   M_Name; // Module Name Offset
+    const uint16_t   M_Accs;
+    const ModuleType M_Type;
+    const uint8_t    M_Lang;
+    const uint8_t    M_Attr;
+    const uint8_t    M_Revs;
+    const uint16_t   M_Edit;
     const ModuleExtraHeader extra;
 
     const std::string name;
@@ -69,6 +84,8 @@ public:
     Boards GetBoardType() const;
 
     bool Has8KBNVRAM() const;
+
+    const std::vector<ModuleHeader>& GetModules() const { return m_modules; }
 
 private:
     const std::vector<uint8_t> m_memory;
