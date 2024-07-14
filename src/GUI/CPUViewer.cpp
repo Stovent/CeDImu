@@ -193,10 +193,9 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
         m_uartTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
         m_uartTextCtrl->Bind(wxEVT_KEY_DOWN, [&] (wxKeyEvent& event) {
             const int key = event.GetKeyCode();
-            std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
-            if(key < 128)
-                if(this->m_cedimu.m_cdi)
-                    this->m_cedimu.m_cdi->m_cpu.SendUARTIn(key);
+            GuardCDI guard = this->m_cedimu.m_cdi.Lock();
+            if(key < 128 && guard)
+                guard->m_cpu.SendUARTIn(key);
         });
 
         m_cedimu.SetOnUARTOut([&] (uint8_t d) {
@@ -232,10 +231,10 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
                 return;
             }
 
-            std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-            if(m_cedimu.m_cdi)
+            GuardCDI guard = this->m_cedimu.m_cdi.Lock();
+            if(guard)
                 while(count--)
-                    m_cedimu.m_cdi->m_cpu.Run(false);
+                    guard->m_cpu.Run(false);
         });
         executeSizer->Add(executeButton, wxSizerFlags().CenterVertical());
 
@@ -272,12 +271,14 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
                 str = toHex(addr); // Used to trim leading 0.
 
-                if(listBox->FindString(str, false) == wxNOT_FOUND &&
-                   m_cedimu.m_cdi) // unique addresses.
+                if(listBox->FindString(str, false) == wxNOT_FOUND) // unique addresses.
                 {
-                    listBox->Append(str);
-                    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-                    m_cedimu.m_cdi->m_cpu.breakpoints.emplace_back(addr);
+                    GuardCDI guard = this->m_cedimu.m_cdi.Lock();
+                    if(guard)
+                    {
+                        listBox->Append(str);
+                        guard->m_cpu.breakpoints.emplace_back(addr);
+                    }
                 }
             }
         });
@@ -286,15 +287,18 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
         wxButton* removeButton = new wxButton(breakpointsPanel, wxID_ANY, "Remove");
         removeButton->Bind(wxEVT_BUTTON, [this, listBox] (wxCommandEvent&) {
             int item = listBox->GetSelection();
-            if(item >= 0 && m_cedimu.m_cdi)
+            if(item >= 0)
             {
-                unsigned long addr;
-                listBox->GetString(item).ToULong(&addr, 16); // Should never fail.
-                listBox->Delete(item);
+                unsigned long addr = 0;
+                GuardCDI guard = this->m_cedimu.m_cdi.Lock();
+                if(guard)
+                {
+                    listBox->GetString(item).ToULong(&addr, 16); // Should never fail because the add makes sure it's valid.
+                    listBox->Delete(item);
 
-                std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-                auto it = std::find(m_cedimu.m_cdi->m_cpu.breakpoints.begin(), m_cedimu.m_cdi->m_cpu.breakpoints.end(), addr);
-                m_cedimu.m_cdi->m_cpu.breakpoints.erase(it);
+                    auto it = std::find(guard->m_cpu.breakpoints.begin(), guard->m_cpu.breakpoints.end(), addr);
+                    guard->m_cpu.breakpoints.erase(it);
+                }
             }
         });
         buttonsSizer->Add(removeButton);
@@ -388,11 +392,15 @@ void CPUViewer::UpdateManager(wxTimerEvent&)
 
 void CPUViewer::UpdateInternal()
 {
-    std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
-    if(!m_cedimu.m_cdi)
-        return;
+    std::vector<InternalRegister> internal;
+    {
+        GuardCDI guard = m_cedimu.m_cdi.Lock();
+        if(!guard)
+            return;
 
-    std::vector<InternalRegister> internal = m_cedimu.m_cdi->m_cpu.GetInternalRegisters();
+        internal = guard->m_cpu.GetInternalRegisters();
+    }
+
     long i = 0;
     if(internal.size() != as<size_t>(m_internalList->GetItemCount()))
     {
@@ -416,11 +424,15 @@ void CPUViewer::UpdateInternal()
 
 void CPUViewer::UpdateCPURegisters()
 {
-    std::lock_guard<std::recursive_mutex> lock(this->m_cedimu.m_cdiMutex);
-    if(!m_cedimu.m_cdi)
-        return;
+    std::map<SCC68070::Register, uint32_t> cpuRegs;
+    {
+        GuardCDI guard = m_cedimu.m_cdi.Lock();
+        if(!guard)
+            return;
 
-    std::map<SCC68070::Register, uint32_t> cpuRegs = m_cedimu.m_cdi->m_cpu.GetCPURegisters();
+        cpuRegs = guard->m_cpu.GetCPURegisters();
+    }
+
     int i = 0;
     for(std::pair<SCC68070::Register, uint32_t> reg : cpuRegs)
     {

@@ -231,7 +231,8 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
             if(pc == it->second.returnAddress && it->second.vector == SCC68070::Trap0Instruction)
             {
                 size_t index = it->first;
-                const std::map<SCC68070::Register, uint32_t> registers = m_cedimu.m_cdi->m_cpu.GetCPURegisters();
+                GuardCDI guard = m_cedimu.m_cdi.Lock();
+                const std::map<SCC68070::Register, uint32_t> registers = guard->m_cpu.GetCPURegisters();
                 const bool cc = registers.at(SCC68070::Register::SR) & 1;
                 char error[64] = {0};
                 std::string outputs;
@@ -243,7 +244,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
                 }
                 else
                 {
-                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [&] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi->GetPointer(addr); });
+                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [&] (const uint32_t addr) -> const uint8_t* { return guard->GetPointer(addr); });
                 }
 
                 const OS9::SystemCall syscall = {it->second.systemCall.type, "", "", cc ? std::string(error) : outputs};

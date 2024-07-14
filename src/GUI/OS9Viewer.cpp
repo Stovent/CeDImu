@@ -72,12 +72,12 @@ OS9Viewer::OS9Viewer(MainFrame* mainFrame, CeDImu& cedimu)
     {
         wxChoicebook* choicebook = new wxChoicebook(m_auiNotebook, wxID_ANY);
 
-        std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-        for(const OS9::ModuleHeader& header : m_cedimu.m_cdi->GetBIOS().GetModules())
+        GuardCDI guard = m_cedimu.m_cdi.Lock();
+        for(const OS9::ModuleHeader& header : guard->GetBIOS().GetModules())
         {
             wxPropertyGrid* properties = new wxPropertyGrid(choicebook);
 
-            const uint32_t base = m_cedimu.m_cdi->GetBIOSBaseAddress();
+            const uint32_t base = guard->GetBIOSBaseAddress();
             addHexProperty(properties, "Address", "address", base + header.begin);
             addHexProperty(properties, "Execution", "execution", base + header.begin + header.extra.M_Exec);
             addHexProperty(properties, "Exception", "exception", base + header.begin + header.extra.M_Excpt);

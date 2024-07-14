@@ -31,8 +31,9 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu)
 
         if(this->m_stopOnNextFrame)
         {
-            this->m_cedimu.m_cdi->m_cpu.Stop(false);
             this->m_mainFrame->m_pauseMenuItem->Check();
+            GuardCDI guard = this->m_cedimu.m_cdi.Lock();
+            guard->m_cpu.Stop(false);
         }
 
         std::lock_guard<std::mutex> __(this->m_screenMutex);
@@ -58,8 +59,8 @@ void GamePanel::Reset()
 
 bool GamePanel::SaveScreenshot(const std::string& file)
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-    if(!m_cedimu.m_cdi)
+    GuardCDI guard = m_cedimu.m_cdi.Lock();
+    if(!guard)
         return false;
 
     std::lock_guard<std::mutex> lock2(m_screenMutex);
@@ -90,38 +91,38 @@ void GamePanel::OnPaintEvent(wxPaintEvent&)
 
 void GamePanel::OnKeyDown(wxKeyEvent& event)
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-    if(!m_cedimu.m_cdi)
+    GuardCDI guard = m_cedimu.m_cdi.Lock();
+    if(!guard)
         return event.Skip();
 
     int keyCode = event.GetKeyCode();
     if(keyCode == Config::keyUp)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetUp(true);
+        guard->m_slave->pointingDevice.SetUp(true);
     }
     else if(keyCode == Config::keyRight)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetRight(true);
+        guard->m_slave->pointingDevice.SetRight(true);
     }
     else if(keyCode == Config::keyDown)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetDown(true);
+        guard->m_slave->pointingDevice.SetDown(true);
     }
     else if(keyCode == Config::keyLeft)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetLeft(true);
+        guard->m_slave->pointingDevice.SetLeft(true);
     }
     else if(keyCode == Config::key1)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton1(true);
+        guard->m_slave->pointingDevice.SetButton1(true);
     }
     else if(keyCode == Config::key2)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton2(true);
+        guard->m_slave->pointingDevice.SetButton2(true);
     }
     else if(keyCode == Config::key12)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton12(true);
+        guard->m_slave->pointingDevice.SetButton12(true);
     }
     else
         event.Skip();
@@ -129,38 +130,38 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
 
 void GamePanel::OnKeyUp(wxKeyEvent& event)
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-    if(!m_cedimu.m_cdi)
+    GuardCDI guard = m_cedimu.m_cdi.Lock();
+    if(!guard)
         return event.Skip();
 
     int keyCode = event.GetKeyCode();
     if(keyCode == Config::keyUp)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetUp(false);
+        guard->m_slave->pointingDevice.SetUp(false);
     }
     else if(keyCode == Config::keyRight)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetRight(false);
+        guard->m_slave->pointingDevice.SetRight(false);
     }
     else if(keyCode == Config::keyDown)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetDown(false);
+        guard->m_slave->pointingDevice.SetDown(false);
     }
     else if(keyCode == Config::keyLeft)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetLeft(false);
+        guard->m_slave->pointingDevice.SetLeft(false);
     }
     else if(keyCode == Config::key1)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton1(false);
+        guard->m_slave->pointingDevice.SetButton1(false);
     }
     else if(keyCode == Config::key2)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton2(false);
+        guard->m_slave->pointingDevice.SetButton2(false);
     }
     else if(keyCode == Config::key12)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton12(false);
+        guard->m_slave->pointingDevice.SetButton12(false);
     }
     else
         event.Skip();

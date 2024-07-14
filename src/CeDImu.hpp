@@ -4,6 +4,7 @@
 #include "Config.hpp"
 
 #include "CDI/CDI.hpp"
+#include "CDI/common/MutexPtr.hpp"
 
 #include <wx/app.h>
 
@@ -12,11 +13,13 @@
 
 extern const float CPU_SPEEDS[];
 
+using MutexCDI = MutexPtr<CDI, std::recursive_mutex>;
+using GuardCDI = MutexCDI::Guard;
+
 class CeDImu : public wxApp
 {
 public:
-    std::recursive_mutex m_cdiMutex; // To lock before accessing m_cdi.
-    std::unique_ptr<CDI> m_cdi;
+    MutexCDI m_cdi{nullptr};
     CDIDisc m_disc;
     uint16_t m_cpuSpeed;
     Callbacks m_callbacks;

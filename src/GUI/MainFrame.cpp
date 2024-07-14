@@ -157,19 +157,19 @@ void MainFrame::UpdateUI()
         if(!m_cedimu.m_disc.m_gameName.empty())
             discTitle = m_cedimu.m_disc.m_gameName + " | ";
 
-        std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-        if(m_cedimu.m_cdi)
+        GuardCDI guard = m_cedimu.m_cdi.Lock();
+        if(guard)
         {
             // Title.
-            biosTitle = m_cedimu.m_cdi->m_boardName + " (" + m_cedimu.m_biosName + ") | ";
-            if(!m_cedimu.m_cdi->m_disc.m_gameName.empty())
-                discTitle = m_cedimu.m_cdi->m_disc.m_gameName + " | ";
+            biosTitle = guard->m_boardName + " (" + m_cedimu.m_biosName + ") | ";
+            if(!guard->m_disc.m_gameName.empty())
+                discTitle = guard->m_disc.m_gameName + " | ";
 
             // Status bar.
-            cycleRate = m_cedimu.m_cdi->m_cpu.totalCycleCount - m_oldCycleCount;
-            m_oldCycleCount = m_cedimu.m_cdi->m_cpu.totalCycleCount;
+            cycleRate = guard->m_cpu.totalCycleCount - m_oldCycleCount;
+            m_oldCycleCount = guard->m_cpu.totalCycleCount;
 
-            const uint32_t fc = m_cedimu.m_cdi->GetTotalFrameCount();
+            const uint32_t fc = guard->GetTotalFrameCount();
             frameRate = fc - m_oldFrameCount;
             m_oldFrameCount = fc;
         }
@@ -218,15 +218,15 @@ void MainFrame::OnCloseDisc(wxCommandEvent&)
 
 void MainFrame::OnScreenshot(wxCommandEvent&)
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-    if(!m_cedimu.m_cdi)
+    GuardCDI guard = m_cedimu.m_cdi.Lock();
+    if(!guard)
         return;
 
     const bool isRunning = !m_pauseMenuItem->IsChecked();
     if(isRunning)
         m_cedimu.StopEmulation();
 
-    uint32_t fc = m_cedimu.m_cdi->GetTotalFrameCount();
+    uint32_t fc = guard->GetTotalFrameCount();
     wxFileDialog fileDlg(this, wxFileSelectorPromptStr, wxEmptyString, "frame_" + std::to_string(fc) + ".png", "PNG (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if(fileDlg.ShowModal() == wxID_OK)
         if(!m_gamePanel->SaveScreenshot(fileDlg.GetPath().ToStdString()))
@@ -270,20 +270,20 @@ void MainFrame::OnSingleStep(wxCommandEvent&)
 {
     if(m_pauseMenuItem->IsChecked())
     {
-        std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-        if(m_cedimu.m_cdi)
-            m_cedimu.m_cdi->m_cpu.Run(false);
+        GuardCDI guard = m_cedimu.m_cdi.Lock();
+        if(guard)
+            guard->m_cpu.Run(false);
     }
 }
 
 void MainFrame::OnFrameAdvance(wxCommandEvent&)
 {
-    std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-    if(m_cedimu.m_cdi)
+    GuardCDI guard = m_cedimu.m_cdi.Lock();
+    if(guard)
     {
         m_gamePanel->m_stopOnNextFrame = true;
-        if(!m_cedimu.m_cdi->m_cpu.IsRunning())
-            m_cedimu.m_cdi->m_cpu.Run(true);
+        if(!guard->m_cpu.IsRunning())
+            guard->m_cpu.Run(true);
     }
 }
 
@@ -431,7 +431,8 @@ void MainFrame::OnCPUViewer(wxCommandEvent&)
 
 void MainFrame::OnOS9Viewer(wxCommandEvent&)
 {
-    if(m_os9Viewer == nullptr && m_cedimu.m_cdi)
+    GuardCDI guard = m_cedimu.m_cdi.Lock();
+    if(m_os9Viewer == nullptr && guard)
         m_os9Viewer = new OS9Viewer(this, m_cedimu);
 }
 
