@@ -78,7 +78,7 @@ void MainFrame::CreateMenuBar()
     m_fileMenu->AppendSeparator();
     m_fileMenu->Append(IDMainFrameOnScreenshot, "Take screenshot\tCtrl+Shift+S", "Save to file the current frame");
     m_fileMenu->AppendSeparator();
-    m_fileMenu->Append(wxID_EXIT, "Close", "Closes CeDImu");
+    m_fileMenu->Append(wxID_EXIT, "Exit", "Exits CeDImu");
     menuBar->Append(m_fileMenu, "File");
 
     wxMenu* emulationMenu = new wxMenu();
@@ -240,6 +240,11 @@ void MainFrame::OnExit(wxCommandEvent&)
 
 void MainFrame::OnClose(wxCloseEvent&)
 {
+    if(m_cpuViewer != nullptr) m_cpuViewer->Close(true);
+    if(m_settingsFrame != nullptr) m_settingsFrame->Close(true);
+    if(m_os9Viewer != nullptr) m_os9Viewer->Close(true);
+    if(m_vdscViewer != nullptr) m_vdscViewer->Close(true);
+    if(m_debugFrame != nullptr) m_debugFrame->Close(true);
     Destroy();
 }
 

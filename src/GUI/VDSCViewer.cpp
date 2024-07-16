@@ -12,6 +12,7 @@
 #include <wx/sizer.h>
 
 wxBEGIN_EVENT_TABLE(VDSCViewer, wxFrame)
+    EVT_CLOSE(VDSCViewer::OnClose)
     EVT_TIMER(wxID_ANY, VDSCViewer::UpdateNotebook)
 wxEND_EVENT_TABLE()
 
@@ -349,8 +350,14 @@ VDSCViewer::VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
 VDSCViewer::~VDSCViewer()
 {
-    m_cedimu.SetOnLogICADCA(nullptr);
     m_mainFrame->m_vdscViewer = nullptr;
+}
+
+void VDSCViewer::OnClose(wxCloseEvent&)
+{
+    m_updateTimer.Stop();
+    m_cedimu.SetOnLogICADCA(nullptr);
+    Destroy();
 }
 
 void VDSCViewer::UpdateNotebook(wxTimerEvent&)

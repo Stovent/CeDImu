@@ -53,6 +53,8 @@ public:
     VDSCViewer(MainFrame* mainFrame, CeDImu& cedimu);
     ~VDSCViewer();
 
+    void OnClose(wxCloseEvent&);
+
     void UpdateNotebook(wxTimerEvent&);
     void UpdateRegisters();
     void UpdateIcadca();

@@ -6,6 +6,7 @@
 #include "wx/sizer.h"
 
 wxBEGIN_EVENT_TABLE(DebugFrame, wxFrame)
+    EVT_CLOSE(DebugFrame::OnClose)
     EVT_TIMER(wxID_ANY, DebugFrame::UpdateManager)
 wxEND_EVENT_TABLE()
 
@@ -264,11 +265,16 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
 
 DebugFrame::~DebugFrame()
 {
+    m_auiManager.UnInit();
+    m_mainFrame->m_debugFrame = nullptr;
+}
+
+void DebugFrame::OnClose(wxCloseEvent&)
+{
     m_cedimu.SetOnLogMemoryAccess(nullptr);
     m_cedimu.SetOnLogException(nullptr);
     m_cedimu.SetOnLogRTE(nullptr);
-    m_auiManager.UnInit();
-    m_mainFrame->m_debugFrame = nullptr;
+    Destroy();
 }
 
 void DebugFrame::UpdateManager(wxTimerEvent&)

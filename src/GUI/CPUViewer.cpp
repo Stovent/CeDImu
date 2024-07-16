@@ -91,6 +91,7 @@ static wxString srToString(const uint16_t sr)
 }
 
 wxBEGIN_EVENT_TABLE(CPUViewer, wxFrame)
+    EVT_CLOSE(CPUViewer::OnClose)
     EVT_TIMER(wxID_ANY, CPUViewer::UpdateManager)
 wxEND_EVENT_TABLE()
 
@@ -357,10 +358,16 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
 
 CPUViewer::~CPUViewer()
 {
-    m_cedimu.SetOnLogDisassembler(nullptr);
-    m_cedimu.SetOnUARTOut(nullptr);
     m_auiManager.UnInit();
     m_mainFrame->m_cpuViewer = nullptr;
+}
+
+void CPUViewer::OnClose(wxCloseEvent&)
+{
+    m_updateTimer.Stop();
+    m_cedimu.SetOnLogDisassembler(nullptr);
+    m_cedimu.SetOnUARTOut(nullptr);
+    Destroy();
 }
 
 void CPUViewer::UpdateManager(wxTimerEvent&)

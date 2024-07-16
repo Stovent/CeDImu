@@ -87,7 +87,7 @@ OS9Viewer::OS9Viewer(MainFrame* mainFrame, CeDImu& cedimu)
             addUIntProperty(properties, "Size", "size", header.M_Size);
             addHexProperty(properties, "Owner", "owner", header.M_Owner);
             addHexProperty(properties, "Name", "name", header.M_Name);
-            addHexProperty(properties, "Access", "name", header.M_Accs);
+            addHexProperty(properties, "Access", "access", header.M_Accs);
             addUIntProperty(properties, "Type", "type", header.M_Type);
             addUIntProperty(properties, "Lang", "lang", header.M_Lang);
             addHexProperty(properties, "Attr", "attr", header.M_Attr);

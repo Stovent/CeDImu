@@ -53,6 +53,8 @@ public:
     DebugFrame(MainFrame* mainFrame, CeDImu& cedimu);
     ~DebugFrame();
 
+    void OnClose(wxCloseEvent&);
+
     void UpdateManager(wxTimerEvent&);
 
     wxDECLARE_EVENT_TABLE();

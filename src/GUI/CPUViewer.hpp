@@ -54,6 +54,8 @@ public:
     CPUViewer(MainFrame* mainFrame, CeDImu& cedimu);
     ~CPUViewer();
 
+    void OnClose(wxCloseEvent&);
+
     void UpdateManager(wxTimerEvent&);
     void UpdateInternal();
     void UpdateCPURegisters();
