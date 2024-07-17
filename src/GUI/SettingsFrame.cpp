@@ -51,7 +51,6 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
     , m_key2(Config::key2)
     , m_key12(Config::key12)
 {
-    SetSizeHints(wxSize(500, 500)); // For some reason on wxGTK (at least in WSL2), the window has a client size of (0, 0) without a default size.
     wxPanel* framePanel = new wxPanel(this);
     wxAuiNotebook* notebook = new wxAuiNotebook(framePanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE);
 
@@ -359,7 +358,7 @@ void SettingsFrame::SaveSelection()
 
 void SettingsFrame::CheckControls()
 {
-    const bool enable = m_biosConfigs.size() != 0 ? true : false;
+    const bool enable = m_biosConfigs.size() != 0;
 
     m_biosPath->Enable(enable);
     m_biosSelect->Enable(enable);
