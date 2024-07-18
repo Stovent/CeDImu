@@ -86,8 +86,8 @@ void MainFrame::CreateMenuBar()
     m_pauseMenuItem->Check();
     emulationMenu->Append(IDMainFrameOnSingleStep, "Single step\tG", "Execute a single instruction");
     emulationMenu->Append(IDMainFrameOnFrameAdvance, "Frame advance\tF", "Start emulation until the end of the next frame");
-    emulationMenu->Append(IDMainFrameOnIncreaseSpeed, "Increase Speed\tKP_PageUp", "Increase the emulation speed");
-    emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed\tKP_PageDown", "Decrease the emulation speed");
+    emulationMenu->Append(IDMainFrameOnIncreaseSpeed, "Increase Speed\tPageUp", "Increase the emulation speed");
+    emulationMenu->Append(IDMainFrameOnDecreaseSpeed, "Decrease Speed\tPageDown", "Decrease the emulation speed");
     m_reloadCoreMenuItem = emulationMenu->Append(IDMainFrameOnReloadCore, "Reload core\tCtrl+R");
     m_reloadCoreMenuItem->Enable(false);
     emulationMenu->Append(IDMainFrameOnResizeView, "Resize View");
@@ -129,7 +129,10 @@ void MainFrame::CreateBiosMenu()
     int i = -1;
     for(const Config::BiosConfig& biosEntry : Config::bioses)
     {
-        startBiosMenu->Append(IDMainFrameBiosMenuBaseIndex + ++i, biosEntry.name);
+        std::string label = biosEntry.name;
+        if(i < 9)
+            label += "\tCtrl+" + std::to_string((i + 2) % 10);
+        startBiosMenu->Append(IDMainFrameBiosMenuBaseIndex + ++i, label);
     }
 
     if(i >= 0)
