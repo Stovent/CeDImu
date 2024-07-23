@@ -45,7 +45,7 @@ void MCD212::ExecuteVideoLine()
         screen.m_width = planeA.m_width = GetHorizontalResolution1();
         planeB.m_width = GetHorizontalResolution2();
         screen.m_height = backgroundPlane.m_height = planeB.m_height = planeA.m_height = GetVerticalResolution();
-        renderer.SetPlaneResolutions(planeA.m_width, planeB.m_width, planeA.m_height);
+        renderer.SetPlanesResolutions(planeA.m_width, planeB.m_width, planeA.m_height);
     }
 
     if(GetSM() && !isEven(lineNumber)) // not even because my line count starts at 0.

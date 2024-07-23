@@ -2,9 +2,6 @@
 
 #include <iostream>
 
-#define DCP_EXTRACT_COMMAND(inst) ((inst) & 0x00FF'FFFFu)
-#define CLUT_COLOR_KEY(color) ((color) & 0x00FC'FCFCu) // V.5.7.2.2.
-
 namespace Video
 {
 
@@ -88,14 +85,14 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         {
             uint8_t clutAddr = m_clutBank << 6;
             clutAddr += code - CLUTBank0;
-            m_clut[clutAddr] = DCP_EXTRACT_COMMAND(instruction);
+            m_clut[clutAddr] = dcpExtractCommand(instruction);
         }
         return false;
     }
 
     if(code >= LoadMatteRegister0 && code <= LoadMatteRegister7) // Matte.
     {
-        m_matteControl[code - LoadMatteRegister0] = DCP_EXTRACT_COMMAND(instruction);
+        m_matteControl[code - LoadMatteRegister0] = dcpExtractCommand(instruction);
         return false;
     }
 
@@ -121,15 +118,15 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
             return false;
 
         case LoadTransparentColorA: // Load transparent color for plane A.
-            m_transparentColor[A] = DCP_EXTRACT_COMMAND(instruction);
+            m_transparentColorRgb[A] = dcpExtractCommand(instruction);
             return false;
 
         case LoadMaskColorA: // Load mask color for plane A.
-            m_maskColor[A] = DCP_EXTRACT_COMMAND(instruction);
+            m_maskColorRgb[A] = dcpExtractCommand(instruction);
             return false;
 
         case LoadDYUVStartValueA: // Load DYUV start value for plane A.
-            m_dyuvInitialValue[A] = DCP_EXTRACT_COMMAND(instruction);
+            m_dyuvInitialValue[A] = dcpExtractCommand(instruction);
             return false;
 
         case LoadBackdropColor: // Load backdrop color.
@@ -151,15 +148,15 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         switch(code)
         {
         case LoadTransparentColorB: // Load transparent color for plane B.
-            m_transparentColor[B] = DCP_EXTRACT_COMMAND(instruction);
+            m_transparentColorRgb[B] = dcpExtractCommand(instruction);
             return false;
 
         case LoadMaskColorB: // Load mask color for plane B.
-            m_maskColor[B] = DCP_EXTRACT_COMMAND(instruction);
+            m_maskColorRgb[B] = dcpExtractCommand(instruction);
             return false;
 
         case LoadDYUVStartValueB: // Load DYUV start value for plane B.
-            m_dyuvInitialValue[B] = DCP_EXTRACT_COMMAND(instruction);
+            m_dyuvInitialValue[B] = dcpExtractCommand(instruction);
             return false;
 
         case LoadMosaicFactorB: // Load mosaic pixel hold factor for B.
@@ -176,7 +173,7 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
     // Common instructions.
     switch(code)
     {
-    case NoOperation: // No operation.
+    case NoOperation:
     case LoadControlTableLineStartPointer: // Avoid going in the default case.
     case LoadDisplayLineStartPointer:
         break;

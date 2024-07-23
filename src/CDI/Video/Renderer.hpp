@@ -34,7 +34,7 @@ public:
     Renderer() {}
 
     // void Reset() noexcept;
-    void SetPlaneResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
+    void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
 
     std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept;
     std::pair<uint16_t, uint16_t> DrawLine2(const uint8_t* lineA, const uint8_t* lineB) noexcept;
@@ -102,8 +102,8 @@ private:
     // Transparency.
     bool m_mix{true}; /**< true when mixing is enabled. */
     std::array<uint8_t, 2> m_transparencyControl{};
-    std::array<uint32_t, 2> m_transparentColor{}; /**< RGB data in the lowest 24 bits. */
-    std::array<uint32_t, 2> m_maskColor{}; /**< RGB data in the lowest 24 bits. */
+    std::array<uint32_t, 2> m_transparentColorRgb{}; /**< RGB data in the lowest 24 bits. */
+    std::array<uint32_t, 2> m_maskColorRgb{}; /**< RGB data in the lowest 24 bits. */
     template<ImagePlane PLANE> void HandleTransparency(uint8_t pixel[4]) noexcept;
 
     // Backdrop.
@@ -121,7 +121,7 @@ private:
     template<ImagePlane PLANE> void ApplyICF(uint8_t& r, uint8_t& g, uint8_t& b) const noexcept;
 
     // Matte (Region of the MCD212).
-    static constexpr size_t MATTE_NUM = 8;
+    static constexpr size_t MATTE_NUM = 8; // Should never have to change.
     static constexpr size_t MATTE_HALF = MATTE_NUM / 2;
     std::array<uint32_t, MATTE_NUM> m_matteControl{};
     std::array<bool, 2> m_matteFlags{};
@@ -156,6 +156,12 @@ private:
         LoadImageContributionFactorA = 0xDB,
         LoadImageContributionFactorB = 0xDC,
     };
+
+private:
+    /** \brief Returns the lowest 24-bits that contains the DCP command. */
+    static uint32_t dcpExtractCommand(const uint32_t inst) { return inst & 0x00FF'FFFFu; }
+    /** \brief Masks the given color to the actually used bytes (V.5.7.2.2). */
+    static uint32_t clutColorKey(const uint32_t color) { return color & 0x00FC'FCFCu; }
 };
 
 } // namespace Video

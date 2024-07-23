@@ -5,11 +5,13 @@
 #include <cstring>
 #include <iostream>
 
-#define DCP_EXTRACT_COMMAND(inst) ((inst) & 0x00FF'FFFFu)
-#define CLUT_COLOR_KEY(color) ((color) & 0x00FC'FCFCu) // V.5.7.2.2.
-
 namespace Video
 {
+
+static inline uint32_t argbArrayToU32(uint8_t* pixels) noexcept
+{
+    return (as<uint32_t>(pixels[1]) << 16) | (as<uint32_t>(pixels[2]) << 8) | as<uint32_t>(pixels[3]);
+}
 
 /** \brief Converts the 4-bits backdrop color to RGB.
  * \param rgb The RGB destination buffer.
@@ -67,7 +69,7 @@ static constexpr void cursorColorToARGB(uint8_t* argb, const uint8_t color) noex
  * This method must only be called after a frame has been drawn and before the next frame starts being drawn.
  * If this is called mid-frame, no error checks are performed to make sure the resolution matches.
  */
-void Renderer::SetPlaneResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
+void Renderer::SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
 {
     m_plane[A].m_width = m_screen.m_width = widthA;
     m_plane[B].m_width = widthB;
@@ -366,8 +368,9 @@ template<Renderer::ImagePlane PLANE>
 void Renderer::HandleTransparency(uint8_t pixel[4]) noexcept
 {
     const bool boolean = (m_transparencyControl[PLANE] & 0x08u) == 0;
-    const uint32_t color = (as<uint32_t>(pixel[1]) << 16) | (as<uint32_t>(pixel[2]) << 8) | as<uint32_t>(pixel[3]);
-    const bool colorKey = CLUT_COLOR_KEY(color | m_maskColor[PLANE]) == CLUT_COLOR_KEY(m_transparentColor[PLANE] | m_maskColor[PLANE]); // TODO: don't compute if not CLUT.
+    uint32_t color = argbArrayToU32(pixel);
+    color = clutColorKey(color | m_maskColorRgb[PLANE]);
+    const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]); // TODO: don't compute if not CLUT.
 
     pixel[0] = 0xFF;
 
