@@ -60,7 +60,6 @@ private:
         RunLength,
         Mosaic,
     };
-    static constexpr ImageType decodeImageType(uint8_t) noexcept;
 
     template<ImagePlane PLANE>
     uint16_t DecodeLinePlane(const uint8_t* lineA, const uint8_t* lineMain) noexcept;

@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "../common/utils.hpp"
 
 #include <iostream>
 
@@ -53,9 +54,8 @@ static constexpr ImageCodingMethod decodeCodingMethod1(const uint8_t method) noe
 }
 
 /** \brief Figure V.49. */
-constexpr Renderer::ImageType Renderer::decodeImageType(const uint8_t type) noexcept
+static constexpr Renderer::ImageType decodeImageType(const uint8_t type) noexcept
 {
-    // TODO: switch-case with std::unreachable of C++23.
     if(type == 0 || type == 1)
         return Renderer::ImageType::Normal;
     if(type == 2)
@@ -101,20 +101,21 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         switch(code)
         {
         case SelectImageCodingMethod: // Select image coding methods.
-            m_clutSelect = (instruction & (1 << 22)) != 0;
-            m_matteNumber = (instruction & (1 << 19)) != 0;
-            m_codingMethod[B] = decodeCodingMethod1(instruction >> 8 & 0x0Fu);
-            m_codingMethod[A] = decodeCodingMethod0(instruction & 0x0Fu);
+            m_clutSelect = bit<22>(instruction);
+            m_matteNumber = bit<19>(instruction);
+            m_codingMethod[B] = decodeCodingMethod1(bits<8, 11>(instruction));
+            m_codingMethod[A] = decodeCodingMethod0(bits<0, 3>(instruction));
+            // TODO: what to do with external video enabled?
             return false;
 
         case LoadTransparencyControl: // Load transparency control information.
-            m_mix = (instruction & (1 << 23)) == 0;
-            m_transparencyControl[B] = instruction >> 8 & 0x0Fu;
-            m_transparencyControl[A] = instruction & 0x0Fu;
+            m_mix = !bit<23>(instruction);
+            m_transparencyControl[B] = bits<8, 11>(instruction);
+            m_transparencyControl[A] = bits<0, 3>(instruction);
             return false;
 
         case LoadPlaneOrder: // Load plane order.
-            m_planeOrder = (instruction & 1) != 0;
+            m_planeOrder = bit<0>(instruction);
             return false;
 
         case LoadTransparentColorA: // Load transparent color for plane A.
@@ -130,16 +131,16 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
             return false;
 
         case LoadBackdropColor: // Load backdrop color.
-            m_backdropColor = instruction & 0x0Fu;
+            m_backdropColor = bits<0, 3>(instruction);
             return false;
 
         case LoadMosaicFactorA: // Load mosaic pixel hold factor for A.
-            m_holdEnabled[A] = (instruction & (1 << 23)) != 0;
+            m_holdEnabled[A] = bit<23>(instruction);
             m_holdFactor[A] = instruction;
             return false;
 
         case LoadImageContributionFactorA: // Load image contribution factor for A.
-            m_icf[A] = instruction & 0x3Fu;
+            m_icf[A] = bits<0, 5>(instruction);
             return false;
         }
     }
@@ -160,12 +161,12 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
             return false;
 
         case LoadMosaicFactorB: // Load mosaic pixel hold factor for B.
-            m_holdEnabled[B] = (instruction & (1 << 23)) != 0;
+            m_holdEnabled[B] = bit<23>(instruction);
             m_holdFactor[B] = instruction;
             return false;
 
         case LoadImageContributionFactorB: // Load image contribution factor for B.
-            m_icf[B] = instruction & 0x3Fu;
+            m_icf[B] = bits<0, 5>(instruction);
             return false;
         }
     }
@@ -182,13 +183,13 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         return true;
 
     case LoadDisplayParameters: // Load display parameters.
-        m_imageType[PLANE] = decodeImageType(instruction & 3);
-        m_pixelRepeatFactor[PLANE] = 1 << (1 + (instruction >> 2 & 3));
-        m_bps[PLANE] = (instruction & (1 << 8)) != 0;
+        m_imageType[PLANE] = decodeImageType(bits<0, 1>(instruction));
+        m_pixelRepeatFactor[PLANE] = 1 << (1 + bits<2, 3>(instruction));
+        m_bps[PLANE] = bit<8>(instruction);
         break;
 
     case SetCLUTBank: // Set CLUT bank.
-        m_clutBank = instruction & 0x03u;
+        m_clutBank = bits<0, 1>(instruction);
         break;
 
     default:

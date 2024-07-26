@@ -428,22 +428,22 @@ void Renderer::ApplyICF(uint8_t& r, uint8_t& g, uint8_t& b) const noexcept
 
 static constexpr inline uint8_t matteOp(const uint32_t matteCommand) noexcept
 {
-    return matteCommand >> 20 & 0xFu;
+    return bits<20, 23>(matteCommand);
 }
 
 static constexpr inline bool matteMF(const uint32_t matteCommand) noexcept
 {
-    return (matteCommand & (1 << 16)) != 0;
+    return bit<16>(matteCommand);
 }
 
 static constexpr inline uint8_t matteICF(const uint32_t matteCommand) noexcept
 {
-    return matteCommand >> 10 & 0x3Fu;
+    return bits<10, 15>(matteCommand);
 }
 
 static constexpr inline uint16_t matteXPosition(const uint32_t matteCommand) noexcept
 {
-    return matteCommand >> 1 & 0x3FFu; // TODO: handle double resolution.
+    return bits<1, 9>(matteCommand); // TODO: handle double resolution.
 }
 
 /** \brief Called at the beginning of each line to reset the matte state.
