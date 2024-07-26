@@ -53,7 +53,6 @@ public:
     Plane m_backdropPlane{3, 1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT * 3};
     Plane m_cursorPlane{4, Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_ARGB_SIZE}; // TODO: also make the cursor RGB like the background ?
 
-private:
     enum class ImageType
     {
         Normal,
