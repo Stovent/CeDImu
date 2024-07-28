@@ -23,7 +23,7 @@ static constexpr Video::ImageCodingMethod ICM_LUT_B[16] = {
     ICM(OFF),    ICM(OFF),    ICM(OFF), ICM(OFF),
 };
 
-void MCD212::ExecuteVideoLine()
+void MCD212::DrawVideoLine()
 {
     if(++verticalLines <= GetVerticalRetraceLines())
     {
@@ -57,10 +57,12 @@ void MCD212::ExecuteVideoLine()
     {
         const uint32_t vsr1 = GetVSR1();
         const uint32_t vsr2 = GetVSR2();
-        if(totalFrameCount == 240)
-            /*std::pair<uint16_t, uint16_t> bytes = */renderer.DrawLine(&memory[vsr1], &memory[vsr2]);
+
+        // std::pair<uint16_t, uint16_t> bytes;
+        if(totalFrameCount == 150)
+            /*bytes = */renderer.DrawLine(&memory[vsr1], &memory[vsr2]);
         else
-            /*std::pair<uint16_t, uint16_t> bytes = */renderer.DrawLine(&memory[vsr1], &memory[vsr2]);
+            /*bytes = */renderer.DrawLine(&memory[vsr1], &memory[vsr2]);
         // SetVSR1(vsr1 + bytes.first);
         // SetVSR2(vsr2 + bytes.second);
 
@@ -270,7 +272,7 @@ void MCD212::OverlayMix()
 
         if(!(controlRegisters[TransparencyControl] & 0x800000)) // Mixing
         {
-            if(abp == 0) // When mixing transparent pixels are black (V.5.9.1).
+            if(abp == 0) // When mixing, transparent pixels are black (V.5.9.1).
             {
                 rbp = 16;
                 gbp = 16;

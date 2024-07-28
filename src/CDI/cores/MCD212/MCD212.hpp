@@ -74,7 +74,7 @@ private:
     uint16_t lineNumber; // starts at 0
     uint16_t verticalLines; // starts at 0.
 
-    void ExecuteVideoLine();
+    void DrawVideoLine();
     void DrawLinePlaneA();
     void DrawLinePlaneB();
     void DrawLineBackground();
