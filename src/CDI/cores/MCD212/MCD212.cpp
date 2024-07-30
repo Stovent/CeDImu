@@ -82,7 +82,6 @@ void MCD212::ExecuteICA1()
     for(size_t i = 0; i < cycles; i++)
     {
         const uint32_t ica = GetControlInstruction(addr);
-        const uint8_t inst = ica >> 24;
 
         if(cdi.m_callbacks.HasOnLogICADCA())
             cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
@@ -139,8 +138,31 @@ void MCD212::ExecuteICA1()
             {
                 controlRegisters[bits<24, 31>(ica) - 0x80] = DCP_PARAMETER(ica);
             }
-            if(inst < 0xCD || inst > 0xCF) // Ignore cursor registers.
-                renderer.ExecuteDCPInstruction<Video::Renderer::A>(ica);
+        }
+
+        const uint8_t code = ica >> 24;
+        switch(code)
+        {
+        case 0xCD:
+            renderer.SetCursorPosition(bits<1, 9>(ica), bits<12, 21>(ica)); // Double resolution.
+            break;
+
+        case 0xCE:
+            renderer.SetCursorColor(bits<0, 3>(ica));
+            renderer.SetCursorEnabled(bit<23>(ica));
+            break;
+
+        case 0xCF:
+            renderer.SetCursorPattern(bits<16, 19>(ica), ica);
+            break;
+
+        case 0x70:
+            // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
+            break;
+
+        default:
+            renderer.ExecuteDCPInstruction<Video::Renderer::A>(ica);
+            break;
         }
     }
 }
@@ -151,7 +173,6 @@ void MCD212::ExecuteDCA1()
     {
         const uint32_t addr = GetDCP1();
         const uint32_t dca = GetControlInstruction(addr);
-        const uint8_t inst = dca >> 24;
         SetDCP1(addr + 4);
 
         if(cdi.m_callbacks.HasOnLogICADCA())
@@ -208,8 +229,27 @@ void MCD212::ExecuteDCA1()
             {
                 controlRegisters[bits<24, 31>(dca) - 0x80] = DCP_PARAMETER(dca);
             }
-            if(inst < 0xCD || inst > 0xCF) // Ignore cursor registers.
-                renderer.ExecuteDCPInstruction<Video::Renderer::A>(dca);
+        }
+
+        const uint8_t code = dca >> 24;
+        switch(code)
+        {
+        case 0xCD:
+            renderer.SetCursorPosition(bits<1, 9>(dca), bits<12, 21>(dca)); // Double resolution.
+            break;
+
+        case 0xCE:
+            renderer.SetCursorColor(bits<0, 3>(dca));
+            renderer.SetCursorEnabled(bit<23>(dca));
+            break;
+
+        case 0xCF:
+            renderer.SetCursorPattern(bits<16, 19>(dca), dca);
+            break;
+
+        default:
+            renderer.ExecuteDCPInstruction<Video::Renderer::A>(dca);
+            break;
         }
     }
 }
@@ -270,9 +310,11 @@ void MCD212::ExecuteICA2()
             }
             else
                 controlRegisters[bits<24, 31>(ica) - 0x80] = DCP_PARAMETER(ica);
-
-            renderer.ExecuteDCPInstruction<Video::Renderer::B>(ica);
         }
+
+        // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
+        if(ica != 0x70000000)
+            renderer.ExecuteDCPInstruction<Video::Renderer::B>(ica);
     }
 }
 
@@ -331,9 +373,9 @@ void MCD212::ExecuteDCA2()
             }
             else
                 controlRegisters[bits<24, 31>(dca) - 0x80] = DCP_PARAMETER(dca);
-
-            renderer.ExecuteDCPInstruction<Video::Renderer::B>(dca);
         }
+
+        renderer.ExecuteDCPInstruction<Video::Renderer::B>(dca);
     }
 }
 

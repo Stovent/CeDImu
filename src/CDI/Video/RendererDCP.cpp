@@ -56,10 +56,11 @@ static constexpr ImageCodingMethod decodeCodingMethod1(const uint8_t method) noe
 /** \brief Figure V.49. */
 static constexpr Renderer::ImageType decodeImageType(const uint8_t type) noexcept
 {
-    if(type == 0 || type == 1)
+    if(type <= 1)
         return Renderer::ImageType::Normal;
     if(type == 2)
         return Renderer::ImageType::RunLength;
+    std::cerr << "Unsupported Mosaic image type\n";
     return Renderer::ImageType::Mosaic;
 }
 

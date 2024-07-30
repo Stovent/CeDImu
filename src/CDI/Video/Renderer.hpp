@@ -37,7 +37,6 @@ public:
     void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
 
     std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept;
-    std::pair<uint16_t, uint16_t> DrawLine2(const uint8_t* lineA, const uint8_t* lineB) noexcept;
     const Plane& RenderFrame() noexcept;
 
     template<ImagePlane PLANE>
@@ -61,10 +60,9 @@ public:
     };
 
     template<ImagePlane PLANE>
-    uint16_t DecodeLinePlane(const uint8_t* lineA, const uint8_t* lineMain) noexcept;
-    std::pair<uint16_t, uint16_t> DecodeLines2(const uint8_t* lineA, const uint8_t* lineB) noexcept;
-    void DecodeLineBackdrop() noexcept;
-    void DecodeLineCursor() noexcept;
+    uint16_t DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept;
+    void DrawLineBackdrop() noexcept;
+    void DrawCursor() noexcept;
     template<bool MIX> void OverlayMix() noexcept;
 
     // template<ImagePlane PLANE>

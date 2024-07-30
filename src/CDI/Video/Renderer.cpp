@@ -8,7 +8,7 @@
 namespace Video
 {
 
-static inline uint32_t argbArrayToU32(uint8_t* pixels) noexcept
+static constexpr inline uint32_t argbArrayToU32(uint8_t* pixels) noexcept
 {
     return (as<uint32_t>(pixels[1]) << 16) | (as<uint32_t>(pixels[2]) << 8) | as<uint32_t>(pixels[3]);
 }
@@ -17,7 +17,7 @@ static inline uint32_t argbArrayToU32(uint8_t* pixels) noexcept
  * \param rgb The RGB destination buffer.
  * \param color The 4 bit color code.
  */
-static constexpr void backdropColorToARGB(uint8_t* rgb, const uint8_t color) noexcept
+static constexpr void backdropColorToRGB(uint8_t* rgb, const uint8_t color) noexcept
 {
     // Background plane has no transparency (Green book V.5.13).
     const uint8_t c = (color & 0x08) ? 255 : 128;
@@ -85,11 +85,10 @@ std::pair<uint16_t, uint16_t> Renderer::DrawLine(const uint8_t* lineA, const uin
 {
     ResetMatte();
 
-    const uint16_t bytesA = DecodeLinePlane<A>(nullptr, lineA); // nullptr because plane A can't decode RGB555.
-    const uint16_t bytesB = DecodeLinePlane<B>(lineA, lineB);
+    const uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
+    const uint16_t bytesB = DrawLinePlane<B>(lineB, lineA);
 
-    DecodeLineBackdrop();
-    DecodeLineCursor();
+    DrawLineBackdrop();
 
     if(m_mix)
         OverlayMix<true>();
@@ -108,19 +107,25 @@ std::pair<uint16_t, uint16_t> Renderer::DrawLine(const uint8_t* lineA, const uin
  */
 const Plane& Renderer::RenderFrame() noexcept
 {
+    if(m_cursorEnabled)
+    {
+        DrawCursor();
+        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height, m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height, m_cursorX, m_cursorY);
+    }
+
     m_lineNumber = 0;
     return m_screen;
 }
 
-/** \brief Decode the line of the given plane.
- * \param lineA Line A data if RGB555.
+/** \brief Draws the line of the given plane.
  * \param lineMain Line that will be decoded.
+ * \param lineA Line A data if RGB555.
  * \return The number of bytes read from memory.
  *
  * lineA is only used when the decoding method is RGB555.
  */
 template<Renderer::ImagePlane PLANE>
-uint16_t Renderer::DecodeLinePlane(const uint8_t* lineA, const uint8_t* lineMain) noexcept
+uint16_t Renderer::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept
 {
     if(m_codingMethod[PLANE] == ImageCodingMethod::OFF)
     {
@@ -153,43 +158,45 @@ uint16_t Renderer::DecodeLinePlane(const uint8_t* lineA, const uint8_t* lineMain
     return 0;
 }
 
-void Renderer::DecodeLineBackdrop() noexcept
+void Renderer::DrawLineBackdrop() noexcept
 {
     // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
-    backdropColorToARGB(m_backdropPlane(m_lineNumber), m_backdropColor);
+    backdropColorToRGB(m_backdropPlane(m_lineNumber), m_backdropColor);
 }
 
-void Renderer::DecodeLineCursor() noexcept
+void Renderer::DrawCursor() noexcept
 {
-//     const uint16_t yPosition = controlRegisters[CursorPosition] >> 12 & 0x0003FF;
-//     if(lineNumber < yPosition || lineNumber >= yPosition + 16)
-//         return;
-//
-//     const uint8_t yAddress = lineNumber - yPosition;
-//     uint8_t* pixels = cursorPlane(yAddress);
-//
-//     const uint8_t A = (controlRegisters[CursorControl] & 0x000008) ? 255 : 128;
-//     const uint8_t R = (controlRegisters[CursorControl] & 0x000004) ? 255 : 0;
-//     const uint8_t G = (controlRegisters[CursorControl] & 0x000002) ? 255 : 0;
-//     const uint8_t B = (controlRegisters[CursorControl] & 0x000001) ? 255 : 0;
-//
-//     uint16_t mask = 1 << 15;
-//     for(uint8_t i = 0, j = 0; i < 16; i++)
-//     {
-//         if(cursorPatterns[yAddress] & mask)
-//         {
-//             pixels[j++] = A;
-//             pixels[j++] = R;
-//             pixels[j++] = G;
-//             pixels[j++] = B;
-//         }
-//         else
-//         {
-//             pixels[j] = 0;
-//             j += 4;
-//         }
-//         mask >>= 1;
-//     }
+    // Technically speaking the cursor is drawn when the drawing line number is the cursor's one (because video
+    // is outputted continuously line by line).
+    // But for here maybe we don't care.
+
+    // TODO: Should this use the same backdrops colors (V.5.12) ?
+    const uint8_t A = bit<3>(m_cursorColor) ? 255 : 128;
+    const uint8_t R = bit<2>(m_cursorColor) ? 255 : 0;
+    const uint8_t G = bit<1>(m_cursorColor) ? 255 : 0;
+    const uint8_t B = bit<0>(m_cursorColor) ? 255 : 0;
+
+    uint8_t* pixels = m_cursorPlane(0); // Pixels are contiguous.
+    for(int y = 0; y < m_cursorPlane.m_height; y++)
+    {
+        uint16_t mask = 1 << 15;
+        for(uint8_t x = 0; x < m_cursorPlane.m_width; x++)
+        {
+            if(m_cursorPatterns[y] & mask)
+            {
+                *pixels++ = A;
+                *pixels++ = R;
+                *pixels++ = G;
+                *pixels++ = B;
+            }
+            else
+            {
+                *pixels = 0;
+                pixels += 4;
+            }
+            mask >>= 1;
+        }
+    }
 }
 
 /** \brief Apply the given Image Contribution Factor to the given color component (V.5.9). */
@@ -358,7 +365,8 @@ void Renderer::SetCursorColor(const uint8_t color) noexcept
  */
 void Renderer::SetCursorPattern(const uint8_t line, const uint16_t pattern) noexcept
 {
-    m_cursorPatterns[line] = pattern;
+    if(line <= m_cursorPatterns.size())
+        m_cursorPatterns[line] = pattern;
 }
 
 /** \brief Handles the transparency of the current pixel for each plane.
@@ -412,7 +420,7 @@ void Renderer::HandleTransparency(uint8_t pixel[4]) noexcept
             pixel[0] = 0;
         break;
 
-    case 0b111: // Reserved.
+    default: // Reserved.
         break;
     }
 }
