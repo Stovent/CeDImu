@@ -189,6 +189,7 @@ void MCD212::SetWord(const uint32_t addr, const uint16_t data, const BusFlags fl
 
     if(addr >= 0x4FFFE0 && addr < 0x500000)
     {
+        // TODO: when writing to the registers, make the change to the renderer too.
         internalRegisters[addr - 0x4FFFE0] = data;
         LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::VDSC, "Set", "Word", cdi.m_cpu.currentPC, addr, data});)

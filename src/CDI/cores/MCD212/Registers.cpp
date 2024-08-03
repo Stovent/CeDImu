@@ -80,34 +80,44 @@ std::vector<InternalRegister> MCD212::GetInternalRegisters() const
 std::vector<InternalRegister> MCD212::GetControlRegisters() const
 {
     std::vector<InternalRegister> registers;
+
     for(uint32_t i = 0; i < 256; i++)
-        registers.emplace_back("CLUT Color " + std::to_string(i), i, CLUT[i], "");
-    registers.emplace_back("Image Coding Method",              ImageCodingMethod          + 0x80, controlRegisters[ImageCodingMethod], "");
-    registers.emplace_back("Transparency Control",             TransparencyControl        + 0x80, controlRegisters[TransparencyControl], "");
-    registers.emplace_back("Plane Order",                      PlaneOrder                 + 0x80, controlRegisters[PlaneOrder], "");
-    registers.emplace_back("CLUT Bank",                        CLUTBank                   + 0x80, controlRegisters[CLUTBank], "");
-    registers.emplace_back("Transparent Color For Plane A",    TransparentColorForPlaneA  + 0x80, controlRegisters[TransparentColorForPlaneA], "");
-    registers.emplace_back("Transparent Color For Plane B",    TransparentColorForPlaneB  + 0x80, controlRegisters[TransparentColorForPlaneB], "");
-    registers.emplace_back("Mask Color For Plane A",           MaskColorForPlaneA         + 0x80, controlRegisters[MaskColorForPlaneA], "");
-    registers.emplace_back("Mask Color For Plane B",           MaskColorForPlaneB         + 0x80, controlRegisters[MaskColorForPlaneB], "");
-    registers.emplace_back("DYUV Abs Start Value For Plane A", DYUVAbsStartValueForPlaneA + 0x80, controlRegisters[DYUVAbsStartValueForPlaneA], "");
-    registers.emplace_back("DYUV Abs Start Value For Plane B", DYUVAbsStartValueForPlaneB + 0x80, controlRegisters[DYUVAbsStartValueForPlaneB], "");
-    registers.emplace_back("Cursor Position",                  CursorPosition             + 0x80, controlRegisters[CursorPosition], "");
-    registers.emplace_back("Cursor Control",                   CursorControl              + 0x80, controlRegisters[CursorControl], "");
-    registers.emplace_back("Cursor Pattern",                   CursorPattern              + 0x80, controlRegisters[CursorPattern], "");
-    registers.emplace_back("Region Control 0",                 RegionControl              + 0x80, controlRegisters[RegionControl], "");
-    registers.emplace_back("Region Control 1",                 RegionControl + 1          + 0x80, controlRegisters[RegionControl + 1], "");
-    registers.emplace_back("Region Control 2",                 RegionControl + 2          + 0x80, controlRegisters[RegionControl + 2], "");
-    registers.emplace_back("Region Control 3",                 RegionControl + 3          + 0x80, controlRegisters[RegionControl + 3], "");
-    registers.emplace_back("Region Control 4",                 RegionControl + 4          + 0x80, controlRegisters[RegionControl + 4], "");
-    registers.emplace_back("Region Control 5",                 RegionControl + 5          + 0x80, controlRegisters[RegionControl + 5], "");
-    registers.emplace_back("Region Control 6",                 RegionControl + 6          + 0x80, controlRegisters[RegionControl + 6], "");
-    registers.emplace_back("Region Control 7",                 RegionControl + 7          + 0x80, controlRegisters[RegionControl + 7], "");
-    registers.emplace_back("Backdrop Color",                   BackdropColor              + 0x80, controlRegisters[BackdropColor], "");
-    registers.emplace_back("Mosaic Pixel Hold For Plane A",    MosaicPixelHoldForPlaneA   + 0x80, controlRegisters[MosaicPixelHoldForPlaneA], "");
-    registers.emplace_back("Mosaic Pixel Hold For Plane B",    MosaicPixelHoldForPlaneB   + 0x80, controlRegisters[MosaicPixelHoldForPlaneB], "");
-    registers.emplace_back("Weight Factor For Plane A",        WeightFactorForPlaneA      + 0x80, controlRegisters[WeightFactorForPlaneA], "");
-    registers.emplace_back("Weight Factor For Plane B",        WeightFactorForPlaneB      + 0x80, controlRegisters[WeightFactorForPlaneB], "");
+        registers.emplace_back("CLUT Color " + std::to_string(i), i, renderer.m_clut[i], "");
+
+    registers.emplace_back("Image Coding Method Plane A",       ImageCodingMethod          + 0x80, as<int>(renderer.m_codingMethod[PlaneA]), "");
+    registers.emplace_back("Image Coding Method Plane B",       ImageCodingMethod          + 0x80, as<int>(renderer.m_codingMethod[PlaneB]), "");
+    registers.emplace_back("External Video",                    ImageCodingMethod          + 0x80, renderer.m_externalVideo, "");
+    registers.emplace_back("Number of regions",                 ImageCodingMethod          + 0x80, renderer.m_matteNumber, "");
+    registers.emplace_back("CLUT Select",                       ImageCodingMethod          + 0x80, renderer.m_clutSelect, "");
+    registers.emplace_back("Transparency Control Plane A",      TransparencyControl        + 0x80, renderer.m_transparencyControl[PlaneA], "");
+    registers.emplace_back("Transparency Control Plane B",      TransparencyControl        + 0x80, renderer.m_transparencyControl[PlaneB], "");
+    registers.emplace_back("Mixing",                            TransparencyControl        + 0x80, renderer.m_mix, "");
+    registers.emplace_back("Plane Order",                       PlaneOrder                 + 0x80, renderer.m_planeOrder, "");
+    registers.emplace_back("CLUT Bank",                         CLUTBank                   + 0x80, renderer.m_clutBank, "");
+    registers.emplace_back("Transparent Color For Plane A",     TransparentColorForPlaneA  + 0x80, renderer.m_transparentColorRgb[PlaneA], "");
+    registers.emplace_back("Transparent Color For Plane B",     TransparentColorForPlaneB  + 0x80, renderer.m_transparentColorRgb[PlaneB], "");
+    registers.emplace_back("Mask Color For Plane A",            MaskColorForPlaneA         + 0x80, renderer.m_maskColorRgb[PlaneA], "");
+    registers.emplace_back("Mask Color For Plane B",            MaskColorForPlaneB         + 0x80, renderer.m_maskColorRgb[PlaneB], "");
+    registers.emplace_back("DYUV Abs Start Value For Plane A",  DYUVAbsStartValueForPlaneA + 0x80, renderer.m_dyuvInitialValue[PlaneA], "");
+    registers.emplace_back("DYUV Abs Start Value For Plane B",  DYUVAbsStartValueForPlaneB + 0x80, renderer.m_dyuvInitialValue[PlaneB], "");
+    registers.emplace_back("Cursor X Position",                 CursorPosition             + 0x80, renderer.m_cursorX, "");
+    registers.emplace_back("Cursor Y Position",                 CursorPosition             + 0x80, renderer.m_cursorY, "");
+    registers.emplace_back("Cursor Enabled",                    CursorControl              + 0x80, renderer.m_cursorEnabled, "");
+    registers.emplace_back("Cursor color",                      CursorControl              + 0x80, renderer.m_cursorColor, "");
+
+    for(size_t i = 0; i < renderer.m_cursorPatterns.size(); i++)
+        registers.emplace_back("Cursor Pattern " + std::to_string(i), CursorPattern + 0x80, renderer.m_cursorPatterns[i], "");
+    for(size_t i = 0; i < renderer.m_matteControl.size(); i++)
+        registers.emplace_back("Region Control " + std::to_string(i), RegionControl + 0x80 + i, renderer.m_matteControl[i], "");
+
+    registers.emplace_back("Backdrop Color",                    BackdropColor              + 0x80, renderer.m_backdropColor, "");
+    registers.emplace_back("Mosaic Pixel Hold enabled Plane A", MosaicPixelHoldForPlaneA   + 0x80, renderer.m_holdEnabled[PlaneA], "");
+    registers.emplace_back("Mosaic Pixel Hold factor Plane A",  MosaicPixelHoldForPlaneA   + 0x80, renderer.m_holdFactor[PlaneA], "");
+    registers.emplace_back("Mosaic Pixel Hold enabled Plane B", MosaicPixelHoldForPlaneB   + 0x80, renderer.m_holdEnabled[PlaneB], "");
+    registers.emplace_back("Mosaic Pixel Hold factor Plane B",  MosaicPixelHoldForPlaneB   + 0x80, renderer.m_holdFactor[PlaneB], "");
+    registers.emplace_back("Weight Factor For Plane A",         WeightFactorForPlaneA      + 0x80, renderer.m_icf[PlaneA], "");
+    registers.emplace_back("Weight Factor For Plane B",         WeightFactorForPlaneB      + 0x80, renderer.m_icf[PlaneB], "");
+
     return registers;
 }
 

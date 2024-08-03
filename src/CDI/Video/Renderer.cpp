@@ -107,6 +107,7 @@ std::pair<uint16_t, uint16_t> Renderer::DrawLine(const uint8_t* lineA, const uin
  */
 const Plane& Renderer::RenderFrame() noexcept
 {
+    // Should this be inside DrawLine() ?
     if(m_cursorEnabled)
     {
         DrawCursor();

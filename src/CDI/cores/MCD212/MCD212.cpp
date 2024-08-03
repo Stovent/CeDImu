@@ -18,30 +18,22 @@ MCD212::MCD212(CDI& idc, OS9::BIOS bios, const bool pal)
     , timeNs(0.0)
     , renderer()
     , memory(0x280000, 0)
-    , screen(3, 0, 0, Video::Plane::RGB_MAX_SIZE)
-    , planeA(4)
-    , planeB(4)
-    , backgroundPlane(3, 1, Video::Plane::MAX_HEIGHT, Video::Plane::MAX_HEIGHT * 3)
-    , cursorPlane(4, Video::Plane::CURSOR_WIDTH, Video::Plane::CURSOR_HEIGHT, Video::Plane::CURSOR_ARGB_SIZE)
-    , controlRegisters{0}
-    , CLUT{0}
-    , cursorPatterns{0}
-    , regionFlags{}
-    , currentRegionControl(RegionControl - 1)
     , internalRegisters{0}
     , registerCSR1R(0)
     , registerCSR2R(0)
-    , lineNumber(0)
     , verticalLines(0)
 {
 }
 
 void MCD212::Reset()
 {
-    controlRegisters[ImageCodingMethod] &= 0x480000; // reset bits 0, 1, 2, 3, 8, 9, 10, 11, 18 (plane A and B off, external video disabled)
-    controlRegisters[CursorControl] &= 0x7F800F; // reset bit 23 (cursor disabled)
-    controlRegisters[BackdropColor] = 0; // reset bits 0, 1, 2, 3 (black backdrop)
+    renderer.m_externalVideo = false; // reset bits 0, 1, 2, 3, 8, 9, 10, 11, 18 (plane A and B off, external video disabled)
+    renderer.m_codingMethod[PlaneA] = Video::ImageCodingMethod::OFF;
+    renderer.m_codingMethod[PlaneB] = Video::ImageCodingMethod::OFF;
+    renderer.SetCursorEnabled(false); // reset bit 23 (cursor disabled)
+    renderer.m_backdropColor = 0; // reset bits 0, 1, 2, 3 (black backdrop)
 
+    // TODO: reset those too.
     internalRegisters[CSR1W] = 0; // DI1, DD1, DD2, TD, DD, ST, BE
     internalRegisters[CSR2W] = 0; // DI2
     internalRegisters[DCR1] &= 0x003F; // DE, CF, FD, SM, CM1, IC1, DC1
@@ -51,10 +43,7 @@ void MCD212::Reset()
     registerCSR1R = 0;
     registerCSR2R = 0;
 
-    std::fill(screen.begin(), screen.end(), 0);
-
     verticalLines = 0;
-    lineNumber = 0;
     timeNs = 0.0;
     MemorySwap();
 }
@@ -116,28 +105,6 @@ void MCD212::ExecuteICA1()
             if(!GetDI1())
                 cdi.m_cpu.INT1();
             break;
-
-        case 7: // RELOAD DISPLAY PARAMETERS
-            ReloadDisplayParameters1(bit<4>(ica), bits<2, 3>(ica), bits<0, 1>(ica));
-            break;
-
-        default:
-            if(ica < 0xC0000000) // CLUT RAM
-            {
-                const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                const uint8_t index = bits<24, 31>(ica) - 0x80;
-                CLUT[bank + index] = DCP_PARAMETER(ica);
-            }
-            else if((ica & 0xFF000000) == 0xCF000000) // Cursor Pattern
-            {
-                const uint8_t reg = bits<16, 19>(ica);
-                cursorPatterns[reg] = ica;
-                controlRegisters[CursorPattern] = DCP_PARAMETER(ica);
-            }
-            else
-            {
-                controlRegisters[bits<24, 31>(ica) - 0x80] = DCP_PARAMETER(ica);
-            }
         }
 
         const uint8_t code = ica >> 24;
@@ -176,7 +143,7 @@ void MCD212::ExecuteDCA1()
         SetDCP1(addr + 4);
 
         if(cdi.m_callbacks.HasOnLogICADCA())
-            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, { totalFrameCount + 1, lineNumber, dca });
+            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, { totalFrameCount + 1, renderer.m_lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -207,28 +174,6 @@ void MCD212::ExecuteDCA1()
             if(!GetDI1())
                 cdi.m_cpu.INT1();
             break;
-
-        case 7: // RELOAD DISPLAY PARAMETERS
-            ReloadDisplayParameters1(bit<4>(dca), bits<2, 3>(dca), bits<0, 1>(dca));
-            break;
-
-        default:
-            if(dca < 0xC0000000) // CLUT RAM
-            {
-                const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                const uint8_t index = bits<24, 31>(dca) - 0x80;
-                CLUT[bank + index] = DCP_PARAMETER(dca);
-            }
-            else if((dca & 0xFF000000) == 0xCF000000) // Cursor Pattern
-            {
-                const uint8_t reg = bits<16, 19>(dca);
-                cursorPatterns[reg] = dca;
-                controlRegisters[CursorPattern] = DCP_PARAMETER(dca);
-            }
-            else
-            {
-                controlRegisters[bits<24, 31>(dca) - 0x80] = DCP_PARAMETER(dca);
-            }
         }
 
         const uint8_t code = dca >> 24;
@@ -295,21 +240,6 @@ void MCD212::ExecuteICA2()
             if(!GetDI2())
                 cdi.m_cpu.INT1();
             break;
-
-        case 7: // RELOAD DISPLAY PARAMETERS
-            ReloadDisplayParameters2(bit<4>(ica), bits<2, 3>(ica), bits<0, 1>(ica));
-            break;
-
-        default:
-            if(ica < 0xC0000000) // CLUT RAM
-            {
-                const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                LOG(if(bank < 2) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
-                const uint8_t index = bits<24, 31>(ica) - 0x80;
-                CLUT[bank + index] = DCP_PARAMETER(ica);
-            }
-            else
-                controlRegisters[bits<24, 31>(ica) - 0x80] = DCP_PARAMETER(ica);
         }
 
         // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
@@ -327,7 +257,7 @@ void MCD212::ExecuteDCA2()
         SetDCP2(addr + 4);
 
         if(cdi.m_callbacks.HasOnLogICADCA())
-            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, { totalFrameCount + 1, lineNumber, dca });
+            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, { totalFrameCount + 1, renderer.m_lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -358,21 +288,6 @@ void MCD212::ExecuteDCA2()
             if(!GetDI2())
                 cdi.m_cpu.INT1();
             break;
-
-        case 7: // RELOAD DISPLAY PARAMETERS
-            ReloadDisplayParameters2(bit<4>(dca), bits<2, 3>(dca), bits<0, 1>(dca));
-            break;
-
-        default:
-            if(dca < 0xC0000000) // CLUT RAM
-            {
-                const uint8_t bank = controlRegisters[CLUTBank] << 6;
-                LOG(if(bank < 2) { fprintf(stderr, "WARNING: writing CLUT bank %d from channel #2 is forbidden!\n", bank); })
-                const uint8_t index = bits<24, 31>(dca) - 0x80;
-                CLUT[bank + index] = DCP_PARAMETER(dca);
-            }
-            else
-                controlRegisters[bits<24, 31>(dca) - 0x80] = DCP_PARAMETER(dca);
         }
 
         renderer.ExecuteDCPInstruction<Video::Renderer::B>(dca);
@@ -391,25 +306,25 @@ RAMBank MCD212::GetRAMBank2() const
 
 const Video::Plane& MCD212::GetScreen() const
 {
-    return screen;
+    return renderer.m_screen;
 }
 
 const Video::Plane& MCD212::GetPlaneA() const
 {
-    return planeA;
+    return renderer.m_plane[Video::Renderer::A];
 }
 
 const Video::Plane& MCD212::GetPlaneB() const
 {
-    return planeB;
+    return renderer.m_plane[Video::Renderer::B];
 }
 
 const Video::Plane& MCD212::GetBackground() const
 {
-    return backgroundPlane;
+    return renderer.m_backdropPlane;
 }
 
 const Video::Plane& MCD212::GetCursor() const
 {
-    return cursorPlane;
+    return renderer.m_cursorPlane;
 }

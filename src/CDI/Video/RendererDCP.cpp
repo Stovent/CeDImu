@@ -107,6 +107,7 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
             m_codingMethod[B] = decodeCodingMethod1(bits<8, 11>(instruction));
             m_codingMethod[A] = decodeCodingMethod0(bits<0, 3>(instruction));
             // TODO: what to do with external video enabled?
+            m_externalVideo = bit<18>(instruction);
             return false;
 
         case LoadTransparencyControl: // Load transparency control information.

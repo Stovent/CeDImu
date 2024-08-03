@@ -21,6 +21,7 @@ namespace Video
  *   or let it to the user of the renderer with a `Plane RenderFrame();` method ?
  * - Let all members public because the MCD212/VSD has access to them all ?
  * - V.25/V.26 Pixel repeat on pixel decoding, pixel hold on overlay.
+ * - Should there be a reset method?
  */
 class Renderer
 {
@@ -33,7 +34,6 @@ public:
 
     Renderer() {}
 
-    // void Reset() noexcept;
     void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
 
     std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept;
@@ -46,11 +46,6 @@ public:
     void SetCursorPosition(uint16_t x, uint16_t y) noexcept;
     void SetCursorColor(uint8_t argb) noexcept;
     void SetCursorPattern(uint8_t line, uint16_t pattern) noexcept;
-
-    Plane m_screen{3, 384, 280, Plane::RGB_MAX_SIZE};
-    std::array<Plane, 2> m_plane{Plane{4, 384, 280}, Plane{4, 384, 280}};
-    Plane m_backdropPlane{3, 1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT * 3};
-    Plane m_cursorPlane{4, Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_ARGB_SIZE}; // TODO: also make the cursor RGB like the background ?
 
     enum class ImageType
     {
@@ -75,6 +70,11 @@ public:
     // TODO: organize and order the members correctly.
     // TODO: Split into dedicated directory and separate files (Display Control) ?
 
+    Plane m_screen{3, 384, 280, Plane::RGB_MAX_SIZE};
+    std::array<Plane, 2> m_plane{Plane{4, 384, 280}, Plane{4, 384, 280}};
+    Plane m_backdropPlane{3, 1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT * 3};
+    Plane m_cursorPlane{4, Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_ARGB_SIZE}; // TODO: also make the cursor RGB like the background ?
+
     uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. */
 
     std::array<uint32_t, 2> m_dyuvInitialValue{};
@@ -85,7 +85,7 @@ public:
     // Image Coding Methods.
     bool m_clutSelect{};
     bool m_matteNumber{}; /**< false for 1 matte, true for 2. */
-    // bool m_externalVideo{};
+    bool m_externalVideo{};
     std::array<ImageCodingMethod, 2> m_codingMethod{ImageCodingMethod::OFF, ImageCodingMethod::OFF};
 
     // Display Parameters.

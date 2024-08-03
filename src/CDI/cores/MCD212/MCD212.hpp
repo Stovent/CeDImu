@@ -51,41 +51,20 @@ private:
     uint8_t memorySwapCount;
     double timeNs; // time counter in nano seconds.
 
+    static constexpr Video::Renderer::ImagePlane PlaneA = Video::Renderer::A;
+    static constexpr Video::Renderer::ImagePlane PlaneB = Video::Renderer::B;
+
     Video::Renderer renderer;
 
     std::vector<uint8_t> memory;
-
-    Video::Plane screen;
-    Video::Plane planeA;
-    Video::Plane planeB;
-    Video::Plane backgroundPlane;
-    Video::Plane cursorPlane;
-
-    std::array<uint32_t, 0x80> controlRegisters;
-    std::array<uint32_t, 256> CLUT;
-    std::array<uint16_t, 16> cursorPatterns;
-    std::array<bool, 2> regionFlags;
-    uint8_t currentRegionControl;
 
     std::array<uint16_t, 32> internalRegisters;
     uint8_t registerCSR1R;
     uint8_t registerCSR2R;
 
-    uint16_t lineNumber; // starts at 0
     uint16_t verticalLines; // starts at 0.
 
     void DrawVideoLine();
-    void DrawLinePlaneA();
-    void DrawLinePlaneB();
-    void DrawLineBackground();
-    void DrawLineCursor();
-    void OverlayMix();
-    void HandleTransparency(uint8_t* pixel, uint32_t control, uint32_t color);
-    void HandleRegions(uint16_t pos);
-
-    // Display File Decoders
-    void DecodeMosaicLineA();
-    void DecodeMosaicLineB();
 
     // Control Area
     // TODO: template this against Video::Renderer::Plane ?
