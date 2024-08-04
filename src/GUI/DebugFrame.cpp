@@ -176,7 +176,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
 
         wxListItem text;
         text.SetText("Exception");
-        text.SetWidth(210);
+        text.SetWidth(100);
         list->InsertColumn(2, text);
 
         wxListItem syscall;
