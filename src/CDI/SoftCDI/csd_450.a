@@ -10,8 +10,13 @@ entrypt		equ csd
 
 	psect csd,typelang,attrrevs,edition,stacksize,entrypt
 
-csd dc.b "1:/cd:",$D
-cse dc.b "2:/ap:",$D
-csf dc.b "3:/vid:LI=\"525\":TV:",$D
-csg dc.b "4:/nvr:",$D,0
+dataoffset dc.l $34 Data files must have this offset.
+csd	dc.b	"1:/cd:",$D
+	dc.b	"3:/vid:LI=\"525\":TV:",$D
+	dc.b	"4:/nvr:",$D
+
+* Align to 16 bytes size
+	rept (16-(*-csd))&15
+	dc.b	0
+	endr
 	ends
