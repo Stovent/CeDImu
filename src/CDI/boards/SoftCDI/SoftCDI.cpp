@@ -3,6 +3,7 @@
 #include "../../HLE/IKAT/IKAT.hpp"
 #include "../../cores/DS1216/DS1216.hpp"
 #include "../../cores/M48T08/M48T08.hpp"
+#include "../../SoftCDI/include/CSD_450.h"
 #include "../../SoftCDI/include/NVDRV.h"
 #include "../../SoftCDI/include/VIDEO.h"
 #include "../../SoftCDI/include/SYSGO.h"
@@ -28,14 +29,17 @@ SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig confi
     m_timekeeper = std::make_unique<M48T08>(*this, nvram, config.initialTime);
     Reset(true);
 
-    // if(!m_bios.ReplaceModule({NVDRV, NVDRV_len}))
-    //     throw std::runtime_error("Failed to patch nvdrv");
+    if(!m_bios.ReplaceModule({CSD_450, CSD_450_len}))
+        throw std::runtime_error("Failed to patch csd");
+
+    if(!m_bios.ReplaceModule({NVDRV, NVDRV_len}))
+        throw std::runtime_error("Failed to patch nvdrv");
 
     if(!m_bios.ReplaceModule({VIDEO, VIDEO_len}))
         throw std::runtime_error("Failed to patch video");
 
-    // if(!m_bios.ReplaceModule({SYSGO, SYSGO_len}))
-    //     throw std::runtime_error("Failed to patch sysgo");
+    if(!m_bios.ReplaceModule({SYSGO, SYSGO_len}))
+        throw std::runtime_error("Failed to patch sysgo");
 
     // Load the reset vector data.
     memcpy(m_ram0.data(), &m_bios[0], 8);

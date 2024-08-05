@@ -1,7 +1,11 @@
 @echo off
 
-rem r68 csd.a -o=csd.r
-rem l68 csd.r -n=csd -o=csd
+rem TODO: make it a function
+
+set GRPUSER=0.0
+
+r68 csd_450.a -o=build/csd_450.r
+l68 build/csd_450.r -n=csd_450 -o=build/csd_450
 
 r68 nvdrv.a -o=build/nvdrv.r
 l68 build/nvdrv.r -n=nvdrv -o=build/nvdrv -l=c:/LIB/SYS.L

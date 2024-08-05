@@ -14,16 +14,24 @@ stderr		equ	2
 	psect sysgo,typelang,attrrevs,edition,stacksize,entrypt
 
 Main:
+	moveq #Write_,d0
+	lea T2Device(pc),a0
+	os9 I$Open
+	bcs.b End
+	move.w d0,d2
+
 * Print Hello world.
 	lea HelloWorld(pc),a0
-	move.w #stdout,d0
 	move.l #HelloWorldEnd,d1
-	os9 I$Write
+	os9 I$WritLn
 
+End:
 * Exit program
 	moveq #0,d1	return 0
 	os9 F$Exit
 
+T2Device	dc.b	"/t2",0
+NvrDevice	dc.b	"/nvr",0
 HelloWorld	dc.b	"Hello, world",0
 HelloWorldEnd	equ	*-HelloWorld
 	ends
