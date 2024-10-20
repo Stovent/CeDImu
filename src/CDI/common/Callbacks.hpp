@@ -14,6 +14,9 @@
 #define LOG(content)
 #endif // LIBCEDIMU_ENABLE_LOG
 
+#define LOG_FLAGS(flags, location, dir, size, pc, addr, data) { if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+    m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::location, dir, size, pc, addr, 0}); }
+
 struct LogInstruction
 {
     uint32_t address;

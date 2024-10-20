@@ -72,65 +72,86 @@ uint32_t SoftCDI::PeekLong(const uint32_t addr) const noexcept
 
 uint8_t SoftCDI::GetByte(const uint32_t addr, const BusFlags flags)
 {
-    if(addr < 0x080000)
-    {
-        return m_ram0[addr];
-    }
+    MemoryAccessLocation location;
+    uint8_t data;
 
-    if(addr >= 0x200000 && addr < 0x280000)
+    if(addr < RAM0End)
     {
-        return m_ram1[addr - 0x200000];
+        data = m_ram0[addr];
+        location = MemoryAccessLocation::RAM;
     }
-
-    if(addr >= 0x400000 && addr < 0x4FFFE0)
+    else if(addr >= RAM1Begin && addr < RAM1End)
     {
-        return m_bios[addr - 0x400000];
+        data = m_ram1[addr - RAM1Begin];
+        location = MemoryAccessLocation::RAM;
     }
-
-    // These are below the BIOS for performance reasons, it is useless to check for them on every memory read before the bios.
-    if(addr >= 0x310000 && addr < 0x31001E && !isEven(addr))
+    else if(addr >= BIOSBegin && addr < BIOSEnd)
     {
-        return 0; // dummy slave read.
-        // return m_slave->GetByte((addr - 0x310000) >> 1);
+        data = m_bios[addr - BIOSBegin];
+        location = MemoryAccessLocation::BIOS;
     }
-
-    if(addr >= 0x320000 && addr < 0x324000 && isEven(addr))
+    else if(addr >= SlaveBegin && addr < SlaveEnd && !isEven(addr))
     {
-        return m_timekeeper->GetByte((addr - 0x320000) >> 1, flags);
+        // These are below the BIOS for performance reasons, it is useless to check for them on every memory read before the bios.
+        data = 0; // dummy slave read.
+        // data = m_slave->GetByte((addr - SlaveBegin) >> 1);
+        location = MemoryAccessLocation::Slave;
     }
-
-    // if(addr >= 0x4FFFE0 && addr < 0x500000)
-    if(addr == 0x4FFFF1)
+    else if(addr >= TimekeeperBegin && addr < TimekeeperEnd && isEven(addr))
     {
+        data = m_timekeeper->GetByte((addr - TimekeeperBegin) >> 1, flags);
+        location = MemoryAccessLocation::RTC;
+    }
+    else if(addr == 0x4FFFF1)
+    // if(addr >= MCD212RegistersBegin && addr < MCD212RegistersEnd)
+    {
+        // TODO: implement video reg.
         m_csr1r = ~m_csr1r;
-        return m_csr1r;
+        data = m_csr1r;
+        location = MemoryAccessLocation::VDSC;
+    }
+    else
+    {
+        LOG_FLAGS(flags, OutOfRange, "Get", "Byte", m_cpu.currentPC, addr, 0);
+        throw SCC68070::Exception(SCC68070::BusError);
     }
 
     LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
-            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Byte", m_cpu.currentPC, addr, 0});)
-    throw SCC68070::Exception(SCC68070::BusError, 0);
+        m_callbacks.OnLogMemoryAccess({location, "Get", "Byte", m_cpu.currentPC, addr, data});)
+
+    return data;
 }
 
 uint16_t SoftCDI::GetWord(const uint32_t addr, const BusFlags flags)
 {
-    if(addr < 0x080000)
-    {
-        return GET_ARRAY16(m_ram0, addr);
-    }
+    MemoryAccessLocation location;
+    uint16_t data;
 
-    if(addr >= 0x200000 && addr < 0x280000)
+    if(addr < RAM0End)
     {
-        return GET_ARRAY16(m_ram1, addr - 0x200000);
+        data = GET_ARRAY16(m_ram0, addr);
+        location = MemoryAccessLocation::RAM;
     }
-
-    if(addr >= 0x400000 && addr < 0x4FFFE0)
+    else if(addr >= RAM1Begin && addr < RAM1End)
     {
-        return GET_ARRAY16(m_bios, addr - 0x400000);
+        data = GET_ARRAY16(m_ram1, addr - RAM1Begin);
+        location = MemoryAccessLocation::RAM;
+    }
+    else if(addr >= BIOSBegin && addr < BIOSEnd)
+    {
+        data = GET_ARRAY16(m_bios, addr - BIOSBegin);
+        location = MemoryAccessLocation::BIOS;
+    }
+    else
+    {
+        LOG_FLAGS(flags, OutOfRange, "Get", "Word", m_cpu.currentPC, addr, 0);
+        throw SCC68070::Exception(SCC68070::BusError);
     }
 
     LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
-            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Word", m_cpu.currentPC, addr, 0});)
-    throw SCC68070::Exception(SCC68070::BusError, 0);
+        m_callbacks.OnLogMemoryAccess({location, "Get", "Word", m_cpu.currentPC, addr, data});)
+
+    return data;
 }
 
 uint32_t SoftCDI::GetLong(const uint32_t addr, const BusFlags flags)
@@ -140,57 +161,68 @@ uint32_t SoftCDI::GetLong(const uint32_t addr, const BusFlags flags)
 
 void SoftCDI::SetByte(const uint32_t addr, const uint8_t data, const BusFlags flags)
 {
+    MemoryAccessLocation location;
+
     // Order is to optimise access with the more often checkd first.
-    if(addr < 0x080000)
+    if(addr < RAM0End)
     {
         m_ram0[addr] = data;
-        return;
+        location = MemoryAccessLocation::RAM;
     }
-
-    if(addr >= 0x200000 && addr < 0x280000)
+    else if(addr >= RAM1Begin && addr < RAM1End)
     {
-        m_ram1[addr - 0x200000] = data;
-        return;
+        m_ram1[addr - RAM1Begin] = data;
+        location = MemoryAccessLocation::RAM;
     }
-
-    if(addr >= 0x320000 && addr < 0x324000 && isEven(addr))
+    else if(addr >= TimekeeperBegin && addr < TimekeeperEnd && isEven(addr))
     {
-        m_timekeeper->SetByte((addr - 0x320000) >> 1, data, flags);
-        return;
+        m_timekeeper->SetByte((addr - TimekeeperBegin) >> 1, data, flags);
+        location = MemoryAccessLocation::RTC;
     }
-
-    if(addr >= 0x310000 && addr < 0x31001E)
-        return; // Ignore slave memory writes.
+    else if(addr >= SlaveBegin && addr < SlaveEnd)
+    {
+        // Ignore slave memory writes.
+        location = MemoryAccessLocation::Slave;
+    }
+    else
+    {
+        LOG_FLAGS(flags, OutOfRange, "Set", "Byte", m_cpu.currentPC, addr, data);
+        throw SCC68070::Exception(SCC68070::BusError);
+    }
 
     LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
-            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Byte", m_cpu.currentPC, addr, data});)
-    throw SCC68070::Exception(SCC68070::BusError, 0);
+        m_callbacks.OnLogMemoryAccess({location, "Set", "Byte", m_cpu.currentPC, addr, data});)
 }
 
 void SoftCDI::SetWord(const uint32_t addr, const uint16_t data, const BusFlags flags)
 {
-    if(addr < 0x080000)
+    MemoryAccessLocation location;
+
+    if(addr < RAM0End)
     {
         m_ram0[addr] = data >> 8;
         m_ram0[addr + 1] = data;
-        return;
+        location = MemoryAccessLocation::RAM;
     }
-
-    if(addr >= 0x200000 && addr < 0x280000)
+    else if(addr >= RAM1Begin && addr < RAM1End)
     {
-        m_ram1[addr - 0x200000] = data >> 8;
-        m_ram1[addr - 0x1FFFFF] = data;
-        return;
+        m_ram1[addr - RAM1Begin] = data >> 8;
+        m_ram1[addr - RAM1Begin + 1] = data;
+        location = MemoryAccessLocation::RAM;
     }
-
-    if(addr >= 0x4FFFE0 && addr < 0x500000)
+    else if(addr >= MCD212RegistersBegin && addr < MCD212RegistersEnd)
     {
-        return; // Ignore MCD212 writes.
+        // Ignore MCD212 writes.
+        location = MemoryAccessLocation::VDSC;
+    }
+    else
+    {
+        LOG_FLAGS(flags, OutOfRange, "Set", "Word", m_cpu.currentPC, addr, data);
+        throw SCC68070::Exception(SCC68070::BusError);
     }
 
     LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
-            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Word", m_cpu.currentPC, addr, data});)
-    throw SCC68070::Exception(SCC68070::BusError, 0);
+        m_callbacks.OnLogMemoryAccess({location, "Set", "Word", m_cpu.currentPC, addr, data});)
 }
 
 void SoftCDI::SetLong(const uint32_t addr, const uint32_t data, const BusFlags flags)
