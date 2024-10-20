@@ -56,6 +56,21 @@ private:
 
     // Specifics to allow the BIOS to initialize.
     uint8_t m_csr1r; /**< CSR1R register of MCD212 to emulate Display Active. */
+
+    enum MemoryMap : uint32_t
+    {
+        RAM0End = 0x080000,
+        RAM1Begin = 0x200000,
+        RAM1End = 0x280000,
+        SlaveBegin = 0x310000,
+        SlaveEnd = 0x31001E,
+        TimekeeperBegin = 0x320000,
+        TimekeeperEnd = 0x324000,
+        BIOSBegin = 0x400000,
+        BIOSEnd = 0x4FFFE0,
+        MCD212RegistersBegin = 0x4FFFE0,
+        MCD212RegistersEnd = 0x500000,
+    };
 };
 
 #endif // CDI_BOARDS_SOFTCDI_SOFTCDI_HPP
