@@ -141,6 +141,8 @@ public:
     std::pair<size_t, std::optional<Exception>> SingleStepException(size_t stopCycles);
     void Reset();
     void PushException(const Exception& ex);
+    uint16_t GetNextWord(BusFlags flags = BUS_NORMAL);
+    uint16_t PeekNextWord() const noexcept;
 
     void INT1();
     void INT2();
@@ -321,9 +323,6 @@ private:
     void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL);
     void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL);
     void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL);
-
-    uint16_t GetNextWord(BusFlags flags = BUS_NORMAL);
-    uint16_t PeekNextWord() const noexcept;
 
     // Peripherals
     uint8_t GetPeripheral(uint32_t addr, BusFlags flags);

@@ -43,7 +43,6 @@ SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig confi
 
     // Load the reset vector data.
     memcpy(m_ram0.data(), &m_bios[0], 8);
-    // printf("%p\n", m_ram0.data());
 }
 
 SoftCDI::~SoftCDI()
@@ -80,7 +79,7 @@ void SoftCDI::Reset(const bool resetCPU)
 
 uint32_t SoftCDI::GetBIOSBaseAddress() const
 {
-    return 0x400000;
+    return BIOSBegin;
 }
 
 uint32_t SoftCDI::GetTotalFrameCount()
@@ -110,12 +109,12 @@ uint32_t SoftCDI::GetRAMSize() const
 
 RAMBank SoftCDI::GetRAMBank1() const
 {
-    return {m_ram0, 0};
+    return {m_ram0, RAM0Begin};
 }
 
 RAMBank SoftCDI::GetRAMBank2() const
 {
-    return {m_ram1, 0x200000};
+    return {m_ram1, RAM1Begin};
 }
 
 const Video::Plane& SoftCDI::GetScreen()
