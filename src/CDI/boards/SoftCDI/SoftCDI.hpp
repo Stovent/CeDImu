@@ -6,6 +6,9 @@
 #include <span>
 
 /** \brief Software implementation of the Green Book, with the memory map of a Mono3 board.
+ *
+ * TODO:
+ * - Have a custom NVRAM size? Or force 32Kb?
  */
 class SoftCDI : public CDI
 {
@@ -57,8 +60,10 @@ private:
     // Specifics to allow the BIOS to initialize.
     uint8_t m_csr1r; /**< CSR1R register of MCD212 to emulate Display Active. */
 
+    /** \brief SoftCDI memory map. */
     enum MemoryMap : uint32_t
     {
+        RAM0Begin = 0,
         RAM0End = 0x080000,
         RAM1Begin = 0x200000,
         RAM1End = 0x280000,

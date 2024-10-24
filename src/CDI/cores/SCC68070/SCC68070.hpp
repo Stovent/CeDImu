@@ -140,6 +140,8 @@ public:
     std::pair<size_t, std::optional<Exception>> SingleStepException(size_t stopCycles);
     void Reset();
     void PushException(const Exception& ex);
+    uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
+    uint16_t PeekNextWord();
 
     void INT1();
     void INT2();
@@ -312,9 +314,6 @@ private:
     void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger);
     void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger);
     void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger);
-
-    uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
-    uint16_t PeekNextWord();
 
     // Peripherals
     uint8_t GetPeripheral(uint32_t addr);

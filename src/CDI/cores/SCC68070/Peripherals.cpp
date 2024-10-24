@@ -4,6 +4,7 @@
 
 uint8_t SCC68070::GetPeripheral(uint32_t addr)
 {
+    // TODO: make this Peek-safe.
     addr -= Peripheral::Base;
     std::unique_lock<std::mutex> lock(uartInMutex);
 
