@@ -1,5 +1,6 @@
 	nam nvdrv
 	use c:\DEFS\OSKDEFS.D
+	use macros.m
 
 typelang	equ	(Drivr<<8)+Objct
 attrrevs	equ	((ReEnt+SupStat)<<8)+$99
@@ -8,6 +9,8 @@ stacksize	equ	0
 entrypt		equ	EntryTable
 
 	psect nvdrv,typelang,attrrevs,edition,stacksize,entrypt
+
+* TODO: write a custom NVRAM manager in C++?
 
 EntryTable	dc.w	Init
 			dc.w	Read
@@ -18,7 +21,7 @@ EntryTable	dc.w	Init
 			dc.w	0	Trap handler
 
 Init
-	trap #1
+	softcdi
 	eor.w d0,d0
 	rts
 
@@ -46,5 +49,11 @@ Term
 	trap #6
 	eor.w d0,d0
 	rts
+
+	vsect
+* The kernel needs a non-zero static storage space, or it fails to attach with E$NoRAM.
+* Original nvdrv has a size of $A0.
+	ds.w $50
+	ends
 
 	ends

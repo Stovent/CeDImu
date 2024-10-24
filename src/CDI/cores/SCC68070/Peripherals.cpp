@@ -9,6 +9,7 @@ uint8_t SCC68070::PeekPeripheral(const uint32_t addr) const noexcept
 
 uint8_t SCC68070::GetPeripheral(uint32_t addr, const BusFlags flags)
 {
+    // TODO: make this Peek-safe.
     addr -= Peripheral::Base;
 
     std::unique_lock<std::mutex> lock(m_uartInMutex);
