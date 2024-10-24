@@ -2870,8 +2870,8 @@ uint16_t SCC68070::TAS()
 uint16_t SCC68070::TRAP()
 {
     const uint8_t vector = currentOpcode & 0x000F;
-    PushException({as<ExceptionVector>(Trap0Instruction + vector), PeekNextWord()});
-    return 0;
+    throw SCC68070::Exception(as<ExceptionVector>(Trap0Instruction + vector), PeekNextWord());
+    // May not be the most efficient but catches every exception easily.
 }
 
 uint16_t SCC68070::TRAPV()

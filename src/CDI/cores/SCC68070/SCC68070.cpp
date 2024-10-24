@@ -74,6 +74,25 @@ void SCC68070::PushException(const Exception& ex)
     m_exceptions.emplace(ex);
 }
 
+/** \brief Returns the word at the current Program Counter and advances PC by 2.
+ * \return The value at PC
+ * \warning This method modifies the CPU state. See \sa SCC68070#PeekNextWord.
+ */
+uint16_t SCC68070::GetNextWord(const BusFlags flags)
+{
+    uint16_t opcode = GetWord(PC, flags);
+    PC += 2;
+    return opcode;
+}
+
+/** \brief Returns the word at the current Program Counter but does not trigger side effects (TODO).
+ * \return The word at PC.
+ */
+uint16_t SCC68070::PeekNextWord() const noexcept
+{
+    return m_cdi.PeekWord(PC);
+}
+
 /** \brief Trigger interrupt with LIR1 level.
  */
 void SCC68070::INT1()
@@ -254,18 +273,6 @@ std::vector<InternalRegister> SCC68070::GetInternalRegisters() const
     }
 
     return v;
-}
-
-uint16_t SCC68070::GetNextWord(const BusFlags flags)
-{
-    const uint16_t opcode = GetWord(PC, flags);
-    PC += 2;
-    return opcode;
-}
-
-uint16_t SCC68070::PeekNextWord() const noexcept
-{
-    return m_cdi.PeekWord(PC);
 }
 
 void SCC68070::ResetOperation()

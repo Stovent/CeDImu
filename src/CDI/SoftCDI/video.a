@@ -18,7 +18,6 @@ EntryTable	dc.w	Init
 		dc.w	0	Trap handler
 
 Init
-	trap #7
 	eor.w d0,d0
 	rts
 
@@ -43,8 +42,11 @@ SetStat
 	rts
 
 Term
-	trap #12
 	eor.w d0,d0
 	rts
+
+	vsect
+	ds.w 0x50
+	ends
 
 	ends
