@@ -1,5 +1,7 @@
 	nam nvdrv
 	use c:\DEFS\OSKDEFS.D
+	use softcdi.d
+	use softcdi.m
 
 typelang	equ	(Drivr<<8)+Objct
 attrrevs	equ	((ReEnt+SupStat)<<8)+$99 Not reentrant
@@ -18,31 +20,27 @@ EntryTable	dc.w	Init
 		dc.w	0	Trap handler
 
 Init
-	eor.w d0,d0
+	softcdi $101
 	rts
 
 Read
-	trap #8
-	eor.w d0,d0
+	softcdi $102
 	rts
 
 Write
-	trap #9
-	eor.w d0,d0
+	softcdi $103
 	rts
 
 GetStat
-	trap #10
-	eor.w d0,d0
+	softcdi Ucm_GetStat
 	rts
 
 SetStat
-	trap #11
-	eor.w d0,d0
+	softcdi Ucm_SetStat
 	rts
 
 Term
-	eor.w d0,d0
+	softcdi $106
 	rts
 
 	vsect

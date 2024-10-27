@@ -1,6 +1,6 @@
 	nam nvdrv
 	use c:\DEFS\OSKDEFS.D
-	use macros.m
+	use softcdi.m
 
 typelang	equ	(Drivr<<8)+Objct
 attrrevs	equ	((ReEnt+SupStat)<<8)+$99
@@ -21,7 +21,7 @@ EntryTable	dc.w	Init
 			dc.w	0	Trap handler
 
 Init
-	softcdi
+	softcdi $111
 	eor.w d0,d0
 	rts
 
