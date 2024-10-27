@@ -4,4 +4,5 @@
 
 # SoftCDI assembly/macro files are compiled on MS DOS
 src/CDI/SoftCDI/*.a text eol=crlf
+src/CDI/SoftCDI/*.d text eol=crlf
 src/CDI/SoftCDI/*.m text eol=crlf

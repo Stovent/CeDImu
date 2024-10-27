@@ -3,4 +3,5 @@ target_sources(CeDImu
         Bus.cpp
         SoftCDI.cpp
         SoftCDI.hpp
+        SystemCalls.cpp
 )

@@ -64,6 +64,8 @@ private:
     // Specifics to allow the BIOS to initialize.
     uint8_t m_csr1r; /**< CSR1R register of MCD212 to emulate Display Active. */
 
+    void DispatchSystemCall(const uint16_t) noexcept;
+
     /** \brief SoftCDI memory map. */
     enum MemoryMap : uint32_t
     {
@@ -79,6 +81,14 @@ private:
         BIOSEnd   = 0x4F'FFE0,
         MCD212RegistersBegin = 0x4F'FFE0,
         MCD212RegistersEnd   = 0x50'0000,
+    };
+
+    /** \brief SoftCDI system calls. */
+    enum SystemCalls : uint16_t
+    {
+        _Min = 0x100, /**< Minimal syscall index to not overlap with OS-9. */
+        UCMGetStat = 0x104,
+        UCMSetStat = 0x105,
     };
 };
 
