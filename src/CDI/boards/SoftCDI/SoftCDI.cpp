@@ -9,6 +9,7 @@
 #include "../../SoftCDI/include/SYSGO.h"
 
 #include <array>
+#include <cinttypes>
 #include <cstring>
 #include <stdexcept>
 
@@ -32,14 +33,15 @@ SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig confi
     if(!m_bios.ReplaceModule({CSD_450, CSD_450_len}))
         throw std::runtime_error("Failed to patch csd");
 
-    if(!m_bios.ReplaceModule({NVDRV, NVDRV_len}))
-        throw std::runtime_error("Failed to patch nvdrv");
+    // Is it necessary to replace NVDRV ?
+    // if(!m_bios.ReplaceModule({NVDRV, NVDRV_len}))
+    //     throw std::runtime_error("Failed to patch nvdrv");
 
     if(!m_bios.ReplaceModule({VIDEO, VIDEO_len}))
         throw std::runtime_error("Failed to patch video");
 
-    if(!m_bios.ReplaceModule({SYSGO, SYSGO_len}))
-        throw std::runtime_error("Failed to patch sysgo");
+    // if(!m_bios.ReplaceModule({SYSGO, SYSGO_len}))
+    //     throw std::runtime_error("Failed to patch sysgo");
 
     // Load the reset vector data.
     memcpy(m_ram0.data(), &m_bios[0], 8);
@@ -58,8 +60,23 @@ void SoftCDI::Scheduler()
     do
     {
         std::pair<size_t, std::optional<SCC68070::Exception>> res = m_cpu.SingleStepException(25);
-        if(res.second.has_value()) // custom syscall to SoftCDI.
-            m_cpu.PushException(res.second->vector);
+
+        if(res.second.has_value())
+        {
+            if(res.second->vector == SCC68070::Trap0Instruction &&
+               res.second->data > SystemCalls::_Min) // SoftCDI syscall.
+            {
+                const uint16_t syscall = res.second->data;
+
+                m_cpu.GetNextWord(); // Skip syscall ID when returning.
+                printf("softcdi syscall %" PRIX16 "\n", syscall);
+                DispatchSystemCall(syscall);
+            }
+            else // CPU exception/OS-9 syscall.
+            {
+                m_cpu.PushException(*res.second);
+            }
+        }
 
         const double ns = res.first * m_cpu.cycleDelay;
         CDI::IncrementTime(ns);
