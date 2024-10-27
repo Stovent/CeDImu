@@ -16,7 +16,6 @@
 #include <thread>
 
 class Mono3;
-class SCC68070;
 
 /** \brief Base class for a CD-i player.
  */
