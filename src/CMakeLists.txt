@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24) # CMake 3.24 fixes wxWidgets detection.
 
 find_package(wxWidgets REQUIRED COMPONENTS aui adv core base)
 
@@ -8,7 +8,7 @@ endif()
 
 option(CEDIMU_ENABLE_LTO "Enable LTO if available" ON)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
@@ -37,8 +37,8 @@ add_subdirectory(GUI)
 
 set_target_properties(CeDImu-GUI PROPERTIES OUTPUT_NAME "CeDImu")
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release") # TODO: check if CMAKE_CONFIGURATION_TYPES also contains "Release".
-    target_compile_definitions(CeDImu-GUI PRIVATE wxDEBUG_LEVEL=0)
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" ) # TODO: check if CMAKE_CONFIGURATION_TYPES also contains "Release".
+    target_compile_definitions(CeDImu-GUI PUBLIC wxDEBUG_LEVEL=0)
 endif()
 
 if(CEDIMU_ENABLE_LTO)
