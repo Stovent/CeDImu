@@ -1,9 +1,9 @@
 #include "Renderer.hpp"
 
+#include "../common/panic.hpp"
 #include "../common/utils.hpp"
 
 #include <cstring>
-#include <iostream>
 
 namespace Video
 {
@@ -25,44 +25,6 @@ static constexpr void backdropColorToRGB(uint8_t* rgb, const uint8_t color) noex
     *rgb++ = (color & 0x02) ? c : 0; // Green.
     *rgb++ = (color & 0x01) ? c : 0; // Blue.
 }
-
-/** \brief Converts the 4-bits cursor color to ARGB.
- * \param argb The ARGB destination buffer.
- * \param color The 4 bit color code.
- */
-static constexpr void cursorColorToARGB(uint8_t* argb, const uint8_t color) noexcept
-{
-    // Background plane has no transparency (Green book V.5.13).
-    *argb++ = (color & 0x08) ? 0xFF : 128; // Alpha.
-    *argb++ = (color & 0x04) ? 0xFF : 0; // Red.
-    *argb++ = (color & 0x02) ? 0xFF : 0; // Green.
-    *argb++ = (color & 0x01) ? 0xFF : 0; // Blue.
-}
-
-// /** \brief Color Look-Up Table for the backdrop and cursor colors. */
-// static constexpr std::array<std::array<uint8_t, 3>, 16> backdropCursorCLUT{{
-//     {{0x00, 0x00, 0x00}}, // Black.
-//     {{0x00, 0x00, 0x80}}, // Half-brightness Blue.
-//     {{0x00, 0x80, 0x00}}, // Half-brightness Green.
-//     {{0x00, 0x80, 0x80}}, // Half-brightness Cyan.
-//     {{0x80, 0x00, 0x00}}, // Half-brightness Red.
-//     {{0x80, 0x00, 0x80}}, // Half-brightness Magenta.
-//     {{0x80, 0x80, 0x00}}, // Half-brightness Yellow.
-//     {{0x80, 0x80, 0x80}}, // Half-brightness White.
-//     {{0x00, 0x00, 0x00}}, // Black.
-//     {{0x00, 0x00, 0xFF}}, // Blue.
-//     {{0x00, 0xFF, 0x00}}, // Green.
-//     {{0x00, 0xFF, 0xFF}}, // Cyan.
-//     {{0xFF, 0x00, 0x00}}, // Red.
-//     {{0xFF, 0x00, 0xFF}}, // Magenta.
-//     {{0xFF, 0xFF, 0x00}}, // Yellow.
-//     {{0xFF, 0xFF, 0xFF}}, // White.
-// }};
-
-// static void backdropCursorColorToARGB2(uint8_t* rgb, const uint8_t color) noexcept
-// {
-//     memcpy(rgb, backdropCursorCLUT[color & 0x0Fu].data(), 3);
-// }
 
 /** \brief Sets the planes resolutions.
  *
@@ -139,7 +101,7 @@ uint16_t Renderer::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) 
 
     const uint32_t* clut;
     if constexpr(PLANE == A)
-        clut = m_codingMethod[A] == ICM(CLUT77) && m_clutSelect ? &m_clut[128] : m_clut.data();
+        clut = m_codingMethod[A] == ICM(CLUT77) && m_clutSelectHigh ? &m_clut[128] : m_clut.data();
     else
         clut = &m_clut[128];
 
@@ -152,11 +114,11 @@ uint16_t Renderer::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) 
         return decodeRunLengthLine(m_plane[PLANE](m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
 
     case ImageType::Mosaic:
-        break;
+        panic("Unsupported type Mosaic");
+        return 0;
     }
 
-    // std::unreachable();
-    return 0;
+    std::unreachable();
 }
 
 void Renderer::DrawLineBackdrop() noexcept
@@ -288,9 +250,9 @@ void Renderer::OverlayMix() noexcept
                 bfp = 16;
             }
 
-            r = limu8(rbp + rfp - 16);
-            g = limu8(gbp + gfp - 16);
-            b = limu8(bbp + bfp - 16);
+            r = mix(rbp, rfp);
+            g = mix(gbp, gfp);
+            b = mix(bbp, bfp);
             // r = 16;
             // g = 16;
             // b = 16;

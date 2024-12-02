@@ -40,5 +40,5 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_link_libraries(CeDImu PRIVATE stdc++fs)
+    target_link_libraries(CeDImu PRIVATE stdc++fs stdc++exp)
 endif()

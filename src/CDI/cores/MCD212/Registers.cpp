@@ -88,7 +88,7 @@ std::vector<InternalRegister> MCD212::GetControlRegisters() const
     registers.emplace_back("Image Coding Method Plane B",       ImageCodingMethod          + 0x80, as<int>(renderer.m_codingMethod[PlaneB]), "");
     registers.emplace_back("External Video",                    ImageCodingMethod          + 0x80, renderer.m_externalVideo, "");
     registers.emplace_back("Number of regions",                 ImageCodingMethod          + 0x80, renderer.m_matteNumber, "");
-    registers.emplace_back("CLUT Select",                       ImageCodingMethod          + 0x80, renderer.m_clutSelect, "");
+    registers.emplace_back("CLUT Select",                       ImageCodingMethod          + 0x80, renderer.m_clutSelectHigh, "");
     registers.emplace_back("Transparency Control Plane A",      TransparencyControl        + 0x80, renderer.m_transparencyControl[PlaneA], "");
     registers.emplace_back("Transparency Control Plane B",      TransparencyControl        + 0x80, renderer.m_transparencyControl[PlaneB], "");
     registers.emplace_back("Mixing",                            TransparencyControl        + 0x80, renderer.m_mix, "");

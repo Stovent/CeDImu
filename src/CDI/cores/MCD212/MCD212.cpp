@@ -11,21 +11,13 @@
 
 MCD212::MCD212(CDI& idc, OS9::BIOS bios, const bool pal)
     : BIOS(std::move(bios))
-    , totalFrameCount(0)
     , cdi(idc)
     , isPAL(pal)
-    , memorySwapCount(0)
-    , timeNs(0.0)
-    , renderer()
     , memory(0x280000, 0)
-    , internalRegisters{0}
-    , registerCSR1R(0)
-    , registerCSR2R(0)
-    , verticalLines(0)
 {
 }
 
-void MCD212::Reset()
+void MCD212::Reset() noexcept
 {
     renderer.m_externalVideo = false; // reset bits 0, 1, 2, 3, 8, 9, 10, 11, 18 (plane A and B off, external video disabled)
     renderer.m_codingMethod[PlaneA] = Video::ImageCodingMethod::OFF;
@@ -45,7 +37,7 @@ void MCD212::Reset()
 
     verticalLines = 0;
     timeNs = 0.0;
-    MemorySwap();
+    ResetMemorySwap();
 }
 
 void MCD212::IncrementTime(const double ns)
@@ -59,7 +51,7 @@ void MCD212::IncrementTime(const double ns)
     }
 }
 
-void MCD212::MemorySwap()
+void MCD212::ResetMemorySwap() noexcept
 {
     memorySwapCount = 0;
 }
@@ -294,37 +286,12 @@ void MCD212::ExecuteDCA2()
     }
 }
 
-RAMBank MCD212::GetRAMBank1() const
+RAMBank MCD212::GetRAMBank1() const noexcept
 {
     return {{memory.data(), 0x80000}, 0};
 }
 
-RAMBank MCD212::GetRAMBank2() const
+RAMBank MCD212::GetRAMBank2() const noexcept
 {
     return {{&memory[0x200000], 0x80000}, 0x200000};
-}
-
-const Video::Plane& MCD212::GetScreen() const
-{
-    return renderer.m_screen;
-}
-
-const Video::Plane& MCD212::GetPlaneA() const
-{
-    return renderer.m_plane[Video::Renderer::A];
-}
-
-const Video::Plane& MCD212::GetPlaneB() const
-{
-    return renderer.m_plane[Video::Renderer::B];
-}
-
-const Video::Plane& MCD212::GetBackground() const
-{
-    return renderer.m_backdropPlane;
-}
-
-const Video::Plane& MCD212::GetCursor() const
-{
-    return renderer.m_cursorPlane;
 }

@@ -155,20 +155,20 @@ uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dat
 
 /** \brief Decode a DYUV line to ARGB.
  * \param dst Where the ARGB data will be written to.
- * \param data The source DYUV data.
+ * \param dyuv The source DYUV data.
  * \param width Width of the line in pixels.
  * \param initialDYUV The initial value to be used by the DYUV decoder.
- * \return The number of raw bytes read from data.
+ * \return The number of raw bytes read from \p dyuv.
  */
-uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* data, uint16_t width, uint16_t initialDYUV) noexcept
+uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* dyuv, uint16_t width, uint16_t initialDYUV) noexcept
 {
     uint16_t index = 0;
     uint32_t previous = initialDYUV;
 
     for(uint16_t x = 0; x < width; x += 2)
     {
-        uint16_t pixel = as<uint16_t>(data[index++]) << 8;
-        pixel |= data[index++];
+        uint16_t pixel = as<uint16_t>(dyuv[index++]) << 8;
+        pixel |= dyuv[index++];
         Video::decodeDYUV(pixel, &dst[x * 4], previous);
     }
 

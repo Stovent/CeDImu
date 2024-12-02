@@ -26,10 +26,10 @@ namespace Video
 class Renderer
 {
 public:
-    enum ImagePlane : bool
+    enum ImagePlane : uint8_t
     {
-        A = false,
-        B = true,
+        A = 0,
+        B = 1,
     };
 
     Renderer() {}
@@ -79,11 +79,11 @@ public:
 
     std::array<uint32_t, 2> m_dyuvInitialValue{};
     bool m_planeOrder{}; /**< true for B in front of A, false for A in front of B. */
-    uint8_t m_clutBank{};
+    uint8_t m_clutBank : 2{};
     std::array<uint32_t, 256> m_clut{}; /**< RGB data in the lowest 24 bits. */
 
     // Image Coding Methods.
-    bool m_clutSelect{};
+    bool m_clutSelectHigh{};
     bool m_matteNumber{}; /**< false for 1 matte, true for 2. */
     bool m_externalVideo{};
     std::array<ImageCodingMethod, 2> m_codingMethod{ImageCodingMethod::OFF, ImageCodingMethod::OFF};
@@ -93,7 +93,7 @@ public:
     std::array<uint8_t, 2> m_pixelRepeatFactor{1, 1}; /**< (Raw pixel decoding V.26). */
     std::array<bool, 2> m_bps{}; /**< false for 8 bits per pixels, true for 4 bps. */
     std::array<bool, 2> m_holdEnabled{}; /**< Pixel Hold Enabled (overlay V.25). */
-    std::array<uint8_t, 2> m_holdFactor{}; /**< Pixel Hold Factor (overlay V.25). */
+    std::array<uint8_t, 2> m_holdFactor{1, 1}; /**< Pixel Hold Factor (overlay V.25). */
 
     // Transparency.
     bool m_mix{true}; /**< true when mixing is enabled. */
@@ -103,7 +103,7 @@ public:
     template<ImagePlane PLANE> void HandleTransparency(uint8_t pixel[4]) noexcept;
 
     // Backdrop.
-    uint8_t m_backdropColor{};
+    uint8_t m_backdropColor : 4{};
 
     // Cursor.
     bool m_cursorEnabled{};
@@ -155,9 +155,9 @@ public:
 
 private:
     /** \brief Returns the lowest 24-bits that contains the DCP command. */
-    static uint32_t dcpExtractCommand(const uint32_t inst) { return inst & 0x00FF'FFFFu; }
+    static constexpr uint32_t dcpExtractCommand(const uint32_t inst) { return inst & 0x00FF'FFFFu; }
     /** \brief Masks the given color to the actually used bytes (V.5.7.2.2). */
-    static uint32_t clutColorKey(const uint32_t color) { return color & 0x00FC'FCFCu; }
+    static constexpr uint32_t clutColorKey(const uint32_t color) { return color & 0x00FC'FCFCu; }
 };
 
 } // namespace Video

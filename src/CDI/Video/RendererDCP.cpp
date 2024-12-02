@@ -1,7 +1,8 @@
 #include "Renderer.hpp"
+#include "../common/panic.hpp"
 #include "../common/utils.hpp"
 
-#include <iostream>
+#include <print>
 
 namespace Video
 {
@@ -60,12 +61,12 @@ static constexpr Renderer::ImageType decodeImageType(const uint8_t type) noexcep
         return Renderer::ImageType::Normal;
     if(type == 2)
         return Renderer::ImageType::RunLength;
-    std::cerr << "Unsupported Mosaic image type\n";
+
+    panic("Unsupported Mosaic image type");
     return Renderer::ImageType::Mosaic;
 }
 
 /** \brief Executes the given DCP intruction.
- * \tparam LCT true for LCT, false for FCT.
  * \tparam PLANE The plane executing the instruction.
  * \return true if a video interrupt has to be generated, false otherwise.
  *
@@ -81,7 +82,7 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
 
     if(code >= CLUTBank0 && code <= CLUTBank63) // CLUT bank.
     {
-        // In theory CLUT loading should be checked based on the coding methods (5.5 CLUT update).
+        // TODO: In theory CLUT loading should be checked based on the coding methods (5.5 CLUT update).
         if(PLANE == A || m_clutBank >= 2)
         {
             uint8_t clutAddr = m_clutBank << 6;
@@ -102,7 +103,7 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         switch(code)
         {
         case SelectImageCodingMethod: // Select image coding methods.
-            m_clutSelect = bit<22>(instruction);
+            m_clutSelectHigh = bit<22>(instruction);
             m_matteNumber = bit<19>(instruction);
             m_codingMethod[B] = decodeCodingMethod1(bits<8, 11>(instruction));
             m_codingMethod[A] = decodeCodingMethod0(bits<0, 3>(instruction));
@@ -195,7 +196,7 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         break;
 
     default:
-        std::cout << "Unknow DCP instruction 0x" << std::hex << instruction << std::endl;
+        std::println(stderr, "Unknow DCP instruction {:#X}", instruction);
     }
 
     return false;
