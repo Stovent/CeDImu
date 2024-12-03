@@ -5,55 +5,54 @@
 #include <algorithm>
 #include <cstring>
 
-#define DCP_PARAMETER(inst) (bits<0, 23>(inst))
 #define DCP_POINTER(inst) (inst & 0x003FFFFCu)
 #define ICA_VSR_POINTER(inst) (bits<0, 21>(inst))
 
-MCD212::MCD212(CDI& idc, OS9::BIOS bios, const bool pal)
-    : BIOS(std::move(bios))
-    , cdi(idc)
-    , isPAL(pal)
-    , memory(0x280000, 0)
+MCD212::MCD212(CDI& cdi, OS9::BIOS bios, const bool pal)
+    : m_bios(std::move(bios))
+    , m_cdi(cdi)
+    , m_isPAL(pal)
+    , m_memory(0x280000, 0)
 {
 }
 
 void MCD212::Reset() noexcept
 {
-    renderer.m_externalVideo = false; // reset bits 0, 1, 2, 3, 8, 9, 10, 11, 18 (plane A and B off, external video disabled)
-    renderer.m_codingMethod[PlaneA] = Video::ImageCodingMethod::OFF;
-    renderer.m_codingMethod[PlaneB] = Video::ImageCodingMethod::OFF;
-    renderer.SetCursorEnabled(false); // reset bit 23 (cursor disabled)
-    renderer.m_backdropColor = 0; // reset bits 0, 1, 2, 3 (black backdrop)
+    m_renderer.m_externalVideo = false; // reset bits 0, 1, 2, 3, 8, 9, 10, 11, 18 (plane A and B off, external video disabled)
+    m_renderer.m_codingMethod[PlaneA] = Video::ImageCodingMethod::OFF;
+    m_renderer.m_codingMethod[PlaneB] = Video::ImageCodingMethod::OFF;
+    m_renderer.SetCursorEnabled(false); // reset bit 23 (cursor disabled)
+    m_renderer.m_backdropColor = 0; // reset bits 0, 1, 2, 3 (black backdrop)
 
     // TODO: reset those too.
-    internalRegisters[CSR1W] = 0; // DI1, DD1, DD2, TD, DD, ST, BE
-    internalRegisters[CSR2W] = 0; // DI2
-    internalRegisters[DCR1] &= 0x003F; // DE, CF, FD, SM, CM1, IC1, DC1
-    internalRegisters[DCR2] &= 0x003F; // CM2, IC2, DC2
-    internalRegisters[DDR1] &= 0x003F; // MF1, MF2, FT1, FT2
-    internalRegisters[DDR2] &= 0x003F; // MF1, MF2, FT1, FT2
-    registerCSR1R = 0;
-    registerCSR2R = 0;
+    m_internalRegisters[CSR1W] = 0; // DI1, DD1, DD2, TD, DD, ST, BE
+    m_internalRegisters[CSR2W] = 0; // DI2
+    m_internalRegisters[DCR1] &= 0x003F; // DE, CF, FD, SM, CM1, IC1, DC1
+    m_internalRegisters[DCR2] &= 0x003F; // CM2, IC2, DC2
+    m_internalRegisters[DDR1] &= 0x003F; // MF1, MF2, FT1, FT2
+    m_internalRegisters[DDR2] &= 0x003F; // MF1, MF2, FT1, FT2
+    m_registerCSR1R = 0;
+    m_registerCSR2R = 0;
 
-    verticalLines = 0;
-    timeNs = 0.0;
+    m_verticalLines = 0;
+    m_timeNs = 0.0;
     ResetMemorySwap();
 }
 
 void MCD212::IncrementTime(const double ns)
 {
-    timeNs += ns;
+    m_timeNs += ns;
     const size_t lineDisplayTime = GetLineDisplayTime();
-    if(timeNs >= lineDisplayTime)
+    if(m_timeNs >= lineDisplayTime)
     {
         DrawVideoLine();
-        timeNs -= lineDisplayTime;
+        m_timeNs -= lineDisplayTime;
     }
 }
 
 void MCD212::ResetMemorySwap() noexcept
 {
-    memorySwapCount = 0;
+    m_memorySwapCount = 0;
 }
 
 void MCD212::ExecuteICA1()
@@ -64,8 +63,8 @@ void MCD212::ExecuteICA1()
     {
         const uint32_t ica = GetControlInstruction(addr);
 
-        if(cdi.m_callbacks.HasOnLogICADCA())
-            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
+        if(m_cdi.m_callbacks.HasOnLogICADCA())
+            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA1, { m_totalFrameCount + 1, 0, ica });
         addr += 4;
 
         switch(ica >> 28)
@@ -95,7 +94,7 @@ void MCD212::ExecuteICA1()
         case 6: // INTERRUPT
             SetIT1();
             if(!GetDI1())
-                cdi.m_cpu.INT1();
+                m_cdi.m_cpu.INT1();
             break;
         }
 
@@ -103,16 +102,16 @@ void MCD212::ExecuteICA1()
         switch(code)
         {
         case 0xCD:
-            renderer.SetCursorPosition(bits<1, 9>(ica), bits<12, 21>(ica)); // Double resolution.
+            m_renderer.SetCursorPosition(bits<1, 9>(ica), bits<12, 21>(ica)); // Double resolution.
             break;
 
         case 0xCE:
-            renderer.SetCursorColor(bits<0, 3>(ica));
-            renderer.SetCursorEnabled(bit<23>(ica));
+            m_renderer.SetCursorColor(bits<0, 3>(ica));
+            m_renderer.SetCursorEnabled(bit<23>(ica));
             break;
 
         case 0xCF:
-            renderer.SetCursorPattern(bits<16, 19>(ica), ica);
+            m_renderer.SetCursorPattern(bits<16, 19>(ica), ica);
             break;
 
         case 0x70:
@@ -120,7 +119,7 @@ void MCD212::ExecuteICA1()
             break;
 
         default:
-            renderer.ExecuteDCPInstruction<Video::Renderer::A>(ica);
+            m_renderer.ExecuteDCPInstruction<PlaneA>(ica);
             break;
         }
     }
@@ -134,8 +133,8 @@ void MCD212::ExecuteDCA1()
         const uint32_t dca = GetControlInstruction(addr);
         SetDCP1(addr + 4);
 
-        if(cdi.m_callbacks.HasOnLogICADCA())
-            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, { totalFrameCount + 1, renderer.m_lineNumber, dca });
+        if(m_cdi.m_callbacks.HasOnLogICADCA())
+            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, { m_totalFrameCount + 1, m_renderer.m_lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -164,7 +163,7 @@ void MCD212::ExecuteDCA1()
         case 6: // INTERRUPT
             SetIT1();
             if(!GetDI1())
-                cdi.m_cpu.INT1();
+                m_cdi.m_cpu.INT1();
             break;
         }
 
@@ -172,20 +171,20 @@ void MCD212::ExecuteDCA1()
         switch(code)
         {
         case 0xCD:
-            renderer.SetCursorPosition(bits<1, 9>(dca), bits<12, 21>(dca)); // Double resolution.
+            m_renderer.SetCursorPosition(bits<1, 9>(dca), bits<12, 21>(dca)); // Double resolution.
             break;
 
         case 0xCE:
-            renderer.SetCursorColor(bits<0, 3>(dca));
-            renderer.SetCursorEnabled(bit<23>(dca));
+            m_renderer.SetCursorColor(bits<0, 3>(dca));
+            m_renderer.SetCursorEnabled(bit<23>(dca));
             break;
 
         case 0xCF:
-            renderer.SetCursorPattern(bits<16, 19>(dca), dca);
+            m_renderer.SetCursorPattern(bits<16, 19>(dca), dca);
             break;
 
         default:
-            renderer.ExecuteDCPInstruction<Video::Renderer::A>(dca);
+            m_renderer.ExecuteDCPInstruction<PlaneA>(dca);
             break;
         }
     }
@@ -199,8 +198,8 @@ void MCD212::ExecuteICA2()
     {
         const uint32_t ica = GetControlInstruction(addr);
 
-        if(cdi.m_callbacks.HasOnLogICADCA())
-            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA2, { totalFrameCount + 1, 0, ica });
+        if(m_cdi.m_callbacks.HasOnLogICADCA())
+            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA2, { m_totalFrameCount + 1, 0, ica });
         addr += 4;
 
         switch(ica >> 28)
@@ -230,13 +229,13 @@ void MCD212::ExecuteICA2()
         case 6: // INTERRUPT
             SetIT2();
             if(!GetDI2())
-                cdi.m_cpu.INT1();
+                m_cdi.m_cpu.INT1();
             break;
         }
 
         // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
         if(ica != 0x70000000)
-            renderer.ExecuteDCPInstruction<Video::Renderer::B>(ica);
+            m_renderer.ExecuteDCPInstruction<PlaneB>(ica);
     }
 }
 
@@ -248,8 +247,8 @@ void MCD212::ExecuteDCA2()
         const uint32_t dca = GetControlInstruction(addr);
         SetDCP2(addr + 4);
 
-        if(cdi.m_callbacks.HasOnLogICADCA())
-            cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, { totalFrameCount + 1, renderer.m_lineNumber, dca });
+        if(m_cdi.m_callbacks.HasOnLogICADCA())
+            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, { m_totalFrameCount + 1, m_renderer.m_lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -278,20 +277,20 @@ void MCD212::ExecuteDCA2()
         case 6: // INTERRUPT
             SetIT2();
             if(!GetDI2())
-                cdi.m_cpu.INT1();
+                m_cdi.m_cpu.INT1();
             break;
         }
 
-        renderer.ExecuteDCPInstruction<Video::Renderer::B>(dca);
+        m_renderer.ExecuteDCPInstruction<PlaneB>(dca);
     }
 }
 
 RAMBank MCD212::GetRAMBank1() const noexcept
 {
-    return {{memory.data(), 0x80000}, 0};
+    return {{m_memory.data(), 0x80000}, 0};
 }
 
 RAMBank MCD212::GetRAMBank2() const noexcept
 {
-    return {{&memory[0x200000], 0x80000}, 0x200000};
+    return {{&m_memory[0x200000], 0x80000}, 0x200000};
 }

@@ -15,10 +15,10 @@ class CDI;
 class MCD212
 {
 public:
-    OS9::BIOS BIOS;
-    uint32_t totalFrameCount{0};
+    OS9::BIOS m_bios;
+    uint32_t m_totalFrameCount{0};
 
-    MCD212(CDI& idc, OS9::BIOS bios, bool pal);
+    MCD212(CDI& cdi, OS9::BIOS bios, bool pal);
 
     MCD212(const MCD212&) = delete;
 
@@ -39,30 +39,30 @@ public:
 
     std::vector<InternalRegister> GetInternalRegisters() const;
     std::vector<InternalRegister> GetControlRegisters() const;
-    const Video::Plane& GetScreen() const noexcept { return renderer.m_screen; }
-    const Video::Plane& GetPlaneA() const noexcept { return renderer.m_plane[Video::Renderer::A]; }
-    const Video::Plane& GetPlaneB() const noexcept { return renderer.m_plane[Video::Renderer::B]; }
-    const Video::Plane& GetBackground() const noexcept { return renderer.m_backdropPlane; }
-    const Video::Plane& GetCursor() const noexcept { return renderer.m_cursorPlane; }
+    const Video::Plane& GetScreen() const noexcept { return m_renderer.m_screen; }
+    const Video::Plane& GetPlaneA() const noexcept { return m_renderer.m_plane[Video::Renderer::A]; }
+    const Video::Plane& GetPlaneB() const noexcept { return m_renderer.m_plane[Video::Renderer::B]; }
+    const Video::Plane& GetBackground() const noexcept { return m_renderer.m_backdropPlane; }
+    const Video::Plane& GetCursor() const noexcept { return m_renderer.m_cursorPlane; }
 
 private:
-    CDI& cdi;
-    const bool isPAL;
-    uint8_t memorySwapCount{0};
-    double timeNs{0.0}; // time counter in nano seconds.
+    CDI& m_cdi;
+    const bool m_isPAL;
+    uint8_t m_memorySwapCount{0};
+    double m_timeNs{0.0}; // time counter in nano seconds.
 
     static constexpr Video::Renderer::ImagePlane PlaneA = Video::Renderer::A;
     static constexpr Video::Renderer::ImagePlane PlaneB = Video::Renderer::B;
 
-    Video::Renderer renderer{};
+    Video::Renderer m_renderer{};
 
-    std::vector<uint8_t> memory;
+    std::vector<uint8_t> m_memory;
 
-    std::array<uint16_t, 32> internalRegisters{0};
-    uint8_t registerCSR1R{0};
-    uint8_t registerCSR2R{0};
+    std::array<uint16_t, 32> m_internalRegisters{0};
+    uint8_t m_registerCSR1R{0};
+    uint8_t m_registerCSR2R{0};
 
-    uint16_t verticalLines{0}; // starts at 0.
+    uint16_t m_verticalLines{0}; // starts at 0.
 
     void DrawVideoLine();
 
@@ -92,47 +92,47 @@ private:
     std::string DisassembleDCP2Register() const;
 
     // CSR1R
-    bool GetDA() const noexcept { return bit<7>(registerCSR1R); }
-    bool GetPA() const noexcept { return bit<5>(registerCSR1R); }
+    bool GetDA() const noexcept { return bit<7>(m_registerCSR1R); }
+    bool GetPA() const noexcept { return bit<5>(m_registerCSR1R); }
     // CSR2R
-    bool GetIT1() const noexcept { return bit<2>(registerCSR2R); }
-    bool GetIT2() const noexcept { return bit<1>(registerCSR2R); }
-    bool GetBE_R() const noexcept { return bit<0>(registerCSR2R); }
+    bool GetIT1() const noexcept { return bit<2>(m_registerCSR2R); }
+    bool GetIT2() const noexcept { return bit<1>(m_registerCSR2R); }
+    bool GetBE_R() const noexcept { return bit<0>(m_registerCSR2R); }
 
     // CSR1W
-    bool GetDI1() const noexcept { return bit<15>(internalRegisters[CSR1W]); }
-    uint8_t GetDD12() const noexcept { return bits<8, 9>(internalRegisters[CSR1W]); }
-    bool GetTD() const noexcept { return bit<5>(internalRegisters[CSR1W]); }
-    bool GetDD() const noexcept { return bit<3>(internalRegisters[CSR1W]); }
-    bool GetST() const noexcept { return bit<1>(internalRegisters[CSR1W]); }
-    bool GetBE_W() const noexcept { return bit<0>(internalRegisters[CSR1W]); }
+    bool GetDI1() const noexcept { return bit<15>(m_internalRegisters[CSR1W]); }
+    uint8_t GetDD12() const noexcept { return bits<8, 9>(m_internalRegisters[CSR1W]); }
+    bool GetTD() const noexcept { return bit<5>(m_internalRegisters[CSR1W]); }
+    bool GetDD() const noexcept { return bit<3>(m_internalRegisters[CSR1W]); }
+    bool GetST() const noexcept { return bit<1>(m_internalRegisters[CSR1W]); }
+    bool GetBE_W() const noexcept { return bit<0>(m_internalRegisters[CSR1W]); }
     // CSR2W
-    bool GetDI2() const noexcept { return bit<15>(internalRegisters[CSR2W]); }
+    bool GetDI2() const noexcept { return bit<15>(m_internalRegisters[CSR2W]); }
 
     // DCR1
-    bool GetDE() const noexcept { return bit<15>(internalRegisters[DCR1]); }
-    bool GetCF() const noexcept { return bit<14>(internalRegisters[DCR1]); }
-    bool GetFD() const noexcept { return bit<13>(internalRegisters[DCR1]); }
-    bool GetSM() const noexcept { return bit<12>(internalRegisters[DCR1]); }
-    bool GetCM1() const noexcept { return bit<11>(internalRegisters[DCR1]); }
-    bool GetIC1() const noexcept { return bit<9>(internalRegisters[DCR1]); }
-    bool GetDC1() const noexcept { return bit<8>(internalRegisters[DCR1]); }
+    bool GetDE() const noexcept { return bit<15>(m_internalRegisters[DCR1]); }
+    bool GetCF() const noexcept { return bit<14>(m_internalRegisters[DCR1]); }
+    bool GetFD() const noexcept { return bit<13>(m_internalRegisters[DCR1]); }
+    bool GetSM() const noexcept { return bit<12>(m_internalRegisters[DCR1]); }
+    bool GetCM1() const noexcept { return bit<11>(m_internalRegisters[DCR1]); }
+    bool GetIC1() const noexcept { return bit<9>(m_internalRegisters[DCR1]); }
+    bool GetDC1() const noexcept { return bit<8>(m_internalRegisters[DCR1]); }
     // DCR2
-    bool GetCM2() const noexcept { return bit<11>(internalRegisters[DCR2]); }
-    bool GetIC2() const noexcept { return bit<9>(internalRegisters[DCR2]); }
-    bool GetDC2() const noexcept { return bit<8>(internalRegisters[DCR2]); }
+    bool GetCM2() const noexcept { return bit<11>(m_internalRegisters[DCR2]); }
+    bool GetIC2() const noexcept { return bit<9>(m_internalRegisters[DCR2]); }
+    bool GetDC2() const noexcept { return bit<8>(m_internalRegisters[DCR2]); }
 
     // DDR1
-    uint8_t GetMF12_1() const noexcept { return bits<10, 11>(internalRegisters[DDR1]); }
-    uint8_t GetFT12_1() const noexcept { return bits<8, 9>(internalRegisters[DDR1]); }
+    uint8_t GetMF12_1() const noexcept { return bits<10, 11>(m_internalRegisters[DDR1]); }
+    uint8_t GetFT12_1() const noexcept { return bits<8, 9>(m_internalRegisters[DDR1]); }
     // DDR2
-    uint8_t GetMF12_2() const noexcept { return bits<10, 11>(internalRegisters[DDR2]); }
-    uint8_t GetFT12_2() const noexcept { return bits<8, 9>(internalRegisters[DDR2]); }
+    uint8_t GetMF12_2() const noexcept { return bits<10, 11>(m_internalRegisters[DDR2]); }
+    uint8_t GetFT12_2() const noexcept { return bits<8, 9>(m_internalRegisters[DDR2]); }
 
-    uint32_t GetVSR1() const noexcept { return as<uint32_t>(bits<0, 5>(internalRegisters[DCR1])) << 16 | internalRegisters[VSR1]; }
-    uint32_t GetVSR2() const noexcept { return as<uint32_t>(bits<0, 5>(internalRegisters[DCR2])) << 16 | internalRegisters[VSR2]; }
-    uint32_t GetDCP1() const noexcept { return as<uint32_t>(bits<0, 5>(internalRegisters[DDR1])) << 16 | internalRegisters[DCP1]; }
-    uint32_t GetDCP2() const noexcept { return as<uint32_t>(bits<0, 5>(internalRegisters[DDR2])) << 16 | internalRegisters[DCP2]; }
+    uint32_t GetVSR1() const noexcept { return as<uint32_t>(bits<0, 5>(m_internalRegisters[DCR1])) << 16 | m_internalRegisters[VSR1]; }
+    uint32_t GetVSR2() const noexcept { return as<uint32_t>(bits<0, 5>(m_internalRegisters[DCR2])) << 16 | m_internalRegisters[VSR2]; }
+    uint32_t GetDCP1() const noexcept { return as<uint32_t>(bits<0, 5>(m_internalRegisters[DDR1])) << 16 | m_internalRegisters[DCP1]; }
+    uint32_t GetDCP2() const noexcept { return as<uint32_t>(bits<0, 5>(m_internalRegisters[DDR2])) << 16 | m_internalRegisters[DCP2]; }
 
     void SetIT1(bool it = true);
     void SetIT2(bool it = true);
@@ -153,7 +153,7 @@ private:
 
     size_t GetLineDisplayTime() const noexcept // as nano seconds
     {
-        return isPAL || !GetCF() ? 64000 : 63560;
+        return m_isPAL || !GetCF() ? 64000 : 63560;
     }
 
     enum InternalRegistersMemoryMap
