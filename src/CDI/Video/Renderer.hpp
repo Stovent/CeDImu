@@ -114,7 +114,6 @@ public:
 
     // Image Contribution Factor.
     std::array<uint8_t, 2> m_icf{};
-    template<ImagePlane PLANE> void ApplyICF(uint8_t& r, uint8_t& g, uint8_t& b) const noexcept;
 
     // Matte (Region of the MCD212).
     static constexpr size_t MATTE_NUM = 8; // Should never have to change.

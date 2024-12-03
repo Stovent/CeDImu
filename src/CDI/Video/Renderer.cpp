@@ -8,7 +8,7 @@
 namespace Video
 {
 
-static constexpr inline uint32_t argbArrayToU32(uint8_t* pixels) noexcept
+static constexpr uint32_t argbArrayToU32(uint8_t* pixels) noexcept
 {
     return (as<uint32_t>(pixels[1]) << 16) | (as<uint32_t>(pixels[2]) << 8) | as<uint32_t>(pixels[3]);
 }
@@ -163,13 +163,13 @@ void Renderer::DrawCursor() noexcept
 }
 
 /** \brief Apply the given Image Contribution Factor to the given color component (V.5.9). */
-static constexpr inline uint8_t computeICF(const int color, const int icf) noexcept
+static constexpr uint8_t applyICF(const int color, const int icf) noexcept
 {
     return static_cast<uint8_t>(((icf * (color - 16)) / 63) + 16);
 }
 
 /** \brief Apply mixing to the given color components after ICF (V.5.9.1). */
-static constexpr inline uint8_t mix(const int a, const int b) noexcept
+static constexpr uint8_t mix(const int a, const int b) noexcept
 {
     return limu8(a + b - 16);
 }
@@ -198,14 +198,14 @@ void Renderer::OverlayMix() noexcept
         HandleTransparency<B>(planeB);
 
         const uint8_t aa = *planeA++;
-        const uint8_t ra = computeICF(*planeA++, m_icf[A]);
-        const uint8_t ga = computeICF(*planeA++, m_icf[A]);
-        const uint8_t ba = computeICF(*planeA++, m_icf[A]);
+        const uint8_t ra = applyICF(*planeA++, m_icf[A]);
+        const uint8_t ga = applyICF(*planeA++, m_icf[A]);
+        const uint8_t ba = applyICF(*planeA++, m_icf[A]);
 
         const uint8_t ab = *planeB++;
-        const uint8_t rb = computeICF(*planeB++, m_icf[B]);
-        const uint8_t gb = computeICF(*planeB++, m_icf[B]);
-        const uint8_t bb = computeICF(*planeB++, m_icf[B]);
+        const uint8_t rb = applyICF(*planeB++, m_icf[B]);
+        const uint8_t gb = applyICF(*planeB++, m_icf[B]);
+        const uint8_t bb = applyICF(*planeB++, m_icf[B]);
 
         uint8_t afp, rfp, gfp, bfp, abp, rbp, gbp, bbp;
         if(m_planeOrder) // Plane B in front.
@@ -253,9 +253,6 @@ void Renderer::OverlayMix() noexcept
             r = mix(rbp, rfp);
             g = mix(gbp, gfp);
             b = mix(bbp, bfp);
-            // r = 16;
-            // g = 16;
-            // b = 16;
         }
         else
         {
@@ -283,9 +280,6 @@ void Renderer::OverlayMix() noexcept
         *screen++ = r;
         *screen++ = g;
         *screen++ = b;
-
-        // Apply ICF
-        // When mixing transparent pixels are black (V.5.9.1).
 
         /*
         MCD212 figure 8-6
@@ -388,31 +382,22 @@ void Renderer::HandleTransparency(uint8_t pixel[4]) noexcept
     }
 }
 
-/** \brief Apply Image Contribution Factor for the given plane. */
-template<Renderer::ImagePlane PLANE>
-void Renderer::ApplyICF(uint8_t& r, uint8_t& g, uint8_t& b) const noexcept
-{
-    r = computeICF(r, m_icf[PLANE]);
-    g = computeICF(g, m_icf[PLANE]);
-    b = computeICF(b, m_icf[PLANE]);
-}
-
-static constexpr inline uint8_t matteOp(const uint32_t matteCommand) noexcept
+static constexpr uint8_t matteOp(const uint32_t matteCommand) noexcept
 {
     return bits<20, 23>(matteCommand);
 }
 
-static constexpr inline bool matteMF(const uint32_t matteCommand) noexcept
+static constexpr bool matteMF(const uint32_t matteCommand) noexcept
 {
     return bit<16>(matteCommand);
 }
 
-static constexpr inline uint8_t matteICF(const uint32_t matteCommand) noexcept
+static constexpr uint8_t matteICF(const uint32_t matteCommand) noexcept
 {
     return bits<10, 15>(matteCommand);
 }
 
-static constexpr inline uint16_t matteXPosition(const uint32_t matteCommand) noexcept
+static constexpr uint16_t matteXPosition(const uint32_t matteCommand) noexcept
 {
     return bits<1, 9>(matteCommand); // TODO: handle double resolution.
 }
