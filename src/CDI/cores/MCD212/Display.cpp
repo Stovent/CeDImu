@@ -2,11 +2,6 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
-#define   SET_DA_BIT() m_registerCSR1R |= 0x80;
-#define UNSET_DA_BIT() m_registerCSR1R &= 0x20;
-#define   SET_PA_BIT() m_registerCSR1R |= 0x20;
-#define UNSET_PA_BIT() m_registerCSR1R &= 0x80;
-
 void MCD212::DrawVideoLine()
 {
     if(++m_verticalLines <= GetVerticalRetraceLines())
@@ -22,15 +17,15 @@ void MCD212::DrawVideoLine()
         return;
     }
 
-    SET_DA_BIT()
+    SetDA();
 
     if(m_renderer.m_lineNumber == 0)
         m_renderer.SetPlanesResolutions(GetHorizontalResolution1(), GetHorizontalResolution2(), GetVerticalResolution());
 
     if(GetSM() && !isEven(m_renderer.m_lineNumber)) // not even because my line count starts at 0.
-        UNSET_PA_BIT()
+        SetPA();
     else
-        SET_PA_BIT()
+        UnsetPA();
 
     if(GetDE())
     {
@@ -51,7 +46,7 @@ void MCD212::DrawVideoLine()
 
     if(m_verticalLines >= GetTotalVerticalLines())
     {
-        UNSET_DA_BIT()
+        UnsetDA();
         m_totalFrameCount++;
         m_verticalLines = 0;
 

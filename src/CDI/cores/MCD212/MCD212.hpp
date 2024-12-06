@@ -93,7 +93,11 @@ private:
 
     // CSR1R
     bool GetDA() const noexcept { return bit<7>(m_registerCSR1R); }
+    void SetDA() noexcept { m_registerCSR1R |= 0x80; }
+    void UnsetDA() noexcept { m_registerCSR1R &= 0x20; }
     bool GetPA() const noexcept { return bit<5>(m_registerCSR1R); }
+    void SetPA() noexcept { m_registerCSR1R |= 0x20; }
+    void UnsetPA() noexcept { m_registerCSR1R &= 0x80; }
     // CSR2R
     bool GetIT1() const noexcept { return bit<2>(m_registerCSR2R); }
     bool GetIT2() const noexcept { return bit<1>(m_registerCSR2R); }

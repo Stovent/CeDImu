@@ -102,6 +102,10 @@ void MCD212::ExecuteICA1()
         const uint8_t code = ica >> 24;
         switch(code)
         {
+        case 0x70:
+            // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
+            break;
+
         case 0xCD:
             m_renderer.SetCursorPosition(bits<0, 9>(ica), bits<12, 21>(ica));
             break;
@@ -114,10 +118,6 @@ void MCD212::ExecuteICA1()
 
         case 0xCF:
             m_renderer.SetCursorPattern(bits<16, 19>(ica), ica);
-            break;
-
-        case 0x70:
-            // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
             break;
 
         default:
