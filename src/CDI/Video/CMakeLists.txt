@@ -1,7 +1,8 @@
 target_sources(CeDImu
     PRIVATE
         Renderer.cpp
+        Renderer.hpp
         # Renderer2.cpp
         RendererDCP.cpp
-        Renderer.hpp
+        RendererDisplay.cpp
 )
