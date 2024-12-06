@@ -58,7 +58,8 @@ void MCD212::ResetMemorySwap() noexcept
 void MCD212::ExecuteICA1()
 {
     const size_t cycles = GetHorizontalCycles() * GetVerticalRetraceLines();
-    uint32_t addr = GetSM() ? (GetPA() ? 0x400 : 0x404) : 0x400;
+    uint32_t addr = GetSM() && !GetPA() ? 0x404 : 0x400;
+
     for(size_t i = 0; i < cycles; i++)
     {
         const uint32_t ica = GetControlInstruction(addr);
@@ -102,12 +103,13 @@ void MCD212::ExecuteICA1()
         switch(code)
         {
         case 0xCD:
-            m_renderer.SetCursorPosition(bits<1, 9>(ica), bits<12, 21>(ica)); // Double resolution.
+            m_renderer.SetCursorPosition(bits<0, 9>(ica), bits<12, 21>(ica));
             break;
 
         case 0xCE:
             m_renderer.SetCursorColor(bits<0, 3>(ica));
             m_renderer.SetCursorEnabled(bit<23>(ica));
+            m_renderer.SetCursorResolution(bit<15>(ica));
             break;
 
         case 0xCF:
@@ -171,12 +173,13 @@ void MCD212::ExecuteDCA1()
         switch(code)
         {
         case 0xCD:
-            m_renderer.SetCursorPosition(bits<1, 9>(dca), bits<12, 21>(dca)); // Double resolution.
+            m_renderer.SetCursorPosition(bits<0, 9>(dca), bits<12, 21>(dca));
             break;
 
         case 0xCE:
             m_renderer.SetCursorColor(bits<0, 3>(dca));
             m_renderer.SetCursorEnabled(bit<23>(dca));
+            m_renderer.SetCursorResolution(bit<15>(dca));
             break;
 
         case 0xCF:
@@ -193,7 +196,8 @@ void MCD212::ExecuteDCA1()
 void MCD212::ExecuteICA2()
 {
     const size_t cycles = GetHorizontalCycles() * GetVerticalRetraceLines();
-    uint32_t addr = GetSM() ? (GetPA() ? 0x200400 : 0x200404) : 0x200400;
+    uint32_t addr = GetSM() && !GetPA() ? 0x200404 : 0x200400;
+
     for(size_t i = 0; i < cycles; i++)
     {
         const uint32_t ica = GetControlInstruction(addr);

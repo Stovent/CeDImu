@@ -289,6 +289,7 @@ void decodeCLUT(const uint8_t pixel, uint8_t pixels[4], const uint32_t* CLUTTabl
  * \param rgb The destination RGB channel.
  *
  * A nullptr in a channel will not write to it.
+ * TODO: This should not be a CDI function, but a GUI-specific one.
  */
 void splitARGB(const uint8_t* argb, const size_t argbLength, uint8_t* alpha, uint8_t* rgb)
 {

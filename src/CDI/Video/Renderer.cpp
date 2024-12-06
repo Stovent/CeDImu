@@ -20,7 +20,7 @@ static constexpr uint32_t argbArrayToU32(uint8_t* pixels) noexcept
 static constexpr void backdropColorToRGB(uint8_t* rgb, const uint8_t color) noexcept
 {
     // Background plane has no transparency (Green book V.5.13).
-    const uint8_t c = (color & 0x08) ? 255 : 128;
+    const uint8_t c = (color & 0x08) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
     *rgb++ = (color & 0x04) ? c : 0; // Red.
     *rgb++ = (color & 0x02) ? c : 0; // Green.
     *rgb++ = (color & 0x01) ? c : 0; // Blue.
@@ -134,10 +134,10 @@ void Renderer::DrawCursor() noexcept
     // But for here maybe we don't care.
 
     // TODO: Should this use the same backdrops colors (V.5.12) ?
-    const uint8_t A = bit<3>(m_cursorColor) ? 255 : 128;
-    const uint8_t R = bit<2>(m_cursorColor) ? 255 : 0;
-    const uint8_t G = bit<1>(m_cursorColor) ? 255 : 0;
-    const uint8_t B = bit<0>(m_cursorColor) ? 255 : 0;
+    const uint8_t A = bit<3>(m_cursorColor) ? PIXEL_FULL_INTENSITY : PIXEL_HALF_INTENSITY;
+    const uint8_t R = bit<2>(m_cursorColor) ? PIXEL_FULL_INTENSITY : 0;
+    const uint8_t G = bit<1>(m_cursorColor) ? PIXEL_FULL_INTENSITY : 0;
+    const uint8_t B = bit<0>(m_cursorColor) ? PIXEL_FULL_INTENSITY : 0;
 
     uint8_t* pixels = m_cursorPlane(0); // Pixels are contiguous.
     for(int y = 0; y < m_cursorPlane.m_height; y++)
@@ -298,9 +298,19 @@ void Renderer::SetCursorEnabled(const bool enabled) noexcept
     m_cursorEnabled = enabled;
 }
 
+/** \brief Set the resolution of the cursor.
+ * \param doubleResolution true for double/high resolution, false for normal resolution.
+ */
+void Renderer::SetCursorResolution(const bool doubleResolution) noexcept
+{
+    if(doubleResolution)
+        panic("Unsupported cursor double resolution");
+    m_cursorDoubleResolution = doubleResolution;
+}
+
 /** \brief Sets the position of the cursor plane.
  * \param x X position (double resolution).
- * \param y Y position (double resolution).
+ * \param y Y position (normal resolution).
  */
 void Renderer::SetCursorPosition(const uint16_t x, const uint16_t y) noexcept
 {
@@ -322,8 +332,7 @@ void Renderer::SetCursorColor(const uint8_t color) noexcept
  */
 void Renderer::SetCursorPattern(const uint8_t line, const uint16_t pattern) noexcept
 {
-    if(line <= m_cursorPatterns.size())
-        m_cursorPatterns[line] = pattern;
+    m_cursorPatterns.at(line) = pattern;
 }
 
 /** \brief Handles the transparency of the current pixel for each plane.
@@ -337,44 +346,44 @@ void Renderer::HandleTransparency(uint8_t pixel[4]) noexcept
     color = clutColorKey(color | m_maskColorRgb[PLANE]);
     const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]); // TODO: don't compute if not CLUT.
 
-    pixel[0] = 0xFF;
+    pixel[0] = PIXEL_FULL_INTENSITY;
 
     switch(m_transparencyControl[PLANE] & 0x07u)
     {
     case 0b000: // Always/Never.
-        pixel[0] = 0xFF + boolean; // Branchless.
+        pixel[0] = PIXEL_FULL_INTENSITY + boolean; // Branchless.
         break;
 
     case 0b001: // Color Key.
         if(colorKey == boolean)
-            pixel[0] = 0;
+            pixel[0] = PIXEL_TRANSPARENT;
         break;
 
     case 0b010: // Transparent Bit.
         // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
         // TODO: disable if not RGB555.
-        if((pixel[0] == 0xFF) != boolean)
-            pixel[0] = 0;
+        if((pixel[0] == PIXEL_FULL_INTENSITY) != boolean)
+            pixel[0] = PIXEL_TRANSPARENT;
         break;
 
     case 0b011: // Matte Flag 0.
         if(m_matteFlags[0] == boolean)
-            pixel[0] = 0;
+            pixel[0] = PIXEL_TRANSPARENT;
         break;
 
     case 0b100: // Matte Flag 1.
         if(m_matteFlags[1] == boolean)
-            pixel[0] = 0;
+            pixel[0] = PIXEL_TRANSPARENT;
         break;
 
     case 0b101: // Matte Flag 0 or Color Key.
         if(m_matteFlags[0] == boolean || colorKey == boolean)
-            pixel[0] = 0;
+            pixel[0] = PIXEL_TRANSPARENT;
         break;
 
     case 0b110: // Matte Flag 1 or Color Key.
         if(m_matteFlags[1] == boolean || colorKey == boolean)
-            pixel[0] = 0;
+            pixel[0] = PIXEL_TRANSPARENT;
         break;
 
     default: // Reserved.

@@ -32,6 +32,14 @@ public:
         B = 1,
     };
 
+    /** \brief The possible values for the alpha byte of pixels. */
+    enum PixelIntensity : uint8_t
+    {
+        PIXEL_TRANSPARENT = 0x00, /**< Pixel is transparent. */
+        PIXEL_HALF_INTENSITY = 0x7F, /**< Pixel is half-intensity. */
+        PIXEL_FULL_INTENSITY = 0xFF, /**< Pixel is full-intensity. */
+    };
+
     Renderer() {}
 
     void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
@@ -43,6 +51,7 @@ public:
     bool ExecuteDCPInstruction(uint32_t instruction) noexcept;
 
     void SetCursorEnabled(bool enabled) noexcept;
+    void SetCursorResolution(bool doubleResolution) noexcept;
     void SetCursorPosition(uint16_t x, uint16_t y) noexcept;
     void SetCursorColor(uint8_t argb) noexcept;
     void SetCursorPattern(uint8_t line, uint16_t pattern) noexcept;
@@ -73,7 +82,7 @@ public:
     Plane m_screen{3, 384, 280, Plane::RGB_MAX_SIZE};
     std::array<Plane, 2> m_plane{Plane{4, 384, 280}, Plane{4, 384, 280}};
     Plane m_backdropPlane{3, 1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT * 3};
-    Plane m_cursorPlane{4, Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_ARGB_SIZE}; // TODO: also make the cursor RGB like the background ?
+    Plane m_cursorPlane{4, Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_ARGB_SIZE}; /**< The alpha is 0, 127 or 255. */ // TODO: also make the cursor RGB like the background ?
 
     uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. */
 
@@ -103,14 +112,16 @@ public:
     template<ImagePlane PLANE> void HandleTransparency(uint8_t pixel[4]) noexcept;
 
     // Backdrop.
-    uint8_t m_backdropColor : 4{};
+    uint8_t m_backdropColor : 4{}; /**< YRGB color code. */
 
     // Cursor.
     bool m_cursorEnabled{};
-    uint16_t m_cursorX{};
-    uint16_t m_cursorY{};
-    uint8_t m_cursorColor{};
+    bool m_cursorDoubleResolution{};
+    uint16_t m_cursorX{}; /**< Double resolution. */
+    uint16_t m_cursorY{}; /**< Normal resolution. */
+    uint8_t m_cursorColor : 4{}; /**< YRGB color code. */
     std::array<uint16_t, 16> m_cursorPatterns{};
+    // TODO: implement blink.
 
     // Image Contribution Factor.
     std::array<uint8_t, 2> m_icf{};
@@ -155,6 +166,7 @@ public:
 private:
     /** \brief Returns the lowest 24-bits that contains the DCP command. */
     static constexpr uint32_t dcpExtractCommand(const uint32_t inst) { return inst & 0x00FF'FFFFu; }
+
     /** \brief Masks the given color to the actually used bytes (V.5.7.2.2). */
     static constexpr uint32_t clutColorKey(const uint32_t color) { return color & 0x00FC'FCFCu; }
 };

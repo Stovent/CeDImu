@@ -15,6 +15,9 @@ class CDI;
 class MCD212
 {
 public:
+    static constexpr Video::Renderer::ImagePlane PlaneA = Video::Renderer::A;
+    static constexpr Video::Renderer::ImagePlane PlaneB = Video::Renderer::B;
+
     OS9::BIOS m_bios;
     uint32_t m_totalFrameCount{0};
 
@@ -40,8 +43,8 @@ public:
     std::vector<InternalRegister> GetInternalRegisters() const;
     std::vector<InternalRegister> GetControlRegisters() const;
     const Video::Plane& GetScreen() const noexcept { return m_renderer.m_screen; }
-    const Video::Plane& GetPlaneA() const noexcept { return m_renderer.m_plane[Video::Renderer::A]; }
-    const Video::Plane& GetPlaneB() const noexcept { return m_renderer.m_plane[Video::Renderer::B]; }
+    const Video::Plane& GetPlaneA() const noexcept { return m_renderer.m_plane[PlaneA]; }
+    const Video::Plane& GetPlaneB() const noexcept { return m_renderer.m_plane[PlaneB]; }
     const Video::Plane& GetBackground() const noexcept { return m_renderer.m_backdropPlane; }
     const Video::Plane& GetCursor() const noexcept { return m_renderer.m_cursorPlane; }
 
@@ -50,9 +53,6 @@ private:
     const bool m_isPAL;
     uint8_t m_memorySwapCount{0};
     double m_timeNs{0.0}; // time counter in nano seconds.
-
-    static constexpr Video::Renderer::ImagePlane PlaneA = Video::Renderer::A;
-    static constexpr Video::Renderer::ImagePlane PlaneB = Video::Renderer::B;
 
     Video::Renderer m_renderer{};
 

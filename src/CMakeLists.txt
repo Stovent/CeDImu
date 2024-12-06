@@ -14,7 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     SET(CMAKE_CXX_FLAGS_PROFILERELEASE
-        "-O3 -pg -DwxDEBUG_LEVEL=0"
+        "-O3 -pg -no-pie"
         CACHE STRING "Flags used by the C++ compiler during profile builds with release optimisations."
         FORCE
     )
@@ -37,7 +37,9 @@ add_subdirectory(GUI)
 
 set_target_properties(CeDImu-GUI PROPERTIES OUTPUT_NAME "CeDImu")
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" ) # TODO: check if CMAKE_CONFIGURATION_TYPES also contains "Release".
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR
+   CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR
+   CMAKE_BUILD_TYPE STREQUAL "ProfileRelease") # TODO: check if CMAKE_CONFIGURATION_TYPES also contains "Release".
     target_compile_definitions(CeDImu-GUI PUBLIC wxDEBUG_LEVEL=0)
 endif()
 
