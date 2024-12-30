@@ -15,6 +15,7 @@ extern const float CPU_SPEEDS[];
 class CeDImu : public wxApp
 {
 public:
+    using LockGuard = std::lock_guard<std::recursive_mutex>;
     std::recursive_mutex m_cdiMutex; // To lock before accessing m_cdi.
     std::unique_ptr<CDI> m_cdi;
     CDIDisc m_disc;
@@ -44,6 +45,9 @@ public:
     void WriteException(const LogSCC68070Exception& e, size_t trapIndex);
     void WriteRTE(uint32_t pc, uint16_t format, const LogSCC68070Exception& e, size_t trapIndex);
     void WriteMemoryAccess(const LogMemoryAccess& log);
+
+    uint8_t GetByte(uint32_t addr);
+    uint16_t GetWord(uint32_t addr);
 
     void SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback);
     void SetOnUARTOut(const std::function<void(uint8_t)>& callback);

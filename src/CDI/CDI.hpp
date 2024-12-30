@@ -47,6 +47,8 @@ public:
     virtual RAMBank GetRAMBank1() const = 0;
     virtual RAMBank GetRAMBank2() const = 0;
     virtual const uint8_t* GetPointer(uint32_t addr) const;
+    uint8_t PeekByte(uint32_t addr) { return GetByte(addr, NoFlags); }
+    uint16_t PeekWord(uint32_t addr) { return GetWord(addr, NoFlags); }
 
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
