@@ -50,6 +50,8 @@ public:
      * Specifically, RAM bank 1 and 2 may be non-consecutive, and ROM is very likely allocated separately.
      */
     virtual const uint8_t* GetPointer(uint32_t addr) const;
+    uint8_t PeekByte(uint32_t addr) { return GetByte(addr, NoFlags); }
+    uint16_t PeekWord(uint32_t addr) { return GetWord(addr, NoFlags); }
 
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
