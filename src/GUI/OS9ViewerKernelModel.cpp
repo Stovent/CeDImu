@@ -102,7 +102,7 @@ void OS9ViewerKernelModel::GetValue(wxVariant& variant, const wxDataViewItem& it
     }
 }
 
-bool OS9ViewerKernelModel::SetValue(const wxVariant&, const wxDataViewItem&, unsigned int col)
+bool OS9ViewerKernelModel::SetValue(const wxVariant&, const wxDataViewItem&, unsigned int)
 {
     return false;
 }
