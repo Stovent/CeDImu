@@ -20,7 +20,7 @@ public:
     std::function<uint8_t(uint32_t)> GetByte;
     std::function<uint16_t(uint32_t)> GetWord;
     std::function<const uint8_t*(uint32_t)> GetPointer;
-    constexpr uint32_t GetLong(uint32_t addr) const noexcept { return as<uint32_t>(GetWord(addr)) << 16 | GetWord(addr + 2); }
+    uint32_t GetLong(uint32_t addr) const noexcept { return as<uint32_t>(GetWord(addr)) << 16 | GetWord(addr + 2); }
 };
 
 /** \brief A type that can be read from emulated memory.
@@ -62,7 +62,7 @@ struct Pointer // : public Type<Pointer, 4>
 
 private:
     /** \brief Reloads the target address from memory. */
-    constexpr uint32_t LoadTarget() { m_target = m_memory.GetLong(m_address); }
+    constexpr void LoadTarget() { m_target = m_memory.GetLong(m_address); }
     /** \brief Reloads the stored value from memory. */
     constexpr void LoadValue() { LoadTarget(); m_t = T{m_memory, m_target}; }
 
