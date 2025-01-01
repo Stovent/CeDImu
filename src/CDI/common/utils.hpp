@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <concepts>
 #include <cstdint>
+#include <format>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -99,29 +100,16 @@ constexpr inline bool isEven(const T number) noexcept
 /** \brief Converts a number to a hexadecimal string.
  * \tparam T The data type.
  * \param number The number to convert.
+ * \param prefixed True to add the 0x prefix.
  * \return The converted number as a string.
  */
 template<std::integral T>
-static std::string toHex(const T number)
+static std::string toHex(const T number, const bool prefixed = false)
 {
-    // TODO: use std::format.
-    std::stringstream ss;
-    ss << std::hex << number;
-    return ss.str();
-}
-
-/** \brief Specialisation for char types to print as numbers. */
-template<>
-inline std::string toHex(const uint8_t number)
-{
-    return toHex<unsigned>(number);
-}
-
-/** \brief Specialisation for char types to print as numbers. */
-template<>
-inline std::string toHex(const int8_t number)
-{
-    return toHex<int>(number);
+    if(prefixed)
+        return std::format("{:#X}", number);
+    else
+        return std::format("{:X}", number);
 }
 
 /** \brief Converts the binary representation of a number to a string.
