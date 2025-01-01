@@ -48,6 +48,7 @@ public:
 
     uint8_t GetByte(uint32_t addr);
     uint16_t GetWord(uint32_t addr);
+    const uint8_t* GetPointer(uint32_t addr);
 
     void SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback);
     void SetOnUARTOut(const std::function<void(uint8_t)>& callback);

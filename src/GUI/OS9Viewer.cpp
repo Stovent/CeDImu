@@ -1,10 +1,11 @@
 #include "OS9Viewer.hpp"
 #include "MainFrame.hpp"
-#include "../CDI/common/utils.hpp"
+#include "OS9ViewerKernelModel.hpp"
 
 #include <wx/choicebk.h>
 #include <wx/panel.h>
 #include <wx/propgrid/propgrid.h>
+#include <wx/dataview.h>
 
 static void addProperty(wxPropertyGrid* properties, wxPGProperty* property)
 {
@@ -67,6 +68,19 @@ OS9Viewer::OS9Viewer(MainFrame* mainFrame, CeDImu& cedimu)
     m_auiNotebook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS);
 
+    // System Globals
+    {
+        wxDataViewCtrl* globals = new wxDataViewCtrl(m_auiNotebook, wxID_ANY);
+
+        OS9ViewerKernelModel* kernelModel = new OS9ViewerKernelModel(m_cedimu);
+        globals->AssociateModel(kernelModel);
+
+        globals->AppendTextColumn("Member", OS9ViewerKernelModel::ColumnMember);
+        globals->AppendTextColumn("Value", OS9ViewerKernelModel::ColumnValue);
+
+        m_auiNotebook->AddPage(globals, "System globals");
+    }
+
     // Module list
     {
         wxChoicebook* choicebook = new wxChoicebook(m_auiNotebook, wxID_ANY);
@@ -99,7 +113,7 @@ OS9Viewer::OS9Viewer(MainFrame* mainFrame, CeDImu& cedimu)
             choicebook->AddPage(properties, header.name);
         }
 
-        m_auiNotebook->AddPage(choicebook, "Modules");
+        m_auiNotebook->AddPage(choicebook, "ROM Modules");
     }
 
     Show();

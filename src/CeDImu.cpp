@@ -291,6 +291,14 @@ uint16_t CeDImu::GetWord(const uint32_t addr)
     return 0;
 }
 
+const uint8_t* CeDImu::GetPointer(const uint32_t addr)
+{
+    LockGuard lock(m_cdiMutex);
+    if(m_cdi)
+        return m_cdi->GetPointer(addr);
+    return nullptr;
+}
+
 void CeDImu::SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback)
 {
     m_callbacks.SetOnLogDisassembler(callback);

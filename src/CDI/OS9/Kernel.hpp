@@ -9,7 +9,6 @@
 
 #include "../common/utils.hpp"
 
-// TODO: correct namespace? or namespace CeDImu?
 // namespace CeDImu
 namespace OS9
 {
@@ -20,85 +19,13 @@ class MemoryAccess
 public:
     std::function<uint8_t(uint32_t)> GetByte;
     std::function<uint16_t(uint32_t)> GetWord;
+    std::function<const uint8_t*(uint32_t)> GetPointer;
     constexpr uint32_t GetLong(uint32_t addr) const noexcept { return as<uint32_t>(GetWord(addr)) << 16 | GetWord(addr + 2); }
 };
 
-// /** \brief Wraps the emulated memory for easy manipulation. */
-// class EmulatedMemory
-// {
-// public:
-//     EmulatedMemory() = delete;
-//     EmulatedMemory(const size_t size) : m_memory(size, 0) {}
-
-//     constexpr const uint8_t* Data() const noexcept { return m_memory.data(); }
-
-//     /** \brief Returns the byte at the given address in memory.
-//      * \param address The address of the byte.
-//      * \return The byte.
-//      */
-//     // constexpr uint8_t operator[](const size_t address) const noexcept { return m_memory[address]; }
-//     constexpr const uint8_t& operator[](const size_t address) const noexcept { return m_memory[address]; }
-
-//     constexpr uint8_t& operator[](const size_t address) noexcept { return m_memory[address]; }
-
-//     /** \brief Returns the size in bytes of the memory.
-//      * \return The size in bytes.
-//      */
-//     constexpr size_t GetSize() const noexcept { return m_memory.size(); }
-
-//     /** \brief Returns the value at the given address.
-//      * \tparam T The type of the value to return.
-//      * \param address The address of the value.
-//      * \return The value.
-//      */
-//     template<typename T>
-//     T Get(const size_t address) const noexcept { return T{&m_memory[address], &m_memory[address + T::SIZEOF]}; }
-
-//     /*template<typename T>
-//     struct Pointer
-//     {
-//         constexpr Pointer(MemoryAccess memoryAccess, uint32_t addr) : m_memory{memoryAccess}, m_address{addr} {}
-
-//         constexpr uint32_t Address() const noexcept { return m_address; }
-
-//         // T* operator->() noexcept { return std::addressof(m_t); }
-//         // const T* operator->() const noexcept { return std::addressof(m_t); }
-
-//         constexpr T operator*() const noexcept { return this[0]; }
-
-//         constexpr T operator[](size_t index) const noexcept { return T{m_memory, m_address + as<uint32_t>(index * T::SIZEOF)}; }
-
-//     private:
-//         MemoryAccess m_memory;
-//         uint32_t m_address; // /< The pointing to address value.
-//     };*/
-
-//     template<uint32_t OFFSET, typename T>
-//     struct Member
-//     {
-//         Member(EmulatedMemory& memory) : m_memory{memory} {}
-
-//         T Value()
-//         {
-//             // TODO: read the type T.
-//             // return m_memory.GetWord(m_address + OFFSET);
-//         }
-
-//         // void Value(T val)
-//         // {
-//         //     // TODO: set value.
-//         // }
-
-//     private:
-//         EmulatedMemory& m_memory;
-//         uint32_t m_address; /**< Address of the parent struct in memory. */
-//     };
-
-// private:
-//     std::vector<uint8_t> m_memory;
-// };
-
-/** \brief A type that can be read from emulated memory. */
+/** \brief A type that can be read from emulated memory.
+ * \tparam SIZE_OF The size of the data in bytes in emulated memory.
+ */
 template<typename T, size_t SIZE_OF>
 class Type
 {
@@ -112,29 +39,62 @@ public:
 template<typename T>
 struct Pointer // : public Type<Pointer, 4>
 {
-    template<typename... Args>
-    Pointer(MemoryAccess& memory, uint32_t addr) : m_memory{memory}, m_address{addr}, m_t(m_memory, m_address) {}
+    constexpr Pointer(MemoryAccess& memory, uint32_t addr)
+        : m_memory{memory}
+        , m_address{addr}
+        , m_target{}
+        , m_t(m_memory, m_target)
+    {
+        LoadTarget();
+    }
 
     /** \brief Address of the pointer itself. */
     constexpr uint32_t PointerAddress() const noexcept { return m_address; }
     /** \brief Value of the pointer. */
-    constexpr uint32_t TargetAddress() const noexcept { return m_target; }
+    constexpr uint32_t TargetAddress() noexcept { return m_target; }
 
-    constexpr T* operator->() noexcept { Load(); return std::addressof(m_t); }
-    constexpr const T* operator->() const noexcept { Load(); return std::addressof(m_t); }
+    constexpr T* operator->() noexcept { LoadValue(); return std::addressof(m_t); }
+    constexpr const T* operator->() const noexcept { LoadValue(); return std::addressof(m_t); }
 
-    constexpr const T& operator*() const noexcept { Load(); return m_t; }
+    constexpr const T& operator*() noexcept { LoadValue(); return m_t; }
 
     constexpr T operator[](size_t index) const noexcept { return T{m_memory, m_target + as<uint32_t>(index * T::SIZEOF)}; }
 
 private:
+    /** \brief Reloads the target address from memory. */
+    constexpr uint32_t LoadTarget() { m_target = m_memory.GetLong(m_address); }
     /** \brief Reloads the stored value from memory. */
-    constexpr void Load() const { m_target = m_memory.GetLong(m_address); m_t = T{m_memory, m_target}; }
+    constexpr void LoadValue() { LoadTarget(); m_t = T{m_memory, m_target}; }
 
     MemoryAccess m_memory;
     uint32_t m_address; /**< The pointing to address value. */
-    mutable uint32_t m_target; /**< The target address. */
-    mutable T m_t; // TODO: should it be mutable? or the method non-const? I guess should be non-const.
+    uint32_t m_target; /**< The target address. */
+    T m_t;
+};
+
+/** \brief Pointer subtraction which returns the difference in number of elements (and not in bytes). */
+template<typename T>
+ssize_t operator-(Pointer<T>& left, Pointer<T>& right)
+{
+    return (left.TargetAddress() - right.TargetAddress()) / T::SIZEOF;
+}
+
+/** \brief uint8_t. */
+class U8 : public Type<uint8_t, 1>
+{
+public:
+    U8() = delete;
+    U8(MemoryAccess memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
+
+    /** \brief Actually read the value from the emulated memory. */
+    uint8_t Read() const noexcept override
+    {
+        return m_memory.GetByte(m_address);
+    }
+
+private:
+    MemoryAccess m_memory;
+    uint32_t m_address;
 };
 
 /** \brief Big-endian uint16_t. */
@@ -173,20 +133,75 @@ private:
     uint32_t m_address;
 };
 
+/** \brief Null-terminated string. */
+class CString : public Type<const char*, 4>
+{
+public:
+    CString() = delete;
+    CString(MemoryAccess memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
+
+    /** \brief Actually read the value from the emulated memory. */
+    const char* Read() const noexcept override
+    {
+        return reinterpret_cast<const char*>(m_memory.GetPointer(m_address));
+    }
+
+private:
+    MemoryAccess m_memory;
+    uint32_t m_address;
+};
+
+/** \brief Module. */
+struct Module // : public EmulatedMemory::Type<uint16_t, 2>
+{
+    static constexpr size_t SIZEOF = 0; // Array of modules doesn't exist.
+    Module(MemoryAccess memory, uint32_t address)
+        : M_ID{memory, address}
+        , M_SysRev{memory, address + 0x02}
+        , M_Size{memory, address + 0x04}
+        , M_Owner{memory, address + 0x08}
+        , M_Name{memory, address + 0x0C}
+        , M_Accs{memory, address + 0x10}
+        , M_Type{memory, address + 0x12}
+        , M_Lang{memory, address + 0x13}
+        , M_Attr{memory, address + 0x14}
+        , M_Revs{memory, address + 0x15}
+        , M_Edit{memory, address + 0x16}
+        , M_Usage{memory, address + 0x18}
+        , M_Symbol{memory, address + 0x1C}
+        , M_Parity{memory, address + 0x2E}
+    {}
+
+    // EmulatedMemory::Pointer<Module> MD_MPtr; /**< Address of the module. */
+    U16 M_ID; /**< Sync bytes. */
+    U16 M_SysRev; /**< Revision ID. */
+    U32 M_Size; /**< Module Size. */
+    U32 M_Owner; /**< Owner ID. */
+    U32 M_Name; /**< Module Name Offset. */
+    U16 M_Accs; /**< Access Permissions. */
+    U8 M_Type; /**< Module Type. */
+    U8 M_Lang; /**< Module Lang. */
+    U8 M_Attr; /**< Module Attributes. */
+    U8 M_Revs; /**< Module Revision Level. */
+    U16 M_Edit; /**< Edit Edition. */
+    U32 M_Usage; /**< Usage Comment Offset. */
+    U32 M_Symbol; /**< Symbol Table. */
+    U16 M_Parity; /**< Module Header Parity Check. */
+};
+
 /** \brief Module directory entry. */
 struct ModuleDirectoryEntry // : public EmulatedMemory::Type<uint16_t, 2>
 {
     static constexpr size_t SIZEOF = 0x10;
     ModuleDirectoryEntry(MemoryAccess memory, uint32_t address)
         : MD_MPtr{memory, address}
-        , MD_Group{memory, address}
-        , MD_Static{memory, address}
-        , MD_Link{memory, address}
-        , MD_MChk{memory, address}
+        , MD_Group{memory, address + 0x4}
+        , MD_Static{memory, address + 0x8}
+        , MD_Link{memory, address + 0xC}
+        , MD_MChk{memory, address + 0xE}
     {}
 
-    // EmulatedMemory::Pointer<Module> MD_MPtr; /**< Address of the module. */
-    Pointer<U16> MD_MPtr; /**< Address of the module. */
+    Pointer<Module> MD_MPtr; /**< Address of the module. */
     U32 MD_Group; /**< Module group identifier. */
     U32 MD_Static; /**< Size of the memory area allocated to contain the module group. */
     U16 MD_Link; /**< Link count of the module. */
@@ -209,9 +224,8 @@ struct SystemGlobals // : public EmulatedMemory::Type<SystemGlobals>
     {}
 
     U16 D_ID;
-    Pointer<ModuleDirectoryEntry> D_ModDir;
+    Pointer<ModuleDirectoryEntry> D_ModDir; // Class that wraps the two with begin/end methods for iterator access?
     Pointer<ModuleDirectoryEntry> D_ModDirEnd;
-    // EmulatedMemory::Member<0x40, void*> D_ModDirEnd;
     // EmulatedMemory::Member<0x44, void*> D_PrcDBT;
     // EmulatedMemory::Member<0x48, void*> D_PthDBT;
     // EmulatedMemory::Member<0x4C, void*> D_Proc; /**< The current process. */
@@ -238,11 +252,9 @@ public:
         // TODO: if 0, do nothing.
     }
 
-// private:
     MemoryAccess m_memory;
 
     Pointer<SystemGlobals> m_systemGlobals; /**< System Globals structure. */
-    // SystemGlobals m_systemGlobals; /**< System Globals structure. */
 };
 
 } // namespace OS9
