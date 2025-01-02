@@ -231,9 +231,6 @@ struct SystemGlobals // : public EmulatedMemory::Type<SystemGlobals>
     // EmulatedMemory::Member<0x4C, void*> D_Proc; /**< The current process. */
 };
 
-// FUCKING obvious but use a pointer when the address is unknown and held somewhere.
-// Use a struct directly when the variable's location is known and constant.
-
 /** \brief Kernel state in emulated memory.
  * TODO: is it really necessary? You can directly have a pointer to the SystemGlobals.
  * I guess add useful features to this so it can work.
@@ -247,9 +244,8 @@ public:
      */
     Kernel(MemoryAccess memoryAccess)
         : m_memory{memoryAccess}
-        , m_systemGlobals{memoryAccess, 0} // TODO: it is known at runtime.
+        , m_systemGlobals{memoryAccess, 0} // The pointer itself is the initial stack pointer
     {
-        // TODO: if 0, do nothing.
     }
 
     MemoryAccess m_memory;
