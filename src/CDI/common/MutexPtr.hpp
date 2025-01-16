@@ -17,7 +17,7 @@ class MutexPtr final
     std::unique_ptr<T> m_ptr;
 
 public:
-    /** \brief Object used to access the mutexed object and holds the the mutex lock lifetime.
+    /** \brief Object used to access the mutexed object and holds the mutex lock lifetime.
      * The Guard must never outlife its mutex.
      *
      * This object is also used to manipulate the underlying unique_ptr.
@@ -25,8 +25,8 @@ public:
     class Guard final
     {
     public:
-        using unique_ptr = decltype(MutexPtr::m_ptr);
-        using pointer = unique_ptr::pointer;
+        using UniquePtr = decltype(MutexPtr::m_ptr);
+        using Pointer = UniquePtr::pointer;
 
         Guard() = delete;
 
@@ -53,14 +53,17 @@ public:
         T* operator->() noexcept { return m_mutex.m_ptr.get(); }
         const T* operator->() const noexcept { return m_mutex.m_ptr.get(); }
 
-        // Member functions to manipulate the internal unique_ptr.
+        /** \brief Return whether the underlying UniquePtr contains a valid pointer. */
         explicit operator bool() const noexcept { return static_cast<bool>(m_mutex.m_ptr); }
 
-        void Reset(pointer p = pointer()) noexcept { m_mutex.m_ptr.reset(p); }
+        /** \brief Resets the underlying UniquePtr. */
+        void Reset(Pointer p = Pointer()) noexcept { m_mutex.m_ptr.reset(p); }
 
-        Guard& operator=(unique_ptr&& ptr) noexcept { m_mutex.m_ptr = std::move(ptr); return *this; }
+        /** \brief Assigns a new UniquePtr to the managed object. */
+        Guard& operator=(UniquePtr&& ptr) noexcept { m_mutex.m_ptr = std::move(ptr); return *this; }
 
-        void Swap(unique_ptr& other) noexcept { m_mutex.m_ptr.swap(other); }
+        /** \brief Swaps the underlying UniquePtr with the given one. */
+        void Swap(UniquePtr& other) noexcept { m_mutex.m_ptr.swap(other); }
 
     private:
         MutexPtr& m_mutex;
@@ -74,7 +77,10 @@ public:
     MutexPtr(MutexPtr&&) = delete;
     MutexPtr& operator=(MutexPtr&&) = delete;
 
-    /** \brief Initializes the Mutex to hold no object. */
+    /** \brief Initializes the Mutex to hold no object in the underlying UniquePtr. */
+    MutexPtr() : MutexPtr{nullptr} {}
+
+    /** \brief Initializes the Mutex to hold no object in the underlying UniquePtr. */
     MutexPtr(std::nullptr_t) : m_ptr{nullptr} {}
 
     /** \brief Initializes the Mutex to hold an object constructed using the given arguments. */

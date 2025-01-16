@@ -13,7 +13,7 @@ template<typename T, typename MUTEX = std::mutex>
 class Mutex final
 {
 public:
-    /** \brief Object used to access the mutexed object and holds the the mutex lock lifetime.
+    /** \brief Object used to access the mutexed object and holds the mutex lock lifetime.
      * The Guard must never outlife its mutex.
      */
     class Guard final
