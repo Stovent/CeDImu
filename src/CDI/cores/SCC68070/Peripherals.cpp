@@ -2,9 +2,13 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
-uint8_t SCC68070::GetPeripheral(uint32_t addr)
+uint8_t SCC68070::GetPeripheral(uint32_t addr, const BusFlags flags)
 {
     addr -= Peripheral::Base;
+
+    if(!flags.trigger)
+        return internal[addr];
+
     std::unique_lock<std::mutex> lock(uartInMutex);
 
     if(uartIn.size())
@@ -30,9 +34,12 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr)
     return internal[addr];
 }
 
-void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data)
+void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data, const BusFlags flags)
 {
     addr -= Peripheral::Base;
+
+    if(!flags.trigger)
+        return;
 
     switch(addr)
     {

@@ -11,24 +11,18 @@ class Mono3 : public CDI
 {
 public:
     Mono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc(), std::string_view boardName = "Mono-III");
-    virtual ~Mono3();
+    virtual ~Mono3() noexcept;
 
-    Mono3(const Mono3&) = delete;
-    Mono3& operator=(const Mono3&) = delete;
+    virtual void Reset(bool resetCPU) override;
+    virtual void IncrementTime(double ns) override;
 
-    Mono3(Mono3&&) = delete;
-    Mono3& operator=(Mono3&&) = delete;
+    virtual uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL) override;
+    virtual uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL) override;
+    virtual uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL) override;
 
-    virtual void Reset(const bool resetCPU) override;
-    virtual void IncrementTime(const double ns) override;
-
-    virtual uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
-    virtual uint16_t GetWord(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
-    virtual uint32_t GetLong(const uint32_t addr, const uint8_t flags = Trigger | Log) override;
-
-    virtual void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Trigger | Log) override;
-    virtual void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Trigger | Log) override;
-    virtual void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Trigger | Log) override;
+    virtual void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL) override;
+    virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL) override;
+    virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL) override;
 
     virtual uint32_t GetRAMSize() const override;
     virtual RAMBank GetRAMBank1() const override;

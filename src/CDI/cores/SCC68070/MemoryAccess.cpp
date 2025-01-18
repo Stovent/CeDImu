@@ -2,7 +2,7 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
-uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
+uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const BusFlags flags)
 {
     if(mode == 0)
         return D[reg] & 0x000000FF;
@@ -20,7 +20,7 @@ uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcT
     return GetByte(lastAddress, flags);
 }
 
-uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
+uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const BusFlags flags)
 {
     if(mode == 0)
         return D[reg] & 0x0000FFFF;
@@ -38,7 +38,7 @@ uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calc
     return GetWord(lastAddress, flags);
 }
 
-uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags)
+uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const BusFlags flags)
 {
     if(mode == 0)
         return D[reg];
@@ -56,7 +56,7 @@ uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calc
     return GetLong(lastAddress, flags);
 }
 
-void SCC68070::SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t data, const uint8_t flags)
+void SCC68070::SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t data, const BusFlags flags)
 {
     if(mode == 0)
     {
@@ -70,7 +70,7 @@ void SCC68070::SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
     }
 }
 
-void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint16_t data, const uint8_t flags)
+void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint16_t data, const BusFlags flags)
 {
     if(mode == 0)
     {
@@ -88,7 +88,7 @@ void SCC68070::SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
     }
 }
 
-void SCC68070::SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint32_t data, const uint8_t flags)
+void SCC68070::SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint32_t data, const BusFlags flags)
 {
     if(mode == 0)
     {
@@ -105,7 +105,7 @@ void SCC68070::SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime
     }
 }
 
-uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
+uint8_t SCC68070::GetByte(const uint32_t addr, const BusFlags flags)
 {
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
@@ -119,7 +119,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const uint8_t flags)
     return data;
 }
 
-uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
+uint16_t SCC68070::GetWord(const uint32_t addr, const BusFlags flags)
 {
     if(!isEven(addr))
         throw Exception(AddressError);
@@ -136,12 +136,12 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const uint8_t flags)
     return data;
 }
 
-uint32_t SCC68070::GetLong(const uint32_t addr, const uint8_t flags)
+uint32_t SCC68070::GetLong(const uint32_t addr, const BusFlags flags)
 {
     return as<uint32_t>(GetWord(addr, flags)) << 16 | GetWord(addr + 2, flags);
 }
 
-void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t flags)
+void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const BusFlags flags)
 {
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
@@ -155,7 +155,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const uint8_t fl
     return;
 }
 
-void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags)
+void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const BusFlags flags)
 {
     if(!isEven(addr))
         throw Exception(AddressError);
@@ -173,7 +173,7 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const uint8_t f
     return;
 }
 
-void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags)
+void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const BusFlags flags)
 {
     SetWord(addr, data >> 16, flags);
     SetWord(addr + 2, data, flags);

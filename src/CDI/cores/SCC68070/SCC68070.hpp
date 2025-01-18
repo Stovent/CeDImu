@@ -131,22 +131,22 @@ public:
 
     std::vector<uint32_t> breakpoints;
 
-    SCC68070(CDI& idc, const uint32_t clockFrequency);
+    SCC68070(CDI& idc, uint32_t clockFrequency);
     ~SCC68070();
 
     bool IsRunning() const;
-    void SetEmulationSpeed(const double speed);
+    void SetEmulationSpeed(double speed);
 
-    void Run(const bool loop = true);
-    void Stop(const bool wait = true);
+    void Run(bool loop = true);
+    void Stop(bool wait = true);
     void Reset();
 
     void INT1();
     void INT2();
     void IN2();
-    void SendUARTIn(const uint8_t byte);
+    void SendUARTIn(uint8_t byte);
 
-    void SetRegister(Register reg, const uint32_t value);
+    void SetRegister(Register reg, uint32_t value);
     std::map<Register, uint32_t> GetCPURegisters() const;
     std::vector<InternalRegister> GetInternalRegisters() const;
 
@@ -262,19 +262,19 @@ private:
 
     // Conditional Codes
     bool GetS() const;
-    void SetS(const bool S = 1);
+    void SetS(bool S = 1);
     bool GetX() const;
-    void SetX(const bool X = 1);
+    void SetX(bool X = 1);
     bool GetN() const;
-    void SetN(const bool N = 1);
+    void SetN(bool N = 1);
     bool GetZ() const;
-    void SetZ(const bool Z = 1);
+    void SetZ(bool Z = 1);
     bool GetV() const;
-    void SetV(const bool V = 1);
+    void SetV(bool V = 1);
     bool GetC() const;
-    void SetC(const bool C = 1);
-    void SetXC(const bool XC = 1); // Set both X and C at the same time
-    void SetVC(const bool VC = 1); // Set both V and C at the same time
+    void SetC(bool C = 1);
+    void SetXC(bool XC = 1); // Set both X and C at the same time
+    void SetVC(bool VC = 1); // Set both V and C at the same time
     uint8_t GetIPM() const; // Interrupt Priority Mask
 
     // Exceptions
@@ -285,13 +285,13 @@ private:
     static std::string exceptionVectorToString(ExceptionVector vector);
 
     // Addressing Modes
-    uint32_t GetEffectiveAddress(const uint8_t mode, const uint8_t reg, const uint8_t sizeInBytes, uint16_t& calcTime);
-    int32_t GetIndexRegister(const uint16_t bew) const;
+    uint32_t GetEffectiveAddress(uint8_t mode, uint8_t reg, uint8_t sizeInBytes, uint16_t& calcTime);
+    int32_t GetIndexRegister(uint16_t bew) const;
 
-    uint32_t AddressRegisterIndirectWithPostincrement(const uint8_t reg, const uint8_t sizeInByte);
-    uint32_t AddressRegisterIndirectWithPredecrement(const uint8_t reg, const uint8_t sizeInByte);
-    uint32_t AddressRegisterIndirectWithDisplacement(const uint8_t reg);
-    uint32_t AddressRegisterIndirectWithIndex8(const uint8_t reg);
+    uint32_t AddressRegisterIndirectWithPostincrement(uint8_t reg, uint8_t sizeInByte);
+    uint32_t AddressRegisterIndirectWithPredecrement(uint8_t reg, uint8_t sizeInByte);
+    uint32_t AddressRegisterIndirectWithDisplacement(uint8_t reg);
+    uint32_t AddressRegisterIndirectWithIndex8(uint8_t reg);
 
     uint32_t ProgramCounterIndirectWithDisplacement();
     uint32_t ProgramCounterIndirectWithIndex8();
@@ -299,33 +299,33 @@ private:
     uint32_t AbsoluteShortAddressing();
     uint32_t AbsoluteLongAddressing();
 
-    std::string DisassembleAddressingMode(const uint32_t extWordAddress, const uint8_t eamode, const uint8_t eareg, const uint8_t size, const bool hexImmediateData = false) const;
+    std::string DisassembleAddressingMode(uint32_t extWordAddress, uint8_t eamode, uint8_t eareg, uint8_t size, bool hexImmediateData = false) const;
 
     // Addressing Modes Memory Access
-    uint8_t  GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
-    uint16_t GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
-    uint32_t GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t flags = Log | Trigger);
+    uint8_t  GetByte(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
+    uint16_t GetWord(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
+    uint32_t GetLong(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
 
-    void SetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint8_t  data, const uint8_t flags = Log | Trigger);
-    void SetWord(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint16_t data, const uint8_t flags = Log | Trigger);
-    void SetLong(const uint8_t mode, const uint8_t reg, uint16_t& calcTime, const uint32_t data, const uint8_t flags = Log | Trigger);
+    void SetByte(uint8_t mode, uint8_t reg, uint16_t& calcTime, uint8_t  data, BusFlags flags = BUS_NORMAL);
+    void SetWord(uint8_t mode, uint8_t reg, uint16_t& calcTime, uint16_t data, BusFlags flags = BUS_NORMAL);
+    void SetLong(uint8_t mode, uint8_t reg, uint16_t& calcTime, uint32_t data, BusFlags flags = BUS_NORMAL);
 
     // Direct Memory Access
-    uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
-    uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);
-    uint32_t GetLong(const uint32_t addr, const uint8_t flags = Log | Trigger);
+    uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL);
 
-    void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger);
-    void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger);
-    void SetLong(const uint32_t addr, const uint32_t data, const uint8_t flags = Log | Trigger);
+    void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL);
+    void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL);
+    void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL);
 
-    uint16_t GetNextWord(const uint8_t flags = Log | Trigger);
+    uint16_t GetNextWord(BusFlags flags = BUS_NORMAL);
     uint16_t PeekNextWord();
 
     // Peripherals
-    uint8_t GetPeripheral(uint32_t addr);
-    void SetPeripheral(uint32_t addr, const uint8_t data);
-    void IncrementTimer(const double ns);
+    uint8_t GetPeripheral(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    void SetPeripheral(uint32_t addr, uint8_t data, BusFlags flags = BUS_NORMAL);
+    void IncrementTimer(double ns);
 
     // Conditional Tests
     bool T() const;
@@ -362,13 +362,13 @@ private:
         &SCC68070::GT,
         &SCC68070::LE,
     };
-    std::string DisassembleConditionalCode(const uint8_t cc) const;
+    std::string DisassembleConditionalCode(uint8_t cc) const;
 
     // Instruction Set
     void Interpreter();
     void ResetOperation();
     typedef uint16_t    (SCC68070::*ILUTFunctionPointer)();
-    typedef std::string (SCC68070::*DLUTFunctionPointer)(const uint32_t) const;
+    typedef std::string (SCC68070::*DLUTFunctionPointer)(uint32_t) const;
     void GenerateInstructionSet();
     void GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc);
 

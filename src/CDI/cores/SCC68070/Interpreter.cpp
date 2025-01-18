@@ -57,7 +57,7 @@ void SCC68070::Interpreter()
             try
             {
                 currentPC = PC;
-                currentOpcode = GetNextWord(Trigger);
+                currentOpcode = GetNextWord(BUS_INSTRUCTION);
                 if(cdi.m_callbacks.HasOnLogDisassembler())
                 {
                     const LogInstruction inst = {currentPC, cdi.GetBIOS().GetModuleNameAt(currentPC - cdi.GetBIOSBaseAddress()), (this->*DLUT[currentOpcode])(currentPC)};

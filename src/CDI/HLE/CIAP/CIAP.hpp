@@ -18,11 +18,11 @@ public:
     CIAP() = delete;
     explicit CIAP(CDI& idc);
 
-    void IncrementTime(const double ns);
+    void IncrementTime(double ns);
 
-    uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);
+    uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
 
-    void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger);
+    void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL);
 
 private:
     std::array<uint16_t, 0x2600 / 2> registers;

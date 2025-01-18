@@ -22,13 +22,13 @@ public:
     MCD212(const MCD212&) = delete;
 
     void Reset();
-    void IncrementTime(const double ns);
+    void IncrementTime(double ns);
 
-    uint8_t  GetByte(const uint32_t addr, const uint8_t flags = Log | Trigger);
-    uint16_t GetWord(const uint32_t addr, const uint8_t flags = Log | Trigger);
+    uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
 
-    void SetByte(const uint32_t addr, const uint8_t  data, const uint8_t flags = Log | Trigger);
-    void SetWord(const uint32_t addr, const uint16_t data, const uint8_t flags = Log | Trigger);
+    void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL);
+    void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL);
 
     RAMBank GetRAMBank1() const;
     RAMBank GetRAMBank2() const;
@@ -74,8 +74,8 @@ private:
     void DrawLineBackground();
     void DrawLineCursor();
     void OverlayMix();
-    void HandleTransparency(uint8_t* pixel, const uint32_t control, const uint32_t color);
-    void HandleRegions(const uint16_t pos);
+    void HandleTransparency(uint8_t* pixel, uint32_t control, uint32_t color);
+    void HandleRegions(uint16_t pos);
 
     // Display File Decoders
     void DecodeMosaicLineA();
@@ -88,7 +88,7 @@ private:
     void ExecuteDCA2();
 
     void MemorySwap();
-    uint32_t GetLong(const uint32_t addr);
+    uint32_t GetControlInstruction(uint32_t addr);
 
     // internal registers
     std::string DisassembleCSR1RRegister() const;
@@ -148,14 +148,14 @@ private:
     uint32_t GetDCP1() const { return as<uint32_t>(bits<0, 5>(internalRegisters[DDR1])) << 16 | internalRegisters[DCP1]; }
     uint32_t GetDCP2() const { return as<uint32_t>(bits<0, 5>(internalRegisters[DDR2])) << 16 | internalRegisters[DCP2]; }
 
-    void SetIT1(const bool it = true);
-    void SetIT2(const bool it = true);
-    void SetDCP1(const uint32_t value);
-    void SetVSR1(const uint32_t value);
-    void SetDCP2(const uint32_t value);
-    void SetVSR2(const uint32_t value);
-    void ReloadDisplayParameters1(const bool dm, const uint8_t MF, const uint8_t FT);
-    void ReloadDisplayParameters2(const bool dm, const uint8_t MF, const uint8_t FT);
+    void SetIT1(bool it = true);
+    void SetIT2(bool it = true);
+    void SetDCP1(uint32_t value);
+    void SetVSR1(uint32_t value);
+    void SetDCP2(uint32_t value);
+    void SetVSR2(uint32_t value);
+    void ReloadDisplayParameters1(bool dm, uint8_t MF, uint8_t FT);
+    void ReloadDisplayParameters2(bool dm, uint8_t MF, uint8_t FT);
 
     uint16_t GetHorizontalResolution1() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM1() ? a*2 : a; }
     uint16_t GetHorizontalResolution2() const { uint16_t a = GetCF() ? (GetST() ? 360 : 384) : 360; return GetCM2() ? a*2 : a; }

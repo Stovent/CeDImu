@@ -12,8 +12,8 @@ uint16_t SCC68070::ProcessException(const ExceptionVector vector)
 
     if(vector == ResetSSPPC)
     {
-        SSP = cdi.GetLong(0, Trigger);
-        PC = cdi.GetLong(4, Trigger);
+        SSP = cdi.GetLong(0, BUS_INSTRUCTION); // Trigger but no log.
+        PC = cdi.GetLong(4, BUS_INSTRUCTION);
         SR = 0x2700;
         USP = 0;
         stop = false;

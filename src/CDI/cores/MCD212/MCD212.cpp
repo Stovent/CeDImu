@@ -80,7 +80,7 @@ void MCD212::ExecuteICA1()
     uint32_t addr = GetSM() ? (GetPA() ? 0x400 : 0x404) : 0x400;
     for(size_t i = 0; i < cycles; i++)
     {
-        const uint32_t ica = GetLong(addr);
+        const uint32_t ica = GetControlInstruction(addr);
 
         if(cdi.m_callbacks.HasOnLogICADCA())
             cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA1, { totalFrameCount + 1, 0, ica });
@@ -146,7 +146,7 @@ void MCD212::ExecuteDCA1()
     for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++) // Table 5.10
     {
         const uint32_t addr = GetDCP1();
-        const uint32_t dca = GetLong(addr);
+        const uint32_t dca = GetControlInstruction(addr);
         SetDCP1(addr + 4);
 
         if(cdi.m_callbacks.HasOnLogICADCA())
@@ -213,7 +213,7 @@ void MCD212::ExecuteICA2()
     uint32_t addr = GetSM() ? (GetPA() ? 0x200400 : 0x200404) : 0x200400;
     for(size_t i = 0; i < cycles; i++)
     {
-        const uint32_t ica = GetLong(addr);
+        const uint32_t ica = GetControlInstruction(addr);
 
         if(cdi.m_callbacks.HasOnLogICADCA())
             cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA2, { totalFrameCount + 1, 0, ica });
@@ -272,7 +272,7 @@ void MCD212::ExecuteDCA2()
     for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++) // Table 5.10
     {
         const uint32_t addr = GetDCP2();
-        const uint32_t dca = GetLong(addr);
+        const uint32_t dca = GetControlInstruction(addr);
         SetDCP2(addr + 4);
 
         if(cdi.m_callbacks.HasOnLogICADCA())

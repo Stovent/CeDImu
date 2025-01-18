@@ -310,16 +310,16 @@ std::vector<InternalRegister> SCC68070::GetInternalRegisters() const
     return v;
 }
 
-uint16_t SCC68070::GetNextWord(const uint8_t flags)
+uint16_t SCC68070::GetNextWord(const BusFlags flags)
 {
-    uint16_t opcode = GetWord(PC, flags);
+    const uint16_t opcode = GetWord(PC, flags);
     PC += 2;
     return opcode;
 }
 
 uint16_t SCC68070::PeekNextWord()
 {
-    return GetWord(PC, NoFlags);
+    return GetWord(PC, BUS_PEEK);
 }
 
 void SCC68070::ResetOperation()

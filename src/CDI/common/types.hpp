@@ -6,12 +6,19 @@
 #include <string>
 #include <string_view>
 
-enum BusFlags
+/** \brief Specifies the behavior of the memory access functions. */
+struct BusFlags
 {
-    NoFlags = 0b00,
-    Trigger = 0b01,
-    Log     = 0b10,
+    bool trigger : 1; /**< When true, memory accesses that have side effects are triggered (like reset a flag in a peripheral). */
+    bool log : 1; /**< When true, will call the associated log callback. */
 };
+
+/** \brief Flags to use for regular memory accesses in the CPU. */
+inline constexpr BusFlags BUS_NORMAL{ .trigger = true, .log = true };
+/** \brief Flags to use when reading CPU and MCD212 instructions (must not be logged). */
+inline constexpr BusFlags BUS_INSTRUCTION{ .trigger = true, .log = false };
+/** \brief Flags to use when peeking memory (observing it outside of emulation). */
+inline constexpr BusFlags BUS_PEEK{ .trigger = false, .log = false };
 
 enum class Boards
 {
@@ -25,7 +32,7 @@ enum class Boards
     Fail,
 };
 
-inline const char* BoardsToString(Boards b) noexcept
+constexpr const char* BoardsToString(Boards b) noexcept
 {
     switch(b)
     {

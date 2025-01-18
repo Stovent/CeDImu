@@ -14,7 +14,6 @@
 #include <string_view>
 
 class Mono3;
-class SCC68070;
 
 /** \brief Base class for a CD-i player.
  */
@@ -35,17 +34,21 @@ public:
     static std::unique_ptr<CDI> NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
     static std::unique_ptr<CDI> NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
 
-    virtual ~CDI();
-
     CDI(const CDI&) = delete;
     CDI& operator=(const CDI&) = delete;
 
     CDI(CDI&&) = delete;
     CDI& operator=(CDI&&) = delete;
 
+    virtual ~CDI() noexcept;
+
     virtual uint32_t GetRAMSize() const = 0;
     virtual RAMBank GetRAMBank1() const = 0;
     virtual RAMBank GetRAMBank2() const = 0;
+    /** \brief Returns a pointer to the given address.
+     * The returned pointer is only valid for the given memory bank and must not be assumed to be consecutive with all the memory map.
+     * Specifically, RAM bank 1 and 2 may be non-consecutive, and ROM is very likely allocated separately.
+     */
     virtual const uint8_t* GetPointer(uint32_t addr) const;
 
     virtual uint32_t GetTotalFrameCount() = 0;
@@ -70,13 +73,13 @@ protected:
     virtual void Reset(bool resetCPU) = 0;
     virtual void IncrementTime(double ns);
 
-    virtual uint8_t  GetByte(uint32_t addr, uint8_t flags = Trigger | Log) = 0;
-    virtual uint16_t GetWord(uint32_t addr, uint8_t flags = Trigger | Log) = 0;
-    virtual uint32_t GetLong(uint32_t addr, uint8_t flags = Trigger | Log) = 0;
+    virtual uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL) = 0;
+    virtual uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL) = 0;
+    virtual uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL) = 0;
 
-    virtual void SetByte(uint32_t addr, uint8_t  data, uint8_t flags = Trigger | Log) = 0;
-    virtual void SetWord(uint32_t addr, uint16_t data, uint8_t flags = Trigger | Log) = 0;
-    virtual void SetLong(uint32_t addr, uint32_t data, uint8_t flags = Trigger | Log) = 0;
+    virtual void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL) = 0;
+    virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL) = 0;
+    virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL) = 0;
 };
 
 #endif // CDI_CDI_HPP
