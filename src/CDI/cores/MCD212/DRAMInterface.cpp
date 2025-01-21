@@ -22,7 +22,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const BusFlags flags)
     else if(addr == 0x4FFFE1)
     {
         data = registerCSR2R;
-        if(flags.trigger)
+        if(flags.trigger) [[likely]]
             registerCSR2R = 0; // clear IT1, IT2 and BE bits on status read
         LOG(location = MemoryAccessLocation::VDSC;)
     }
@@ -46,7 +46,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const BusFlags flags)
 
 uint16_t MCD212::GetWord(const uint32_t addr, const BusFlags flags)
 {
-    if(memorySwapCount < 4 && flags.trigger)
+    if(memorySwapCount < 4 && flags.trigger) [[unlikely]]
     {
         memorySwapCount++;
         return GET_ARRAY16(BIOS, addr);
@@ -68,7 +68,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const BusFlags flags)
     else if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
     {
         data = registerCSR2R;
-        if(flags.trigger)
+        if(flags.trigger) [[likely]]
             registerCSR2R = 0; // clear IT1, IT2 and BE bits on status read
         LOG(location = MemoryAccessLocation::VDSC;)
     }

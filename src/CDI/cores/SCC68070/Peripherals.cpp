@@ -6,7 +6,7 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr, const BusFlags flags)
 {
     addr -= Peripheral::Base;
 
-    if(!flags.trigger)
+    if(!flags.trigger) [[unlikely]]
         return internal[addr];
 
     std::unique_lock<std::mutex> lock(uartInMutex);
@@ -38,7 +38,7 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data, const BusFlags f
 {
     addr -= Peripheral::Base;
 
-    if(!flags.trigger)
+    if(!flags.trigger) [[unlikely]]
         return;
 
     switch(addr)
