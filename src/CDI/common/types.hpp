@@ -6,9 +6,13 @@
 #include <string>
 #include <string_view>
 
-/** \brief Specifies the behavior of the memory access functions. */
+/** \brief Specifies the behavior of the memory access functions.
+ * When BusFlags.trigger is false, acts as a peek memory, so reads have no side effects (only observe the memory),
+ * and writes have no effects on some regions.
+ */
 struct BusFlags
 {
+    // bool peek : 1; /**< . */
     bool trigger : 1; /**< When true, memory accesses that have side effects are triggered (like reset a flag in a peripheral). */
     bool log : 1; /**< When true, will call the associated log callback. */
 };
