@@ -1,29 +1,6 @@
 #include "IKAT.hpp"
 #include "../../CDI.hpp"
 
-LOG(static std::string getPortName(uint8_t index)
-{
-    std::string port;
-    if(index < 12)
-    {
-        port = 'A' + index % 4;
-        if(index < 4)
-            port += " write";
-        else if(index < 8)
-            port += " read";
-        else
-            port += " status";
-    }
-    else if(index == 12)
-        port = "ISR";
-    else if(index == 13)
-        port = "ICR";
-    else if(index == 14)
-        port = "YCR";
-
-    return port;
-})
-
 namespace HLE
 {
 
@@ -79,8 +56,11 @@ void IKAT::IncrementTime(const size_t ns)
     }
 }
 
-uint8_t IKAT::GetByte(const uint8_t addr)
+uint8_t IKAT::GetByte(const uint8_t addr, const BusFlags flags)
 {
+    if(!flags.trigger) [[unlikely]]
+        return registers[addr];
+
     const uint8_t channel = CHANNEL(addr);
     if(addr >= CHA_OUT && addr <= CHD_OUT && channelOut[channel].size() > 0)
     {
@@ -97,15 +77,18 @@ uint8_t IKAT::GetByte(const uint8_t addr)
             UNSET_REMTY(CHA_SR + channel)
     }
 
-    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+    LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Get", getPortName(addr), cdi.m_cpu.currentPC, busBase + (addr << 1) + 1, registers[addr]});)
 
     return registers[addr];
 }
 
-void IKAT::SetByte(const uint8_t addr, const uint8_t data)
+void IKAT::SetByte(const uint8_t addr, const uint8_t data, const BusFlags flags)
 {
-    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+    if(!flags.trigger) [[unlikely]]
+        return;
+
+    LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Set", getPortName(addr), cdi.m_cpu.currentPC, busBase + (addr << 1) + 1, data});)
 
     if(addr == IMR)
@@ -222,6 +205,29 @@ void IKAT::ProcessCommandD()
     default:
         channelIn[CHD].clear();
     }
+}
+
+std::string IKAT::getPortName(const uint8_t index)
+{
+    std::string port;
+    if(index < 12)
+    {
+        port = 'A' + index % 4;
+        if(index < 4)
+            port += " write";
+        else if(index < 8)
+            port += " read";
+        else
+            port += " status";
+    }
+    else if(index == 12)
+        port = "ISR";
+    else if(index == 13)
+        port = "ICR";
+    else if(index == 14)
+        port = "YCR";
+
+    return port;
 }
 
 } // namespace HLE

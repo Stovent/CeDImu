@@ -5,6 +5,7 @@
 
 #include <array>
 #include <deque>
+#include <string>
 #include <vector>
 
 namespace HLE
@@ -22,10 +23,17 @@ public:
     IKAT& operator=(IKAT&&) = delete;
 
     virtual void UpdatePointerState() override;
-    virtual void IncrementTime(const size_t ns) override;
+    virtual void IncrementTime(size_t ns) override;
 
-    virtual uint8_t GetByte(const uint8_t addr) override;
-    virtual void SetByte(const uint8_t addr, const uint8_t data) override;
+    /** \brief Returns the value of the given host register.
+     * \param addr The address of the register (from the MCU side).
+     */
+    virtual uint8_t GetByte(uint8_t addr, BusFlags flags = BUS_NORMAL) override;
+
+    /** \brief Sets the host register to the given value.
+     * \param addr The address of the register (from the MCU side).
+     */
+    virtual void SetByte(uint8_t addr, uint8_t data, BusFlags flags = BUS_NORMAL) override;
 
 private:
     std::deque<uint8_t> channelIn[4]; // MCU IN, host OUT
@@ -81,6 +89,8 @@ private:
     };
 
     static constexpr int INT_MASK[4] = {0x02, 0x08, 0x20, 0x80};
+
+    static std::string getPortName(uint8_t index);
 };
 
 } // namespace HLE

@@ -3,6 +3,7 @@
 
 class CDI;
 #include "../PointingDevice.hpp"
+#include "../common/types.hpp"
 
 class ISlave
 {
@@ -21,10 +22,10 @@ public:
     ISlave& operator=(ISlave&&) = delete;
 
     virtual void UpdatePointerState() = 0;
-    virtual void IncrementTime(const size_t ns) = 0;
+    virtual void IncrementTime(size_t ns) = 0;
 
-    virtual uint8_t GetByte(const uint8_t addr) = 0;
-    virtual void SetByte(const uint8_t addr, const uint8_t data) = 0;
+    virtual uint8_t GetByte(uint8_t addr, BusFlags flags = BUS_NORMAL) = 0;
+    virtual void SetByte(uint8_t addr, uint8_t data, BusFlags flags = BUS_NORMAL) = 0;
 };
 
 #endif // CDI_CORES_ISLAVE_HPP
