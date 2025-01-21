@@ -13,7 +13,7 @@ public:
     const uint32_t busBase;
 
     ISlave(CDI& idc, uint32_t busbase, PointingDevice::Class deviceClass) : cdi(idc), pointingDevice(*this, deviceClass), busBase(busbase) {}
-    virtual ~ISlave() = default;
+    virtual ~ISlave() noexcept = default;
 
     ISlave(const ISlave&) = delete;
     ISlave& operator=(const ISlave&) = delete;

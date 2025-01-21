@@ -47,7 +47,7 @@ M48T08::M48T08(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time
  *
  * Calls Callbacks::OnSaveNVRAM.
  */
-M48T08::~M48T08()
+M48T08::~M48T08() noexcept
 {
     ClockToSRAM();
     cdi.m_callbacks.OnSaveNVRAM(m_sram.data(), m_sram.size());
@@ -122,10 +122,11 @@ void M48T08::IncrementClock(const double ns)
  *
  * In order to read the clock, the READ bit must be set in the control register using SetByte(0x1FF8).
  */
-uint8_t M48T08::GetByte(const uint16_t addr)
+uint8_t M48T08::GetByte(const uint16_t addr, const BusFlags flags)
 {
-    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+    LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "Byte", cdi.m_cpu.currentPC, addr, m_sram[addr]});)
+
     return m_sram[addr];
 }
 
@@ -137,10 +138,14 @@ uint8_t M48T08::GetByte(const uint16_t addr)
  * If the address is the control register and the WRITE bit is going from set to unset, the clock in SRAM is moved in the internal clock.
  * If the address is the control register and the READ  bit is going from unset to set, the internal clock is moved in SRAM to be read.
  */
-void M48T08::SetByte(const uint16_t addr, const uint8_t data)
+void M48T08::SetByte(const uint16_t addr, const uint8_t data, const BusFlags flags)
 {
-    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+    if(!flags.trigger) [[unlikely]]
+        return;
+
+    LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "Byte", cdi.m_cpu.currentPC, addr, data});)
+
     if(addr == Control)
     {
         if(bit<6>(data) && !bit<6>(m_sram[Control]))

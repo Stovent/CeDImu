@@ -7,6 +7,7 @@
 #include <string_view>
 
 /** \brief Specifies the behavior of the memory access functions.
+ * BusFlags.trigger allows modifications of the device and its memory, i.e. when it is false, the device must absolutely not be modified.
  * When BusFlags.trigger is false, acts as a peek memory, so reads have no side effects (only observe the memory),
  * and writes have no effects on some regions.
  */

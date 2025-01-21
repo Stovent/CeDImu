@@ -13,7 +13,7 @@ class DS1216 : public IRTC
 {
 public:
     explicit DS1216(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time_t> initialTime);
-    ~DS1216();
+    virtual ~DS1216() noexcept;
 
     DS1216(const DS1216&) = delete;
     DS1216& operator=(const DS1216&) = delete;
@@ -21,10 +21,10 @@ public:
     DS1216(DS1216&&) = delete;
     DS1216& operator=(DS1216&&) = delete;
 
-    void IncrementClock(const double ns) override;
+    void IncrementClock(double ns) override;
 
-    uint8_t GetByte(const uint16_t addr) override;
-    void SetByte(const uint16_t addr, const uint8_t data) override;
+    uint8_t GetByte(uint16_t addr, BusFlags flags) override;
+    void SetByte(uint16_t addr, uint8_t data, BusFlags flags) override;
 
 private:
     std::array<uint8_t, 0x8000> sram; // 32KB

@@ -2,6 +2,7 @@
 #define CDI_CORES_IRTC_HPP
 
 class CDI;
+#include "../common/types.hpp"
 
 #include <cstdint>
 #include <ctime>
@@ -13,7 +14,7 @@ public:
     CDI& cdi;
 
     explicit IRTC(CDI& idc) : cdi(idc) {}
-    virtual ~IRTC() = default;
+    virtual ~IRTC() noexcept = default;
 
     IRTC(const IRTC&) = delete;
     IRTC& operator=(const IRTC&) = delete;
@@ -21,10 +22,10 @@ public:
     IRTC(IRTC&&) = delete;
     IRTC& operator=(IRTC&&) = delete;
 
-    virtual void IncrementClock(const double ns) = 0;
+    virtual void IncrementClock(double ns) = 0;
 
-    virtual uint8_t GetByte(const uint16_t addr) = 0;
-    virtual void SetByte(const uint16_t addr, const uint8_t data) = 0;
+    virtual uint8_t GetByte(uint16_t addr, BusFlags flags = BUS_NORMAL) = 0;
+    virtual void SetByte(uint16_t addr, uint8_t data, BusFlags flags = BUS_NORMAL) = 0;
 };
 
 #endif // CDI_CORES_IRTC_HPP

@@ -70,7 +70,7 @@ DS1216::DS1216(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time
 /** \brief Destroys the timekeeper.
  * Calls Callbacks::OnSaveNVRAM.
  */
-DS1216::~DS1216()
+DS1216::~DS1216() noexcept
 {
     ClockToSRAM();
     uint8_t nv[0x8008];
@@ -193,11 +193,14 @@ void DS1216::IncrementClock(const double ns)
     }
 }
 
-uint8_t DS1216::GetByte(const uint16_t addr)
+uint8_t DS1216::GetByte(const uint16_t addr, const BusFlags flags)
 {
+    if(!flags.trigger) [[unlikely]]
+        return sram[addr];
+
     if(patternCount < 0)
     {
-        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+        LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "SRAM", cdi.m_cpu.currentPC, addr, sram[addr]});)
         return sram[addr];
     }
@@ -206,20 +209,23 @@ uint8_t DS1216::GetByte(const uint16_t addr)
     const uint8_t shift = patternCount % 8;
     const bool bit = clock[reg] & (1 << shift);
 
-    LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+    LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "clock", cdi.m_cpu.currentPC, addr, bit});)
 
     IncrementClockAccess();
     return bit;
 }
 
-void DS1216::SetByte(const uint16_t addr, const uint8_t data)
+void DS1216::SetByte(const uint16_t addr, const uint8_t data, const BusFlags flags)
 {
+    if(!flags.trigger) [[unlikely]]
+        return;
+
     const bool lsb = bit<0>(data);
 
     if(patternCount < 0)
     {
-        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+        LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "SRAM", cdi.m_cpu.currentPC, addr, data});)
         sram[addr] = data;
         PushPattern(lsb);
@@ -229,7 +235,7 @@ void DS1216::SetByte(const uint16_t addr, const uint8_t data)
         const uint8_t reg = patternCount / 8;
         const uint8_t shift = patternCount % 8;
 
-        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
+        LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "clock", cdi.m_cpu.currentPC, addr, lsb});)
 
         clock[reg] &= ~(1 << shift);

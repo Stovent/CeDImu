@@ -14,7 +14,7 @@ class M48T08 : public IRTC
 {
 public:
     explicit M48T08(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time_t> initialTime);
-    ~M48T08();
+    virtual ~M48T08() noexcept;
 
     M48T08(const M48T08&) = delete;
     M48T08& operator=(const M48T08&) = delete;
@@ -22,10 +22,10 @@ public:
     M48T08(M48T08&&) = delete;
     M48T08& operator=(M48T08&&) = delete;
 
-    void IncrementClock(const double ns) override;
+    void IncrementClock(double ns) override;
 
-    uint8_t GetByte(const uint16_t addr) override;
-    void SetByte(const uint16_t addr, const uint8_t data) override;
+    uint8_t GetByte(uint16_t addr, BusFlags flags) override;
+    void SetByte(uint16_t addr, uint8_t data, BusFlags flags) override;
 
 private:
     std::array<uint8_t, 0x2000> m_sram;
