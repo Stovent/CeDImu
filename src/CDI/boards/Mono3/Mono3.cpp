@@ -18,7 +18,7 @@ Mono3::Mono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, C
     Reset(true);
 }
 
-Mono3::~Mono3()
+Mono3::~Mono3() noexcept
 {
     m_cpu.Stop(true);
 }

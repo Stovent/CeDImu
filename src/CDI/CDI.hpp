@@ -34,13 +34,13 @@ public:
     static std::unique_ptr<CDI> NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
     static std::unique_ptr<CDI> NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
 
+    virtual ~CDI() noexcept;
+
     CDI(const CDI&) = delete;
     CDI& operator=(const CDI&) = delete;
 
     CDI(CDI&&) = delete;
     CDI& operator=(CDI&&) = delete;
-
-    virtual ~CDI() noexcept;
 
     virtual uint32_t GetRAMSize() const = 0;
     virtual RAMBank GetRAMBank1() const = 0;

@@ -80,7 +80,7 @@ CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDID
 
 /** \brief Destroys the CDI. Stops and wait for the emulation thread to stop if it is running.
  */
-CDI::~CDI()
+CDI::~CDI() noexcept
 {
     m_cpu.Stop(true);
 }
