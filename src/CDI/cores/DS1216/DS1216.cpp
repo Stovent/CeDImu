@@ -40,20 +40,20 @@ static constexpr std::array<bool, 64> matchPattern = {
  */
 DS1216::DS1216(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time_t> initialTime)
     : IRTC(cdi)
-    , sram{}
-    , clock{}
+    , m_sram{}
+    , m_clock{}
     , m_nsec(0.0)
     , m_internalClock(std::chrono::system_clock::from_time_t(initialTime.value_or(IRTC::defaultTime)))
-    , patternCount(-1)
-    , pattern(64)
+    , m_patternCount(-1)
+    , m_pattern(64)
 {
     if(!state.empty())
     {
         if(state.size() != 32776)
             throw std::invalid_argument("DS1216 initial state size must be 32776 bytes");
 
-        std::copy(state.begin(), state.begin() + sram.size(), sram.begin());
-        std::copy(state.begin() + sram.size(), state.begin() + sram.size() + 8, clock.begin());
+        std::copy(state.begin(), state.begin() + m_sram.size(), m_sram.begin());
+        std::copy(state.begin() + m_sram.size(), state.begin() + m_sram.size() + 8, m_clock.begin());
         if(initialTime.has_value())
             ClockToSRAM();
         else
@@ -61,7 +61,7 @@ DS1216::DS1216(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time
     }
     else
     {
-        sram.fill(0xFF);
+        m_sram.fill(0xFF);
 
         ClockToSRAM();
     }
@@ -74,8 +74,8 @@ DS1216::~DS1216() noexcept
 {
     ClockToSRAM();
     uint8_t nv[0x8008];
-    memcpy(nv, sram.data(), sram.size());
-    memcpy(&nv[0x8000], clock.data(), 8);
+    memcpy(nv, m_sram.data(), m_sram.size());
+    memcpy(&nv[0x8000], m_clock.data(), 8);
 
     cdi.m_callbacks.OnSaveNVRAM(nv, 0x8008);
 }
@@ -84,7 +84,7 @@ DS1216::~DS1216() noexcept
  */
 void DS1216::ClockToSRAM()
 {
-    if(patternCount >= 0) // Do not change SRAM clock when it is being read.
+    if(m_patternCount >= 0) // Do not change SRAM clock when it is being read.
         return;
 
     const std::chrono::hh_mm_ss hms(m_internalClock.time_since_epoch());
@@ -93,7 +93,7 @@ void DS1216::ClockToSRAM()
     const std::chrono::weekday weekday(days_duration);
 
     uint8_t hour = hms.hours().count() % 24;
-    if(bit<7>(clock[Hour])) // 12h format
+    if(bit<7>(m_clock[Hour])) // 12h format
     {
         int h = hour;
         if(h >= 12) // PM
@@ -117,14 +117,14 @@ void DS1216::ClockToSRAM()
     static_assert(fractional_width >= 2, "std::chrono::hh_mm_ss must support subsecond precision");
     static const unsigned hundrethsDivider = pow(10, fractional_width - 2);
 
-    clock[Hundredths] = byteToPBCD(hms.subseconds().count() / hundrethsDivider);
-    clock[Seconds] = byteToPBCD(hms.seconds().count());
-    clock[Minutes] = byteToPBCD(hms.minutes().count());
-    clock[Hour]    = hour;
-    clock[Day]     = byteToPBCD(weekday.iso_encoding()) | (clock[Day] & 0x30);
-    clock[Date]    = byteToPBCD(static_cast<unsigned>(ymd.day()));
-    clock[Month]   = byteToPBCD(static_cast<unsigned>(ymd.month()));
-    clock[Year]    = byteToPBCD(static_cast<int>(ymd.year()) % 100);
+    m_clock[Hundredths] = byteToPBCD(hms.subseconds().count() / hundrethsDivider);
+    m_clock[Seconds] = byteToPBCD(hms.seconds().count());
+    m_clock[Minutes] = byteToPBCD(hms.minutes().count());
+    m_clock[Hour]    = hour;
+    m_clock[Day]     = byteToPBCD(weekday.iso_encoding()) | (m_clock[Day] & 0x30);
+    m_clock[Date]    = byteToPBCD(static_cast<unsigned>(ymd.day()));
+    m_clock[Month]   = byteToPBCD(static_cast<unsigned>(ymd.month()));
+    m_clock[Year]    = byteToPBCD(static_cast<int>(ymd.year()) % 100);
 }
 
 /** \brief Move the SRAM clock into the internal clock.
@@ -132,26 +132,26 @@ void DS1216::ClockToSRAM()
 void DS1216::SRAMToClock()
 {
     uint8_t hour;
-    if(bit<7>(clock[Hour])) // 12h format
+    if(bit<7>(m_clock[Hour])) // 12h format
     {
-        hour = PBCDToByte(bits<0, 4>(clock[Hour]));
+        hour = PBCDToByte(bits<0, 4>(m_clock[Hour]));
         if(hour == 12)
             hour = 0;
-        if(bit<5>(clock[Hour])) // PM
+        if(bit<5>(m_clock[Hour])) // PM
             hour += 12;
     }
     else
-        hour = PBCDToByte(bits<0, 5>(clock[Hour]));
+        hour = PBCDToByte(bits<0, 5>(m_clock[Hour]));
 
-    m_nsec = PBCDToByte(clock[Hundredths]) * 10'000'000.0;
-    const std::chrono::seconds seconds = std::chrono::seconds(PBCDToByte(bits<0, 6>(clock[Seconds])));
-    const std::chrono::minutes minutes = std::chrono::minutes(PBCDToByte(bits<0, 6>(clock[Minutes])));
+    m_nsec = PBCDToByte(m_clock[Hundredths]) * 10'000'000.0;
+    const std::chrono::seconds seconds = std::chrono::seconds(PBCDToByte(bits<0, 6>(m_clock[Seconds])));
+    const std::chrono::minutes minutes = std::chrono::minutes(PBCDToByte(bits<0, 6>(m_clock[Minutes])));
     const std::chrono::hours hours = std::chrono::hours(hour);
     const std::chrono::hh_mm_ss hms(seconds + minutes + hours);
 
-    const std::chrono::day day(PBCDToByte(bits<0, 5>(clock[Date])));
-    const std::chrono::month month(PBCDToByte(bits<0, 4>(clock[Month])));
-    unsigned y = 1900 + PBCDToByte(clock[Year]); // Only the two last digit of the year are stored.
+    const std::chrono::day day(PBCDToByte(bits<0, 5>(m_clock[Date])));
+    const std::chrono::month month(PBCDToByte(bits<0, 4>(m_clock[Month])));
+    unsigned y = 1900 + PBCDToByte(m_clock[Year]); // Only the two last digit of the year are stored.
     if(y < 1970) // Treat 1970 and above as 1970 up to 1999, and below 1970 as being 2000's up to 2069.
         y += 100;
     const std::chrono::year year(y);
@@ -163,26 +163,24 @@ void DS1216::SRAMToClock()
 
 void DS1216::PushPattern(const bool bit)
 {
-    pattern.push_front(bit);
-    pattern.pop_back();
-    if(std::equal(pattern.begin(), pattern.end(), matchPattern.begin(), matchPattern.end()))
+    m_pattern.push_front(bit);
+    m_pattern.pop_back();
+    if(std::equal(m_pattern.begin(), m_pattern.end(), matchPattern.begin(), matchPattern.end()))
     {
         ClockToSRAM();
-        patternCount = 0;
+        m_patternCount = 0;
     }
 }
 
 void DS1216::IncrementClockAccess()
 {
-    if(++patternCount >= 64)
-    {
-        patternCount = -1;
-    }
+    if(++m_patternCount >= 64)
+        m_patternCount = -1;
 }
 
 void DS1216::IncrementClock(const double ns)
 {
-    if(bit<5>(clock[Day])) // OSC bit
+    if(bit<5>(m_clock[Day])) // OSC bit
         return;
 
     m_nsec += ns;
@@ -193,21 +191,26 @@ void DS1216::IncrementClock(const double ns)
     }
 }
 
+uint8_t DS1216::PeekByte(const uint16_t addr) const noexcept
+{
+    if(addr < m_sram.size())
+        return m_sram[addr];
+
+    return m_clock.at(addr - m_sram.size());
+}
+
 uint8_t DS1216::GetByte(const uint16_t addr, const BusFlags flags)
 {
-    if(!flags.trigger) [[unlikely]]
-        return sram[addr];
-
-    if(patternCount < 0)
+    if(m_patternCount < 0)
     {
         LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
-                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "SRAM", cdi.m_cpu.currentPC, addr, sram[addr]});)
-        return sram[addr];
+                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "SRAM", cdi.m_cpu.currentPC, addr, m_sram[addr]});)
+        return m_sram[addr];
     }
 
-    const uint8_t reg = patternCount / 8;
-    const uint8_t shift = patternCount % 8;
-    const bool bit = clock[reg] & (1 << shift);
+    const uint8_t reg = m_patternCount / 8;
+    const uint8_t shift = m_patternCount % 8;
+    const bool bit = m_clock[reg] & (1 << shift);
 
     LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Get", "clock", cdi.m_cpu.currentPC, addr, bit});)
@@ -218,31 +221,28 @@ uint8_t DS1216::GetByte(const uint16_t addr, const BusFlags flags)
 
 void DS1216::SetByte(const uint16_t addr, const uint8_t data, const BusFlags flags)
 {
-    if(!flags.trigger) [[unlikely]]
-        return;
-
     const bool lsb = bit<0>(data);
 
-    if(patternCount < 0)
+    if(m_patternCount < 0)
     {
         LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "SRAM", cdi.m_cpu.currentPC, addr, data});)
-        sram[addr] = data;
+        m_sram[addr] = data;
         PushPattern(lsb);
     }
     else
     {
-        const uint8_t reg = patternCount / 8;
-        const uint8_t shift = patternCount % 8;
+        const uint8_t reg = m_patternCount / 8;
+        const uint8_t shift = m_patternCount % 8;
 
         LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "clock", cdi.m_cpu.currentPC, addr, lsb});)
 
-        clock[reg] &= ~(1 << shift);
-        clock[reg] |= lsb << shift;
+        m_clock[reg] &= ~(1 << shift);
+        m_clock[reg] |= lsb << shift;
 
         IncrementClockAccess();
-        if(patternCount == -1)
+        if(m_patternCount == -1)
             SRAMToClock();
     }
 }

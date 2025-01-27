@@ -24,8 +24,10 @@ public:
 
     virtual void IncrementClock(double ns) = 0;
 
-    virtual uint8_t GetByte(uint16_t addr, BusFlags flags = BUS_NORMAL) = 0;
-    virtual void SetByte(uint16_t addr, uint8_t data, BusFlags flags = BUS_NORMAL) = 0;
+    virtual uint8_t PeekByte(uint16_t addr) const noexcept = 0;
+
+    virtual uint8_t GetByte(uint16_t addr, BusFlags flags) = 0;
+    virtual void SetByte(uint16_t addr, uint8_t data, BusFlags flags) = 0;
 };
 
 #endif // CDI_CORES_IRTC_HPP

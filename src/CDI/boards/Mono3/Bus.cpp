@@ -3,6 +3,72 @@
 #include "../../common/Callbacks.hpp"
 #include "../../common/utils.hpp"
 
+uint8_t Mono3::PeekByte(const uint32_t addr) const noexcept
+{
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
+    {
+        return m_mcd212.PeekByte(addr);
+    }
+
+    if(addr >= 0x300000 && addr < 0x304000)
+    {
+        const uint16_t data = m_ciap.PeekWord(addr - 0x300000);
+        return isEven(addr) ? data >> 8 : data;
+    }
+
+    if(addr >= 0x310000 && addr < 0x31001E && !isEven(addr))
+    {
+        return m_slave->PeekByte((addr - 0x310000) >> 1);
+    }
+
+    if(addr >= 0x320000 && addr < m_nvramMaxAddress && isEven(addr))
+    {
+        return m_timekeeper->PeekByte((addr - 0x320000) >> 1);
+    }
+
+    if(addr >= SCC68070::Peripheral::Base && addr < SCC68070::Peripheral::Last)
+    {
+        return m_cpu.PeekPeripheral(addr - SCC68070::Peripheral::Base);
+    }
+
+    std::terminate(); // TODO: is this the best way? or should I return 0 or an optional?
+}
+
+uint16_t Mono3::PeekWord(const uint32_t addr) const noexcept
+{
+    if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
+    {
+        return m_mcd212.PeekWord(addr);
+    }
+
+    if(addr >= 0x300000 && addr < 0x304000)
+    {
+        return m_ciap.PeekWord(addr - 0x300000);
+    }
+
+    if(addr >= 0x310000 && addr < 0x31001E)
+    {
+        return m_slave->PeekByte((addr - 0x310000) >> 1);
+    }
+
+    if(addr >= 0x320000 && addr < m_nvramMaxAddress)
+    {
+        return as<uint16_t>(m_timekeeper->PeekByte((addr - 0x320000) >> 1)) << 8;
+    }
+
+    if(addr >= SCC68070::Peripheral::Base && addr < SCC68070::Peripheral::Last)
+    {
+        return m_cpu.PeekPeripheral(addr - SCC68070::Peripheral::Base);
+    }
+
+    std::terminate(); // TODO: is this the best way? or should I return 0 or an optional?
+}
+
+uint32_t Mono3::PeekLong(const uint32_t addr) const noexcept
+{
+    return as<uint32_t>(PeekWord(addr)) << 16 | PeekWord(addr + 2);
+}
+
 uint8_t Mono3::GetByte(const uint32_t addr, const BusFlags flags)
 {
     if(addr < 0x080000 || (addr >= 0x200000 && addr < 0x280000) || (addr >= 0x400000 && addr < 0x500000))
@@ -12,18 +78,18 @@ uint8_t Mono3::GetByte(const uint32_t addr, const BusFlags flags)
 
     if(addr >= 0x300000 && addr < 0x304000)
     {
-        const uint16_t data = m_ciap.GetWord(addr - 0x300000);
+        const uint16_t data = m_ciap.GetWord(addr - 0x300000, flags);
         return isEven(addr) ? data >> 8 : data;
     }
 
     if(addr >= 0x310000 && addr < 0x31001E && !isEven(addr))
     {
-        return m_slave->GetByte((addr - 0x310000) >> 1);
+        return m_slave->GetByte((addr - 0x310000) >> 1, flags);
     }
 
     if(addr >= 0x320000 && addr < m_nvramMaxAddress && isEven(addr))
     {
-        return m_timekeeper->GetByte((addr - 0x320000) >> 1);
+        return m_timekeeper->GetByte((addr - 0x320000) >> 1, flags);
     }
 
     LOG(if(flags.log) { if(m_callbacks.HasOnLogMemoryAccess()) \
@@ -40,17 +106,17 @@ uint16_t Mono3::GetWord(const uint32_t addr, const BusFlags flags)
 
     if(addr >= 0x300000 && addr < 0x304000)
     {
-        return m_ciap.GetWord(addr - 0x300000);
+        return m_ciap.GetWord(addr - 0x300000, flags);
     }
 
     if(addr >= 0x310000 && addr < 0x31001E)
     {
-        return m_slave->GetByte((addr - 0x310000) >> 1);
+        return m_slave->GetByte((addr - 0x310000) >> 1, flags);
     }
 
     if(addr >= 0x320000 && addr < m_nvramMaxAddress)
     {
-        return as<uint16_t>(m_timekeeper->GetByte((addr - 0x320000) >> 1)) << 8;
+        return as<uint16_t>(m_timekeeper->GetByte((addr - 0x320000) >> 1, flags)) << 8;
     }
 
     LOG(if(flags.log) { if(m_callbacks.HasOnLogMemoryAccess()) \
@@ -73,23 +139,23 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const BusFlags flag
 
     if(addr >= 0x300000 && addr < 0x304000)
     {
-        const uint16_t word = m_ciap.GetWord(addr - 0x300000);
+        const uint16_t word = m_ciap.GetWord(addr - 0x300000, flags);
         if(isEven(addr))
-            m_ciap.SetWord(addr - 0x300000, (word & 0x00FF) | as<uint16_t>(data) << 8);
+            m_ciap.SetWord(addr - 0x300000, (word & 0x00FF) | as<uint16_t>(data) << 8, flags);
         else
-            m_ciap.SetWord(addr - 0x300000, (word & 0xFF00) | data);
+            m_ciap.SetWord(addr - 0x300000, (word & 0xFF00) | data, flags);
         return;
     }
 
     if(addr >= 0x310000 && addr < 0x31001E && !isEven(addr))
     {
-        m_slave->SetByte((addr - 0x310000) >> 1, data);
+        m_slave->SetByte((addr - 0x310000) >> 1, data, flags);
         return;
     }
 
     if(addr >= 0x320000 && addr < m_nvramMaxAddress && isEven(addr))
     {
-        m_timekeeper->SetByte((addr - 0x320000) >> 1, data);
+        m_timekeeper->SetByte((addr - 0x320000) >> 1, data, flags);
         return;
     }
 
@@ -108,18 +174,18 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const BusFlags fla
 
     if(addr >= 0x300000 && addr < 0x304000)
     {
-        return m_ciap.SetWord(addr - 0x300000, data);
+        return m_ciap.SetWord(addr - 0x300000, data, flags);
     }
 
     if(addr >= 0x310000 && addr < 0x31001E)
     {
-        m_slave->SetByte((addr - 0x310000) >> 1, data);
+        m_slave->SetByte((addr - 0x310000) >> 1, data, flags);
         return;
     }
 
     if(addr >= 0x320000 && addr < m_nvramMaxAddress)
     {
-        m_timekeeper->SetByte((addr - 0x320000) >> 1, data >> 8);
+        m_timekeeper->SetByte((addr - 0x320000) >> 1, data >> 8, flags);
         return;
     }
 

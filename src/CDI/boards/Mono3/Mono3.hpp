@@ -16,13 +16,17 @@ public:
     virtual void Reset(bool resetCPU) override;
     virtual void IncrementTime(double ns) override;
 
-    virtual uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL) override;
-    virtual uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL) override;
-    virtual uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL) override;
+    virtual uint8_t  PeekByte(uint32_t addr) const noexcept override;
+    virtual uint16_t PeekWord(uint32_t addr) const noexcept override;
+    virtual uint32_t PeekLong(uint32_t addr) const noexcept override;
 
-    virtual void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL) override;
-    virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL) override;
-    virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL) override;
+    virtual uint8_t  GetByte(uint32_t addr, BusFlags flags) override;
+    virtual uint16_t GetWord(uint32_t addr, BusFlags flags) override;
+    virtual uint32_t GetLong(uint32_t addr, BusFlags flags) override;
+
+    virtual void SetByte(uint32_t addr, uint8_t  data, BusFlags flags) override;
+    virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags) override;
+    virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags) override;
 
     virtual uint32_t GetRAMSize() const override;
     virtual RAMBank GetRAMBank1() const override;

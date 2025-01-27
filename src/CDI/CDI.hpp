@@ -73,13 +73,17 @@ protected:
     virtual void Reset(bool resetCPU) = 0;
     virtual void IncrementTime(double ns);
 
-    virtual uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL) = 0;
-    virtual uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL) = 0;
-    virtual uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL) = 0;
+    virtual uint8_t  PeekByte(uint32_t addr) const noexcept = 0;
+    virtual uint16_t PeekWord(uint32_t addr) const noexcept = 0;
+    virtual uint32_t PeekLong(uint32_t addr) const noexcept = 0;
 
-    virtual void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL) = 0;
-    virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL) = 0;
-    virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL) = 0;
+    virtual uint8_t  GetByte(uint32_t addr, BusFlags flags) = 0;
+    virtual uint16_t GetWord(uint32_t addr, BusFlags flags) = 0;
+    virtual uint32_t GetLong(uint32_t addr, BusFlags flags) = 0;
+
+    virtual void SetByte(uint32_t addr, uint8_t  data, BusFlags flags) = 0;
+    virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags) = 0;
+    virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags) = 0;
 };
 
 #endif // CDI_CDI_HPP

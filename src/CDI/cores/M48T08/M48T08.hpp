@@ -22,10 +22,12 @@ public:
     M48T08(M48T08&&) = delete;
     M48T08& operator=(M48T08&&) = delete;
 
-    void IncrementClock(double ns) override;
+    virtual void IncrementClock(double ns) override;
 
-    uint8_t GetByte(uint16_t addr, BusFlags flags) override;
-    void SetByte(uint16_t addr, uint8_t data, BusFlags flags) override;
+    virtual uint8_t PeekByte(uint16_t addr) const noexcept override;
+
+    virtual uint8_t GetByte(uint16_t addr, BusFlags flags) override;
+    virtual void SetByte(uint16_t addr, uint8_t data, BusFlags flags) override;
 
 private:
     std::array<uint8_t, 0x2000> m_sram;

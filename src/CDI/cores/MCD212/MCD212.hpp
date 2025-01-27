@@ -24,11 +24,14 @@ public:
     void Reset();
     void IncrementTime(double ns);
 
-    uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL);
-    uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    uint8_t  PeekByte(uint32_t addr) const noexcept;
+    uint16_t PeekWord(uint32_t addr) const noexcept;
 
-    void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL);
-    void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL);
+    uint8_t  GetByte(uint32_t addr, BusFlags flags);
+    uint16_t GetWord(uint32_t addr, BusFlags flags);
+
+    void SetByte(uint32_t addr, uint8_t  data, BusFlags flags);
+    void SetWord(uint32_t addr, uint16_t data, BusFlags flags);
 
     RAMBank GetRAMBank1() const;
     RAMBank GetRAMBank2() const;

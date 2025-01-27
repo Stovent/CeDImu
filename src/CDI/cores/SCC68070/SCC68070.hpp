@@ -146,11 +146,15 @@ public:
     void IN2();
     void SendUARTIn(uint8_t byte);
 
+    /** \brief Returns the byte at the given peripheral address.
+     * \param addr The address in peripheral memory (so between 0 and Peripheral::Last).
+     */
+    uint8_t PeekPeripheral(uint32_t addr) const noexcept;
+
     void SetRegister(Register reg, uint32_t value);
     std::map<Register, uint32_t> GetCPURegisters() const;
     std::vector<InternalRegister> GetInternalRegisters() const;
 
-private:
     enum Peripheral : uint32_t
     {
         Base = 0x80001001,
@@ -228,6 +232,7 @@ private:
         BASE_ADDRESS = 0x80008046 - Base,
     };
 
+private:
     CDI& cdi;
     std::thread executionThread;
 
@@ -320,11 +325,11 @@ private:
     void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL);
 
     uint16_t GetNextWord(BusFlags flags = BUS_NORMAL);
-    uint16_t PeekNextWord();
+    uint16_t PeekNextWord() const noexcept;
 
     // Peripherals
-    uint8_t GetPeripheral(uint32_t addr, BusFlags flags = BUS_NORMAL);
-    void SetPeripheral(uint32_t addr, uint8_t data, BusFlags flags = BUS_NORMAL);
+    uint8_t GetPeripheral(uint32_t addr, BusFlags flags);
+    void SetPeripheral(uint32_t addr, uint8_t data, BusFlags flags);
     void IncrementTimer(double ns);
 
     // Conditional Tests

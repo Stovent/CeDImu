@@ -83,37 +83,37 @@ uint32_t SCC68070::AddressRegisterIndirectWithPredecrement(const uint8_t reg, co
 
 uint32_t SCC68070::AddressRegisterIndirectWithDisplacement(const uint8_t reg)
 {
-    return A(reg) + signExtend<int16_t, int32_t>(GetNextWord());
+    return A(reg) + signExtend<int16_t, int32_t>(GetNextWord(BUS_NORMAL));
 }
 
 uint32_t SCC68070::AddressRegisterIndirectWithIndex8(const uint8_t reg)
 {
-    const uint16_t bew = GetNextWord();
+    const uint16_t bew = GetNextWord(BUS_NORMAL);
     return A(reg) + GetIndexRegister(bew) + signExtend<int8_t, int32_t>(bew & 0x00FF);
 }
 
 uint32_t SCC68070::ProgramCounterIndirectWithDisplacement()
 {
     const uint32_t pc = PC;
-    return pc + signExtend<int16_t, int32_t>(GetNextWord());
+    return pc + signExtend<int16_t, int32_t>(GetNextWord(BUS_NORMAL));
 }
 
 uint32_t SCC68070::ProgramCounterIndirectWithIndex8()
 {
     const uint32_t pc = PC;
-    const uint16_t bew = GetNextWord();
+    const uint16_t bew = GetNextWord(BUS_NORMAL);
     return pc + GetIndexRegister(bew) + signExtend<int8_t, int32_t>(bew & 0x00FF);
 }
 
 uint32_t SCC68070::AbsoluteShortAddressing()
 {
-    return signExtend<int16_t, int32_t>(GetNextWord());
+    return signExtend<int16_t, int32_t>(GetNextWord(BUS_NORMAL));
 }
 
 uint32_t SCC68070::AbsoluteLongAddressing()
 {
-    const uint16_t high = GetNextWord();
-    const uint16_t low = GetNextWord();
+    const uint16_t high = GetNextWord(BUS_NORMAL);
+    const uint16_t low = GetNextWord(BUS_NORMAL);
     return high << 16 | low;
 }
 
@@ -137,11 +137,11 @@ std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, c
         return "-(A" + std::to_string(eareg) + ")";
 
     case 5:
-        return "(" + std::to_string(as<int16_t>(cdi.GetWord(extWordAddress, BUS_PEEK))) + ",A" + std::to_string(eareg) + ")";
+        return "(" + std::to_string(as<int16_t>(cdi.PeekWord(extWordAddress))) + ",A" + std::to_string(eareg) + ")";
 
     case 6:
     {
-        const uint16_t bew = cdi.GetWord(extWordAddress, BUS_PEEK);
+        const uint16_t bew = cdi.PeekWord(extWordAddress);
         return "(" + std::to_string(as<int8_t>(bew)) + ",A" + std::to_string(eareg) + ((bew & 0x8000) ? ",A" : ",D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
     }
 
@@ -149,25 +149,25 @@ std::string SCC68070::DisassembleAddressingMode(const uint32_t extWordAddress, c
         switch(eareg)
         {
         case 0:
-            return "(0x" + toHex(cdi.GetWord(extWordAddress, BUS_PEEK)) + ").W";
+            return "(0x" + toHex(cdi.PeekWord(extWordAddress)) + ").W";
 
         case 1:
-            return "(0x" + toHex(cdi.GetLong(extWordAddress, BUS_PEEK)) + ").L";
+            return "(0x" + toHex(cdi.PeekLong(extWordAddress)) + ").L";
 
         case 2:
-            return "(" + std::to_string(as<int16_t>(cdi.GetWord(extWordAddress, BUS_PEEK))) + ",PC)";
+            return "(" + std::to_string(as<int16_t>(cdi.PeekWord(extWordAddress))) + ",PC)";
 
         case 3:
         {
-            const uint16_t bew = cdi.GetWord(extWordAddress, BUS_PEEK);
+            const uint16_t bew = cdi.PeekWord(extWordAddress);
             return "(" + std::to_string(as<int8_t>(bew)) + ",PC," + ((bew & 0x8000) ? "A" : "D") + std::to_string((bew & 0x7000) >> 12) + (bew & 0x0800 ? ".L" : ".W") + ")";
         }
 
         case 4:
             if(hexImmediateData)
-                return "#0x" + ((size == 1) ? toHex(cdi.GetWord(extWordAddress, BUS_PEEK) & 0x00FF) : (size == 2) ? toHex(cdi.GetWord(extWordAddress, BUS_PEEK)) : (size == 4) ? toHex(cdi.GetLong(extWordAddress, BUS_PEEK)) : "Wrong size for immediate data");
+                return "#0x" + ((size == 1) ? toHex(cdi.PeekWord(extWordAddress) & 0x00FF) : (size == 2) ? toHex(cdi.PeekWord(extWordAddress)) : (size == 4) ? toHex(cdi.PeekLong(extWordAddress)) : "Wrong size for immediate data");
             else
-                return "#" + ((size == 1) ? std::to_string(cdi.GetWord(extWordAddress, BUS_PEEK) & 0x00FF) : (size == 2) ? std::to_string(cdi.GetWord(extWordAddress, BUS_PEEK)) : (size == 4) ? std::to_string(cdi.GetLong(extWordAddress, BUS_PEEK)) : "Wrong size for immediate data");
+                return "#" + ((size == 1) ? std::to_string(cdi.PeekWord(extWordAddress) & 0x00FF) : (size == 2) ? std::to_string(cdi.PeekWord(extWordAddress)) : (size == 4) ? std::to_string(cdi.PeekLong(extWordAddress)) : "Wrong size for immediate data");
 
         default:
             return "Wrong register for addressing mode 7";

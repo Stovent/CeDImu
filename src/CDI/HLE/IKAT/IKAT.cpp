@@ -56,11 +56,13 @@ void IKAT::IncrementTime(const size_t ns)
     }
 }
 
+uint8_t IKAT::PeekByte(const uint8_t addr) const noexcept
+{
+    return registers.at(addr);
+}
+
 uint8_t IKAT::GetByte(const uint8_t addr, const BusFlags flags)
 {
-    if(!flags.trigger) [[unlikely]]
-        return registers[addr];
-
     const uint8_t channel = CHANNEL(addr);
     if(addr >= CHA_OUT && addr <= CHD_OUT && channelOut[channel].size() > 0)
     {
@@ -85,9 +87,6 @@ uint8_t IKAT::GetByte(const uint8_t addr, const BusFlags flags)
 
 void IKAT::SetByte(const uint8_t addr, const uint8_t data, const BusFlags flags)
 {
-    if(!flags.trigger) [[unlikely]]
-        return;
-
     LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::Slave, "Set", getPortName(addr), cdi.m_cpu.currentPC, busBase + (addr << 1) + 1, data});)
 

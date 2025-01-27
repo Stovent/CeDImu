@@ -20,13 +20,13 @@ public:
 
     void IncrementTime(double ns);
 
-    uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    uint16_t PeekWord(uint32_t addr) const noexcept;
 
-    void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL);
+    uint16_t GetWord(uint32_t addr, BusFlags flags);
+
+    void SetWord(uint32_t addr, uint16_t data, BusFlags flags);
 
 private:
-    std::array<uint16_t, 0x2600 / 2> registers;
-
     enum Registers
     {
         IER      = 0x2584,
@@ -50,7 +50,10 @@ private:
         DMACTL   = 0x25C2,
         ID       = 0x25C4,
         DLOAD    = 0x25FE,
+        _size    = 0x2600,
     };
+
+    std::array<uint16_t, Registers::_size / 2> registers;
 };
 
 } // namespace HLE

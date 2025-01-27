@@ -71,6 +71,8 @@ public:
 
     uint32_t GetSize() const { return m_memory.size(); }
 
+    uint8_t At(const uint32_t addr) const { return m_memory.at(addr); }
+
     /** \brief Returns the byte at \p offset.
         \param offset The location of the byte in the BIOS area. */
     uint8_t operator[](const uint32_t offset) const { return m_memory[offset]; }

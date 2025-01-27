@@ -13,7 +13,7 @@ uint8_t SCC68070::GetByte(const uint8_t mode, const uint8_t reg, uint16_t& calcT
     if(mode == 7 && reg == 4)
     {
         calcTime += ITIBW;
-        return GetNextWord() & 0x00FF;
+        return GetNextWord(BUS_NORMAL) & 0x00FF;
     }
 
     lastAddress = GetEffectiveAddress(mode, reg, 1, calcTime);
@@ -31,7 +31,7 @@ uint16_t SCC68070::GetWord(const uint8_t mode, const uint8_t reg, uint16_t& calc
     if(mode == 7 && reg == 4)
     {
         calcTime += ITIBW;
-        return GetNextWord();
+        return GetNextWord(BUS_NORMAL);
     }
 
     lastAddress = GetEffectiveAddress(mode, reg, 2, calcTime);
@@ -49,7 +49,7 @@ uint32_t SCC68070::GetLong(const uint8_t mode, const uint8_t reg, uint16_t& calc
     if(mode == 7 && reg == 4)
     {
         calcTime += ITIL;
-        return GetNextWord() << 16 | GetNextWord();
+        return GetNextWord(BUS_NORMAL) << 16 | GetNextWord(BUS_NORMAL);
     }
 
     lastAddress = GetEffectiveAddress(mode, reg, 4, calcTime);
@@ -109,7 +109,7 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const BusFlags flags)
 {
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
-        const uint8_t data = GetPeripheral(addr);
+        const uint8_t data = GetPeripheral(addr, flags);
         LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Get", "Byte", currentPC, addr, data});)
         return data;
@@ -126,7 +126,7 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const BusFlags flags)
 
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
-        const uint16_t data = as<uint16_t>(GetPeripheral(addr)) << 8 | GetPeripheral(addr + 1);
+        const uint16_t data = as<uint16_t>(GetPeripheral(addr, flags)) << 8 | GetPeripheral(addr + 1, flags);
         LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Get", "Word", currentPC, addr, data});)
         return data;
@@ -145,7 +145,7 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const BusFlags f
 {
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
-        SetPeripheral(addr, data);
+        SetPeripheral(addr, data, flags);
         LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Set", "Byte", currentPC, addr, data});)
         return;
@@ -162,8 +162,8 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const BusFlags 
 
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
-        SetPeripheral(addr, data >> 8);
-        SetPeripheral(addr + 1, data);
+        SetPeripheral(addr, data >> 8, flags);
+        SetPeripheral(addr + 1, data, flags);
         LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
                 cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Set", "Word", currentPC, addr, data});)
         return;

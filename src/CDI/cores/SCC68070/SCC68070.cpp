@@ -317,9 +317,9 @@ uint16_t SCC68070::GetNextWord(const BusFlags flags)
     return opcode;
 }
 
-uint16_t SCC68070::PeekNextWord()
+uint16_t SCC68070::PeekNextWord() const noexcept
 {
-    return GetWord(PC, BUS_PEEK);
+    return cdi.PeekWord(PC);
 }
 
 void SCC68070::ResetOperation()

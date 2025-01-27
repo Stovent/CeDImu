@@ -115,6 +115,11 @@ void M48T08::IncrementClock(const double ns)
     }
 }
 
+uint8_t M48T08::PeekByte(const uint16_t addr) const noexcept
+{
+    return m_sram.at(addr);
+}
+
 /** \brief Returns the byte at the given address in SRAM.
  *
  * \param addr The address of the byte.
@@ -140,9 +145,6 @@ uint8_t M48T08::GetByte(const uint16_t addr, const BusFlags flags)
  */
 void M48T08::SetByte(const uint16_t addr, const uint8_t data, const BusFlags flags)
 {
-    if(!flags.trigger) [[unlikely]]
-        return;
-
     LOG(if(flags.log && cdi.m_callbacks.HasOnLogMemoryAccess()) \
             cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::RTC, "Set", "Byte", cdi.m_cpu.currentPC, addr, data});)
 

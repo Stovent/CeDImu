@@ -4,6 +4,56 @@
 #include "../../common/Callbacks.hpp"
 #include "../../common/utils.hpp"
 
+uint8_t MCD212::PeekByte(const uint32_t addr) const noexcept
+{
+    if(addr < 0x400000)
+    {
+        return memory.at(addr);
+    }
+
+    if(addr < 0x4FFC00)
+    {
+        return BIOS.At(addr - 0x400000);
+    }
+
+    if(addr == 0x4FFFE1)
+    {
+        return registerCSR2R;
+    }
+
+    if(addr == 0x4FFFF1)
+    {
+        return registerCSR1R;
+    }
+
+    std::terminate(); // TODO: is this the best way? or should I return 0 or an optional?
+}
+
+uint16_t MCD212::PeekWord(const uint32_t addr) const noexcept
+{
+    if(addr < 0x400000)
+    {
+        return GET_ARRAY16(memory, addr);
+    }
+
+    if(addr < 0x4FFC00)
+    {
+        return GET_ARRAY16(BIOS, addr - 0x400000);
+    }
+
+    if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
+    {
+        return registerCSR2R;
+    }
+
+    if(addr == 0x4FFFF0) // word size: MSB is 0, LSB is the register
+    {
+        return registerCSR1R;
+    }
+
+    std::terminate(); // TODO: is this the best way? or should I return 0 or an optional?
+}
+
 uint8_t MCD212::GetByte(const uint32_t addr, const BusFlags flags)
 {
     uint8_t data;
@@ -22,8 +72,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const BusFlags flags)
     else if(addr == 0x4FFFE1)
     {
         data = registerCSR2R;
-        if(flags.trigger) [[likely]]
-            registerCSR2R = 0; // clear IT1, IT2 and BE bits on status read
+        registerCSR2R = 0; // clear IT1, IT2 and BE bits on status read
         LOG(location = MemoryAccessLocation::VDSC;)
     }
     else if(addr == 0x4FFFF1)
@@ -46,7 +95,7 @@ uint8_t MCD212::GetByte(const uint32_t addr, const BusFlags flags)
 
 uint16_t MCD212::GetWord(const uint32_t addr, const BusFlags flags)
 {
-    if(memorySwapCount < 4 && flags.trigger) [[unlikely]]
+    if(memorySwapCount < 4) [[unlikely]]
     {
         memorySwapCount++;
         return GET_ARRAY16(BIOS, addr);
@@ -68,8 +117,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const BusFlags flags)
     else if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
     {
         data = registerCSR2R;
-        if(flags.trigger) [[likely]]
-            registerCSR2R = 0; // clear IT1, IT2 and BE bits on status read
+        registerCSR2R = 0; // clear IT1, IT2 and BE bits on status read
         LOG(location = MemoryAccessLocation::VDSC;)
     }
     else if(addr == 0x4FFFF0) // word size: MSB is 0, LSB is the register

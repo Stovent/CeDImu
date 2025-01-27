@@ -21,14 +21,19 @@ public:
     DS1216(DS1216&&) = delete;
     DS1216& operator=(DS1216&&) = delete;
 
-    void IncrementClock(double ns) override;
+    virtual void IncrementClock(double ns) override;
 
-    uint8_t GetByte(uint16_t addr, BusFlags flags) override;
-    void SetByte(uint16_t addr, uint8_t data, BusFlags flags) override;
+    /** \brief Return the value at the given address without modifying the chip.
+     * To access the clock registers, give an address between 0x8000 and 0x8008.
+     */
+    virtual uint8_t PeekByte(uint16_t addr) const noexcept override;
+
+    virtual uint8_t GetByte(uint16_t addr, BusFlags flags) override;
+    virtual void SetByte(uint16_t addr, uint8_t data, BusFlags flags) override;
 
 private:
-    std::array<uint8_t, 0x8000> sram; // 32KB
-    std::array<uint8_t, 8> clock;
+    std::array<uint8_t, 0x8000> m_sram; // 32KB
+    std::array<uint8_t, 8> m_clock;
 
     double m_nsec; /**< Counts the nanoseconds when IncrementClock() is called. */
     std::chrono::time_point<std::chrono::system_clock> m_internalClock; /**< The SRAM internal clock. */
@@ -36,10 +41,10 @@ private:
     void ClockToSRAM();
     void SRAMToClock();
 
-    int patternCount; // < 0 means no match. 0 to 63 means register access.
-    std::deque<bool> pattern;
+    int m_patternCount; // < 0 means no match. 0 to 63 means register access.
+    std::deque<bool> m_pattern;
 
-    void PushPattern(const bool bit);
+    void PushPattern(bool bit);
     void IncrementClockAccess();
 };
 
