@@ -69,25 +69,25 @@ public:
     BIOS(const BIOS&) = default;
     BIOS(BIOS&&) = default;
 
-    uint32_t GetSize() const { return m_memory.size(); }
+    uint32_t GetSize() const noexcept { return m_memory.size(); }
 
     uint8_t At(const uint32_t addr) const { return m_memory.at(addr); }
 
     /** \brief Returns the byte at \p offset.
         \param offset The location of the byte in the BIOS area. */
-    uint8_t operator[](const uint32_t offset) const { return m_memory[offset]; }
+    const uint8_t& operator[](const uint32_t offset) const noexcept { return m_memory[offset]; }
 
     /** \brief Returns a pointer to the location \p pos.
         \param pos The location of the desired  pointer in the BIOS area. */
-    const uint8_t* operator()(const uint32_t pos = 0) const { return &m_memory[pos]; }
+    const uint8_t* operator()(const uint32_t pos = 0) const noexcept { return &m_memory[pos]; }
 
     std::string GetModuleNameAt(const uint32_t offset) const;
 
-    Boards GetBoardType() const;
+    Boards GetBoardType() const noexcept;
 
-    bool Has8KBNVRAM() const;
+    bool Has8KBNVRAM() const noexcept;
 
-    const std::vector<ModuleHeader>& GetModules() const { return m_modules; }
+    const std::vector<ModuleHeader>& GetModules() const noexcept { return m_modules; }
 
 private:
     const std::vector<uint8_t> m_memory;

@@ -67,7 +67,7 @@ std::string BIOS::GetModuleNameAt(const uint32_t offset) const
 /** \brief Get the board type associated with the BIOS.
  * \return The board type, or Boards::Fail if the type could not be detected.
  */
-Boards BIOS::GetBoardType() const
+Boards BIOS::GetBoardType() const noexcept
 {
     const uint8_t id = bits<4, 7>(m_memory[GetSize() - 4]);
     switch(id)
@@ -85,7 +85,7 @@ Boards BIOS::GetBoardType() const
 /** \brief Detect if the BIOS uses 8KB of NVRAM.
  * \return true if it does, false if not.
  */
-bool BIOS::Has8KBNVRAM() const
+bool BIOS::Has8KBNVRAM() const noexcept
 {
     for(const OS9::ModuleHeader& mod : m_modules)
     {
