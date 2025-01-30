@@ -233,24 +233,26 @@ public:
     };
 
 private:
-    CDI& cdi;
-    std::thread executionThread;
+    CDI& m_cdi;
+    std::thread m_executionThread;
 
-    std::mutex uartInMutex;
-    std::deque<uint8_t> uartIn;
+    std::mutex m_uartInMutex;
+    std::deque<uint8_t> m_uartIn;
 
-    std::atomic_bool loop;
-    bool stop;
-    std::atomic_bool isRunning;
+    std::atomic_bool m_loop;
+    bool m_stop;
+    std::atomic_bool m_isRunning;
 
     void DumpCPURegisters();
 
-    const double cycleDelay; // Time between two clock cycles in nanoseconds
-    double speedDelay; // used for emulation speed.
-    const double timerDelay;
-    double timerCounter; // Counts the nanosconds when incrementing the timer.
+    const double m_cycleDelay; // Time between two clock cycles in nanoseconds
+    double m_speedDelay; // used for emulation speed.
+    const double m_timerDelay;
+    double m_timerCounter; // Counts the nanosconds when incrementing the timer.
 
-    std::array<uint8_t, Peripheral::Size> internal;
+    // Internal
+    void ResetInternal();
+    std::array<uint8_t, Peripheral::Size> m_peripherals;
     uint16_t currentOpcode;
     uint32_t lastAddress;
 
@@ -283,7 +285,8 @@ private:
     uint8_t GetIPM() const; // Interrupt Priority Mask
 
     // Exceptions
-    std::priority_queue<Exception> exceptions;
+    std::priority_queue<Exception> m_exceptions;
+    void ClearExceptions();
 
     void PushException(ExceptionVector vector, uint16_t data = 0);
     uint16_t ProcessException(ExceptionVector vector);
@@ -552,7 +555,7 @@ private:
     std::string DisassembleUNLK(const uint32_t pc) const;
 };
 
-inline const char* CPURegisterToString(const SCC68070::Register reg)
+constexpr const char* CPURegisterToString(const SCC68070::Register reg)
 {
     switch(reg)
     {
@@ -582,13 +585,10 @@ inline const char* CPURegisterToString(const SCC68070::Register reg)
     }
 }
 
-#define   SET_TX_READY() internal[USR] |= 0x04;
-#define   SET_RX_READY() internal[USR] |= 0x01;
-#define UNSET_TX_READY() internal[USR] &= ~0x04;
-#define UNSET_RX_READY() internal[USR] &= ~0x01;
-
-#define RESET_INTERNAL() { internal = {0}; SET_TX_READY() }
-#define CLEAR_PRIORITY_QUEUE(queue) while(queue.size()) queue.pop();
+#define   SET_TX_READY() m_peripherals[USR] |= 0x04;
+#define   SET_RX_READY() m_peripherals[USR] |= 0x01;
+#define UNSET_TX_READY() m_peripherals[USR] &= ~0x04;
+#define UNSET_RX_READY() m_peripherals[USR] &= ~0x01;
 
 #define SR_UPPER_MASK (0xA700)
 

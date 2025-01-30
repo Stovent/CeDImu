@@ -110,12 +110,12 @@ uint8_t SCC68070::GetByte(const uint32_t addr, const BusFlags flags)
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
         const uint8_t data = GetPeripheral(addr, flags);
-        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
-                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Get", "Byte", currentPC, addr, data});)
+        LOG(if(m_cdi.m_callbacks.HasOnLogMemoryAccess()) \
+                m_cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Get", "Byte", currentPC, addr, data});)
         return data;
     }
 
-    const uint8_t data = cdi.GetByte(addr, flags);
+    const uint8_t data = m_cdi.GetByte(addr, flags);
     return data;
 }
 
@@ -127,12 +127,12 @@ uint16_t SCC68070::GetWord(const uint32_t addr, const BusFlags flags)
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
         const uint16_t data = as<uint16_t>(GetPeripheral(addr, flags)) << 8 | GetPeripheral(addr + 1, flags);
-        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
-                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Get", "Word", currentPC, addr, data});)
+        LOG(if(m_cdi.m_callbacks.HasOnLogMemoryAccess()) \
+                m_cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Get", "Word", currentPC, addr, data});)
         return data;
     }
 
-    const uint16_t data = cdi.GetWord(addr, flags);
+    const uint16_t data = m_cdi.GetWord(addr, flags);
     return data;
 }
 
@@ -146,13 +146,12 @@ void SCC68070::SetByte(const uint32_t addr, const uint8_t data, const BusFlags f
     if(addr >= Peripheral::Base && addr < Peripheral::Last && GetS())
     {
         SetPeripheral(addr, data, flags);
-        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
-                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Set", "Byte", currentPC, addr, data});)
+        LOG(if(m_cdi.m_callbacks.HasOnLogMemoryAccess()) \
+                m_cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Set", "Byte", currentPC, addr, data});)
         return;
     }
 
-    cdi.SetByte(addr, data, flags);
-    return;
+    m_cdi.SetByte(addr, data, flags);
 }
 
 void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const BusFlags flags)
@@ -164,13 +163,12 @@ void SCC68070::SetWord(const uint32_t addr, const uint16_t data, const BusFlags 
     {
         SetPeripheral(addr, data >> 8, flags);
         SetPeripheral(addr + 1, data, flags);
-        LOG(if(cdi.m_callbacks.HasOnLogMemoryAccess()) \
-                cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Set", "Word", currentPC, addr, data});)
+        LOG(if(m_cdi.m_callbacks.HasOnLogMemoryAccess()) \
+                m_cdi.m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::CPU, "Set", "Word", currentPC, addr, data});)
         return;
     }
 
-    cdi.SetWord(addr, data, flags);
-    return;
+    m_cdi.SetWord(addr, data, flags);
 }
 
 void SCC68070::SetLong(const uint32_t addr, const uint32_t data, const BusFlags flags)

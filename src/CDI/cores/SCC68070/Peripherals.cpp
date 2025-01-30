@@ -4,36 +4,36 @@
 
 uint8_t SCC68070::PeekPeripheral(const uint32_t addr) const noexcept
 {
-    return internal.at(addr);
+    return m_peripherals.at(addr);
 }
 
 uint8_t SCC68070::GetPeripheral(uint32_t addr, const BusFlags flags)
 {
     addr -= Peripheral::Base;
 
-    std::unique_lock<std::mutex> lock(uartInMutex);
+    std::unique_lock<std::mutex> lock(m_uartInMutex);
 
-    if(uartIn.size())
+    if(m_uartIn.size())
         SET_RX_READY()
     else
         UNSET_RX_READY()
 
     if(addr == URHR)
     {
-        if(uartIn.size())
+        if(m_uartIn.size())
         {
-            internal[URHR] = uartIn.front();
-            uartIn.pop_front();
+            m_peripherals[URHR] = m_uartIn.front();
+            m_uartIn.pop_front();
         }
         else
-            internal[URHR] = 0;
+            m_peripherals[URHR] = 0;
 
         lock.unlock();
-        if(flags.log && cdi.m_callbacks.HasOnLogDisassembler())
-            cdi.m_callbacks.OnLogDisassembler({currentPC, "", "URHR: 0x" + toHex(internal[URHR])}); // this or data ?
+        if(flags.log && m_cdi.m_callbacks.HasOnLogDisassembler())
+            m_cdi.m_callbacks.OnLogDisassembler({currentPC, "", "URHR: 0x" + toHex(m_peripherals[URHR])}); // this or data ?
     }
 
-    return internal[addr];
+    return m_peripherals[addr];
 }
 
 void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data, const BusFlags flags)
@@ -44,111 +44,111 @@ void SCC68070::SetPeripheral(uint32_t addr, const uint8_t data, const BusFlags f
     {
     case LIR:
         // TODO: reset interrupts
-        internal[LIR] = data & 0x77; // PIR is read as 0
+        m_peripherals[LIR] = data & 0x77; // PIR is read as 0
         break;
 
     case UCR:
         switch(data & 0x70)
         {
         case 0x20: // reset receiver
-            internal[URHR] = 0;
+            m_peripherals[URHR] = 0;
             break;
         case 0x30: // reset transmitter
-            internal[UTHR] = 0;
+            m_peripherals[UTHR] = 0;
             break;
         case 0x40: // Reset error status
-            internal[USR] &= 0x0F;
+            m_peripherals[USR] &= 0x0F;
             break;
         }
 
-        internal[UCR] = data;
+        m_peripherals[UCR] = data;
         break;
 
     case UTHR:
-        internal[USR] |= 0x08; // set TXEMT bit
-        cdi.m_callbacks.OnUARTOut(data);
-        internal[UTHR] = data;
-        if(flags.log && cdi.m_callbacks.HasOnLogDisassembler())
-            cdi.m_callbacks.OnLogDisassembler({currentPC, "", "UTHR: 0x" + toHex(internal[UTHR])});
+        m_peripherals[USR] |= 0x08; // set TXEMT bit
+        m_cdi.m_callbacks.OnUARTOut(data);
+        m_peripherals[UTHR] = data;
+        if(flags.log && m_cdi.m_callbacks.HasOnLogDisassembler())
+            m_cdi.m_callbacks.OnLogDisassembler({currentPC, "", "UTHR: 0x" + toHex(m_peripherals[UTHR])});
         break;
 
     case TSR:
-        internal[TSR] ^= data; // Reset bits when a 1 is written in the register
+        m_peripherals[TSR] ^= data; // Reset bits when a 1 is written in the register
         break;
 
     default:
         if(addr != MSR)
-            internal[addr] = data;
+            m_peripherals[addr] = data;
     }
 }
 
 void SCC68070::IncrementTimer(const double ns)
 {
-    timerCounter += ns;
-    const uint8_t priority = internal[PICR1] & 0x07;
-    while(timerCounter >= timerDelay)
+    m_timerCounter += ns;
+    const uint8_t priority = m_peripherals[PICR1] & 0x07;
+    while(m_timerCounter >= m_timerDelay)
     {
-        timerCounter -= timerDelay;
-        uint16_t T0 = as<uint16_t>(internal[T0H]) << 8 | internal[T0L];
+        m_timerCounter -= m_timerDelay;
+        uint16_t T0 = as<uint16_t>(m_peripherals[T0H]) << 8 | m_peripherals[T0L];
 
         if(T0 == 0xFFFF)
         {
-            internal[TSR] |= 0x80; // If overflow, set OV flag
-            internal[T0H] = internal[RRH];
-            internal[T0L] = internal[RRL];
+            m_peripherals[TSR] |= 0x80; // If overflow, set OV flag
+            m_peripherals[T0H] = m_peripherals[RRH];
+            m_peripherals[T0L] = m_peripherals[RRL];
             if(priority)
                 PushException(as<ExceptionVector>(Level1OnChipInterruptAutovector - 1 + priority));
         }
         else
         {
             T0++; // increment timer
-            internal[T0H] = T0 >> 8;
-            internal[T0L] = T0;
+            m_peripherals[T0H] = T0 >> 8;
+            m_peripherals[T0L] = T0;
         }
 
-        if(internal[TCR] & 0x30) // T1 not inhibited
+        if(m_peripherals[TCR] & 0x30) // T1 not inhibited
         {
-            uint16_t T1 = as<uint16_t>(internal[T1H]) << 8 | internal[T1L];
+            uint16_t T1 = as<uint16_t>(m_peripherals[T1H]) << 8 | m_peripherals[T1L];
 
             if(T1 == 0xFFFF)
             {
-                internal[TSR] |= 0x10;
+                m_peripherals[TSR] |= 0x10;
                 if(priority)
                     PushException(as<ExceptionVector>(Level1OnChipInterruptAutovector - 1 + priority));
             }
-            else if((internal[TCR] & 0x30) == 0x30)
-                internal[TSR] &= 0xEE; // Event-counter mode resets OV bit
+            else if((m_peripherals[TCR] & 0x30) == 0x30)
+                m_peripherals[TSR] &= 0xEE; // Event-counter mode resets OV bit
 
             T1++;
 
             if(T1 == T0)
-                internal[TSR] |= 0x40;
+                m_peripherals[TSR] |= 0x40;
 
-            internal[T1H] = T1 >> 8;
-            internal[T1L] = T1;
+            m_peripherals[T1H] = T1 >> 8;
+            m_peripherals[T1L] = T1;
         }
 
 
-        if(internal[TCR] & 0x03) // T2 not inhibited
+        if(m_peripherals[TCR] & 0x03) // T2 not inhibited
         {
-            uint16_t T2 = as<uint16_t>(internal[T2H]) << 8 | internal[T2L];
+            uint16_t T2 = as<uint16_t>(m_peripherals[T2H]) << 8 | m_peripherals[T2L];
 
             if(T2 == 0xFFFF)
             {
-                internal[TSR] |= 0x02;
+                m_peripherals[TSR] |= 0x02;
                 if(priority)
                     PushException(as<ExceptionVector>(Level1OnChipInterruptAutovector - 1 + priority));
             }
-            else if((internal[TCR] & 0x03) == 0x03)
-                internal[TSR] &= 0xFC; // Event-counter mode resets OV bit
+            else if((m_peripherals[TCR] & 0x03) == 0x03)
+                m_peripherals[TSR] &= 0xFC; // Event-counter mode resets OV bit
 
             T2++;
 
             if(T2 == T0)
-                internal[TSR] |= 0x08;
+                m_peripherals[TSR] |= 0x08;
 
-            internal[T2H] = T2 >> 8;
-            internal[T2L] = T2;
+            m_peripherals[T2H] = T2 >> 8;
+            m_peripherals[T2L] = T2;
         }
 
         // Use TCR to throw interrupts if necessary

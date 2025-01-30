@@ -12,21 +12,21 @@ uint16_t SCC68070::ProcessException(const ExceptionVector vector)
 
     if(vector == ResetSSPPC)
     {
-        SSP = cdi.GetLong(0, BUS_INSTRUCTION);
-        PC = cdi.GetLong(4, BUS_INSTRUCTION);
+        SSP = m_cdi.GetLong(0, BUS_INSTRUCTION);
+        PC = m_cdi.GetLong(4, BUS_INSTRUCTION);
         SR = 0x2700;
         USP = 0;
-        stop = false;
+        m_stop = false;
         return 43;
     }
 
     if(vector == Trace || (vector >= SpuriousInterrupt && vector <= Level7ExternalInterruptAutovector) || \
                           (vector >= Level1OnChipInterruptAutovector && vector <= Level7OnChipInterruptAutovector))
     {
-        stop = false;
+        m_stop = false;
     }
     else
-        if(stop)
+        if(m_stop)
             return 0;
 
     if(vector == BusError || vector == AddressError) // TODO: implement long Stack format
@@ -2386,8 +2386,8 @@ uint16_t SCC68070::RTE()
         PushException(FormatError);
     }
 
-    if(cdi.m_callbacks.HasOnLogRTE())
-        cdi.m_callbacks.OnLogRTE(PC, format);
+    if(m_cdi.m_callbacks.HasOnLogRTE())
+        m_cdi.m_callbacks.OnLogRTE(PC, format);
 
     return calcTime;
 }
@@ -2484,7 +2484,7 @@ uint16_t SCC68070::STOP() // TODO: correctly implement it.
 
     SR = data;
     SR &= 0xA71F; // Set all unimplemented bytes to 0.
-    stop = true;
+    m_stop = true;
 
     return 13;
 }
