@@ -92,8 +92,8 @@ uint8_t Mono3::GetByte(const uint32_t addr, const BusFlags flags)
         return m_timekeeper->GetByte((addr - 0x320000) >> 1, flags);
     }
 
-    LOG(if(flags.log) { if(m_callbacks.HasOnLogMemoryAccess()) \
-            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Byte", m_cpu.currentPC, addr, 0}); })
+    LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Byte", m_cpu.currentPC, addr, 0});)
     throw SCC68070::Exception(SCC68070::BusError);
 }
 
@@ -119,8 +119,8 @@ uint16_t Mono3::GetWord(const uint32_t addr, const BusFlags flags)
         return as<uint16_t>(m_timekeeper->GetByte((addr - 0x320000) >> 1, flags)) << 8;
     }
 
-    LOG(if(flags.log) { if(m_callbacks.HasOnLogMemoryAccess()) \
-            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Word", m_cpu.currentPC, addr, 0}); })
+    LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Word", m_cpu.currentPC, addr, 0});)
     throw SCC68070::Exception(SCC68070::BusError);
 }
 
@@ -159,8 +159,8 @@ void Mono3::SetByte(const uint32_t addr, const uint8_t data, const BusFlags flag
         return;
     }
 
-    LOG(if(flags.log) { if(m_callbacks.HasOnLogMemoryAccess()) \
-            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Byte", m_cpu.currentPC, addr, data}); })
+    LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Byte", m_cpu.currentPC, addr, data});)
     throw SCC68070::Exception(SCC68070::BusError);
 }
 
@@ -189,8 +189,8 @@ void Mono3::SetWord(const uint32_t addr, const uint16_t data, const BusFlags fla
         return;
     }
 
-    LOG(if(flags.log) { if(m_callbacks.HasOnLogMemoryAccess()) \
-            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Word", m_cpu.currentPC, addr, data}); })
+    LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Word", m_cpu.currentPC, addr, data});)
     throw SCC68070::Exception(SCC68070::BusError);
 }
 
