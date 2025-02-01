@@ -87,7 +87,7 @@ CDI::~CDI() noexcept
 
 /** \brief Returns a pointer to the given address.
  */
-const uint8_t* CDI::GetPointer(uint32_t addr) const
+const uint8_t* CDI::GetPointer(const uint32_t addr) const
 {
     const RAMBank ram1 = GetRAMBank1();
     if(addr >= ram1.base && addr < ram1.base + ram1.data.size())
@@ -100,12 +100,12 @@ const uint8_t* CDI::GetPointer(uint32_t addr) const
     const OS9::BIOS& bios = GetBIOS();
     const uint32_t base = GetBIOSBaseAddress();
     if(addr >= base && addr < base + bios.GetSize())
-        return bios(addr - base);
+        return &bios[addr - base];
 
     return nullptr;
 }
 
-void CDI::IncrementTime(double ns)
+void CDI::IncrementTime(const double ns)
 {
     m_slave->IncrementTime(ns);
     m_timekeeper->IncrementClock(ns);
