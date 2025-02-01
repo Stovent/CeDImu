@@ -15,7 +15,7 @@
  * Template deduction should allow directly doing `as<R>()` without specifing T.
  */
 template<typename R, typename T>
-static constexpr inline R as(T&& data)
+constexpr R as(T&& data)
 {
     return static_cast<R>(std::forward<T>(data));
 }
@@ -40,7 +40,7 @@ constexpr auto zeroExtend = as<R, T>;
  * \return true if the bit is set, false if it is clear.
  */
 template<size_t BITNUM, std::integral T>
-constexpr inline bool bit(const T data) noexcept
+constexpr bool bit(const T data) noexcept
 {
     return (data & (1 << BITNUM)) != 0;
 }
@@ -52,7 +52,7 @@ constexpr inline bool bit(const T data) noexcept
  * \return The extracted bits.
  */
 template<size_t BITFIRST, size_t BITLAST, std::integral T>
-constexpr inline T bits(const T data) noexcept
+constexpr T bits(const T data) noexcept
 {
     static_assert(BITFIRST <= BITLAST);
     static_assert(BITLAST < (sizeof(T) * 8));
@@ -66,7 +66,7 @@ constexpr inline T bits(const T data) noexcept
  * \param data The PBCD to convert.
  * \return The converted PBCD to byte.
  */
-constexpr inline uint8_t PBCDToByte(const uint8_t data) noexcept
+constexpr uint8_t PBCDToByte(const uint8_t data) noexcept
 {
     return bits<4, 7>(data) * 10 + bits<0, 3>(data);
 }
@@ -79,7 +79,7 @@ constexpr inline uint8_t PBCDToByte(const uint8_t data) noexcept
  * Because PBCD are stored on one byte, if the input is greater than 99,
  * the conversion is modulo 100. e.g. a byte value of 103 or 203 will become 3 in PBCD.
  */
-constexpr inline uint8_t byteToPBCD(uint8_t data) noexcept
+constexpr uint8_t byteToPBCD(uint8_t data) noexcept
 {
     data %= 100;
     return ((data / 10) << 4) | (data % 10);
@@ -91,7 +91,7 @@ constexpr inline uint8_t byteToPBCD(uint8_t data) noexcept
  * \return true if the number is even, false if it is odd.
  */
 template<std::integral T>
-constexpr inline bool isEven(const T number) noexcept
+constexpr bool isEven(const T number) noexcept
 {
     return (number & 1) == 0;
 }
@@ -112,14 +112,14 @@ static std::string toHex(const T number)
 
 /** \brief Specialisation for char types to print as numbers. */
 template<>
-inline std::string toHex(const uint8_t number)
+constexpr std::string toHex(const uint8_t number)
 {
     return toHex<unsigned>(number);
 }
 
 /** \brief Specialisation for char types to print as numbers. */
 template<>
-inline std::string toHex(const int8_t number)
+constexpr std::string toHex(const int8_t number)
 {
     return toHex<int>(number);
 }
@@ -167,7 +167,7 @@ inline uint32_t binStringToInt(const std::string& s)
  * \return the input if if fits in the range, 0 if input is lower, 255 if input is greater.
  */
 template<std::integral T>
-constexpr inline uint8_t limu8(const T d) noexcept
+constexpr uint8_t limu8(const T d) noexcept
 {
     return static_cast<uint8_t>(std::clamp<T>(d, 0, UINT8_MAX));
 }
@@ -178,7 +178,7 @@ constexpr inline uint8_t limu8(const T d) noexcept
  * \return the input if if fits in the range, INT16_MIN if input is lower, INT16_MAX if input is greater.
  */
 template<std::integral T>
-constexpr inline int16_t lims16(const T d) noexcept
+constexpr int16_t lims16(const T d) noexcept
 {
     return static_cast<int16_t>(std::clamp<T>(d, INT16_MIN, INT16_MAX));
 }

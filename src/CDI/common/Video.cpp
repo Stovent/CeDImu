@@ -225,7 +225,7 @@ void decodeRGB555(const uint16_t pixel, uint8_t pixels[4]) noexcept
     pixels[3] = pixel << 3 & 0xF8;
 }
 
-static constexpr inline void matrixRGB(const int Y, const uint8_t U, const uint8_t V, uint8_t pixels[4]) noexcept
+static constexpr void matrixRGB(const int Y, const uint8_t U, const uint8_t V, uint8_t pixels[4]) noexcept
 {
     pixels[0] = 0xFF;
     pixels[1] = limu8(Y + matrixVToR[V]);

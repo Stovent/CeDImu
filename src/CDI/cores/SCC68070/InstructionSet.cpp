@@ -128,7 +128,7 @@ uint16_t SCC68070::ABCD()
 }
 
 template<typename T, typename UT, typename VT, typename UVT>
-static inline uint8_t add(const T src, const T dst, T* result, const VT min, const VT max, const UVT umax)
+static constexpr uint8_t add(const T src, const T dst, T* result, const VT min, const VT max, const UVT umax)
 {
     const UVT uvres = zeroExtend<UT, UVT>(src) + zeroExtend<UT, UVT>(dst);
     const VT vres = as<VT>(src) + as<VT>(dst);
@@ -941,7 +941,7 @@ uint16_t SCC68070::CLR()
 }
 
 template<typename T, typename UT, typename VT>
-static inline uint8_t cmp(const T src, const T dst, const VT min, const VT max)
+static constexpr uint8_t cmp(const T src, const T dst, const VT min, const VT max)
 {
     const VT vres = as<VT>(dst) - as<VT>(src);
     const T res = vres;
@@ -2490,7 +2490,7 @@ uint16_t SCC68070::STOP() // TODO: correctly implement it.
 }
 
 template<typename T, typename UT, typename VT>
-static inline uint8_t sub(const T src, const T dst, T* result, const VT min, const VT max)
+static constexpr uint8_t sub(const T src, const T dst, T* result, const VT min, const VT max)
 {
     const VT vres = as<VT>(dst) - as<VT>(src);
     const T res = vres;

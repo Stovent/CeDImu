@@ -3,14 +3,14 @@
 
 #include <algorithm>
 
-static constexpr inline size_t getDataPacketDelay(PointingDevice::Class type)
+static constexpr size_t getDataPacketDelay(const PointingDevice::Class type)
 {
     if(type == PointingDevice::Class::AbsoluteCoordinate || type == PointingDevice::Class::AbsoluteScreen)
         return 33'333'333;
     return 25'000'000;
 }
 
-PointingDevice::PointingDevice(ISlave& slv, PointingDevice::Class deviceClass)
+PointingDevice::PointingDevice(ISlave& slv, const PointingDevice::Class deviceClass)
     : m_slave(slv)
     , m_deviceClass(deviceClass)
     , m_dataPacketDelay(getDataPacketDelay(deviceClass))
