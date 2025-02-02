@@ -3,7 +3,8 @@
 #include "../../common/utils.hpp"
 #include "../../OS9/SystemCalls.hpp"
 
-// TODO: use std::format.
+#include <format>
+
 // TODO: make special formatters for fun and learning?
 
 std::string SCC68070::exceptionVectorToString(ExceptionVector vector)
@@ -63,7 +64,7 @@ std::string SCC68070::exceptionVectorToString(ExceptionVector vector)
 
 std::string SCC68070::DisassembleUnknownInstruction(const uint32_t) const
 {
-    return "Unknown instruction 0x" + toHex(currentOpcode);
+    return std::format("Unknown instruction 0x{:X}", currentOpcode);
 }
 
 std::string SCC68070::DisassembleABCD(const uint32_t) const
@@ -219,13 +220,13 @@ std::string SCC68070::DisassembleANDI(const uint32_t pc) const
 std::string SCC68070::DisassembleANDICCR(const uint32_t pc) const
 {
     const uint8_t data = m_cdi.PeekWord(pc+2) & 0x1F;
-    return "ANDI #0x" + toHex(data) + ", CCR";
+    return std::format("ANDI #0x{:04X}, CCR", data);
 }
 
 std::string SCC68070::DisassembleANDISR(const uint32_t pc) const
 {
     const uint16_t data = m_cdi.PeekWord(pc+2);
-    return "ANDI #0x" + toHex(data) + ", SR";
+    return std::format("ANDI #0x{:04X}, SR", data);
 }
 
 std::string SCC68070::DisassembleASm(const uint32_t pc) const
@@ -317,7 +318,7 @@ std::string SCC68070::DisassembleBRA(const uint32_t pc) const
     if(disp == 0)
         disp = m_cdi.PeekWord(pc+2);
 
-    return "BRA " + toHex(pc + 2 + disp);
+    return std::format("BRA {:X}", pc + 2 + disp);
 }
 
 std::string SCC68070::DisassembleBSET(const uint32_t pc) const
@@ -347,7 +348,7 @@ std::string SCC68070::DisassembleBSR(const uint32_t pc) const
     if(disp == 0)
         disp = m_cdi.PeekWord(pc+2);
 
-    return "BSR " + toHex(pc + 2 + disp);
+    return std::format("BSR {:X}", pc + 2 + disp);
 }
 
 std::string SCC68070::DisassembleBTST(const uint32_t pc) const
@@ -538,13 +539,13 @@ std::string SCC68070::DisassembleEORI(const uint32_t pc) const
 std::string SCC68070::DisassembleEORICCR(const uint32_t pc) const
 {
     const uint8_t data = m_cdi.PeekWord(pc+2) & 0x1F;
-    return "EORI #0x" + toHex(data) + ", CCR";
+    return std::format("EORI #0x{:04X}, CCR", data);
 }
 
 std::string SCC68070::DisassembleEORISR(const uint32_t pc) const
 {
     const uint8_t data = m_cdi.PeekWord(pc+2);
-    return "EORI #0x" + toHex(data) + ", SR";
+    return std::format("EORI #0x{:04X}, SR", data);
 }
 
 std::string SCC68070::DisassembleEXG(const uint32_t) const
@@ -553,31 +554,28 @@ std::string SCC68070::DisassembleEXG(const uint32_t) const
     const uint8_t mode = (currentOpcode & 0x00F8) >> 3;
     const uint8_t   Ry = (currentOpcode & 0x0007);
 
-    std::string left, right;
     if(mode == 0x08)
     {
-        left = "D" + std::to_string(Rx);
-        right = ", D" + std::to_string(Ry);
+        return std::format("EXG D{}, D{}", Rx, Ry);
     }
     else if(mode == 0x09)
     {
-        left = "A" + std::to_string(Rx);
-        right = ", A" + std::to_string(Ry);
+        return std::format("EXG A{}, A{}", Rx, Ry);
     }
     else
     {
-        left = "D" + std::to_string(Rx);
-        right = ", A" + std::to_string(Ry);
+        return std::format("EXG D{}, A{}", Rx, Ry);
     }
-
-    return "EXG " + left + right;
 }
 
 std::string SCC68070::DisassembleEXT(const uint32_t) const
 {
     const uint8_t opmode = (currentOpcode & 0x01C0) >> 6;
     const uint8_t    reg = (currentOpcode & 0x0007);
-    return std::string("EXT.") + (opmode == 2 ? "W D" : "L D") + std::to_string(reg);
+    if(opmode == 2)
+        return std::format("EXT.W D{}", reg);
+    else
+        return std::format("EXT.L D{}", reg);
 }
 
 std::string SCC68070::DisassembleILLEGAL(const uint32_t) const
@@ -611,7 +609,7 @@ std::string SCC68070::DisassembleLINK(const uint32_t pc) const
 {
     const uint8_t reg = (currentOpcode & 0x0007);
     const int16_t disp = m_cdi.PeekWord(pc+2);
-    return "LINK A" + std::to_string(reg) + ", #" + std::to_string(disp);
+    return std::format("LINK A{}, #{}", reg, disp);
 }
 
 std::string SCC68070::DisassembleLSm(const uint32_t pc) const
@@ -708,7 +706,10 @@ std::string SCC68070::DisassembleMOVEUSP(const uint32_t) const
 {
     const uint8_t  dr = (currentOpcode & 0x0008) >> 3;
     const uint8_t reg = (currentOpcode & 0x0007);
-    return std::string("MOVE ") + (dr ? "USP, A" + std::to_string(reg) : "A" + std::to_string(reg) + ", USP");
+    if(dr)
+        return std::format("MOVE USP, A{}", reg);
+    else
+        return std::format("MOVE A{}, USP", reg);
 }
 
 std::string SCC68070::DisassembleMOVEM(const uint32_t pc) const
@@ -732,32 +733,29 @@ std::string SCC68070::DisassembleMOVEP(const uint32_t pc) const
     const uint8_t addrreg = (currentOpcode & 0x0007);
     const int16_t    disp = m_cdi.PeekWord(pc+2);
 
-    std::string operands;
     if(opmode == 4)
     {
-        operands = ".W (" + std::to_string(disp) + ", A" + std::to_string(addrreg) + "), D" + std::to_string(datareg);
+        return std::format("MOVEP.W ({}, A{}), D{}", disp, addrreg, datareg);
     }
     else if(opmode == 5)
     {
-        operands = ".L (" + std::to_string(disp) + ", A" + std::to_string(addrreg) + "), D" + std::to_string(datareg);
+        return std::format("MOVEP.L ({}, A{}), D{}", disp, addrreg, datareg);
     }
     else if(opmode == 6)
     {
-        operands = ".W D" + std::to_string(datareg) + ", (" + std::to_string(disp) + ", A" + std::to_string(addrreg) + ")";
+        return std::format("MOVEP.W D{}, ({}, A{})", datareg, disp, addrreg);
     }
     else
     {
-        operands = ".L D" + std::to_string(datareg) + ", (" + std::to_string(disp) + ", A" + std::to_string(addrreg) + ")";
+        return std::format("MOVEP.L D{}, ({}, A{})", datareg, disp, addrreg);
     }
-
-    return "MOVEP" + operands;
 }
 
 std::string SCC68070::DisassembleMOVEQ(const uint32_t) const
 {
     const uint8_t reg = (currentOpcode & 0x0E00) >> 9;
     const int8_t data = (currentOpcode & 0x00FF);
-    return "MOVEQ #" + std::to_string(data) + ", D" + std::to_string(reg);
+    return std::format("MOVEQ #{}, D{}", data, reg);
 }
 
 std::string SCC68070::DisassembleMULS(const uint32_t pc) const
@@ -884,13 +882,13 @@ std::string SCC68070::DisassembleORI(const uint32_t pc) const
 std::string SCC68070::DisassembleORICCR(const uint32_t pc) const
 {
     const uint8_t data = m_cdi.PeekWord(pc+2) & 0x1F;
-    return "ORI #0x" + toHex(data) + ", CCR";
+    return std::format("ORI #0x{:04X}, CCR", data);
 }
 
 std::string SCC68070::DisassembleORISR(const uint32_t pc) const
 {
     const uint16_t data = m_cdi.PeekWord(pc+2);
-    return "ORI #0x" + toHex(data) + ", SR";
+    return std::format("ORI #0x{:04X}, SR", data);
 }
 
 std::string SCC68070::DisassemblePEA(const uint32_t pc) const
@@ -927,9 +925,9 @@ std::string SCC68070::DisassembleROr(const uint32_t) const
 
     std::string leftOperand;
     if(ir)
-        leftOperand = "D" + std::to_string(count);
+        leftOperand = std::format("D{}", count);
     else
-        leftOperand = "#" + std::to_string(count);
+        leftOperand = std::format("#{}", count);
 
     if(dr)
         return std::string("ROL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
@@ -959,9 +957,9 @@ std::string SCC68070::DisassembleROXr(const uint32_t) const
 
     std::string leftOperand;
     if(ir)
-        leftOperand = "D" + std::to_string(count);
+        leftOperand = std::format("D{}", count);
     else
-        leftOperand = "#" + std::to_string(count);
+        leftOperand = std::format("#{}", count);
 
     if(dr)
         return std::string("ROXL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
@@ -1004,7 +1002,7 @@ std::string SCC68070::DisassembleScc(const uint32_t pc) const
 std::string SCC68070::DisassembleSTOP(const uint32_t pc) const
 {
     const uint16_t data = m_cdi.PeekWord(pc+2);
-    return "STOP #0x" + toHex(data);
+    return std::format("STOP #0x{:04X}", data);
 }
 
 std::string SCC68070::DisassembleSUB(const uint32_t pc) const
@@ -1105,7 +1103,7 @@ std::string SCC68070::DisassembleSUBX(const uint32_t) const
 
 std::string SCC68070::DisassembleSWAP(const uint32_t) const
 {
-    return "SWAP D" + std::to_string(currentOpcode & 0x0007);
+    return std::format("SWAP D{}", currentOpcode & 0x0007);
 }
 
 std::string SCC68070::DisassembleTAS(const uint32_t pc) const
@@ -1117,7 +1115,7 @@ std::string SCC68070::DisassembleTAS(const uint32_t pc) const
 
 std::string SCC68070::DisassembleTRAP(const uint32_t) const
 {
-    return "TRAP #" + std::to_string(currentOpcode & 0x000F);
+    return std::format("TRAP #{}", currentOpcode & 0x000F);
 }
 
 std::string SCC68070::DisassembleTRAPV(const uint32_t) const
@@ -1143,5 +1141,5 @@ std::string SCC68070::DisassembleTST(const uint32_t pc) const
 
 std::string SCC68070::DisassembleUNLK(const uint32_t) const
 {
-    return "UNLK A" + std::to_string(currentOpcode & 0x0007);
+    return std::format("UNLK A{}", currentOpcode & 0x0007);
 }

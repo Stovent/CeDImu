@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <concepts>
 #include <cstdint>
+#include <format>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -104,24 +105,7 @@ constexpr bool isEven(const T number) noexcept
 template<std::integral T>
 static std::string toHex(const T number)
 {
-    // TODO: use std::format.
-    std::stringstream ss;
-    ss << std::hex << number;
-    return ss.str();
-}
-
-/** \brief Specialisation for char types to print as numbers. */
-template<>
-constexpr std::string toHex(const uint8_t number)
-{
-    return toHex<unsigned>(number);
-}
-
-/** \brief Specialisation for char types to print as numbers. */
-template<>
-constexpr std::string toHex(const int8_t number)
-{
-    return toHex<int>(number);
+    return std::format("{:X}", number);
 }
 
 /** \brief Converts the binary representation of a number to a string.

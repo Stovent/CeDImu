@@ -20,7 +20,6 @@ static void addUIntProperty(wxPropertyGrid* properties, const std::string& label
 
 static void addHexProperty(wxPropertyGrid* properties, const std::string& label, const std::string& name, unsigned long value)
 {
-    // TODO: std::format.
     addProperty(properties, new wxStringProperty(label, name, toHex(value)));
 }
 

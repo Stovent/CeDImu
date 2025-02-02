@@ -45,31 +45,21 @@ static constexpr std::array<const char*, 20> REGISTER_NAMES{
 
 static wxString formatRegister(const uint32_t value, const int size, const bool hex)
 {
-    // TODO: std::format().
-    std::stringstream stream;
-
-    if(hex)
-        stream << std::hex;
-    else
-        stream << std::dec;
-
     if(size == 0) // Byte
-    {
-        stream << zeroExtend<uint8_t, uint32_t>(value >> 24) << ' '
-               << zeroExtend<uint8_t, uint32_t>(value >> 16) << ' '
-               << zeroExtend<uint8_t, uint32_t>(value >> 8) << ' '
-               << zeroExtend<uint8_t, uint32_t>(value);
-    }
+        if(hex)
+            return std::format("{:X} {:X} {:X} {:X}", as<uint8_t>(value >> 24), as<uint8_t>(value >> 16), as<uint8_t>(value >> 8), as<uint8_t>(value));
+        else
+            return std::format("{} {} {} {}", as<uint8_t>(value >> 24), as<uint8_t>(value >> 16), as<uint8_t>(value >> 8), as<uint8_t>(value));
     else if(size == 1) // Word
-    {
-        stream << as<uint16_t>(value >> 16) << ' ' << as<uint16_t>(value);
-    }
+        if(hex)
+            return std::format("{:X} {:X}", as<uint16_t>(value >> 16), as<uint16_t>(value));
+        else
+            return std::format("{} {}", as<uint16_t>(value >> 16), as<uint16_t>(value));
     else // Long
-    {
-        stream << value;
-    }
-
-    return stream.str();
+        if(hex)
+            return std::format("{:X}", value);
+        else
+            return std::format("{}", value);
 }
 
 static wxString srToString(const uint16_t sr)
