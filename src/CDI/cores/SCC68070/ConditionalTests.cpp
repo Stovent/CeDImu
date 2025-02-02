@@ -80,7 +80,7 @@ bool SCC68070::LE() const
     return GetZ() || (GetN() && !GetV()) || (!GetN() && GetV());
 }
 
-std::string SCC68070::DisassembleConditionalCode(const uint8_t cc) const
+const char* SCC68070::DisassembleConditionalCode(const uint8_t cc) const
 {
     switch(cc)
     {

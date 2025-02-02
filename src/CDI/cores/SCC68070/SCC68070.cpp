@@ -355,20 +355,10 @@ void SCC68070::DumpCPURegisters()
     }
 }
 
-bool SCC68070::GetS() const
-{
-    return SR & 0b0010'0000'0000'0000;
-}
-
 void SCC68070::SetS(const bool S)
 {
     SR &= 0b1101'1111'1111'1111;
     SR |= S << 13;
-}
-
-bool SCC68070::GetX() const
-{
-    return SR & 0b0000'0000'0001'0000;
 }
 
 void SCC68070::SetX(const bool X)
@@ -377,20 +367,10 @@ void SCC68070::SetX(const bool X)
     SR |= X << 4;
 }
 
-bool SCC68070::GetN() const
-{
-    return SR & 0b0000'0000'0000'1000;
-}
-
 void SCC68070::SetN(const bool N)
 {
     SR &= 0b1111'1111'1111'0111;
     SR |= N << 3;
-}
-
-bool SCC68070::GetZ() const
-{
-    return SR & 0b0000'0000'0000'0100;
 }
 
 void SCC68070::SetZ(const bool Z)
@@ -399,20 +379,10 @@ void SCC68070::SetZ(const bool Z)
     SR |= Z << 2;
 }
 
-bool SCC68070::GetV() const
-{
-    return SR & 0b0000'0000'0000'0010;
-}
-
 void SCC68070::SetV(const bool V)
 {
     SR &= 0b1111'1111'1111'1101;
     SR |= V << 1;
-}
-
-bool SCC68070::GetC() const
-{
-    return SR & 0b0000'0000'0000'0001;
 }
 
 void SCC68070::SetC(const bool C)
@@ -431,11 +401,6 @@ void SCC68070::SetVC(const bool VC)
 {
     SetV(VC);
     SetC(VC);
-}
-
-uint8_t SCC68070::GetIPM() const
-{
-    return SR >> 8 & 0x0007;
 }
 
 void SCC68070::GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc)

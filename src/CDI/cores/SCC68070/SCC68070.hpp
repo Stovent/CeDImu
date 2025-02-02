@@ -3,6 +3,7 @@
 
 class CDI;
 #include "../../common/types.hpp"
+#include "../../common/utils.hpp"
 
 #include <array>
 #include <atomic>
@@ -264,25 +265,25 @@ private:
     uint32_t USP;
     uint32_t SSP;
 
-    inline uint32_t& A(const uint8_t reg) { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
-    inline uint32_t A(const uint8_t reg) const { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
+    constexpr uint32_t& A(const uint8_t reg) { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
+    constexpr uint32_t A(const uint8_t reg) const { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
 
     // Conditional Codes
-    bool GetS() const;
+    constexpr bool GetS() const { return bit<13>(SR); }
     void SetS(bool S = 1);
-    bool GetX() const;
+    constexpr bool GetX() const { return bit<4>(SR); }
     void SetX(bool X = 1);
-    bool GetN() const;
+    constexpr bool GetN() const { return bit<3>(SR); }
     void SetN(bool N = 1);
-    bool GetZ() const;
+    constexpr bool GetZ() const { return bit<2>(SR); }
     void SetZ(bool Z = 1);
-    bool GetV() const;
+    constexpr bool GetV() const { return bit<1>(SR); }
     void SetV(bool V = 1);
-    bool GetC() const;
+    constexpr bool GetC() const { return bit<0>(SR); }
     void SetC(bool C = 1);
     void SetXC(bool XC = 1); // Set both X and C at the same time
     void SetVC(bool VC = 1); // Set both V and C at the same time
-    uint8_t GetIPM() const; // Interrupt Priority Mask
+    constexpr uint8_t GetIPM() const { return bits<8, 10>(SR); }; // Interrupt Priority Mask
 
     // Exceptions
     std::priority_queue<Exception> m_exceptions;
@@ -370,7 +371,7 @@ private:
         &SCC68070::GT,
         &SCC68070::LE,
     };
-    std::string DisassembleConditionalCode(uint8_t cc) const;
+    const char* DisassembleConditionalCode(uint8_t cc) const;
 
     // Instruction Set
     void Interpreter();

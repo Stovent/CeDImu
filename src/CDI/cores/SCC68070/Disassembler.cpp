@@ -3,6 +3,9 @@
 #include "../../common/utils.hpp"
 #include "../../OS9/SystemCalls.hpp"
 
+// TODO: use std::format.
+// TODO: make special formatters for fun and learning?
+
 std::string SCC68070::exceptionVectorToString(ExceptionVector vector)
 {
     switch(vector)
@@ -264,7 +267,7 @@ std::string SCC68070::DisassembleBcc(const uint32_t pc) const
     if(disp == 0)
         disp = m_cdi.PeekWord(pc+2);
 
-    return "B" + DisassembleConditionalCode(condition) + " " + toHex(pc + 2 + disp);
+    return std::string("B") + DisassembleConditionalCode(condition) + " " + toHex(pc + 2 + disp);
 }
 
 std::string SCC68070::DisassembleBCHG(const uint32_t pc) const
@@ -470,7 +473,7 @@ std::string SCC68070::DisassembleDBcc(const uint32_t pc) const
     const uint8_t condition = (currentOpcode & 0x0F00) >> 8;
     const uint8_t       reg = (currentOpcode & 0x0007);
     const int16_t      disp = m_cdi.PeekWord(pc+2);
-    return "DB" + DisassembleConditionalCode(condition) + " D" + std::to_string(reg) + ", " + toHex(pc + 2 + disp);
+    return std::string("DB") + DisassembleConditionalCode(condition) + " D" + std::to_string(reg) + ", " + toHex(pc + 2 + disp);
 }
 
 std::string SCC68070::DisassembleDIVS(const uint32_t pc) const
@@ -995,7 +998,7 @@ std::string SCC68070::DisassembleScc(const uint32_t pc) const
     const uint8_t condition = (currentOpcode & 0x0F00) >> 8;
     const uint8_t    eamode = (currentOpcode & 0x0038) >> 3;
     const uint8_t     eareg = (currentOpcode & 0x0007);
-    return "S" + DisassembleConditionalCode(condition) + " " + DisassembleAddressingMode(pc+2, eamode, eareg, 1);
+    return std::string("S") + DisassembleConditionalCode(condition) + " " + DisassembleAddressingMode(pc+2, eamode, eareg, 1);
 }
 
 std::string SCC68070::DisassembleSTOP(const uint32_t pc) const
