@@ -22,10 +22,10 @@ void MCD212::DrawVideoLine()
     if(m_renderer.m_lineNumber == 0)
         m_renderer.SetPlanesResolutions(GetHorizontalResolution1(), GetHorizontalResolution2(), GetVerticalResolution());
 
-    if(GetSM() && !isEven(m_renderer.m_lineNumber)) // not even because my line count starts at 0.
-        SetPA();
-    else
+    if(GetSM() && isEven(m_totalFrameCount))
         UnsetPA();
+    else
+        SetPA();
 
     if(GetDE())
     {
@@ -43,6 +43,8 @@ void MCD212::DrawVideoLine()
         if(GetIC2() && GetDC2())
             ExecuteDCA2();
     }
+    else
+        m_renderer.m_lineNumber++;
 
     if(m_verticalLines >= GetTotalVerticalLines())
     {
@@ -51,5 +53,8 @@ void MCD212::DrawVideoLine()
         m_verticalLines = 0;
 
         m_cdi.m_callbacks.OnFrameCompleted(m_renderer.RenderFrame());
+
+        if(!GetDE())
+            m_renderer.m_lineNumber = 0;
     }
 }

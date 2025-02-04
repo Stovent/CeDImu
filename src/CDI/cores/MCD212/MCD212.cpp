@@ -36,6 +36,7 @@ void MCD212::Reset() noexcept
 
     m_verticalLines = 0;
     m_timeNs = 0.0;
+    m_totalFrameCount = 0;
     ResetMemorySwap();
 }
 
