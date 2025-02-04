@@ -37,6 +37,7 @@ private:
 
     double m_nsec; /**< Counts the nanoseconds when IncrementClock() is called. */
     std::chrono::time_point<std::chrono::system_clock> m_internalClock; /**< The SRAM internal clock. */
+    static_assert(std::chrono::system_clock::duration::period::den >= 1000LL, "std::chrono::system_clock::duration must have millisecond precision");
 
     void ClockToSRAM();
     void SRAMToClock();
