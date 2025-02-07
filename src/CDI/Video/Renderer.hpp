@@ -67,7 +67,7 @@ public:
     uint16_t DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept;
     void DrawLineBackdrop() noexcept;
     void DrawCursor() noexcept;
-    template<bool MIX> void OverlayMix() noexcept;
+    template<bool MIX, bool PLANE_ORDER> void OverlayMix() noexcept;
 
     // template<ImagePlane PLANE>
     // uint8_t DecodePixel(uint8_t* dst, const uint8_t* lineA, const uint8_t* lineB, uint32_t& previousDYUV) noexcept;

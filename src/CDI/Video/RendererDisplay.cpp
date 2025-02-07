@@ -36,9 +36,15 @@ std::pair<uint16_t, uint16_t> Renderer::DrawLine(const uint8_t* lineA, const uin
     DrawLineBackdrop();
 
     if(m_mix)
-        OverlayMix<true>();
+        if(m_planeOrder)
+            OverlayMix<true, true>();
+        else
+            OverlayMix<true, false>();
     else
-        OverlayMix<false>();
+        if(m_planeOrder)
+            OverlayMix<false, true>();
+        else
+            OverlayMix<false, false>();
 
     m_lineNumber++;
     return std::make_pair(bytesA, bytesB);
@@ -159,8 +165,9 @@ static constexpr uint8_t mix(const int a, const int b) noexcept
 
 /** \brief Overlays or mix all the planes to the final screen.
  * \tparam MIX true to use mixing, false to use overlay.
+ * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
  */
-template<bool MIX>
+template<bool MIX, bool PLANE_ORDER>
 void Renderer::OverlayMix() noexcept
 {
     uint8_t* screen = m_screen(m_lineNumber);
@@ -191,7 +198,7 @@ void Renderer::OverlayMix() noexcept
         const uint8_t bb = applyICF(*planeB++, m_icf[B]);
 
         uint8_t afp, rfp, gfp, bfp, abp, rbp, gbp, bbp;
-        if(m_planeOrder) // Plane B in front.
+        if constexpr(PLANE_ORDER) // Plane B in front.
         {
             afp = ab;
             rfp = rb;
@@ -237,7 +244,7 @@ void Renderer::OverlayMix() noexcept
             g = mix(gbp, gfp);
             b = mix(bbp, bfp);
         }
-        else
+        else // Overlay.
         {
             // Plane transparency is either 0 or 255.
             if(afp == 0 && abp == 0) // Front and back plane transparent: only show background.
