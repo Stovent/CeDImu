@@ -35,7 +35,7 @@ if(CEDIMU_ENABLE_LOG)
 endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(CeDImu PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(CeDImu PRIVATE -Wall -Wextra -Wpedantic -march=native)
     # target_compile_options(CeDImu PRIVATE -Wmaybe-uninitialized -Wduplicated-cond -Wlogical-op -Wmisleading-indentation -Wreturn-type -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual)
 endif()
 

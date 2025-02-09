@@ -4,6 +4,11 @@
 #include "../common/utils.hpp"
 
 #include <cstring>
+#if __SSE4_1__
+#include <emmintrin.h>
+#include <smmintrin.h>
+#include <tmmintrin.h>
+#endif // __SSE4_1__
 
 namespace Video
 {
@@ -152,50 +157,39 @@ void Renderer::DrawCursor() noexcept
 }
 
 /** \brief Apply the given Image Contribution Factor to the given color component (V.5.9). */
-static constexpr uint8_t applyICF(const int color, const int icf) noexcept
+[[maybe_unused]] static constexpr uint8_t applyICFCPP(const int color, const int icf) noexcept
 {
     return static_cast<uint8_t>(((icf * (color - 16)) / 63) + 16);
 }
 
 /** \brief Apply mixing to the given color components after ICF (V.5.9.1). */
-static constexpr uint8_t mix(const int a, const int b) noexcept
+[[maybe_unused]] static constexpr uint8_t mixCPP(const int a, const int b) noexcept
 {
     return limu8(a + b - 16);
 }
 
-/** \brief Overlays or mix all the planes to the final screen.
+/** \brief Overlays or mix all the planes to the final screen using C++ code.
  * \tparam MIX true to use mixing, false to use overlay.
  * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
  */
 template<bool MIX, bool PLANE_ORDER>
-void Renderer::OverlayMix() noexcept
+static constexpr void overlayMixCPP(const uint8_t* planeA, const uint8_t* planeB, const uint8_t* background, uint32_t icfA, uint32_t icfB, uint8_t* screen) noexcept
 {
-    uint8_t* screen = m_screen(m_lineNumber);
-    uint8_t* planeA = m_plane[A](m_lineNumber);
-    uint8_t* planeB = m_plane[B](m_lineNumber);
-
-    uint8_t* background = m_backdropPlane(m_lineNumber);
     const uint8_t rbg = background[0];
     const uint8_t gbg = background[1];
     const uint8_t bbg = background[2];
 
-    for(uint16_t i = 0; i < m_plane[A].m_width; i++) // TODO: width[B].
+    // for(uint16_t i = 0; i < m_plane[A].m_width; i++) // TODO: width[B].
     {
-        HandleMatte<A>(i);
-        HandleMatte<B>(i);
-
-        HandleTransparency<A>(planeA);
-        HandleTransparency<B>(planeB);
-
         const uint8_t aa = *planeA++;
-        const uint8_t ra = applyICF(*planeA++, m_icf[A]);
-        const uint8_t ga = applyICF(*planeA++, m_icf[A]);
-        const uint8_t ba = applyICF(*planeA++, m_icf[A]);
+        const uint8_t ra = applyICFCPP(*planeA++, icfA);
+        const uint8_t ga = applyICFCPP(*planeA++, icfA);
+        const uint8_t ba = applyICFCPP(*planeA++, icfA);
 
         const uint8_t ab = *planeB++;
-        const uint8_t rb = applyICF(*planeB++, m_icf[B]);
-        const uint8_t gb = applyICF(*planeB++, m_icf[B]);
-        const uint8_t bb = applyICF(*planeB++, m_icf[B]);
+        const uint8_t rb = applyICFCPP(*planeB++, icfB);
+        const uint8_t gb = applyICFCPP(*planeB++, icfB);
+        const uint8_t bb = applyICFCPP(*planeB++, icfB);
 
         uint8_t afp, rfp, gfp, bfp, abp, rbp, gbp, bbp;
         if constexpr(PLANE_ORDER) // Plane B in front.
@@ -240,9 +234,9 @@ void Renderer::OverlayMix() noexcept
                 bfp = 16;
             }
 
-            r = mix(rbp, rfp);
-            g = mix(gbp, gfp);
-            b = mix(bbp, bfp);
+            r = mixCPP(rbp, rfp);
+            g = mixCPP(gbp, gfp);
+            b = mixCPP(bbp, bfp);
         }
         else // Overlay.
         {
@@ -267,9 +261,138 @@ void Renderer::OverlayMix() noexcept
             }
         }
 
-        *screen++ = r;
-        *screen++ = g;
-        *screen++ = b;
+        screen[0] = r;
+        screen[1] = g;
+        screen[2] = b;
+    }
+}
+
+#if __SSE4_1__
+static constexpr std::array<int16_t, 8> SIXTEEN_ARRAY{0, 0, 16, 16, 16, 16, 16, 16};
+static const __m128i SIXTEEN = _mm_loadu_si128(reinterpret_cast<const __m128i*>(SIXTEEN_ARRAY.data()));
+
+/** \brief Applies ICF and mixes using SSE.
+ */
+static inline void applyICFMixSSE(const uint8_t* planeFront, const uint8_t* planeBack, uint32_t icfFront, uint32_t icfBack, uint8_t* screen) noexcept
+{
+    const __m128i icfF = _mm_set1_epi16(icfFront);
+    const __m128i icfB = _mm_set1_epi16(icfBack);
+    const __m128i icf = _mm_unpacklo_epi16(icfF, icfB);
+
+    const __m128i xmmFront = _mm_loadu_si32(planeFront); // Load 32 bits in register (little endian).
+    const __m128i xmmBack = _mm_loadu_si32(planeBack);
+
+    __m128i xmm = _mm_unpacklo_epi8(xmmFront, xmmBack); // Interleave front and back plane bytes.
+
+    xmm = _mm_cvtepu8_epi16(xmm); // Extend each componant from 8 to 16 bits.
+    // xmm has front argb in bytes 0, 4, 8, 12 (as int16_t) and back argb in 2, 6, 10, 14.
+
+    xmm = _mm_sub_epi16(xmm, SIXTEEN); // Subtract 16 from components.
+    xmm = _mm_mullo_epi16(xmm, icf); // Multiply by ICF.
+    xmm = _mm_srai_epi16(xmm, 6); // Divive by 63 (here 64 for performance).
+    xmm = _mm_add_epi16(xmm, SIXTEEN); // Add 16 back.
+
+    xmm = _mm_hadds_epi16(xmm, xmm); // Sum the components.
+    // TODO: verify max and min levels.
+    xmm = _mm_packus_epi16(xmm, xmm); // Convert back to uint8_t.
+
+    const uint8_t old = screen[-1]; // TODO: is that UB with the first pixel being out of range?
+    _mm_storeu_si32(&screen[-1], xmm);
+    screen[-1] = old;
+}
+
+/** \brief Applies ICF and overlays using SSE.
+ */
+static constexpr void applyICFOverlaySSE(const uint8_t* planeFront, const uint8_t* planeBack, const uint8_t* background, uint32_t icfFront, uint32_t icfBack, uint8_t* screen) noexcept
+{
+    const uint8_t afp = planeFront[0];
+    const uint8_t abp = planeBack[0];
+
+    // Plane transparency is either 0 or 255.
+    if(afp == 0 && abp == 0) [[unlikely]] // Front and back plane transparent: only show background.
+    {
+        memcpy(screen, background, 3);
+        return;
+    }
+
+    __m128i xmm, icf;
+    if(afp == 0) // Front plane transparent: show back plane.
+    {
+        icf = _mm_set1_epi16(icfBack);
+        xmm = _mm_loadu_si32(planeBack); // Load 32 bits in register (little endian).
+    }
+    else // Front plane visible: only show front plane.
+    {
+        icf = _mm_set1_epi16(icfFront);
+        xmm = _mm_loadu_si32(planeFront); // Load 32 bits in register (little endian).
+    }
+
+    xmm = _mm_cvtepu8_epi16(xmm); // Extend each componant from 8 to 16 bits.
+    // xmm has front argb in bytes 0, 2, 4, 6 (as int16_t).
+
+    xmm = _mm_sub_epi16(xmm, SIXTEEN); // Subtract 16 from components.
+    xmm = _mm_mullo_epi16(xmm, icf); // Multiply by ICF.
+    xmm = _mm_srai_epi16(xmm, 6); // Divive by 63 (here 64 for performance).
+    xmm = _mm_add_epi16(xmm, SIXTEEN); // Add 16 back.
+
+    xmm = _mm_packus_epi16(xmm, xmm); // Convert back to uint8_t.
+
+    const uint8_t old = screen[-1]; // TODO: is that UB with the first pixel being out of range?
+    _mm_storeu_si32(&screen[-1], xmm);
+    screen[-1] = old;
+}
+
+/** \brief Overlays or mix all the planes to the final screen using x86 SSE4.1 optimisations.
+ * \tparam MIX true to use mixing, false to use overlay.
+ * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
+ */
+template<bool MIX, bool PLANE_ORDER>
+static constexpr void overlayMixSSE(const uint8_t* planeA, const uint8_t* planeB, const uint8_t* background, uint32_t icfA, uint32_t icfB, uint8_t* screen) noexcept
+{
+    if constexpr(MIX)
+        if constexpr(PLANE_ORDER) // Plane B in front.
+            applyICFMixSSE(planeB, planeA, icfB, icfA, screen);
+        else // Plane A in front.
+            applyICFMixSSE(planeA, planeB, icfA, icfB, screen);
+    else // Overlay.
+        if constexpr(PLANE_ORDER)
+            applyICFOverlaySSE(planeB, planeA, background, icfB, icfA, screen);
+        else // Plane A in front.
+            applyICFOverlaySSE(planeA, planeB, background, icfA, icfB, screen);
+}
+#endif // __SSE4_1__
+
+/** \brief Overlays or mix all the planes to the final screen.
+ * \tparam MIX true to use mixing, false to use overlay.
+ * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
+ */
+template<bool MIX, bool PLANE_ORDER>
+void Renderer::OverlayMix() noexcept
+{
+    uint8_t* screen = m_screen(m_lineNumber);
+    uint8_t* planeA = m_plane[A](m_lineNumber);
+    uint8_t* planeB = m_plane[B](m_lineNumber);
+    uint8_t* background = m_backdropPlane(m_lineNumber);
+
+    for(uint16_t i = 0; i < m_plane[A].m_width; i++) // TODO: width[B].
+    {
+        HandleMatte<A>(i);
+        HandleMatte<B>(i);
+
+        HandleTransparency<A>(planeA);
+        HandleTransparency<B>(planeB);
+
+        // TODO: std::simd of C++26
+
+#if __SSE4_1__
+        overlayMixSSE<MIX, PLANE_ORDER>(planeA, planeB, background, m_icf[A], m_icf[B], screen);
+#else
+        overlayMixCPP<MIX, PLANE_ORDER>(planeA, planeB, background, m_icf[A], m_icf[B], screen);
+#endif // __SSE4_1__
+
+        planeA += 4;
+        planeB += 4;
+        screen += 3;
 
         /*
         MCD212 figure 8-6
@@ -291,7 +414,7 @@ static constexpr uint32_t argbArrayToU32(uint8_t* pixels) noexcept
 template<Renderer::ImagePlane PLANE>
 void Renderer::HandleTransparency(uint8_t pixel[4]) noexcept
 {
-    const bool boolean = (m_transparencyControl[PLANE] & 0x08u) == 0;
+    const bool boolean = !bit<3>(m_transparencyControl[PLANE]);
     uint32_t color = argbArrayToU32(pixel);
     color = clutColorKey(color | m_maskColorRgb[PLANE]);
     const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]); // TODO: don't compute if not CLUT.
