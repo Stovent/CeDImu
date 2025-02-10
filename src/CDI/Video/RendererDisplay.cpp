@@ -4,11 +4,11 @@
 #include "../common/utils.hpp"
 
 #include <cstring>
-#if __SSE4_1__
-#include <emmintrin.h>
-#include <smmintrin.h>
-#include <tmmintrin.h>
-#endif // __SSE4_1__
+#if __has_include(<experimental/simd>)
+#   include <experimental/simd>
+    namespace stdx = std::experimental;
+#   define STDX_SIMD 1
+#endif
 
 namespace Video
 {
@@ -267,79 +267,77 @@ static constexpr void overlayMixCPP(const uint8_t* planeA, const uint8_t* planeB
     }
 }
 
-#if __SSE4_1__
-static constexpr std::array<int16_t, 8> SIXTEEN_ARRAY{0, 0, 16, 16, 16, 16, 16, 16};
-static const __m128i SIXTEEN = _mm_loadu_si128(reinterpret_cast<const __m128i*>(SIXTEEN_ARRAY.data()));
+#ifdef STDX_SIMD
+#if __cpp_lib_simd
+#warning "SIMD is no longer experimental"
+#endif
 
-/** \brief Applies ICF and mixes using SSE.
+// int32_t generates a bit shorter code than int16_t.
+using Elements = stdx::fixed_size_simd<int32_t, 4>;
+
+static constexpr Elements SIXTEEN{16};
+
+/** \brief Applies ICF and mixes using SIMD.
+ * \param icfs The front ICF in low 16 bits and the back ICF in high 16 bits
  */
-static inline void applyICFMixSSE(const uint8_t* planeFront, const uint8_t* planeBack, uint32_t icfFront, uint32_t icfBack, uint8_t* screen) noexcept
+static constexpr void applyICFMixSIMD(const uint8_t* planeFront, const uint8_t* planeBack, int32_t icfFront, int32_t icfBack, uint8_t* screen) noexcept
 {
-    const __m128i icfF = _mm_set1_epi16(icfFront);
-    const __m128i icfB = _mm_set1_epi16(icfBack);
-    const __m128i icf = _mm_unpacklo_epi16(icfF, icfB);
+    const Elements icfF{icfFront};
+    const Elements icfB{icfBack};
 
-    const __m128i xmmFront = _mm_loadu_si32(planeFront); // Load 32 bits in register (little endian).
-    const __m128i xmmBack = _mm_loadu_si32(planeBack);
+    Elements planeF{planeFront, stdx::element_aligned};
+    Elements planeB{planeBack, stdx::element_aligned};
 
-    __m128i xmm = _mm_unpacklo_epi8(xmmFront, xmmBack); // Interleave front and back plane bytes.
+    planeF -= SIXTEEN;
+    planeB -= SIXTEEN;
+    planeF *= icfF;
+    planeB *= icfB;
+    planeF >>= 6;
+    planeB >>= 6;
+    planeF += SIXTEEN;
+    planeB += SIXTEEN;
 
-    xmm = _mm_cvtepu8_epi16(xmm); // Extend each componant from 8 to 16 bits.
-    // xmm has front argb in bytes 0, 4, 8, 12 (as int16_t) and back argb in 2, 6, 10, 14.
+    Elements result{planeF + planeB};
+    result -= SIXTEEN;
 
-    xmm = _mm_sub_epi16(xmm, SIXTEEN); // Subtract 16 from components.
-    xmm = _mm_mullo_epi16(xmm, icf); // Multiply by ICF.
-    xmm = _mm_srai_epi16(xmm, 6); // Divive by 63 (here 64 for performance).
-    xmm = _mm_add_epi16(xmm, SIXTEEN); // Add 16 back.
-
-    xmm = _mm_hadds_epi16(xmm, xmm); // Sum the components.
-    // TODO: verify max and min levels.
-    xmm = _mm_packus_epi16(xmm, xmm); // Convert back to uint8_t.
-
-    const uint8_t old = screen[-1]; // TODO: is that UB with the first pixel being out of range?
-    _mm_storeu_si32(&screen[-1], xmm);
+    const uint8_t old = screen[-1];
+    result.copy_to(&screen[-1], stdx::element_aligned);
     screen[-1] = old;
+    // result.copy_to(screen, stdx::element_aligned);
 }
 
-/** \brief Applies ICF and overlays using SSE.
+/** \brief Applies ICF and overlays using SIMD implementation.
  */
-static constexpr void applyICFOverlaySSE(const uint8_t* planeFront, const uint8_t* planeBack, const uint8_t* background, uint32_t icfFront, uint32_t icfBack, uint8_t* screen) noexcept
+static constexpr void applyICFOverlayPlaneSIMD(const uint8_t* plane, uint8_t icf, uint8_t* screen)
+{
+    Elements elements{plane, stdx::element_aligned};
+    const Elements simdIcf = icf;
+
+    elements -= SIXTEEN;
+    elements *= simdIcf;
+    elements >>= 6;
+    elements += SIXTEEN;
+
+    const uint8_t old = screen[-1];
+    elements.copy_to(&screen[-1], stdx::element_aligned);
+    screen[-1] = old;
+    // elements.copy_to(screen, stdx::element_aligned);
+}
+
+/** \brief Applies ICF and overlays using SIMD, dispatching to the most efficient implementation.
+ */
+static constexpr void applyICFOverlaySIMD(const uint8_t* planeFront, const uint8_t* planeBack, const uint8_t* background, uint8_t icfFront, uint8_t icfBack, uint8_t* screen)
 {
     const uint8_t afp = planeFront[0];
     const uint8_t abp = planeBack[0];
 
     // Plane transparency is either 0 or 255.
     if(afp == 0 && abp == 0) [[unlikely]] // Front and back plane transparent: only show background.
-    {
         memcpy(screen, background, 3);
-        return;
-    }
-
-    __m128i xmm, icf;
-    if(afp == 0) // Front plane transparent: show back plane.
-    {
-        icf = _mm_set1_epi16(icfBack);
-        xmm = _mm_loadu_si32(planeBack); // Load 32 bits in register (little endian).
-    }
+    else if(afp == 0) // Front plane transparent: show back plane.
+        applyICFOverlayPlaneSIMD(planeBack, icfBack, screen);
     else // Front plane visible: only show front plane.
-    {
-        icf = _mm_set1_epi16(icfFront);
-        xmm = _mm_loadu_si32(planeFront); // Load 32 bits in register (little endian).
-    }
-
-    xmm = _mm_cvtepu8_epi16(xmm); // Extend each componant from 8 to 16 bits.
-    // xmm has front argb in bytes 0, 2, 4, 6 (as int16_t).
-
-    xmm = _mm_sub_epi16(xmm, SIXTEEN); // Subtract 16 from components.
-    xmm = _mm_mullo_epi16(xmm, icf); // Multiply by ICF.
-    xmm = _mm_srai_epi16(xmm, 6); // Divive by 63 (here 64 for performance).
-    xmm = _mm_add_epi16(xmm, SIXTEEN); // Add 16 back.
-
-    xmm = _mm_packus_epi16(xmm, xmm); // Convert back to uint8_t.
-
-    const uint8_t old = screen[-1]; // TODO: is that UB with the first pixel being out of range?
-    _mm_storeu_si32(&screen[-1], xmm);
-    screen[-1] = old;
+        applyICFOverlayPlaneSIMD(planeFront, icfFront, screen);
 }
 
 /** \brief Overlays or mix all the planes to the final screen using x86 SSE4.1 optimisations.
@@ -347,20 +345,20 @@ static constexpr void applyICFOverlaySSE(const uint8_t* planeFront, const uint8_
  * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
  */
 template<bool MIX, bool PLANE_ORDER>
-static constexpr void overlayMixSSE(const uint8_t* planeA, const uint8_t* planeB, const uint8_t* background, uint32_t icfA, uint32_t icfB, uint8_t* screen) noexcept
+static constexpr void overlayMixSIMD(const uint8_t* planeA, const uint8_t* planeB, const uint8_t* background, uint32_t icfA, uint32_t icfB, uint8_t* screen) noexcept
 {
     if constexpr(MIX)
         if constexpr(PLANE_ORDER) // Plane B in front.
-            applyICFMixSSE(planeB, planeA, icfB, icfA, screen);
+            applyICFMixSIMD(planeB, planeA, icfB, icfA, screen);
         else // Plane A in front.
-            applyICFMixSSE(planeA, planeB, icfA, icfB, screen);
+            applyICFMixSIMD(planeA, planeB, icfA, icfB, screen);
     else // Overlay.
         if constexpr(PLANE_ORDER)
-            applyICFOverlaySSE(planeB, planeA, background, icfB, icfA, screen);
+            applyICFOverlaySIMD(planeB, planeA, background, icfB, icfA, screen);
         else // Plane A in front.
-            applyICFOverlaySSE(planeA, planeB, background, icfA, icfB, screen);
+            applyICFOverlaySIMD(planeA, planeB, background, icfA, icfB, screen);
 }
-#endif // __SSE4_1__
+#endif // STDX_SIMD
 
 /** \brief Overlays or mix all the planes to the final screen.
  * \tparam MIX true to use mixing, false to use overlay.
@@ -382,13 +380,11 @@ void Renderer::OverlayMix() noexcept
         HandleTransparency<A>(planeA);
         HandleTransparency<B>(planeB);
 
-        // TODO: std::simd of C++26
-
-#if __SSE4_1__
-        overlayMixSSE<MIX, PLANE_ORDER>(planeA, planeB, background, m_icf[A], m_icf[B], screen);
+#ifdef STDX_SIMD
+        overlayMixSIMD<MIX, PLANE_ORDER>(planeA, planeB, background, m_icf[A], m_icf[B], screen);
 #else
         overlayMixCPP<MIX, PLANE_ORDER>(planeA, planeB, background, m_icf[A], m_icf[B], screen);
-#endif // __SSE4_1__
+#endif // STDX_SIMD
 
         planeA += 4;
         planeB += 4;
@@ -421,7 +417,7 @@ void Renderer::HandleTransparency(uint8_t pixel[4]) noexcept
 
     pixel[0] = PIXEL_FULL_INTENSITY;
 
-    switch(m_transparencyControl[PLANE] & 0x07u)
+    switch(bits<0, 2>(m_transparencyControl[PLANE]))
     {
     case 0b000: // Always/Never.
         pixel[0] = PIXEL_FULL_INTENSITY + boolean; // Branchless.
