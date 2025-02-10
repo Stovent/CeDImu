@@ -2,7 +2,9 @@ target_sources(CeDImu
     PRIVATE
         Renderer.cpp
         Renderer.hpp
-        # Renderer2.cpp
         RendererDCP.cpp
-        RendererDisplay.cpp
+        RendererSIMD.cpp
+        RendererSIMD.hpp
+        RendererSoftware.cpp
+        RendererSoftware.hpp
 )

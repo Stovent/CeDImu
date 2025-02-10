@@ -6,7 +6,8 @@ class CDI;
 #include "../../common/types.hpp"
 #include "../../common/Video.hpp"
 #include "../../OS9/BIOS.hpp"
-#include "../../Video/Renderer.hpp"
+#include "../../Video/RendererSIMD.hpp"
+#include "../../Video/RendererSoftware.hpp"
 
 #include <array>
 #include <span>
@@ -54,7 +55,8 @@ private:
     uint8_t m_memorySwapCount{0};
     double m_timeNs{0.0}; // time counter in nano seconds.
 
-    Video::Renderer m_renderer{};
+    Video::RendererSIMD m_rendererSIMD{};
+    Video::RendererSoftware m_renderer{};
 
     std::vector<uint8_t> m_memory;
 

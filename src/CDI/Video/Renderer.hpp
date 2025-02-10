@@ -1,6 +1,7 @@
-#ifndef CDI_CORES_RENDERER_HPP
-#define CDI_CORES_RENDERER_HPP
+#ifndef CDI_VIDEO_RENDERER_HPP
+#define CDI_VIDEO_RENDERER_HPP
 
+#include "../common/utils.hpp"
 #include "../common/Video.hpp"
 
 #include <array>
@@ -11,7 +12,32 @@
 namespace Video
 {
 
-/** \brief CD-i video renderer as described in the Green Book.
+static constexpr uint32_t argbArrayToU32(uint8_t* pixels) noexcept
+{
+    return (as<uint32_t>(pixels[1]) << 16) | (as<uint32_t>(pixels[2]) << 8) | as<uint32_t>(pixels[3]);
+}
+
+static constexpr bool matteMF(const uint32_t matteCommand) noexcept
+{
+    return bit<16>(matteCommand);
+}
+
+static constexpr uint8_t matteOp(const uint32_t matteCommand) noexcept
+{
+    return bits<20, 23>(matteCommand);
+}
+
+static constexpr uint8_t matteICF(const uint32_t matteCommand) noexcept
+{
+    return bits<10, 15>(matteCommand);
+}
+
+static constexpr uint16_t matteXPosition(const uint32_t matteCommand) noexcept
+{
+    return bits<1, 9>(matteCommand); // TODO: handle double resolution.
+}
+
+/** \brief CD-i video renderer base class as described in the Green Book.
  *
  * Every array member with 2 elements means its meant to be index based on the plane number \ref ImagePlane.
  *
@@ -41,14 +67,18 @@ public:
     };
 
     Renderer() {}
+    virtual ~Renderer() noexcept {}
 
-    void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
+    Renderer(const Renderer&) = delete;
+    Renderer& operator=(const Renderer&) = delete;
 
-    std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept;
-    const Plane& RenderFrame() noexcept;
+    virtual std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept = 0;
+    virtual const Plane& RenderFrame() noexcept = 0;
 
     template<ImagePlane PLANE>
     bool ExecuteDCPInstruction(uint32_t instruction) noexcept;
+
+    void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
 
     void SetCursorEnabled(bool enabled) noexcept;
     void SetCursorResolution(bool doubleResolution) noexcept;
@@ -62,12 +92,6 @@ public:
         RunLength,
         Mosaic,
     };
-
-    template<ImagePlane PLANE>
-    uint16_t DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept;
-    void DrawLineBackdrop() noexcept;
-    void DrawCursor() noexcept;
-    template<bool MIX, bool PLANE_ORDER> void OverlayMix() noexcept;
 
     // template<ImagePlane PLANE>
     // uint8_t DecodePixel(uint8_t* dst, const uint8_t* lineA, const uint8_t* lineB, uint32_t& previousDYUV) noexcept;
@@ -109,7 +133,60 @@ public:
     std::array<uint8_t, 2> m_transparencyControl{};
     std::array<uint32_t, 2> m_transparentColorRgb{}; /**< RGB data in the lowest 24 bits. */
     std::array<uint32_t, 2> m_maskColorRgb{}; /**< RGB data in the lowest 24 bits. */
-    template<ImagePlane PLANE> void HandleTransparency(uint8_t pixel[4]) noexcept;
+    /** \brief Handles the transparency of the current pixel for each plane.
+     * \param pixel The ARGB pixel.
+     */
+    template<ImagePlane PLANE> void HandleTransparency(uint8_t pixel[4]) noexcept
+    {
+        const bool boolean = !bit<3>(m_transparencyControl[PLANE]);
+        uint32_t color = argbArrayToU32(pixel);
+        color = clutColorKey(color | m_maskColorRgb[PLANE]);
+        const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]); // TODO: don't compute if not CLUT.
+
+        pixel[0] = PIXEL_FULL_INTENSITY;
+
+        switch(bits<0, 2>(m_transparencyControl[PLANE]))
+        {
+        case 0b000: // Always/Never.
+            pixel[0] = PIXEL_FULL_INTENSITY + boolean; // Branchless.
+            break;
+
+        case 0b001: // Color Key.
+            if(colorKey == boolean)
+                pixel[0] = PIXEL_TRANSPARENT;
+            break;
+
+        case 0b010: // Transparent Bit.
+            // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
+            // TODO: disable if not RGB555.
+            if((pixel[0] == PIXEL_FULL_INTENSITY) != boolean)
+                pixel[0] = PIXEL_TRANSPARENT;
+            break;
+
+        case 0b011: // Matte Flag 0.
+            if(m_matteFlags[0] == boolean)
+                pixel[0] = PIXEL_TRANSPARENT;
+            break;
+
+        case 0b100: // Matte Flag 1.
+            if(m_matteFlags[1] == boolean)
+                pixel[0] = PIXEL_TRANSPARENT;
+            break;
+
+        case 0b101: // Matte Flag 0 or Color Key.
+            if(m_matteFlags[0] == boolean || colorKey == boolean)
+                pixel[0] = PIXEL_TRANSPARENT;
+            break;
+
+        case 0b110: // Matte Flag 1 or Color Key.
+            if(m_matteFlags[1] == boolean || colorKey == boolean)
+                pixel[0] = PIXEL_TRANSPARENT;
+            break;
+
+        default: // Reserved.
+            break;
+        }
+    }
 
     // Backdrop.
     uint8_t m_backdropColor : 4{}; /**< YRGB color code. */
@@ -132,8 +209,97 @@ public:
     std::array<uint32_t, MATTE_NUM> m_matteControl{};
     std::array<bool, 2> m_matteFlags{};
     std::array<uint8_t, 2> m_nextMatte{};
-    void ResetMatte() noexcept;
-    template<ImagePlane PLANE> void HandleMatte(uint16_t pos) noexcept;
+    /** \brief Called at the beginning of each line to reset the matte state.
+     */
+    void ResetMatte() noexcept
+    {
+        m_matteFlags.fill(false);
+
+        if(!m_matteNumber) // One matte.
+        {
+            const bool matte = matteMF(m_matteControl[0]);
+            m_nextMatte[matte] = 0;
+            m_nextMatte[!matte] = m_matteControl.size();
+        }
+        else // Two mattes.
+        {
+            m_nextMatte[A] = 0;
+            m_nextMatte[B] = MATTE_HALF;
+        }
+    }
+
+    /** \brief Handles the matte flags for the given plane at the given pixel position.
+     * \param pos The current pixel position (in normal resolution).
+     */
+    template<ImagePlane PLANE> void HandleMatte(uint16_t pos) noexcept
+    {
+        if(!m_matteNumber) // One matte.
+        {
+            if(m_nextMatte[PLANE] >= m_matteControl.size())
+                return;
+        }
+        else // Two mattes.
+        {
+            if constexpr(PLANE == A)
+            {
+                if(m_nextMatte[A] >= MATTE_HALF)
+                    return;
+            }
+            else
+                if(m_nextMatte[B] >= m_matteControl.size())
+                    return;
+        }
+
+        const uint32_t command = m_matteControl[m_nextMatte[PLANE]];
+        if(matteXPosition(command) > pos)
+            return;
+
+        ++m_nextMatte[PLANE];
+
+        const uint8_t op = matteOp(command);
+        switch(op)
+        {
+        case 0b0000:
+            m_nextMatte[PLANE] = m_matteControl.size();
+            break;
+
+        case 0b0100:
+            m_icf[A] = matteICF(command);
+            break;
+
+        case 0b0110:
+            m_icf[B] = matteICF(command);
+            break;
+
+        case 0b1000:
+            m_matteFlags[PLANE] = false;
+            break;
+
+        case 0b1001:
+            m_matteFlags[PLANE] = true;
+            break;
+
+        case 0b1100:
+            m_icf[A] = matteICF(command);
+            m_matteFlags[PLANE] = false;
+            break;
+
+        case 0b1101:
+            m_icf[A] = matteICF(command);
+            m_matteFlags[PLANE] = true;
+            break;
+
+        case 0b1110:
+            m_icf[B] = matteICF(command);
+            m_matteFlags[PLANE] = false;
+            break;
+
+        case 0b1111:
+            m_icf[B] = matteICF(command);
+            m_matteFlags[PLANE] = true;
+            break;
+        }
+    }
 
     enum ControlProgramInstruction : uint8_t
     {
@@ -173,4 +339,4 @@ private:
 
 } // namespace Video
 
-#endif // CDI_CORES_RENDERER_HPP
+#endif // CDI_VIDEO_RENDERER_HPP
