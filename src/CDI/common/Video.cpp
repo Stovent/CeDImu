@@ -102,8 +102,8 @@ uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, 
 
             for(int i = 0; i < count; i++)
             {
-                Video::decodeCLUT(color1, &dst[x++ * 4], CLUTTable);
-                Video::decodeCLUT(color2, &dst[x++ * 4], CLUTTable);
+                decodeCLUT(color1, &dst[x++ * 4], CLUTTable);
+                decodeCLUT(color2, &dst[x++ * 4], CLUTTable);
             }
         }
     }
@@ -124,7 +124,7 @@ uint16_t decodeRunLengthLine(uint8_t* dst, const uint8_t* data, uint16_t width, 
 
             for(int i = 0; i < count; i++)
             {
-                Video::decodeCLUT(color, &dst[x++ * 4], CLUTTable);
+                decodeCLUT(color, &dst[x++ * 4], CLUTTable);
             }
         }
     }
@@ -147,7 +147,7 @@ uint16_t decodeRGB555Line(uint8_t* dst, const uint8_t* dataA, const uint8_t* dat
     {
         uint16_t pixel = as<uint16_t>(dataA[index]) << 8;
         pixel |= dataB[index++];
-        Video::decodeRGB555(pixel, &dst[x * 4]);
+        decodeRGB555(pixel, &dst[x * 4]);
     }
 
     return index;
@@ -169,7 +169,7 @@ uint16_t decodeDYUVLine(uint8_t* dst, const uint8_t* dyuv, uint16_t width, uint1
     {
         uint16_t pixel = as<uint16_t>(dyuv[index++]) << 8;
         pixel |= dyuv[index++];
-        Video::decodeDYUV(pixel, &dst[x * 4], previous);
+        decodeDYUV(pixel, &dst[x * 4], previous);
     }
 
     return index;
@@ -195,8 +195,8 @@ uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const
         {
             const uint8_t color1 = bits<4, 7>(data[index]);
             const uint8_t color2 = bits<0, 3>(data[index++]);
-            Video::decodeCLUT(color1, &dst[x++ * 4], CLUTTable);
-            Video::decodeCLUT(color2, &dst[x++ * 4], CLUTTable);
+            decodeCLUT(color1, &dst[x++ * 4], CLUTTable);
+            decodeCLUT(color2, &dst[x++ * 4], CLUTTable);
         }
     }
     else
@@ -205,7 +205,7 @@ uint16_t decodeCLUTLine(uint8_t* dst, const uint8_t* data, uint16_t width, const
         for(uint16_t x = 0; x < width;)
         {
             const uint8_t color = data[index++] & colorMask;
-            Video::decodeCLUT(color, &dst[x++ * 4], CLUTTable);
+            decodeCLUT(color, &dst[x++ * 4], CLUTTable);
         }
     }
 

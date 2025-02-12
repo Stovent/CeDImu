@@ -6,7 +6,6 @@
 
 #include <array>
 #include <cstdint>
-#include <span>
 #include <utility>
 
 namespace Video

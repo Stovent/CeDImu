@@ -9,4 +9,6 @@ target_sources(CeDImu
         utils.hpp
         Video.cpp
         Video.hpp
+        VideoSIMD.cpp
+        VideoSIMD.hpp
 )

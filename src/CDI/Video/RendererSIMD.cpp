@@ -2,14 +2,9 @@
 
 #include "../common/panic.hpp"
 #include "../common/utils.hpp"
+#include "../common/VideoSIMD.hpp"
 
 #include <cstring>
-
-#include <experimental/simd>
-namespace stdx = std::experimental;
-#if __cpp_lib_simd
-#warning "SIMD is no longer experimental"
-#endif
 
 namespace Video
 {
@@ -103,10 +98,10 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
     switch(m_imageType[PLANE])
     {
     case ImageType::Normal:
-        return decodeBitmapLine(m_plane[PLANE](m_lineNumber), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
+        return decodeBitmapLineSIMD(m_planeLine[PLANE].data(), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
 
     case ImageType::RunLength:
-        return decodeRunLengthLine(m_plane[PLANE](m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
+        return decodeRunLengthLineSIMD(m_plane[PLANE](m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
 
     case ImageType::Mosaic:
         panic("Unsupported type Mosaic");
