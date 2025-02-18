@@ -36,10 +36,12 @@ endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(CeDImu PRIVATE -Wall -Wextra -Wpedantic -march=native)
+    # target_compile_options(CeDImu PRIVATE -fsanitize=address)
     # target_compile_options(CeDImu PRIVATE -Wmaybe-uninitialized -Wduplicated-cond -Wlogical-op -Wmisleading-indentation -Wreturn-type -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(CeDImu PRIVATE -Wnrvo)
+    # target_link_options(CeDImu PUBLIC -fsanitize=address -static-libasan)
     target_link_libraries(CeDImu PRIVATE stdc++fs stdc++exp)
 endif()

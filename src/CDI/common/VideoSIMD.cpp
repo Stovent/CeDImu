@@ -6,12 +6,6 @@
 #include <execution>
 #include <iterator>
 
-#include <experimental/simd>
-namespace stdx = std::experimental;
-#if __cpp_lib_simd
-#warning "SIMD is no longer experimental"
-#endif
-
 /** \brief An iterator that counts numbers. */
 template<typename NUM, NUM INC = 1>
 class CountingIterator
@@ -95,7 +89,7 @@ static constexpr std::array<int, 256> matrixUToB = generateUToB();
  * If the coding method is RGB555, dataA must contain the channel A data and dataB must contain the channel B data.
  * If it is not RGB555, dataB is the source data and dataA remain unused.
  */
-uint16_t decodeBitmapLineSIMD(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
+uint16_t decodeBitmapLineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
 {
     if(icm == ImageCodingMethod::DYUV)
         return decodeDYUVLineSIMD(dst, dataB, width, initialDYUV);
@@ -115,7 +109,7 @@ uint16_t decodeBitmapLineSIMD(uint8_t* dst, const uint8_t* dataA, const uint8_t*
  * \param is4BPP true for RL3, false for RL7.
  * \return The number of raw bytes read from data.
  */
-uint16_t decodeRunLengthLineSIMD(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept
+uint16_t decodeRunLengthLineSIMD(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept
 {
     uint16_t index = 0;
 
@@ -136,13 +130,13 @@ uint16_t decodeRunLengthLineSIMD(uint8_t* dst, const uint8_t* data, uint16_t wid
                 --count; // one memcpy less than the pixels because of the initial decode.
             }
 
-            uint8_t* pixels = &dst[x++ * 4];
-            uint8_t* pixels2 = &dst[x++ * 4];
-            decodeCLUT(color1, pixels, CLUTTable);
-            decodeCLUT(color2, pixels2, CLUTTable);
+            Pixel* pixels = &dst[x++];
+            Pixel* pixels2 = &dst[x++];
+            decodeCLUTSIMD(pixels, color1, CLUTTable);
+            decodeCLUTSIMD(pixels2, color2, CLUTTable);
             for(int i = 0; i < count; i++)
             {
-                memcpy(&dst[x * 4], pixels, 8);
+                memcpy(&dst[x * 4], pixels, sizeof(Pixel) * 2);
                 x += 2;
             }
         }
@@ -163,11 +157,11 @@ uint16_t decodeRunLengthLineSIMD(uint8_t* dst, const uint8_t* data, uint16_t wid
                 --count; // one memcpy less than the pixels because of the initial decode.
             }
 
-            uint8_t* pixels = &dst[x++ * 4];
-            decodeCLUT(color, pixels, CLUTTable);
+            Pixel* pixels = &dst[x++];
+            decodeCLUTSIMD(pixels, color, CLUTTable);
             for(int i = 0; i < count; i++)
             {
-                memcpy(&dst[x++ * 4], pixels, 4);
+                memcpy(&dst[x++], pixels, sizeof(Pixel));
             }
         }
     }
@@ -183,14 +177,13 @@ uint16_t decodeRunLengthLineSIMD(uint8_t* dst, const uint8_t* data, uint16_t wid
  * \return The number of raw bytes read from each data source.
  * \attention \p dst, \p dataA and \p dataB are written/read in chunks of std::simd::size(). Make sure the buffers can be read and written beyond the actual line length.
  */
-uint16_t decodeRGB555LineSIMD(uint8_t* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
+uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
 {
     // TODO: ensure we do not index out of bound.
     using SIMD8 = stdx::native_simd<uint8_t>;
     using FIXED32 = stdx::fixed_size_simd<uint32_t, SIMD8::size()>;
-    const uint8_t* endA = dataA + width;
 
-    static_assert(std::endian::native == std::endian::little);
+    const uint8_t* endA = dataA + width;
 
     static const SIMD8 alphaMask{0x80};
     for(; dataA < endA; dataA += SIMD8::size())
@@ -203,12 +196,12 @@ uint16_t decodeRGB555LineSIMD(uint8_t* dst, const uint8_t* dataA, const uint8_t*
         SIMD8 red = a << 1 & 0xF8;
         SIMD8 green = (a << 6) | (b >> 5 & 0x38);
         SIMD8 blue = b << 3;
-        FIXED32 result = stdx::simd_cast<uint32_t>(blue) << 24 |
-                         stdx::simd_cast<uint32_t>(green) << 16 |
-                         stdx::simd_cast<uint32_t>(red) << 8 |
-                         stdx::simd_cast<uint32_t>(alpha); // Little endian.
+        FIXED32 result = stdx::static_simd_cast<uint32_t>(alpha) << 24 |
+                         stdx::static_simd_cast<uint32_t>(red) << 16 |
+                         stdx::static_simd_cast<uint32_t>(green) << 8 |
+                         stdx::static_simd_cast<uint32_t>(blue);
 
-        result.copy_to(reinterpret_cast<uint32_t*>(dst), stdx::overaligned<sizeof(uint8_t)>);
+        result.copy_to(dst, stdx::element_aligned);
     };
 
     return width;
@@ -221,16 +214,16 @@ uint16_t decodeRGB555LineSIMD(uint8_t* dst, const uint8_t* dataA, const uint8_t*
  * \param initialDYUV The initial value to be used by the DYUV decoder.
  * \return The number of raw bytes read from \p dyuv.
  */
-uint16_t decodeDYUVLineSIMD(uint8_t* dst, const uint8_t* dyuv, uint16_t width, uint16_t initialDYUV) noexcept
+uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint16_t width, uint16_t initialDYUV) noexcept
 {
     uint32_t previous = initialDYUV;
 
     CountingIterator<int, 2> it{0};
 
-    std::for_each_n(std::execution::seq, it, width >> 1, [dst, dyuv, &previous] (int index) {
+    std::for_each_n(std::execution::seq, it, width >> 1, [dst, dyuv, &previous] (const int index) {
         uint16_t pixel = as<uint16_t>(dyuv[index]) << 8;
         pixel |= dyuv[index + 1];
-        decodeDYUVSIMD(pixel, &dst[index * 4], previous);
+        decodeDYUVSIMD(&dst[index], pixel, previous);
     });
 
     return width;
@@ -246,18 +239,18 @@ uint16_t decodeDYUVLineSIMD(uint8_t* dst, const uint8_t* dyuv, uint16_t width, u
  *
  * If \p icm is ImageCodingMethod::CLUT77 or the video plane is plane B, then sent `&CLUT[128]` as the \p CLUTTable.
  */
-uint16_t decodeCLUTLineSIMD(uint8_t* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept
+uint16_t decodeCLUTLineSIMD(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept
 {
     if(icm == ImageCodingMethod::CLUT4)
     {
-        CountingIterator<int, 2> it{0};
+        CountingIterator<int> it{0};
         std::for_each_n(std::execution::unseq, it, width >> 1, [dst, data, CLUTTable] (int index) {
             const uint8_t d = data[index];
             const uint8_t color1 = bits<4, 7>(d);
             const uint8_t color2 = bits<0, 3>(d);
-            index *= 4;
-            decodeCLUTSIMD(color1, &dst[index], CLUTTable);
-            decodeCLUTSIMD(color2, &dst[index + 4], CLUTTable);
+            index *= 2;
+            decodeCLUTSIMD(&dst[index], color1, CLUTTable);
+            decodeCLUTSIMD(&dst[index + 1], color2, CLUTTable);
         });
 
         return width / 2;
@@ -269,28 +262,30 @@ uint16_t decodeCLUTLineSIMD(uint8_t* dst, const uint8_t* data, uint16_t width, c
         CountingIterator<int> it{0};
         std::for_each_n(std::execution::unseq, it, width, [dst, data, CLUTTable, colorMask] (const int index) {
             const uint8_t color = data[index] & colorMask;
-            decodeCLUTSIMD(color, &dst[index * 4], CLUTTable);
+            decodeCLUTSIMD(&dst[index], color, CLUTTable);
         });
 
         return width;
     }
 }
 
-static constexpr void matrixRGBSIMD(const int Y, const uint8_t U, const uint8_t V, uint8_t pixels[4]) noexcept
+static constexpr void matrixRGBSIMD(Pixel* pixel, const int Y, const uint8_t U, const uint8_t V) noexcept
 {
-    pixels[0] = 0xFF;
-    pixels[1] = limu8(Y + matrixVToR[V]);
-    pixels[2] = limu8(Y - (matrixUToG[U] + matrixVToG[V]));
-    pixels[3] = limu8(Y + matrixUToB[U]);
+    const uint32_t r = limu8(Y + matrixVToR[V]);
+    const uint32_t g = limu8(Y - (matrixUToG[U] + matrixVToG[V]));
+    const uint32_t b = limu8(Y + matrixUToB[U]);
+    *pixel = (r << 16) | (g << 8) | b;
 }
 
 /** \brief Convert DYUV to ARGB.
  *
  * \param pixel The pixel to decode.
- * \param pixels Where the pixels will be written to. pixels[0,4] = 0xFF, pixels[1,5] = red, pixels[2,6] = green, pixels[3,7] = blue.
+ * \param pixels Where the pixels pair will be written to.
  * \param previous The previous pixel colors.
+ *
+ * TODO: SIMD with original algorithm https://github.com/Stovent/CeDImu/commit/22464aacb5c2590886b98176183e6c2e240835e0
  */
-void decodeDYUVSIMD(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous) noexcept
+void decodeDYUVSIMD(Pixel* dst, const uint16_t pixel, uint32_t& previous) noexcept
 {
     // Green book V.4.4.2
     uint8_t u2 = bits<12, 15>(pixel);
@@ -310,8 +305,8 @@ void decodeDYUVSIMD(const uint16_t pixel, uint8_t pixels[8], uint32_t& previous)
     const uint8_t v1 = (as<uint16_t>(pv) + as<uint16_t>(v2)) >> 1;
     previous = as<uint32_t>(y2) << 16 | as<uint32_t>(u2) << 8 | v2;
 
-    matrixRGBSIMD(y1, u1, v1, pixels);
-    matrixRGBSIMD(y2, u2, v2, &pixels[4]);
+    matrixRGBSIMD(dst, y1, u1, v1);
+    matrixRGBSIMD(&dst[1], y2, u2, v2);
 }
 
 } // namespace Video

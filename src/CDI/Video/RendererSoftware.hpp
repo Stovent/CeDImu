@@ -8,11 +8,14 @@ namespace Video
 {
 
 /** \brief CD-i video renderer implementation using only C++ code.
+ *
+ * TODO: use uint32_t instead of uint8_t?
  */
 class RendererSoftware final : public Renderer
 {
 public:
     RendererSoftware() {}
+    virtual ~RendererSoftware() noexcept {}
 
     std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept override;
     const Plane& RenderFrame() noexcept override;

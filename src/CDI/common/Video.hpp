@@ -32,7 +32,7 @@ enum class ControlArea
 
 /** \brief Helper class representing a video plane.
  */
-class Plane final : public std::vector<uint8_t>
+class Plane : public std::vector<uint8_t>
 {
 public:
     static constexpr size_t MAX_WIDTH     = 768;
