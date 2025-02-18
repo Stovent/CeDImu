@@ -3,6 +3,7 @@
 
 #include "../common/utils.hpp"
 #include "../common/Video.hpp"
+// #include "../common/VideoSIMD.hpp"
 
 #include <array>
 #include <cstdint>
@@ -39,6 +40,8 @@ static constexpr uint16_t matteXPosition(const uint32_t matteCommand) noexcept
 /** \brief CD-i video renderer base class as described in the Green Book.
  *
  * Every array member with 2 elements means its meant to be index based on the plane number \ref ImagePlane.
+ *
+ * I absolutely really need to implement multi resolutions because my code just assumes normal res for all the planes.
  *
  * TODO:
  * - Handle Width, Height, double resolution.
@@ -103,6 +106,7 @@ public:
     // TODO: Split into dedicated directory and separate files (Display Control) ?
 
     Plane m_screen{3, 384, 280, Plane::RGB_MAX_SIZE};
+    // Plane m_screen{3, 384, 280, SIMDAlign(Plane::RGB_MAX_SIZE)}; // align for SIMD test.
     std::array<Plane, 2> m_plane{Plane{4, 384, 280}, Plane{4, 384, 280}};
     Plane m_backdropPlane{3, 1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT * 3};
     Plane m_cursorPlane{4, Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_ARGB_SIZE}; /**< The alpha is 0, 127 or 255. */ // TODO: also make the cursor RGB like the background ?
@@ -255,6 +259,7 @@ public:
 
         ++m_nextMatte[PLANE];
 
+        /* TODO: matte flag index changed should be based on its index. V.5.10.2 note 8 */
         const uint8_t op = matteOp(command);
         switch(op)
         {
@@ -328,7 +333,7 @@ public:
         LoadImageContributionFactorB = 0xDC,
     };
 
-private:
+protected:
     /** \brief Returns the lowest 24-bits that contains the DCP command. */
     static constexpr uint32_t dcpExtractCommand(const uint32_t inst) { return inst & 0x00FF'FFFFu; }
 
