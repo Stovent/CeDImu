@@ -3,8 +3,8 @@ target_sources(CeDImu
         Renderer.cpp
         Renderer.hpp
         RendererDCP.cpp
-        RendererSIMD.cpp
-        RendererSIMD.hpp
+        # RendererSIMD.cpp
+        # RendererSIMD.hpp
         RendererSoftware.cpp
         RendererSoftware.hpp
 )
