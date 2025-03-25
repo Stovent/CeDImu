@@ -288,7 +288,7 @@ void RendererSIMD::ApplyICFMixSIMDCast() noexcept
 
         rgbF16 += rgbB16;
 
-        stdx::clamp(rgbF16, U8_MINN, U8_MAXX);
+        rgbF16 = stdx::clamp(rgbF16, U8_MINN, U8_MAXX);
 
         const PixelSIMD result = std::bit_cast<PixelSIMD>(stdx::static_simd_cast<SIMDU8>(rgbF16));
 
@@ -389,9 +389,9 @@ void RendererSIMD::ApplyICFMixSIMDShift() noexcept
         gfp += gbp;
         bfp += bbp;
 
-        stdx::clamp(rfp, U8_MIN, U8_MAX);
-        stdx::clamp(gfp, U8_MIN, U8_MAX);
-        stdx::clamp(bfp, U8_MIN, U8_MAX);
+        rfp = stdx::clamp(rfp, U8_MIN, U8_MAX);
+        gfp = stdx::clamp(gfp, U8_MIN, U8_MAX);
+        bfp = stdx::clamp(bfp, U8_MIN, U8_MAX);
 
         const PixelSIMDSigned result = (rfp << 16) | (gfp << 8) | bfp;
 
