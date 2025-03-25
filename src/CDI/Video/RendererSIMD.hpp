@@ -28,9 +28,9 @@ public:
     PlaneSIMD m_cursorPlaneARGB{PlaneSIMD::CURSOR_WIDTH, PlaneSIMD::CURSOR_HEIGHT, PlaneSIMD::CURSOR_ARGB_SIZE};
 
     std::array<std::array<uint8_t, SIMD_LINE_WIDTH>, 2> m_icfLine{};
-    std::array<uint8_t, 2> m_currentICF{};
+    // std::array<uint8_t, 2> m_currentICF{};
     // std::array<std::array<uint8_t, SIMD_LINE_WIDTH>, 2> m_matteFlagLine{};
-    uint32_t m_currentMatteCommand{0};
+    // uint32_t m_currentMatteCommand{0};
 
     RendererSIMD() {}
     virtual ~RendererSIMD() noexcept {}
@@ -44,7 +44,8 @@ public:
     void DrawCursor() noexcept;
 
     template<bool MIX, bool PLANE_ORDER> void OverlayMix() noexcept;
-    template<bool PLANE_ORDER> void ApplyICFMixSIMD() noexcept;
+    template<bool PLANE_ORDER> void ApplyICFMixSIMDCast() noexcept;
+    template<bool PLANE_ORDER> void ApplyICFMixSIMDShift() noexcept;
     template<bool PLANE_ORDER> void ApplyICFOverlaySIMD() noexcept;
 
     void ResetMatteSIMD() noexcept;
