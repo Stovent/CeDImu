@@ -44,8 +44,8 @@ public:
     void DrawCursor() noexcept;
 
     template<bool MIX, bool PLANE_ORDER> void OverlayMix() noexcept;
-    template<bool PLANE_ORDER> void ApplyICFMixSIMDCast() noexcept;
     template<bool PLANE_ORDER> void ApplyICFMixSIMDShift() noexcept;
+    template<bool PLANE_ORDER> void ApplyICFMixSIMDCast() noexcept;
     template<bool PLANE_ORDER> void ApplyICFOverlaySIMD() noexcept;
 
     void ResetMatteSIMD() noexcept;

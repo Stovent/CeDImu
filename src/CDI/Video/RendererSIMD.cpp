@@ -214,88 +214,6 @@ static const FixedS16 U8_MAXX{255};
 static const PixelSIMDSigned ALPHA_MASK{-16777216}; // 0xFF'00'00'00
 static const PixelSIMD ALPHA_MASKK{0xFF'00'00'00}; // 0xFF'00'00'00
 
-/** \brief Applies ICF and mixes using SIMD (algorithm that casts the registers to access RGB components).
- * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
- */
-template<bool PLANE_ORDER>
-void RendererSIMD::ApplyICFMixSIMDCast() noexcept
-{
-    Pixel* screen = m_screenARGB.GetLinePointer(m_lineNumber);
-    const Pixel* planeFront;
-    const Pixel* planeBack;
-    const uint8_t* icfFront;
-    const uint8_t* icfBack;
-    if constexpr(PLANE_ORDER)
-    {
-        planeFront = m_planeLine[B].data();
-        planeBack = m_planeLine[A].data();
-        icfFront = m_icfLine[B].data();
-        icfBack = m_icfLine[A].data();
-    }
-    else
-    {
-        planeFront = m_planeLine[A].data();
-        planeBack = m_planeLine[B].data();
-        icfFront = m_icfLine[A].data();
-        icfBack = m_icfLine[B].data();
-    }
-
-    for(uint16_t i = 0; i < m_plane[A].m_width;
-        i += SIMD_SIZE, planeFront += SIMD_SIZE, planeBack += SIMD_SIZE, icfFront += SIMD_SIZE, icfBack += SIMD_SIZE, screen += SIMD_SIZE) // TODO: width[B].
-    {
-        PixelSIMD icfF{icfFront, stdx::element_aligned};
-        PixelSIMD icfB{icfBack, stdx::element_aligned};
-
-        PixelSIMD planeF{planeFront, stdx::element_aligned};
-        PixelSIMD planeB{planeBack, stdx::element_aligned};
-
-        // transparent areas of an image simply give no contribution to the final display
-        // - that is they are equivalent to black areas..
-        const PixelSIMD::mask_type maskF = (planeF & ALPHA_MASKK) == 0;
-        const PixelSIMD::mask_type maskB = (planeB & ALPHA_MASKK) == 0;
-        stdx::where(maskF, planeF) = 0x00'10'10'10;
-        stdx::where(maskB, planeB) = 0x00'10'10'10;
-        stdx::where(maskF, icfF) = 63;
-        stdx::where(maskB, icfB) = 63;
-
-        // extend ICF to whole register.
-        icfF *= 0x00'01'01'01;
-        icfB *= 0x00'01'01'01;
-        // icfF |= (icfF << 16) | (icfF << 8);
-        // icfB |= (icfB << 16) | (icfB << 8);
-
-        SIMDU8 rgbF8 = std::bit_cast<SIMDU8>(planeF);
-        SIMDU8 rgbB8 = std::bit_cast<SIMDU8>(planeB);
-        SIMDU8 icfF8 = std::bit_cast<SIMDU8>(icfF);
-        SIMDU8 icfB8 = std::bit_cast<SIMDU8>(icfB);
-
-        FixedS16 rgbF16 = stdx::static_simd_cast<int16_t>(rgbF8);
-        FixedS16 rgbB16 = stdx::static_simd_cast<int16_t>(rgbB8);
-        FixedS16 icfF16 = stdx::static_simd_cast<int16_t>(icfF8);
-        FixedS16 icfB16 = stdx::static_simd_cast<int16_t>(icfB8);
-
-        rgbF16 -= SIXTEENN;
-        rgbB16 -= SIXTEENN;
-
-        rgbF16 *= icfF16;
-        rgbB16 *= icfB16;
-
-        rgbF16 /= 63;
-        rgbB16 /= 63;
-
-        rgbF16 += SIXTEENN;
-        // rgbB16 += SIXTEENN; Don't add 16 to back plane when applying ICF because the below mixing subtracts it.
-
-        rgbF16 += rgbB16;
-
-        rgbF16 = stdx::clamp(rgbF16, U8_MINN, U8_MAXX);
-
-        const PixelSIMD result = std::bit_cast<PixelSIMD>(stdx::static_simd_cast<SIMDU8>(rgbF16));
-
-        result.copy_to(screen, stdx::element_aligned);
-    }
-}
-
 /** \brief Applies ICF and mixes using SIMD (algorithm that shifts and masks RGB components).
  * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
  */
@@ -400,6 +318,90 @@ void RendererSIMD::ApplyICFMixSIMDShift() noexcept
 }
 // template void RendererSIMD::ApplyICFMixSIMDShift<false>() noexcept;
 // template void RendererSIMD::ApplyICFMixSIMDShift<true>() noexcept;
+
+/** \brief Applies ICF and mixes using SIMD (algorithm that casts the registers to access RGB components).
+ * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
+ */
+template<bool PLANE_ORDER>
+void RendererSIMD::ApplyICFMixSIMDCast() noexcept
+{
+    Pixel* screen = m_screenARGB.GetLinePointer(m_lineNumber);
+    const Pixel* planeFront;
+    const Pixel* planeBack;
+    const uint8_t* icfFront;
+    const uint8_t* icfBack;
+    if constexpr(PLANE_ORDER)
+    {
+        planeFront = m_planeLine[B].data();
+        planeBack = m_planeLine[A].data();
+        icfFront = m_icfLine[B].data();
+        icfBack = m_icfLine[A].data();
+    }
+    else
+    {
+        planeFront = m_planeLine[A].data();
+        planeBack = m_planeLine[B].data();
+        icfFront = m_icfLine[A].data();
+        icfBack = m_icfLine[B].data();
+    }
+
+    for(uint16_t i = 0; i < m_plane[A].m_width;
+        i += SIMD_SIZE, planeFront += SIMD_SIZE, planeBack += SIMD_SIZE, icfFront += SIMD_SIZE, icfBack += SIMD_SIZE, screen += SIMD_SIZE) // TODO: width[B].
+    {
+        PixelSIMD icfF{icfFront, stdx::element_aligned};
+        PixelSIMD icfB{icfBack, stdx::element_aligned};
+
+        PixelSIMD planeF{planeFront, stdx::element_aligned};
+        PixelSIMD planeB{planeBack, stdx::element_aligned};
+
+        // transparent areas of an image simply give no contribution to the final display
+        // - that is they are equivalent to black areas..
+        const PixelSIMD::mask_type maskF = (planeF & ALPHA_MASKK) == 0;
+        const PixelSIMD::mask_type maskB = (planeB & ALPHA_MASKK) == 0;
+        stdx::where(maskF, planeF) = 0x00'10'10'10;
+        stdx::where(maskB, planeB) = 0x00'10'10'10;
+        stdx::where(maskF, icfF) = 63;
+        stdx::where(maskB, icfB) = 63;
+
+        // extend ICF to whole register.
+        icfF *= 0x00'01'01'01;
+        icfB *= 0x00'01'01'01;
+        // icfF |= (icfF << 16) | (icfF << 8);
+        // icfB |= (icfB << 16) | (icfB << 8);
+
+        SIMDU8 rgbF8 = std::bit_cast<SIMDU8>(planeF);
+        SIMDU8 rgbB8 = std::bit_cast<SIMDU8>(planeB);
+        SIMDU8 icfF8 = std::bit_cast<SIMDU8>(icfF);
+        SIMDU8 icfB8 = std::bit_cast<SIMDU8>(icfB);
+
+        FixedS16 rgbF16 = stdx::static_simd_cast<int16_t>(rgbF8);
+        FixedS16 rgbB16 = stdx::static_simd_cast<int16_t>(rgbB8);
+        FixedS16 icfF16 = stdx::static_simd_cast<int16_t>(icfF8);
+        FixedS16 icfB16 = stdx::static_simd_cast<int16_t>(icfB8);
+
+        rgbF16 -= SIXTEENN;
+        rgbB16 -= SIXTEENN;
+
+        rgbF16 *= icfF16;
+        rgbB16 *= icfB16;
+
+        rgbF16 /= 63;
+        rgbB16 /= 63;
+
+        rgbF16 += SIXTEENN;
+        // rgbB16 += SIXTEENN; Don't add 16 to back plane when applying ICF because the below mixing subtracts it.
+
+        rgbF16 += rgbB16;
+
+        rgbF16 = stdx::clamp(rgbF16, U8_MINN, U8_MAXX);
+
+        const PixelSIMD result = std::bit_cast<PixelSIMD>(stdx::static_simd_cast<SIMDU8>(rgbF16));
+
+        result.copy_to(screen, stdx::element_aligned);
+    }
+}
+// template void RendererSIMD::ApplyICFMixSIMDCast<false>() noexcept;
+// template void RendererSIMD::ApplyICFMixSIMDCast<true>() noexcept;
 
 /** \brief Applies ICF and overlays using SIMD.
  * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.

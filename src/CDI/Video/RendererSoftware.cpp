@@ -166,6 +166,9 @@ static constexpr uint8_t mix(const int a, const int b) noexcept
 /** \brief Overlays or mix all the planes to the final screen.
  * \tparam MIX true to use mixing, false to use overlay.
  * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
+ *
+ * TODO: for overlay, first check which pixel has to be shown, then compute ICF only for this pixel.
+ * split in two different functions?
  */
 template<bool MIX, bool PLANE_ORDER>
 void RendererSoftware::OverlayMix() noexcept
