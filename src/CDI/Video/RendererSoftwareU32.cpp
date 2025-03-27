@@ -64,7 +64,8 @@ const Plane& RendererSoftwareU32::RenderFrame() noexcept
     if(m_cursorEnabled)
     {
         DrawCursor();
-        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height, m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height, m_cursorX, m_cursorY);
+        // TODO: double resolution
+        Video::paste(m_screenARGB.data(), m_screen.m_width, m_screen.m_height, m_cursorPlaneARGB.data(), m_cursorPlaneARGB.m_width, m_cursorPlaneARGB.m_height, m_cursorX >> 1, m_cursorY);
     }
 
     // TODO: this should be on the GUI side.
@@ -137,26 +138,24 @@ void RendererSoftwareU32::DrawCursor() noexcept
     const Pixel color = backdropCursorColorToARGB(m_cursorColor);
     const Pixel black{0};
 
-    int pattern = 0;
-    for(PlaneU32::iterator it = m_cursorPlaneARGB.begin(); it < m_cursorPlaneARGB.end();)
+    PlaneU32::iterator it = m_cursorPlaneARGB.begin();
+    for(int y = 0; y < m_cursorPlaneARGB.m_height; ++y)
     {
-        for(int x = 0; x < m_cursorPlaneARGB.m_width; ++x)
+        for(int x = m_cursorPlaneARGB.m_width - 1; x >= 0; --x)
         {
             const uint16_t mask = (1 << x);
-            if(m_cursorPatterns[pattern] & mask)
+            if(m_cursorPatterns[y] & mask)
                 *it = color;
             else
                 *it = black;
             ++it;
         }
-
-        ++pattern;
     }
 }
 
-static constexpr uint8_t intByteMult(uint32_t color1, uint32_t color2) noexcept {
-    return static_cast<uint8_t>(((color1 * (color2 | color2 << 8)) + 0x8080) >> 16);
-}
+// static constexpr uint8_t intByteMult(uint32_t color1, uint32_t color2) noexcept {
+//     return static_cast<uint8_t>(((color1 * (color2 | color2 << 8)) + 0x8080) >> 16);
+// }
 
 /** \brief Apply the given Image Contribution Factor to the given color component (V.5.9). */
 static constexpr uint32_t applyICFComponent(const int color, const int icf) noexcept
@@ -179,8 +178,6 @@ static constexpr Pixel applyICF(const Pixel pixel, const int icf) noexcept
 /** \brief Apply mixing to the given color components after ICF (V.5.9.1). */
 static constexpr Pixel mix(const Pixel a, const Pixel b) noexcept
 {
-    // return limu8(a + b - 16);
-
     uint8_t ra = a >> 16;
     uint8_t ga = a >> 8;
     uint8_t ba = a;

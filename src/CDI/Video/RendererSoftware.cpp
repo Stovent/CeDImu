@@ -62,7 +62,7 @@ const Plane& RendererSoftware::RenderFrame() noexcept
     if(m_cursorEnabled)
     {
         DrawCursor();
-        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height, m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height, m_cursorX, m_cursorY);
+        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height, m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height, m_cursorX >> 1, m_cursorY);
     }
 
     m_lineNumber = 0;

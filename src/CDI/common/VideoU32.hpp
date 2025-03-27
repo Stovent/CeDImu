@@ -67,6 +67,8 @@ constexpr void decodeCLUTU32(Pixel* dst, const uint8_t pixel, const uint32_t* CL
     *dst = CLUTTable[pixel]; // We don't care about transparency for CLUT.
 }
 
+void paste(Pixel* dst, const uint16_t dstWidth, const uint16_t dstHeight, const Pixel* src, const uint16_t srcWidth, const uint16_t srcHeight, const uint16_t xOffset = 0, const uint16_t yOffset = 0);
+
 } // namespace Video
 
 #endif // CDI_COMMON_VIDEOU32_HPP

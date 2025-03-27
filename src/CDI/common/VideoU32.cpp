@@ -298,4 +298,33 @@ void decodeDYUVU32(Pixel* dst, const uint16_t pixel, uint32_t& previous) noexcep
     matrixRGBU32(&dst[1], y2, u2, v2);
 }
 
+/** \brief Copy the ARGB pixels to an ARGB plane.
+ *
+ * \param dst The destination ARGB plane.
+ * \param dstWidth The width of the destination plane.
+ * \param dstHeight The height of the destination plane.
+ * \param src The source ARGB plane.
+ * \param srcWidth The width of the source plane.
+ * \param srcHeight The width of the source plane.
+ * \param xOffset The x offset in pixels where the paste will occur on dst.
+ * \param yOffset The y offset in pixels where the paste will occur on dst.
+ *
+ * If the source does not fit in the destination, only the pixels that fit in the destination are copied.
+ */
+void paste(Pixel* dst, const uint16_t dstWidth, const uint16_t dstHeight, const Pixel* src, const uint16_t srcWidth, const uint16_t srcHeight, const uint16_t xOffset, const uint16_t yOffset)
+{
+    for(uint16_t dy = yOffset, sy = 0; dy < dstHeight && sy < srcHeight; ++dy, ++sy)
+    {
+              Pixel* dstRow = dst + dstWidth * dy;
+        const Pixel* srcRow = src + srcWidth * sy;
+        for(uint16_t dx = xOffset, sx = 0; dx < dstWidth && sx < srcWidth; ++dx, ++sx)
+        {
+            if((srcRow[sx] & 0xFF'00'00'00) != 0) // Alpha is either 0 or 255.
+            {
+                dstRow[dx] = srcRow[sx];
+            }
+        }
+    }
+}
+
 } // namespace Video

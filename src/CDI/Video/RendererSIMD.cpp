@@ -3,6 +3,7 @@
 #include "../common/panic.hpp"
 #include "../common/utils.hpp"
 #include "../common/VideoSIMD.hpp"
+#include "../common/VideoU32.hpp"
 
 #include <cstring>
 
@@ -65,7 +66,8 @@ const Plane& RendererSIMD::RenderFrame() noexcept
     if(m_cursorEnabled)
     {
         DrawCursor();
-        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height, m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height, m_cursorX, m_cursorY);
+        // TODO: double resolution
+        Video::paste(m_screenARGB.data(), m_screen.m_width, m_screen.m_height, m_cursorPlaneARGB.data(), m_cursorPlaneARGB.m_width, m_cursorPlaneARGB.m_height, m_cursorX >> 1, m_cursorY);
     }
 
     // TODO: this should be on the GUI side.
@@ -161,7 +163,7 @@ void RendererSIMD::DrawCursor() noexcept
     {
         FixedPixelSIMD pixel{&*it, stdx::element_aligned};
 
-        for(int x = m_cursorPlaneARGB.m_width, pix = 0; --x >= 0; pix++)
+        for(int x = m_cursorPlaneARGB.m_width - 1, pix = 0; --x >= 0; pix++)
         {
             const uint16_t mask = (1 << x);
             if(m_cursorPatterns[pattern] & mask)
