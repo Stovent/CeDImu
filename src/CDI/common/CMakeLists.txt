@@ -11,4 +11,6 @@ target_sources(CeDImu
         Video.hpp
         # VideoSIMD.cpp
         # VideoSIMD.hpp
+        # VideoU32.cpp
+        # VideoU32.hpp
 )

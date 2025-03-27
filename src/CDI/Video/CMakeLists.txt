@@ -7,4 +7,6 @@ target_sources(CeDImu
         # RendererSIMD.hpp
         RendererSoftware.cpp
         RendererSoftware.hpp
+        # RendererSoftwareU32.cpp
+        # RendererSoftwareU32.hpp
 )
