@@ -57,18 +57,24 @@ struct ModuleHeader
     ModuleExtraHeader extra;
 
     std::string name;
-    uint32_t begin;
-    uint32_t end;
+    uint32_t begin; /**< Address of the module in BIOS memory. */
+    uint32_t end; /**< End address of the module in BIOS memory. */
 };
 
 class BIOS
 {
+private:
+    std::vector<uint8_t> m_memory;
+
 public:
     explicit BIOS(std::span<const uint8_t> bios);
 
     uint32_t GetSize() const noexcept { return m_memory.size(); }
 
     const uint8_t& At(const uint32_t addr) const { return m_memory.at(addr); }
+
+    decltype(m_memory)::const_iterator CBegin() const noexcept { return m_memory.cbegin(); }
+    decltype(m_memory)::const_iterator CEnd() const noexcept { return m_memory.cend(); }
 
     /** \brief Returns the byte at \p offset.
      * \param offset The location of the byte in the BIOS area. */
@@ -85,7 +91,6 @@ public:
     bool ReplaceModule(std::span<const uint8_t> module);
 
 private:
-    std::vector<uint8_t> m_memory;
     std::vector<ModuleHeader> m_modules{}; /**< OS9 modules inside the BIOS. */
 
     void LoadModules();
