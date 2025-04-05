@@ -13,6 +13,8 @@
 class SoftCDI : public CDI
 {
 public:
+    static constexpr size_t BIOS_SIZE = 0x08'0000; /**< The size in bytes of the BIOS image. */
+
     SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());
     virtual ~SoftCDI();
 
@@ -78,10 +80,11 @@ private:
         TimekeeperBegin = 0x32'0000,
         TimekeeperEnd   = 0x32'4000,
         BIOSBegin = 0x40'0000,
-        BIOSEnd   = 0x4F'FFE0,
+        BIOSEnd   = BIOSBegin + BIOS_SIZE,
         MCD212RegistersBegin = 0x4F'FFE0,
         MCD212RegistersEnd   = 0x50'0000,
     };
+    static_assert(BIOSEnd <= MCD212RegistersBegin, "BIOS too big");
 
     /** \brief SoftCDI system calls. */
     enum SystemCalls : uint16_t

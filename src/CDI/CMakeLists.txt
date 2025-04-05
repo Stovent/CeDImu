@@ -41,7 +41,10 @@ add_subdirectory(common)
 add_subdirectory(cores)
 add_subdirectory(HLE)
 add_subdirectory(OS9)
+add_subdirectory(SoftCDI)
 add_subdirectory(Video)
+
+target_link_libraries(CeDImu PUBLIC SoftCDI)
 
 option(LIBCEDIMU_ENABLE_LOG "Allows the library to print some messages in the console and the use of OnLogMemoryAccess callback" ON)
 if(LIBCEDIMU_ENABLE_LOG)

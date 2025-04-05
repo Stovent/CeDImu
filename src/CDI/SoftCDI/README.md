@@ -27,6 +27,12 @@ The NVRAM driver, allows to save the data on the host.
 
 Reimplementation of the Green Book in software.
 
+## CMake toolchain
+
+It is compiled along with the C++ code. You need to have DOSBox findable by CMake's `find_program`, usually setting dosbox in PATH is sufficient.
+
+You also need to set the CMake variable `OS9C` to the root directory of the original OS9 compiler (root directory must have `OS9C/BIN/R68.exe`).
+
 ## OS9C toolchain
 
 See `The OS-9 guru - chapter 6` and the [OS-9 Assembler/Linker](http://icdia.co.uk/microware/77165106.pdf) for how to use the compiler and conventions.
