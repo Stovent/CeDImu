@@ -17,13 +17,66 @@ Main:
 	moveq #Write_,d0
 	lea T2Device(pc),a0
 	os9 I$Open
-	bcs.b End
+	bcs End
 	move.w d0,d2
 
 * Print Hello world.
 	lea HelloWorld(pc),a0
 	move.l #HelloWorldEnd,d1
 	os9 I$WritLn
+
+* Open CD to read application name
+	moveq #Read_,d0
+	lea CDDevice(pc),a0
+	os9 I$Open		d0.w is the path number
+	bcs.b End
+
+* Seek to Disc Label
+	move.l #$8000,d1		Disc label at 00:02:16
+	os9 I$Seek
+	bcs.b End
+
+* Read the disc label
+	move.l #$800,d1
+	lea DiscLabel(pc),a0
+	os9 I$Read
+	bcs.b End
+
+* Save main module name
+* Make sure the pathlist ends with an invalid byte
+	lea DiscLabel(pc),a0
+	move.b #0,702(a0)
+* The name contains spaces to fill the remaining space, but F$PrsNam ignores it
+
+* Change data directory to /cd
+	moveq #Updat_,d0
+	lea CDDevice(pc),a0
+	os9 I$ChgDir
+	bcs.b End
+
+	moveq #Exec_,d0
+	lea CDDevice(pc),a0
+	os9 I$ChgDir
+	bcs.b End
+
+* Load main module
+	moveq #Exec_,d0
+	moveq #0,d1
+	lea DiscLabel(pc),a0
+	lea 574(a0),a0		Load module name
+*	lea DiscLabel+574(pc),a0
+	os9 F$Load
+
+* Chain to main module
+	moveq #0,d0
+	moveq #0,d1
+	moveq #0,d2
+	moveq #3,d3
+	moveq #0,d4
+	lea DiscLabel(pc),a0
+	lea 574(a0),a0		Load module name
+	lea NullString(pc),a1
+	os9 F$Chain
 
 End:
 * Exit program
@@ -32,6 +85,14 @@ End:
 
 T2Device	dc.b	"/t2",0
 NvrDevice	dc.b	"/nvr",0
+CDDevice	dc.b	"/cd@",0
+NullString	dc.b	0
 HelloWorld	dc.b	"Hello, world",0
 HelloWorldEnd	equ	*-HelloWorld
+
+	vsect
+DiscLabel	ds.b $8000
+* ModuleName	ds.b 129	Additional byte for the null byte
+
+	ends
 	ends

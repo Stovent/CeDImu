@@ -3,6 +3,8 @@
 #include "../../HLE/IKAT/IKAT.hpp"
 #include "../../cores/DS1216/DS1216.hpp"
 #include "../../cores/M48T08/M48T08.hpp"
+
+#include "../../SoftCDI/include/CIAPDRIV.h"
 #include "../../SoftCDI/include/CSD_450.h"
 #include "../../SoftCDI/include/NVDRV.h"
 #include "../../SoftCDI/include/VIDEO.h"
@@ -13,6 +15,69 @@
 #include <cstring>
 #include <stdexcept>
 
+/** \brief Generates a SoftCDI BIOS with core modules taken from the given Mono3 bios.
+ * \return The SoftCDI BIOS.
+ * \throw std::invalid_argument if some Mono3 modules are incorrect.
+ * \throw std::length_error when the resulting BIOS is bigger than SoftCDI::BIOS_SIZE.
+ */
+static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
+{
+    const OS9::ModuleHeader& kernel = mono3.GetModules().front();
+    if(kernel.name != "kernel")
+        throw std::invalid_argument("First Mono3 module must be the kernel");
+
+    // Copy the boot code and the kernel module.
+    std::vector<uint8_t> bios(mono3.CBegin(), mono3.CBegin() + kernel.end);
+
+    // Copy the core modules.
+    for(const OS9::ModuleHeader& module : mono3.GetModules())
+    {
+        if(module.name == "cio" ||
+           module.name == "cd" ||
+           module.name == "init" ||
+           module.name == "t2" || // Serial port
+           module.name == "u68070" || // device driver for t2
+           module.name == "scf" || // File manager for t2
+           module.name == "sgstom" || // Clock module
+           module.name == "tim070" || // timer device descriptor
+           module.name == "tim070driv" || // timer device driver
+           module.name == "nvr" || // NVRAM descriptor
+           module.name == "nrf" || // NVRAM file manager
+           module.name == "nvdrv" || // NVRAM device driver
+           module.name == "csdinit" ||
+           module.name == "ucm" ||
+        //    module.name == "csd_450" ||
+           module.name == "cdfm")
+        {
+            bios.insert(bios.end(), mono3.CBegin() + module.begin, mono3.CBegin() + module.end);
+        }
+
+        // if(module.name == "dummy")
+        // {
+        //     break; // dummy needs to be the last module.
+        // }
+    }
+
+    // Add custom mdules.
+    // bios.append_range(std::span{SYSGO, SYSGO_len});
+    bios.insert(bios.end(), CIAPDRIV, &CIAPDRIV[CIAPDRIV_len]);
+    bios.insert(bios.end(), CSD_450, &CSD_450[CSD_450_len]);
+    bios.insert(bios.end(), SYSGO, &SYSGO[SYSGO_len]);
+
+    /*// Add dummy module.
+    const OS9::ModuleHeader& dummy = mono3.GetModules().back();
+    if(dummy.name != "dummy")
+        throw std::invalid_argument("Last Mono3 module must be dummy");
+    bios.insert(bios.end(), mono3.CBegin() + dummy.begin, mono3.CBegin() + dummy.end);*/
+
+    if(bios.size() >= SoftCDI::BIOS_SIZE)
+        throw std::length_error("SoftCDI BIOS must not exceed 0x08'0000 bytes");
+
+    bios.resize(SoftCDI::BIOS_SIZE); // Mono3 boot code expects the BIOS size to be 0x8'0000 when searching ROMed module.
+
+    return OS9::BIOS({bios.begin(), bios.end()});
+}
+
 /** \brief SoftCDI constructor.
  * \throw std::runtime_error if the given BIOS can't be patched.
  */
@@ -20,7 +85,7 @@ SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig confi
     : CDI("SoftCDI", config, std::move(callbacks), std::move(disc))
     , m_ram0(RAM_BANK_SIZE, 0)
     , m_ram1(RAM_BANK_SIZE, 0)
-    , m_bios(std::move(bios))
+    , m_bios(makeSoftcdiBiosFromMono3(bios))
     // , m_nvramMaxAddress(config.has32KBNVRAM ? 0x330000 : 0x324000)
 {
     m_slave = std::make_unique<HLE::IKAT>(*this, config.PAL, 0x310000, PointingDevice::Class::Maneuvering);
@@ -29,19 +94,6 @@ SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig confi
     // else
     m_timekeeper = std::make_unique<M48T08>(*this, nvram, config.initialTime);
     Reset(true);
-
-    if(!m_bios.ReplaceModule({CSD_450, CSD_450_len}))
-        throw std::runtime_error("Failed to patch csd");
-
-    // Is it necessary to replace NVDRV ?
-    // if(!m_bios.ReplaceModule({NVDRV, NVDRV_len}))
-    //     throw std::runtime_error("Failed to patch nvdrv");
-
-    if(!m_bios.ReplaceModule({VIDEO, VIDEO_len}))
-        throw std::runtime_error("Failed to patch video");
-
-    // if(!m_bios.ReplaceModule({SYSGO, SYSGO_len}))
-    //     throw std::runtime_error("Failed to patch sysgo");
 
     // Load the reset vector data.
     memcpy(m_ram0.data(), &m_bios[0], 8);
