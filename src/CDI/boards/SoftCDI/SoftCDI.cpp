@@ -111,7 +111,15 @@ void SoftCDI::Scheduler()
 
     do
     {
-        std::pair<size_t, std::optional<SCC68070::Exception>> res = m_cpu.SingleStepException(25);
+        std::pair<size_t, std::optional<SCC68070::Exception>> res;
+        try
+        {
+            res = m_cpu.SingleStepException(25);
+        }
+        catch(const SCC68070::Breakpoint&)
+        {
+            break;
+        }
 
         if(res.second.has_value())
         {
