@@ -10,7 +10,7 @@ entrypt		equ csd
 
 	psect csd,typelang,attrrevs,edition,stacksize,entrypt
 
-dataoffset dc.l $34 Data files must have this offset.
+dataoffset dc.l $34 	Data files must have this offset.
 csd	dc.b	"1:/cd:",$D
 	dc.b	"3:/vid:LI=\"525\":TV:",$D
 	dc.b	"4:/nvr:",$D
