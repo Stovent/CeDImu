@@ -128,14 +128,24 @@ public:
         }
     };
 
+    // TODO: I don't like this but this is the quickest interface I can develop now.
+    struct Breakpoint
+    {
+        uint32_t address; /**< The adress of the instruction that caused the breakpoint. */
+    };
+
     uint32_t currentPC;
     uint64_t totalCycleCount;
     const double cycleDelay; // Time between two clock cycles in nanoseconds
 
     std::vector<uint32_t> breakpoints;
+    bool m_breakpointed; /**< set to true when reaching a breakpointed instruction. */
 
     SCC68070(CDI& idc, uint32_t clockFrequency);
     ~SCC68070() noexcept;
+
+    SCC68070(const SCC68070&) = delete;
+    SCC68070(SCC68070&&) = delete;
 
     size_t SingleStep(size_t stopCycles);
     std::pair<size_t, std::optional<Exception>> SingleStepException(size_t stopCycles);
