@@ -7,9 +7,8 @@ typelang	equ	(Drivr<<8)+Objct
 attrrevs	equ	((ReEnt+SupStat)<<8)+$99 Not reentrant
 edition		equ	0
 stacksize	equ	0
-entrypt		equ	EntryTable
 
-	psect ciapdriv,typelang,attrrevs,edition,stacksize,entrypt
+	psect ciapdriv,typelang,attrrevs,edition,stacksize,EntryTable
 
 EntryTable	dc.w	Init
 		dc.w	Read
@@ -18,6 +17,7 @@ EntryTable	dc.w	Init
 		dc.w	SetStat
 		dc.w	Term
 		dc.w	0	Trap handler
+		dc.w	Play	CDFM specific (GB VII.3.1.5)
 
 Init
 	softcdi $101
@@ -41,6 +41,25 @@ SetStat
 
 Term
 	softcdi $106
+	rts
+
+* GB VII.3.1.5.7
+* The PLAY subroutine sets up the controller's registers to 'play' a selection. The PLAY routine must:
+* (1) Get the starting sector for the play from the path descriptor.
+* (2) Seek to the starting sector if necessary.
+* (3) Set up the file number selection mechanism using the file number from the path descriptor.
+* (4) Set up the channel number selection mechanism using the channel mask from the Play Control Block.
+* Note: The Play entry point will be called to read all Mode 2 sectors. The Read entry will be called to read Mode 1 sectors.
+*
+* Input: (a1) = Path descriptor pointer
+* (a2) = Device static storage pointer
+* (a4) = Process descriptor pointer
+* (a6) = System global data storage pointer
+* Output: None
+* Error Output: cc = Carry bit set to one
+* d1.w = Error code
+Play
+	softcdi $107
 	rts
 
 	vsect
