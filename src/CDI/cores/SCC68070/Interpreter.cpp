@@ -2,6 +2,8 @@
 #include "../../CDI.hpp"
 #include "../../common/utils.hpp"
 
+#include <algorithm>
+
 /** \brief Exectutes a single instruction.
  * \param stopCycles The number of cycles to run if the CPU is stopped.
  * \return The number of CPU cycle executed (0 when CPU is stopped).
@@ -69,6 +71,15 @@ std::pair<size_t, std::optional<SCC68070::Exception>> SCC68070::SingleStepExcept
         }
     }
 
+    if(std::find(breakpoints.cbegin(), breakpoints.cend(), PC) != breakpoints.cend())
+    {
+        if(!m_breakpointed)
+        {
+            m_breakpointed = true;
+            throw Breakpoint{PC};
+        }
+    }
+
     if(m_stop)
     {
         executionCycles += stopCycles;
@@ -85,6 +96,7 @@ std::pair<size_t, std::optional<SCC68070::Exception>> SCC68070::SingleStepExcept
                 m_cdi.m_callbacks.OnLogDisassembler(inst);
             }
             executionCycles += (this->*ILUT[currentOpcode])();
+            m_breakpointed = false;
         }
         catch(const Exception& e)
         {
