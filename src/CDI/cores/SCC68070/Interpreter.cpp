@@ -6,32 +6,89 @@
 
 /** \brief Exectutes a single instruction.
  * \param stopCycles The number of cycles to run if the CPU is stopped.
- * \return The number of CPU cycle executed (0 when CPU is stopped).
+ * \return The number of CPU cycle executed and what happened in the interpreter.
  * \throw SCC68070::Exception when an exception occured during exception processing.
  *
+ * \note See SingleStepException for more details.
+ * If an exception occured, this method pushes it to the CPU for processing and also returns it.
  * When the CPU is stopped, \p stopCycles is used to advance the internal timer.
  */
-size_t SCC68070::SingleStep(const size_t stopCycles)
+SCC68070::InterpreterResult SCC68070::SingleStep(const size_t stopCycles)
 {
-    std::pair<size_t, std::optional<Exception>> res = SingleStepException(stopCycles);
-    if(res.second)
-        PushException(*res.second);
+    InterpreterResult res = SingleStepException(stopCycles);
 
-    return res.first;
+    if(holds_alternative<Exception>(res.second))
+        PushException(std::get<Exception>(res.second));
+
+    return res;
 }
 
-/** \brief Executes a single instruction and returns the exception if any.
+/** \brief Executes a single instruction without processing exceptions if any.
  * \param stopCycles The number of cycles to run if the CPU is stopped.
- * \return The cycle count and the exception that occured if any.
+ * \return The cycle count and what happened in the interpreter.
  * \throw SCC68070::Exception when an exception occured during exception processing.
  *
- * \note A return cycle count of 0 means the CPU is stopped. If an exception occured, the non-0 vector is returned.
- * When the CPU is stopped, \p stopCycles is used to advance the internal timer (but still returns 0).
+ * \note If an exception occurs, it is returned by this method and will not be processed.
+ *  The caller has to explicitly call `SCC68070::PushException` to process it, or use `SCC68070::SingleStep`.
+ *
+ * The possible returned exceptions are TRAPs, Bus errors and Address errors.
+ *
+ * When the CPU is stopped, \p stopCycles is used to advance the internal timer.
+ * It is also added to the time necessary to process exceptions, then returned.
  */
-std::pair<size_t, std::optional<SCC68070::Exception>> SCC68070::SingleStepException(const size_t stopCycles)
+SCC68070::InterpreterResult SCC68070::SingleStepException(const size_t stopCycles)
+{
+    size_t executionCycles = ProcessPendingExceptions();
+    InterpreterEvent event{Normal{}};
+
+    if(m_stop)
+    {
+        executionCycles += stopCycles;
+    }
+    else if(!m_breakpointed && std::find(breakpoints.cbegin(), breakpoints.cend(), PC) != breakpoints.cend())
+    {
+        m_breakpointed = true;
+        event = Breakpoint{PC};
+    }
+    else
+    {
+        m_breakpointed = false;
+        try
+        {
+            currentPC = PC;
+            currentOpcode = GetNextWord(BUS_INSTRUCTION);
+            if(m_cdi.m_callbacks.HasOnLogDisassembler())
+            {
+                const LogInstruction inst = {currentPC, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), (this->*DLUT[currentOpcode])(currentPC)};
+                m_cdi.m_callbacks.OnLogDisassembler(inst);
+            }
+            executionCycles += (this->*ILUT[currentOpcode])();
+
+            if(m_stop) [[unlikely]]
+                event = Stopped{};
+        }
+        catch(const Exception& e)
+        {
+            event = e;
+        }
+    }
+
+    totalCycleCount += executionCycles;
+
+    const double ns = executionCycles * cycleDelay;
+    IncrementTimer(ns);
+
+    return std::make_pair(executionCycles, event);
+}
+
+/** \brief Processed the pending exceptions that are processable.
+ * \return The cycle count used to process the exceptions.
+ *
+ * Interrupts that are too low priority compared to the IPM are left pending and will try being processed on the next call.
+ */
+size_t SCC68070::ProcessPendingExceptions()
 {
     size_t executionCycles = 0;
-    std::optional<Exception> exception;
 
     if(!m_exceptions.empty())
     {
@@ -71,43 +128,5 @@ std::pair<size_t, std::optional<SCC68070::Exception>> SCC68070::SingleStepExcept
         }
     }
 
-    if(std::find(breakpoints.cbegin(), breakpoints.cend(), PC) != breakpoints.cend())
-    {
-        if(!m_breakpointed)
-        {
-            m_breakpointed = true;
-            throw Breakpoint{PC};
-        }
-    }
-
-    if(m_stop)
-    {
-        executionCycles += stopCycles;
-    }
-    else
-    {
-        try
-        {
-            currentPC = PC;
-            currentOpcode = GetNextWord(BUS_INSTRUCTION);
-            if(m_cdi.m_callbacks.HasOnLogDisassembler())
-            {
-                const LogInstruction inst = {currentPC, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), (this->*DLUT[currentOpcode])(currentPC)};
-                m_cdi.m_callbacks.OnLogDisassembler(inst);
-            }
-            executionCycles += (this->*ILUT[currentOpcode])();
-            m_breakpointed = false;
-        }
-        catch(const Exception& e)
-        {
-            exception = e;
-        }
-    }
-
-    totalCycleCount += executionCycles;
-
-    const double ns = executionCycles * cycleDelay;
-    IncrementTimer(ns);
-
-    return std::make_pair(executionCycles, exception);
+    return executionCycles;
 }
