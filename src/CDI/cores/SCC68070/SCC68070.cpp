@@ -15,7 +15,6 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     : currentPC(0)
     , totalCycleCount(0)
     , cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
-    , breakpoints{}
     , m_cdi(idc)
     , m_uartInMutex()
     , m_uartIn{}
@@ -125,6 +124,23 @@ void SCC68070::SendUARTIn(const uint8_t byte)
 {
     std::lock_guard<std::mutex> lock(m_uartInMutex);
     m_uartIn.push_back(byte);
+}
+
+void SCC68070::AddBreakpoint(const uint32_t address)
+{
+    m_breakpoints.emplace_back(address);
+}
+
+void SCC68070::RemoveBreakpoint(const uint32_t address)
+{
+    auto it = std::find(m_breakpoints.begin(), m_breakpoints.end(), address);
+    if(it != m_breakpoints.end())
+        m_breakpoints.erase(it);
+}
+
+void SCC68070::ClearAllBreakpoints()
+{
+    m_breakpoints.clear();
 }
 
 /** \brief Set the value of a CPU register.

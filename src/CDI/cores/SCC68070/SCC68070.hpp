@@ -152,9 +152,6 @@ public:
     uint64_t totalCycleCount;
     const double cycleDelay; // Time between two clock cycles in nanoseconds
 
-    std::vector<uint32_t> breakpoints;
-    bool m_breakpointed; /**< set to true when reaching a breakpointed instruction. */
-
     SCC68070(CDI& idc, uint32_t clockFrequency);
     ~SCC68070() noexcept;
 
@@ -172,6 +169,10 @@ public:
     void INT2();
     void IN2();
     void SendUARTIn(uint8_t byte);
+
+    void AddBreakpoint(uint32_t address);
+    void RemoveBreakpoint(uint32_t address);
+    void ClearAllBreakpoints();
 
     /** \brief Returns the byte at the given peripheral address.
      * \param addr The address in peripheral memory (so between 0 and Peripheral::Last).
@@ -271,6 +272,9 @@ private:
 
     const double m_timerDelay;
     double m_timerCounter; // Counts the nanosconds when incrementing the timer.
+
+    std::vector<uint32_t> m_breakpoints{};
+    bool m_breakpointed{false}; /**< set to true when reaching a breakpointed instruction. */
 
     // Internal
     void ResetInternal();
