@@ -30,7 +30,8 @@ void Mono3::Scheduler()
 
     do
     {
-        size_t cycles = m_cpu.SingleStep(25);
+        const SCC68070::InterpreterResult res = m_cpu.SingleStep(25);
+        const size_t cycles = res.first;
 
         const double ns = cycles * m_cpu.cycleDelay;
         CDI::IncrementTime(ns);
