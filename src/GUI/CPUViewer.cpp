@@ -267,7 +267,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
                 {
                     listBox->Append(str);
                     std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-                    m_cedimu.m_cdi->m_cpu.breakpoints.emplace_back(addr);
+                    m_cedimu.m_cdi->m_cpu.AddBreakpoint(addr);
                 }
             }
         });
@@ -283,11 +283,21 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
                 listBox->Delete(item);
 
                 std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-                auto it = std::find(m_cedimu.m_cdi->m_cpu.breakpoints.begin(), m_cedimu.m_cdi->m_cpu.breakpoints.end(), addr);
-                m_cedimu.m_cdi->m_cpu.breakpoints.erase(it);
+                m_cedimu.m_cdi->m_cpu.RemoveBreakpoint(addr);
             }
         });
         buttonsSizer->Add(removeButton);
+
+        wxButton* clearButton = new wxButton(breakpointsPanel, wxID_ANY, "Clear All");
+        clearButton->Bind(wxEVT_BUTTON, [this, listBox] (wxCommandEvent&) {
+            listBox->Clear();
+            if(m_cedimu.m_cdi)
+            {
+                std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
+                m_cedimu.m_cdi->m_cpu.ClearAllBreakpoints();
+            }
+        });
+        buttonsSizer->Add(clearButton);
 
         breakpointsSizer->Add(buttonsSizer);
 

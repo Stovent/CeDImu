@@ -45,7 +45,7 @@ SCC68070::InterpreterResult SCC68070::SingleStepException(const size_t stopCycle
     {
         executionCycles += stopCycles;
     }
-    else if(!m_breakpointed && std::find(breakpoints.cbegin(), breakpoints.cend(), PC) != breakpoints.cend())
+    else if(!m_breakpointed && std::find(m_breakpoints.cbegin(), m_breakpoints.cend(), PC) != m_breakpoints.cend())
     {
         m_breakpointed = true;
         event = Breakpoint{PC};
@@ -115,7 +115,7 @@ size_t SCC68070::ProcessPendingExceptions()
                 const uint32_t returnAddress = ex.vector == 32 || ex.vector == 45 || ex.vector == 47 ? PC + 2 : PC;
                 const OS9::SystemCallType syscallType = OS9::SystemCallType(ex.vector == Trap0Instruction ? ex.data : -1);
                 const std::string inputs = ex.vector == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->m_cdi.GetPointer(addr); }) : "";
-                const OS9::SystemCall syscall = {syscallType, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), inputs, ""};
+                const OS9::SystemCall syscall{syscallType, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), inputs, ""};
                 m_cdi.m_callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
             }
 //             DumpCPURegisters();
