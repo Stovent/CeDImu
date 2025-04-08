@@ -11,10 +11,10 @@ class CDI;
 #include <map>
 #include <memory>
 #include <mutex>
-#include <optional>
 #include <queue>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 class SCC68070
@@ -98,6 +98,7 @@ public:
         UserInterrupt,
     };
 
+    /** \brief Represent a CPU exception that can be thrown or returned from the interpreter. */
     struct Exception
     {
         ExceptionVector vector; /**< The exception vector. */
@@ -128,11 +129,24 @@ public:
         }
     };
 
-    // TODO: I don't like this but this is the quickest interface I can develop now.
+    /** \brief Variant that the CPU interpreter method ran normally without any event. */
+    struct Normal {};
+
+    /** \brief Variant that the CPU interpreter method executed a STOP instruction. */
+    struct Stopped {};
+
+    /** \brief Variant that a breakpoint was reached. */
     struct Breakpoint
     {
         uint32_t address; /**< The adress of the instruction that caused the breakpoint. */
     };
+
+    /** \brief Indicate what happened during SingleStep methods.
+     * The first alternative allows for safe default construction.
+     */
+    using InterpreterEvent = std::variant<Normal, Stopped, Exception, Breakpoint>;
+    /** \brief Holds the number of cycles actually executed and the things that happened in the interpreter. */
+    using InterpreterResult = std::pair<size_t, InterpreterEvent>;
 
     uint32_t currentPC;
     uint64_t totalCycleCount;
@@ -147,8 +161,8 @@ public:
     SCC68070(const SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
 
-    size_t SingleStep(size_t stopCycles);
-    std::pair<size_t, std::optional<Exception>> SingleStepException(size_t stopCycles);
+    InterpreterResult SingleStep(size_t stopCycles);
+    InterpreterResult SingleStepException(size_t stopCycles);
     void Reset();
     void PushException(const Exception& ex);
     uint16_t GetNextWord(BusFlags flags = BUS_NORMAL);
@@ -296,6 +310,7 @@ private:
     std::priority_queue<Exception> m_exceptions;
     void ClearExceptions();
 
+    size_t ProcessPendingExceptions();
     uint16_t ProcessException(ExceptionVector vector);
     static std::string exceptionVectorToString(ExceptionVector vector);
 

@@ -111,22 +111,21 @@ void SoftCDI::Scheduler()
 
     do
     {
-        std::pair<size_t, std::optional<SCC68070::Exception>> res;
-        try
-        {
-            res = m_cpu.SingleStepException(25);
-        }
-        catch(const SCC68070::Breakpoint&)
-        {
-            break;
-        }
+        const SCC68070::InterpreterResult res = m_cpu.SingleStepException(25);
 
-        if(res.second.has_value())
+        const double ns = res.first * m_cpu.cycleDelay;
+        CDI::IncrementTime(ns);
+
+        start += std::chrono::duration<double, std::nano>(res.first * m_speedDelay);
+        std::this_thread::sleep_until(start);
+
+        if(std::holds_alternative<SCC68070::Exception>(res.second))
         {
-            if(res.second->vector == SCC68070::Trap0Instruction &&
-               res.second->data > SystemCalls::_Min) // SoftCDI syscall.
+            const SCC68070::Exception ex = std::get<SCC68070::Exception>(res.second);
+
+            if(ex.vector == SCC68070::Trap0Instruction && ex.data > SystemCalls::_Min) // SoftCDI syscall.
             {
-                const uint16_t syscall = res.second->data;
+                const uint16_t syscall = ex.data;
 
                 m_cpu.GetNextWord(); // Skip syscall ID when returning.
                 printf("softcdi syscall %" PRIX16 "\n", syscall);
@@ -134,15 +133,13 @@ void SoftCDI::Scheduler()
             }
             else // CPU exception/OS-9 syscall.
             {
-                m_cpu.PushException(*res.second);
+                m_cpu.PushException(ex);
             }
         }
-
-        const double ns = res.first * m_cpu.cycleDelay;
-        CDI::IncrementTime(ns);
-
-        start += std::chrono::duration<double, std::nano>(res.first * m_speedDelay);
-        std::this_thread::sleep_until(start);
+        else if(std::holds_alternative<SCC68070::Breakpoint>(res.second))
+        {
+            break;
+        }
     } while(m_loop);
 
     m_isRunning = false;
