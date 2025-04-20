@@ -1,12 +1,6 @@
 option(CEDIMU_REBUILD_SOFTCDI "Whether to re-build SoftCDI headers from sources. If OFF, will use the provided headers without modifications." OFF)
 
-set(SOFTCDI_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CIAPDRIV.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CSD_450.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/NVDRV.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/VIDEO.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/SYSGO.h
-)
+add_library(SoftCDI INTERFACE modules.hpp)
 
 if(CEDIMU_REBUILD_SOFTCDI)
     set(OS9C "" CACHE PATH "OS9 compiler root directory")
@@ -25,23 +19,35 @@ if(CEDIMU_REBUILD_SOFTCDI)
     message(STATUS "found R68 at ${R68}")
 
     set(SOFTCDI_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/ciapdriv.a
-        ${CMAKE_CURRENT_SOURCE_DIR}/csd_450.a
-        ${CMAKE_CURRENT_SOURCE_DIR}/nvdrv.a
-        ${CMAKE_CURRENT_SOURCE_DIR}/sysgo.a
-        ${CMAKE_CURRENT_SOURCE_DIR}/video.a
+        ciapdriv.a
+        # csd_450.a
+        # nvdrv.a
+        sysgo.a
+        # video.a
     )
-    set(SET_PATH "set PATH='Z:\\;C:\\BIN\\;'")
-    add_custom_command(OUTPUT ${SOFTCDI_HEADERS}
-        COMMAND DOSBOX
-        ARGS -c "mount c ${OS9C}"
+
+    set(SOFTCDI_MODULES
+        build/CIAPDRIV
+        # build/CSD_450
+        # build/NVDRV
+        build/SYSGO
+        # build/VIDEO
+    )
+
+    set(SET_DOS_PATH "set PATH='Z:\\;C:\\BIN\\;'")
+    add_custom_target(GenerateSoftCDI
+        DOSBOX
+        -noconsole
+        -c "mount c ${OS9C}"
         -c "mount d ${CMAKE_CURRENT_SOURCE_DIR}"
-        -c ${SET_PATH}
+        -c ${SET_DOS_PATH}
         -c "d:"
         -c "call .\\build.bat" # call is mandatory otherwise exit is not executed
         -c "exit"
-        DEPENDS ${SOFTCDI_SOURCES}
-    )
-endif()
 
-add_library(SoftCDI INTERFACE ${SOFTCDI_HEADERS})
+        DEPENDS ${SOFTCDI_SOURCES}
+        BYPRODUCTS ${SOFTCDI_MODULES}
+        SOURCES modules.hpp
+    )
+    add_dependencies(SoftCDI GenerateSoftCDI)
+endif()

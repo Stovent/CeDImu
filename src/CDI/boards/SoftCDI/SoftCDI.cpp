@@ -3,12 +3,7 @@
 #include "../../HLE/IKAT/IKAT.hpp"
 #include "../../cores/DS1216/DS1216.hpp"
 #include "../../cores/M48T08/M48T08.hpp"
-
-#include "../../SoftCDI/include/CIAPDRIV.h"
-#include "../../SoftCDI/include/CSD_450.h"
-#include "../../SoftCDI/include/NVDRV.h"
-#include "../../SoftCDI/include/VIDEO.h"
-#include "../../SoftCDI/include/SYSGO.h"
+#include "../../SoftCDI/modules.hpp"
 
 #include <array>
 #include <cinttypes>
@@ -46,7 +41,10 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
            module.name == "nvdrv" || // NVRAM device driver
            module.name == "csdinit" ||
            module.name == "ucm" ||
-        //    module.name == "csd_450" ||
+           module.name == "vid" ||
+           module.name == "video" ||
+           module.name == "pt2" ||
+           module.name == "csd_450" ||
            module.name == "cdfm")
         {
             bios.insert(bios.end(), mono3.CBegin() + module.begin, mono3.CBegin() + module.end);
@@ -59,10 +57,8 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
     }
 
     // Add custom mdules.
-    // bios.append_range(std::span{SYSGO, SYSGO_len});
-    bios.insert(bios.end(), CIAPDRIV, &CIAPDRIV[CIAPDRIV_len]);
-    bios.insert(bios.end(), CSD_450, &CSD_450[CSD_450_len]);
-    bios.insert(bios.end(), SYSGO, &SYSGO[SYSGO_len]);
+    bios.append_range(CIAPDRIV);
+    bios.append_range(SYSGO);
 
     /*// Add dummy module.
     const OS9::ModuleHeader& dummy = mono3.GetModules().back();
@@ -128,7 +124,6 @@ void SoftCDI::Scheduler()
                 const uint16_t syscall = ex.data;
 
                 m_cpu.GetNextWord(); // Skip syscall ID when returning.
-                printf("softcdi syscall %" PRIX16 "\n", syscall);
                 DispatchSystemCall(syscall);
             }
             else // CPU exception/OS-9 syscall.
