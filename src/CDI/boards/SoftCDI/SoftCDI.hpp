@@ -66,7 +66,7 @@ private:
     // Specifics to allow the BIOS to initialize.
     uint8_t m_csr1r; /**< CSR1R register of MCD212 to emulate Display Active. */
 
-    void DispatchSystemCall(const uint16_t) noexcept;
+    void DispatchSystemCall(uint16_t syscall) noexcept;
 
     /** \brief SoftCDI memory map. */
     enum MemoryMap : uint32_t
@@ -86,10 +86,13 @@ private:
     };
     static_assert(BIOSEnd <= MCD212RegistersBegin, "BIOS too big");
 
-    /** \brief SoftCDI system calls. */
+    /** \brief SoftCDI system calls.
+     * TODO: organise this list.
+     */
     enum SystemCalls : uint16_t
     {
         _Min = 0x100, /**< Minimal syscall index to not overlap with OS-9. */
+        CDFMDriverPlay = 0x101,
         UCMGetStat = 0x104,
         UCMSetStat = 0x105,
     };

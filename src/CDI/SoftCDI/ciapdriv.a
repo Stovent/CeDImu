@@ -20,7 +20,7 @@ EntryTable	dc.w	Init
 		dc.w	Play	CDFM specific (GB VII.3.1.5)
 
 Init
-	softcdi $101
+	softcdi $102
 	rts
 
 Read
@@ -59,7 +59,7 @@ Term
 * Error Output: cc = Carry bit set to one
 * d1.w = Error code
 Play
-	softcdi $107
+	softcdi CdfmDriver_Play
 	rts
 
 	vsect
