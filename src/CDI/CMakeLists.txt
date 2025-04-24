@@ -21,6 +21,7 @@ add_library(CeDImu ${LIBRARY_TYPE}
     PointingDevice.cpp
     PointingDevice.hpp
 )
+target_include_directories(CeDImu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(boards)
 add_subdirectory(common)

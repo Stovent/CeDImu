@@ -1,0 +1,53 @@
+#include <Video/RendererSIMD.hpp>
+#include <Video/RendererSoftware.hpp>
+#include <Video/RendererSoftwareU32.hpp>
+
+#include <array>
+#include <chrono>
+#include <print>
+
+static constexpr size_t WIDTH = 384;
+static constexpr size_t HEIGHT = 280;
+static constexpr size_t FRAMES = 9000;
+
+static constexpr std::array<uint8_t, WIDTH> LINEA{};
+static constexpr std::array<uint8_t, WIDTH> LINEB{};
+
+template<typename RENDERER>
+static void benchmarkRenderer()
+{
+    // Configure the renderer.
+    RENDERER renderer;
+    renderer.SetPlanesResolutions(WIDTH, WIDTH, HEIGHT);
+    renderer.m_codingMethod[Video::Renderer::A] = Video::ImageCodingMethod::CLUT7;
+    renderer.m_codingMethod[Video::Renderer::B] = Video::ImageCodingMethod::CLUT8;
+    renderer.m_mix = true;
+
+    // Benchmark
+    const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    for(int f = 0; f < FRAMES; ++f)
+    {
+        for(int y = 0; y < HEIGHT; ++y)
+        {
+            renderer.DrawLine(LINEA.data(), LINEB.data());
+        }
+        // renderer.m_lineNumber = 0;
+        renderer.RenderFrame();
+    }
+    const std::chrono::high_resolution_clock::time_point finish = std::chrono::high_resolution_clock::now();
+    const std::chrono::nanoseconds delta = finish - start;
+
+    std::println("{}  {}  {}/f  {}",
+        delta,
+        std::chrono::duration_cast<std::chrono::microseconds>(delta),
+        std::chrono::duration_cast<std::chrono::microseconds>(delta / FRAMES),
+        std::chrono::duration_cast<std::chrono::milliseconds>(delta)
+    );
+}
+
+int main()
+{
+    benchmarkRenderer<Video::RendererSoftware>();
+    benchmarkRenderer<Video::RendererSoftwareU32>();
+    benchmarkRenderer<Video::RendererSIMD>();
+}
