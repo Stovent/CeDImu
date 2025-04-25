@@ -12,9 +12,27 @@ namespace Video
  */
 void Renderer::SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
 {
+    if(!validateResolution(widthA, widthB, height))
+        panic("Invalid resolution combination: {} {} {}", widthA, widthB, height);
+
     m_plane[A].m_width = m_screen.m_width = widthA;
     m_plane[B].m_width = widthB;
     m_plane[A].m_height = m_plane[B].m_height = m_backdropPlane.m_height = m_screen.m_height = height;
+}
+
+bool Renderer::isValidWidth(uint16_t width) noexcept
+{
+    return (width == 360 || width == 384 || width == 720 || width == 768);
+}
+
+bool Renderer::isValidHeight(uint16_t height) noexcept
+{
+    return (height == 240 || height == 280);
+}
+
+bool Renderer::validateResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
+{
+    return isValidWidth(widthA) && isValidWidth(widthB) && isValidHeight(height);
 }
 
 /** \brief Enables or disables the cursor plane.

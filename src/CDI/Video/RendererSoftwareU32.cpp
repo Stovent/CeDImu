@@ -3,6 +3,7 @@
 #include "../common/panic.hpp"
 #include "../common/utils.hpp"
 
+#include <execution>
 #include <cstring>
 
 namespace Video
@@ -74,9 +75,9 @@ const Plane& RendererSoftwareU32::RenderFrame() noexcept
     for(size_t i = 0; i < m_screenARGB.PixelCount(); ++i, ++it, dstit += 3)
     {
         const Pixel pixel = *it;
-        dstit[0] = pixel >> 16;
-        dstit[1] = pixel >> 8;
-        dstit[2] = pixel;
+        dstit[0] = pixel.r;
+        dstit[1] = pixel.g;
+        dstit[2] = pixel.b;
     }
 
     m_lineNumber = 0;
@@ -95,8 +96,7 @@ uint16_t RendererSoftwareU32::DrawLinePlane(const uint8_t* lineMain, const uint8
 {
     if(m_codingMethod[PLANE] == ImageCodingMethod::OFF)
     {
-        const size_t length = m_plane[PLANE].m_width * m_plane[PLANE].m_bpp;
-        memset(m_planeLine[PLANE].data(), 0, length);
+        std::fill_n(std::execution::par_unseq, m_planeLine[PLANE].begin(), m_plane[PLANE].m_width, 0);
         return 0;
     }
 
@@ -153,40 +153,26 @@ void RendererSoftwareU32::DrawCursor() noexcept
     }
 }
 
-// static constexpr uint8_t intByteMult(uint32_t color1, uint32_t color2) noexcept {
-//     return static_cast<uint8_t>(((color1 * (color2 | color2 << 8)) + 0x8080) >> 16);
-// }
-
 /** \brief Apply the given Image Contribution Factor to the given color component (V.5.9). */
-static constexpr uint32_t applyICFComponent(const int color, const int icf) noexcept
+static constexpr uint8_t applyICFComponent(const int color, const int icf) noexcept
 {
     return static_cast<uint8_t>(((icf * (color - 16)) / 63) + 16);
 }
 
 /** \brief Apply the given Image Contribution Factor to the given color component (V.5.9). */
-static constexpr Pixel applyICF(const Pixel pixel, const int icf) noexcept
+static constexpr void applyICF(Pixel& pixel, const int icf) noexcept
 {
-    // return intByteMult((icf >> 4) + (icf << 2), pixel - 16) + 16;
-
-    uint8_t r = pixel >> 16;
-    uint8_t g = pixel >> 8;
-    uint8_t b = pixel;
-
-    return (pixel & 0xFF'00'00'00) | applyICFComponent(r, icf) << 16 | applyICFComponent(g, icf) << 8 | applyICFComponent(b, icf);
+    pixel.r = applyICFComponent(pixel.r, icf);
+    pixel.g = applyICFComponent(pixel.g, icf);
+    pixel.b = applyICFComponent(pixel.b, icf);
 }
 
 /** \brief Apply mixing to the given color components after ICF (V.5.9.1). */
-static constexpr Pixel mix(const Pixel a, const Pixel b) noexcept
+static constexpr void mix(Pixel& dst, const Pixel a, const Pixel b) noexcept
 {
-    uint8_t ra = a >> 16;
-    uint8_t ga = a >> 8;
-    uint8_t ba = a;
-
-    uint8_t rb = b >> 16;
-    uint8_t gb = b >> 8;
-    uint8_t bb = b;
-
-    return limu8(ra + rb - 16) << 16 | limu8(ga + gb - 16) << 8 | limu8(ba + bb - 16);
+    dst.r = limu8(a.r + b.r - 16);
+    dst.g = limu8(a.g + b.g - 16);
+    dst.b = limu8(a.b + b.b - 16);
 }
 
 /** \brief Overlays or mix all the planes to the final screen.
@@ -205,11 +191,14 @@ void RendererSoftwareU32::OverlayMix() noexcept
         HandleMatte<A>(i);
         HandleMatte<B>(i);
 
-        HandleTransparencyU32<A>(*planeA);
-        HandleTransparencyU32<B>(*planeB);
+        Pixel pa = *planeA++;
+        Pixel pb = *planeB++;
 
-        Pixel pa = applyICF(*planeA++, m_icf[A]);
-        Pixel pb = applyICF(*planeB++, m_icf[B]);
+        HandleTransparencyU32<A>(pa);
+        HandleTransparencyU32<B>(pb);
+
+        applyICF(pa, m_icf[A]);
+        applyICF(pb, m_icf[B]);
 
         Pixel fp, bp;
         if constexpr(PLANE_ORDER) // Plane B in front.
@@ -223,29 +212,29 @@ void RendererSoftwareU32::OverlayMix() noexcept
             bp = pb;
         }
 
-        Pixel pixel;
         if constexpr(MIX)
         {
-            if((bp & 0xFF'00'00'00) == 0) // When mixing transparent pixels are black (V.5.9.1).
-            {
-                bp = BLACK_PIXEL;
-            }
-
-            if((fp & 0xFF'00'00'00) == 0)
+            if(fp.a == 0) // When mixing transparent pixels are black (V.5.9.1).
             {
                 fp = BLACK_PIXEL;
             }
 
-            pixel = mix(fp, bp);
+            if(bp.a == 0)
+            {
+                bp = BLACK_PIXEL;
+            }
+
+            mix(*screen++, fp, bp);
         }
         else // Overlay.
         {
+            Pixel pixel;
             // Plane transparency is either 0 or 255.
-            if((fp & 0xFF'00'00'00) == 0 && (bp & 0xFF'00'00'00) == 0) // Front and back plane transparent: only show background.
+            if(fp.a == 0 && bp.a == 0) // Front and back plane transparent: only show background.
             {
                 pixel = m_backdropColorARGB;
             }
-            else if((fp & 0xFF'00'00'00) == 0) // Front plane transparent: show back plane.
+            else if(fp.a == 0) // Front plane transparent: show back plane.
             {
                 pixel = bp;
             }
@@ -253,9 +242,8 @@ void RendererSoftwareU32::OverlayMix() noexcept
             {
                 pixel = fp;
             }
+            *screen++ = pixel;
         }
-
-        *screen++ = pixel;
     }
 }
 

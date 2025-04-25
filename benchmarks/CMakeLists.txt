@@ -4,4 +4,5 @@ set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(benchmarkRenderers benchmarkRenderers.cpp)
+target_compile_options(benchmarkRenderers PUBLIC -Wall -Wextra -pedantic)
 target_link_libraries(benchmarkRenderers CeDImu)

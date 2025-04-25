@@ -15,11 +15,21 @@ public:
     static_assert(INC != 0, "Increment must not be 0");
 
     using value_type = NUM;
+    using reference = value_type&;
+    using difference_type = ptrdiff_t;
+    using pointer = value_type*;
+    using iterator_category  = std::forward_iterator_tag;
 
     constexpr CountingIterator() : m_count{0} {}
     constexpr explicit CountingIterator(const value_type& min) : m_count{min} {}
 
-    constexpr const value_type& operator*() const noexcept { return m_count; }
+    constexpr CountingIterator(const CountingIterator& other) noexcept = default;
+    constexpr CountingIterator& operator=(const CountingIterator& other) noexcept = default;
+
+    constexpr CountingIterator(CountingIterator&& other) noexcept = default;
+    constexpr CountingIterator& operator=(CountingIterator&& other) noexcept = default;
+
+    constexpr value_type& operator*() noexcept { return m_count; }
 
     constexpr CountingIterator& operator++() noexcept { m_count += INC; return *this; }
     constexpr CountingIterator& operator++(int) noexcept { m_count += INC; return *this; }
@@ -182,15 +192,15 @@ uint16_t decodeRGB555LineU32(Pixel* dst, const uint8_t* dataA, const uint8_t* da
 {
     for(uint16_t x = 0; x < width; x++)
     {
-        const uint32_t a = *dataA++;
-        const uint32_t b = *dataB++;
+        // This version is highly vectorizable (to GCC) compared to manipulating dataA and dataB bytes independently.
+        uint16_t pixel = as<uint16_t>(*dataA++) << 8;
+        pixel |= *dataB++;
 
-        const uint32_t alpha = (a & 0x80);
-        const uint32_t red = a << 1 & 0xF8;
-        const uint32_t green = (a << 6) | (b >> 5 & 0x38);
-        const uint32_t blue = b << 3;
-
-        *dst++ = alpha << 24 | red << 16 | green << 8 | blue;
+        dst->a = (pixel & 0x8000) ? 0xFF : 0;
+        dst->r = pixel >> 7 & 0xF8;
+        dst->g = pixel >> 2 & 0xF8;
+        dst->b = pixel << 3 & 0xF8;
+        ++dst;
     }
 
     return width;
@@ -209,7 +219,7 @@ uint16_t decodeDYUVLineU32(Pixel* dst, const uint8_t* dyuv, uint16_t width, uint
 
     CountingIterator<int, 2> it{0};
 
-    std::for_each_n(std::execution::seq, it, width >> 1, [dst, dyuv, &previous] (const int index) {
+    std::for_each_n(it, width >> 1, [dst, dyuv, &previous] (const int index) {
         uint16_t pixel = as<uint16_t>(dyuv[index]) << 8;
         pixel |= dyuv[index + 1];
         decodeDYUVU32(&dst[index], pixel, previous);
@@ -260,19 +270,19 @@ uint16_t decodeCLUTLineU32(Pixel* dst, const uint8_t* data, uint16_t width, cons
 
 static constexpr void matrixRGBU32(Pixel* pixel, const int Y, const uint8_t U, const uint8_t V) noexcept
 {
-    const uint32_t r = limu8(Y + matrixVToR[V]);
-    const uint32_t g = limu8(Y - (matrixUToG[U] + matrixVToG[V]));
-    const uint32_t b = limu8(Y + matrixUToB[U]);
-    *pixel = (r << 16) | (g << 8) | b;
+    pixel->r = limu8(Y + matrixVToR[V]);
+    pixel->g = limu8(Y - (matrixUToG[U] + matrixVToG[V]));
+    pixel->b = limu8(Y + matrixUToB[U]);
 }
 
 /** \brief Convert DYUV to ARGB.
  *
+ * \param dst Where the two pixels will be written to.
  * \param pixel The pixel to decode.
- * \param pixels Where the pixels pair will be written to.
  * \param previous The previous pixel colors.
  *
  * TODO: U32 with original algorithm https://github.com/Stovent/CeDImu/commit/22464aacb5c2590886b98176183e6c2e240835e0
+ * TODO: change previous to a Pixel.
  */
 void decodeDYUVU32(Pixel* dst, const uint16_t pixel, uint32_t& previous) noexcept
 {
@@ -325,6 +335,23 @@ void paste(Pixel* dst, const uint16_t dstWidth, const uint16_t dstHeight, const 
             }
         }
     }
+}
+
+/** \brief Compile-time unit test function for Pixel. */
+static consteval void testPixel()
+{
+    static_assert(Pixel{1, 2, 3, 4}.IntoU32() == 0x01020304);
+
+    constexpr Pixel p{0x11223344};
+    static_assert(p.IntoU32() == 0x11223344);
+    static_assert(static_cast<uint32_t>(p) == 0x11223344);
+    static_assert(p.a == 0x11);
+    static_assert(p.r == 0x22);
+    static_assert(p.g == 0x33);
+    static_assert(p.b == 0x44);
+
+    static_assert((p & 0xF0F0F0F0) == 0x10203040);
+    static_assert((p | 0xF0F0F0F0) == 0xF1F2F3F4);
 }
 
 } // namespace Video

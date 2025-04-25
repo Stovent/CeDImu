@@ -75,7 +75,7 @@ const Plane& RendererSIMD::RenderFrame() noexcept
     PlaneSIMD::const_iterator it = m_screenARGB.cbegin();
     for(size_t i = 0; i < m_screenARGB.PixelCount(); ++i, ++it, dstit += 3)
     {
-        const Pixel pixel = *it;
+        const PixelU32 pixel = *it;
         dstit[0] = pixel >> 16;
         dstit[1] = pixel >> 8;
         dstit[2] = pixel;
@@ -182,13 +182,14 @@ void RendererSIMD::DrawCursor() noexcept
 template<bool MIX, bool PLANE_ORDER>
 void RendererSIMD::OverlayMix() noexcept
 {
-    Pixel* planeA = m_planeLine[A].data();
-    Pixel* planeB = m_planeLine[B].data();
+    PixelU32* planeA = m_planeLine[A].data();
+    PixelU32* planeB = m_planeLine[B].data();
 
     for(uint16_t i = 0; i < m_plane[A].m_width; ++i) // TODO: width[B].
     {
         HandleMatte<A>(i);
         HandleMatte<B>(i);
+        // These two lines below adds a little noticable delay.
         m_icfLine[A][i] = m_icf[A];
         m_icfLine[B][i] = m_icf[B];
         HandleTransparencySIMD<A>(*planeA++);
@@ -222,9 +223,9 @@ static const PixelSIMD ALPHA_MASKK{0xFF'00'00'00}; // 0xFF'00'00'00
 template<bool PLANE_ORDER>
 void RendererSIMD::ApplyICFMixSIMDShift() noexcept
 {
-    Pixel* screen = m_screenARGB.GetLinePointer(m_lineNumber);
-    const Pixel* planeFront;
-    const Pixel* planeBack;
+    PixelU32* screen = m_screenARGB.GetLinePointer(m_lineNumber);
+    const PixelU32* planeFront;
+    const PixelU32* planeBack;
     const uint8_t* icfFront;
     const uint8_t* icfBack;
     if constexpr(PLANE_ORDER)
@@ -327,9 +328,9 @@ void RendererSIMD::ApplyICFMixSIMDShift() noexcept
 template<bool PLANE_ORDER>
 void RendererSIMD::ApplyICFMixSIMDCast() noexcept
 {
-    Pixel* screen = m_screenARGB.GetLinePointer(m_lineNumber);
-    const Pixel* planeFront;
-    const Pixel* planeBack;
+    PixelU32* screen = m_screenARGB.GetLinePointer(m_lineNumber);
+    const PixelU32* planeFront;
+    const PixelU32* planeBack;
     const uint8_t* icfFront;
     const uint8_t* icfBack;
     if constexpr(PLANE_ORDER)
@@ -413,9 +414,9 @@ void RendererSIMD::ApplyICFMixSIMDCast() noexcept
 template<bool PLANE_ORDER>
 void RendererSIMD::ApplyICFOverlaySIMD() noexcept
 {
-    Pixel* screen = m_screenARGB.GetLinePointer(m_lineNumber);
-    const Pixel* planeFront;
-    const Pixel* planeBack;
+    PixelU32* screen = m_screenARGB.GetLinePointer(m_lineNumber);
+    const PixelU32* planeFront;
+    const PixelU32* planeBack;
     const uint8_t* icfFront;
     const uint8_t* icfBack;
     if constexpr(PLANE_ORDER)

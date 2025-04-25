@@ -25,9 +25,9 @@ static void benchmarkRenderer()
 
     // Benchmark
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-    for(int f = 0; f < FRAMES; ++f)
+    for(size_t f = 0; f < FRAMES; ++f)
     {
-        for(int y = 0; y < HEIGHT; ++y)
+        for(size_t y = 0; y < HEIGHT; ++y)
         {
             renderer.DrawLine(LINEA.data(), LINEB.data());
         }

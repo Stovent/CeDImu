@@ -50,8 +50,9 @@ static constexpr uint16_t matteXPosition(const uint32_t matteCommand) noexcept
  * - Let all members public because the MCD212/VSD has access to them all ?
  * - V.25/V.26 Pixel repeat on pixel decoding, pixel hold on overlay.
  * - Should there be a reset method?
+ * - Do not let the API set arbitrary resolution, better have dedicated functions for each possible resolution.
  *
- * TODO optimisations:
+ * TODO optimizations:
  * - RGB55 is optimisable as it's only a single plane, check how to make it in both software and SIMD.
  */
 class Renderer
@@ -84,6 +85,9 @@ public:
     bool ExecuteDCPInstruction(uint32_t instruction) noexcept;
 
     void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
+    static bool isValidWidth(uint16_t width) noexcept;
+    static bool isValidHeight(uint16_t height) noexcept;
+    static bool validateResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
 
     void SetCursorEnabled(bool enabled) noexcept;
     void SetCursorResolution(bool doubleResolution) noexcept;

@@ -20,7 +20,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     )
 endif()
 
-set(CEDIMU_ENABLE_LOG ON)
+set(LIBCEDIMU_ENABLE_LOG ON)
 
 add_subdirectory(CDI)
 

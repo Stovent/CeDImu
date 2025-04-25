@@ -12,7 +12,7 @@ namespace Video
 class RendererSoftwareU32 final : public Renderer
 {
 public:
-    static constexpr Pixel BLACK_PIXEL = 0x00'10'10'10;
+    static constexpr Pixel BLACK_PIXEL{0x00'10'10'10};
 
     std::array<std::array<Pixel, PlaneU32::MAX_WIDTH>, 2> m_planeLine{};
     PlaneU32 m_screenARGB{384, 280, PlaneU32::MAX_SIZE};
@@ -35,54 +35,53 @@ public:
     /** \brief Handles the transparency of the current pixel for each plane.
      * \param pixel The ARGB pixel.
      */
-    template<ImagePlane PLANE> void HandleTransparencyU32(uint32_t& pixel) noexcept
+    template<ImagePlane PLANE> void HandleTransparencyU32(Pixel& pixel) noexcept
     {
         static constexpr uint32_t VISIBLE = 0xFF'00'00'00;
 
         const bool boolean = !bit<3>(m_transparencyControl[PLANE]);
-        uint32_t color = pixel & 0x00'FF'FF'FF;
+        uint32_t color = static_cast<uint32_t>(pixel) & 0x00'FF'FF'FF;
         color = clutColorKey(color | m_maskColorRgb[PLANE]);
         const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]); // TODO: don't compute if not CLUT.
 
-        pixel |= VISIBLE;
+        pixel.a = PIXEL_FULL_INTENSITY;
 
         switch(bits<0, 2>(m_transparencyControl[PLANE]))
         {
         case 0b000: // Always/Never.
-            if(boolean)
-                pixel &= ~VISIBLE;
+            pixel.a = PIXEL_FULL_INTENSITY + boolean; // Branchless.
             break;
 
         case 0b001: // Color Key.
             if(colorKey == boolean)
-                pixel &= ~VISIBLE;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b010: // Transparent Bit.
             // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
             // TODO: disable if not RGB555.
             if(((pixel & VISIBLE) == VISIBLE) != boolean)
-                pixel &= ~VISIBLE;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b011: // Matte Flag 0.
             if(m_matteFlags[0] == boolean)
-                pixel &= ~VISIBLE;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b100: // Matte Flag 1.
             if(m_matteFlags[1] == boolean)
-                pixel &= ~VISIBLE;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b101: // Matte Flag 0 or Color Key.
             if(m_matteFlags[0] == boolean || colorKey == boolean)
-                pixel &= ~VISIBLE;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b110: // Matte Flag 1 or Color Key.
             if(m_matteFlags[1] == boolean || colorKey == boolean)
-                pixel &= ~VISIBLE;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         default: // Reserved.
