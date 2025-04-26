@@ -7,10 +7,4 @@ target_sources(CeDImu
         panic.hpp
         types.hpp
         utils.hpp
-        Video.cpp
-        Video.hpp
-        # VideoSIMD.cpp
-        # VideoSIMD.hpp
-        # VideoU32.cpp
-        # VideoU32.hpp
 )

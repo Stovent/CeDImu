@@ -2,7 +2,8 @@
 #include "MainFrame.hpp"
 #include "../CeDImu.hpp"
 #include "../CDI/common/utils.hpp"
-#include "../CDI/common/Video.hpp"
+#include "../CDI/Video/VideoCommon.hpp"
+#include "../export.hpp"
 
 #include <wx/button.h>
 #include <wx/filedlg.h>
@@ -444,29 +445,31 @@ void VDSCViewer::UpdateIcadca()
     m_ica2List->Refresh();
 }
 
-static void DrawBitmap(wxImage& target, wxPanel* panel, const Video::Plane& plane, bool scale)
+static void drawBitmap(wxImage& target, wxPanel* panel, const Video::Plane& plane, bool hasAlpha, bool scale)
 {
     target.Create(plane.m_width, plane.m_height);
-    if(target.IsOk())
+    if(!target.IsOk())
+        return;
+
+    if(hasAlpha)
     {
-        if(plane.m_bpp == 4) // Has alpha
-        {
-            if(!target.HasAlpha())
-                target.InitAlpha();
+        if(!target.HasAlpha())
+            target.InitAlpha();
 
-            Video::splitARGB(plane.data(), plane.m_width * plane.m_height * plane.m_bpp, target.GetAlpha(), target.GetData());
-        }
-        else // No alpha
-            memcpy(target.GetData(), plane.data(), plane.m_width * plane.m_height * 3);
-
-        const wxSize size = panel->GetClientSize();
-        wxClientDC dc(panel);
-        dc.Clear();
-        if(scale)
-            dc.DrawBitmap(wxBitmap(target.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-        else
-            dc.DrawBitmap(wxBitmap(target), 0, 0);
+        splitARGB(plane.GetSpan(), target.GetAlpha(), target.GetData());
     }
+    else
+        splitARGB(plane.GetSpan(), nullptr, target.GetData());
+    // TODO: how to have transparency data for this?
+
+    const wxSize size = panel->GetClientSize();
+    wxClientDC dc(panel);
+    dc.Clear();
+    if(scale)
+        dc.DrawBitmap(wxBitmap(target.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+    else
+        dc.DrawBitmap(wxBitmap(target), 0, 0);
+
 }
 
 void VDSCViewer::UpdatePanels()
@@ -478,14 +481,14 @@ void VDSCViewer::UpdatePanels()
     std::lock_guard<std::mutex> lock2(m_imgMutex);
 
     const Video::Plane& planeA = m_cedimu.m_cdi->GetPlaneA();
-    DrawBitmap(m_imgPlaneA, m_planeAPanel, planeA, true);
+    drawBitmap(m_imgPlaneA, m_planeAPanel, planeA, true, true);
 
     const Video::Plane& planeB = m_cedimu.m_cdi->GetPlaneB();
-    DrawBitmap(m_imgPlaneB, m_planeBPanel, planeB, true);
+    drawBitmap(m_imgPlaneB, m_planeBPanel, planeB, true, true);
 
     const Video::Plane& cursor = m_cedimu.m_cdi->GetCursor();
-    DrawBitmap(m_imgCursor, m_cursorPanel, cursor, false);
+    drawBitmap(m_imgCursor, m_cursorPanel, cursor, true, false);
 
     const Video::Plane& backgd = m_cedimu.m_cdi->GetBackground();
-    DrawBitmap(m_imgBackgd, m_backgdPanel, backgd, true);
+    drawBitmap(m_imgBackgd, m_backgdPanel, backgd, true, true);
 }

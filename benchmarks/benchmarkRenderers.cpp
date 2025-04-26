@@ -1,6 +1,5 @@
 #include <Video/RendererSIMD.hpp>
 #include <Video/RendererSoftware.hpp>
-#include <Video/RendererSoftwareU32.hpp>
 
 #include <array>
 #include <chrono>
@@ -48,6 +47,5 @@ static void benchmarkRenderer()
 int main()
 {
     benchmarkRenderer<Video::RendererSoftware>();
-    benchmarkRenderer<Video::RendererSoftwareU32>();
     benchmarkRenderer<Video::RendererSIMD>();
 }

@@ -1,5 +1,7 @@
 target_sources(CeDImu
     PRIVATE
+        Pixel.cpp
+        Pixel.hpp
         Renderer.cpp
         Renderer.hpp
         RendererDCP.cpp
@@ -7,6 +9,9 @@ target_sources(CeDImu
         # RendererSIMD.hpp
         RendererSoftware.cpp
         RendererSoftware.hpp
-        # RendererSoftwareU32.cpp
-        # RendererSoftwareU32.hpp
+        VideoCommon.hpp
+        VideoDecoders.cpp
+        VideoDecoders.hpp
+        # VideoSIMD.cpp
+        # VideoSIMD.hpp
 )

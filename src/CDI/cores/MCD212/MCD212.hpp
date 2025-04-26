@@ -2,13 +2,11 @@
 #define CDI_CORES_MCD212_MCD212_HPP
 
 class CDI;
-#include "../../common/utils.hpp"
-#include "../../common/types.hpp"
-#include "../../common/Video.hpp"
-#include "../../OS9/BIOS.hpp"
-// #include "../../Video/RendererSIMD.hpp"
-#include "../../Video/RendererSoftware.hpp"
-// #include "../../Video/RendererSoftwareU32.hpp"
+#include "common/utils.hpp"
+#include "common/types.hpp"
+#include "OS9/BIOS.hpp"
+// #include "Video/RendererSIMD.hpp"
+#include "Video/RendererSoftware.hpp"
 
 #include <array>
 #include <span>
@@ -58,7 +56,6 @@ private:
 
     // Video::RendererSIMD m_renderer{};
     Video::RendererSoftware m_renderer{};
-    // Video::RendererSoftwareU32 m_renderer{};
 
     std::vector<uint8_t> m_memory;
 

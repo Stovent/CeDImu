@@ -2,7 +2,7 @@
 #define CDI_VIDEO_RENDERERSIMD_HPP
 
 #include "Renderer.hpp"
-#include "../common/VideoSIMD.hpp"
+#include "VideoSIMD.hpp"
 
 #include <array>
 
@@ -16,6 +16,13 @@ namespace Video
 {
 
 /** \brief CD-i video renderer implementation using std::simd.
+ *
+ * TODO: change the algorithms to adapt to the remaining size of pixels to process.
+ * Basically the video resolutions are always multiples of 8, and sometimes multiples of 16.
+ * There may be something interesting to do with this.
+ * Either:
+ * - use a Fixed-width SIMD based on multiple of 8 or 16.
+ * - loop with the max width SIMD, until the last loop where the non-multiple remaining pixels are processed.
  */
 class RendererSIMD final : public Renderer
 {
@@ -23,9 +30,6 @@ public:
     /** \brief Makes sure the dst buffer in aligned with std::simd::size(), as its written to in chunks of this size. */
     static constexpr size_t SIMD_LINE_WIDTH = SIMDAlign(PlaneSIMD::MAX_WIDTH);
     std::array<std::array<PixelU32, SIMD_LINE_WIDTH>, 2> m_planeLine{};
-    PlaneSIMD m_screenARGB{384, 280, SIMDAlign(PlaneSIMD::ARGB_MAX_SIZE)};
-    PixelU32 m_backdropColorARGB{0};
-    PlaneSIMD m_cursorPlaneARGB{PlaneSIMD::CURSOR_WIDTH, PlaneSIMD::CURSOR_HEIGHT, PlaneSIMD::CURSOR_ARGB_SIZE};
 
     std::array<std::array<uint8_t, SIMD_LINE_WIDTH>, 2> m_icfLine{};
     // std::array<uint8_t, 2> m_currentICF{};

@@ -2,8 +2,7 @@
 #define CDI_VIDEO_RENDERER_HPP
 
 #include "../common/utils.hpp"
-#include "../common/Video.hpp"
-// #include "../common/VideoSIMD.hpp"
+#include "Video/VideoCommon.hpp"
 
 #include <array>
 #include <cstdint>
@@ -112,11 +111,11 @@ public:
     // TODO: organize and order the members correctly.
     // TODO: Split into dedicated directory and separate files (Display Control) ?
 
-    Plane m_screen{3, 384, 280, Plane::RGB_MAX_SIZE};
-    // Plane m_screen{3, 384, 280, SIMDAlign(Plane::RGB_MAX_SIZE)}; // align for SIMD test.
-    std::array<Plane, 2> m_plane{Plane{4, 384, 280}, Plane{4, 384, 280}};
-    Plane m_backdropPlane{3, 1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT * 3};
-    Plane m_cursorPlane{4, Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_ARGB_SIZE}; /**< The alpha is 0, 127 or 255. */ // TODO: also make the cursor RGB like the background ?
+    Plane m_screen{384, 280};
+    // Plane m_screen{384, 280, SIMDAlign(Plane::RGB_MAX_SIZE)}; // align for SIMD test.
+    std::array<Plane, 2> m_plane{Plane{384, 280}, Plane{384, 280}};
+    Plane m_backdropPlane{1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT * 3};
+    Plane m_cursorPlane{Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_SIZE}; /**< The alpha is 0, 127 or 255. */ // TODO: also make the cursor RGB like the background ?
 
     uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. */
 
@@ -143,54 +142,55 @@ public:
     std::array<uint8_t, 2> m_transparencyControl{};
     std::array<uint32_t, 2> m_transparentColorRgb{}; /**< RGB data in the lowest 24 bits. */
     std::array<uint32_t, 2> m_maskColorRgb{}; /**< RGB data in the lowest 24 bits. */
+
     /** \brief Handles the transparency of the current pixel for each plane.
      * \param pixel The ARGB pixel.
      */
-    template<ImagePlane PLANE> void HandleTransparency(uint8_t pixel[4]) noexcept
+    template<ImagePlane PLANE> void HandleTransparency(Pixel& pixel) noexcept
     {
         const bool boolean = !bit<3>(m_transparencyControl[PLANE]);
-        uint32_t color = argbArrayToU32(pixel);
+        uint32_t color = static_cast<uint32_t>(pixel) & 0x00'FF'FF'FF;
         color = clutColorKey(color | m_maskColorRgb[PLANE]);
         const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]); // TODO: don't compute if not CLUT.
 
-        pixel[0] = PIXEL_FULL_INTENSITY;
+        pixel.a = PIXEL_FULL_INTENSITY;
 
         switch(bits<0, 2>(m_transparencyControl[PLANE]))
         {
         case 0b000: // Always/Never.
-            pixel[0] = PIXEL_FULL_INTENSITY + boolean; // Branchless.
+            pixel.a = PIXEL_FULL_INTENSITY + boolean; // Branchless.
             break;
 
         case 0b001: // Color Key.
             if(colorKey == boolean)
-                pixel[0] = PIXEL_TRANSPARENT;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b010: // Transparent Bit.
             // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
             // TODO: disable if not RGB555.
-            if((pixel[0] == PIXEL_FULL_INTENSITY) != boolean)
-                pixel[0] = PIXEL_TRANSPARENT;
+            if((pixel.a == PIXEL_FULL_INTENSITY) != boolean)
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b011: // Matte Flag 0.
             if(m_matteFlags[0] == boolean)
-                pixel[0] = PIXEL_TRANSPARENT;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b100: // Matte Flag 1.
             if(m_matteFlags[1] == boolean)
-                pixel[0] = PIXEL_TRANSPARENT;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b101: // Matte Flag 0 or Color Key.
             if(m_matteFlags[0] == boolean || colorKey == boolean)
-                pixel[0] = PIXEL_TRANSPARENT;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         case 0b110: // Matte Flag 1 or Color Key.
             if(m_matteFlags[1] == boolean || colorKey == boolean)
-                pixel[0] = PIXEL_TRANSPARENT;
+                pixel.a = PIXEL_TRANSPARENT;
             break;
 
         default: // Reserved.

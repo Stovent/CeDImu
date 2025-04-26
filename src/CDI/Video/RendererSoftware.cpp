@@ -1,4 +1,12 @@
+/** \file RendererSoftware.cpp
+ * \brief RendererSoftware implementation file.
+ *
+ * TODO: The individual planes does not store transparency anymore like the previous renderer.
+ * This should be restored.
+ */
+
 #include "RendererSoftware.hpp"
+#include "VideoDecoders.hpp"
 
 #include "../common/panic.hpp"
 #include "../common/utils.hpp"
@@ -8,17 +16,19 @@
 namespace Video
 {
 
-/** \brief Converts the 4-bits backdrop color to RGB.
- * \param rgb The RGB destination buffer.
+/** \brief Converts the 4-bits backdrop color to a Pixel.
  * \param color The 4 bit color code.
+ * \returns The Pixel.
  */
-static constexpr void backdropColorToRGB(uint8_t* rgb, const uint8_t color) noexcept
+static constexpr Pixel backdropCursorColorToARGB(const uint8_t color) noexcept
 {
     // Background plane has no transparency (Green book V.5.13).
-    const uint8_t c = (color & 0x08) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
-    *rgb++ = (color & 0x04) ? c : 0; // Red.
-    *rgb++ = (color & 0x02) ? c : 0; // Green.
-    *rgb++ = (color & 0x01) ? c : 0; // Blue.
+    const uint8_t c = bit<3>(color) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
+    Pixel argb = 0xFF'00'00'00; // Set transparency for cursor plane.
+    if(bit<2>(color)) argb.r = c; // Red.
+    if(bit<1>(color)) argb.g = c; // Green.
+    if(bit<0>(color)) argb.b = c; // Blue.
+    return argb;
 }
 
 /** \brief Draws the next line to draw.
@@ -62,7 +72,10 @@ const Plane& RendererSoftware::RenderFrame() noexcept
     if(m_cursorEnabled)
     {
         DrawCursor();
-        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height, m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height, m_cursorX >> 1, m_cursorY);
+        // TODO: double resolution.
+        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height,
+                     m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height,
+                     m_cursorX >> 1, m_cursorY);
     }
 
     m_lineNumber = 0;
@@ -81,8 +94,7 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
 {
     if(m_codingMethod[PLANE] == ImageCodingMethod::OFF)
     {
-        const size_t length = m_plane[PLANE].m_width * m_plane[PLANE].m_bpp;
-        memset(m_plane[PLANE](m_lineNumber), 0, length);
+        std::fill_n(m_plane[PLANE].begin(), m_plane[PLANE].m_width, Pixel{0});
         return 0;
     }
 
@@ -97,10 +109,10 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
     switch(m_imageType[PLANE])
     {
     case ImageType::Normal:
-        return decodeBitmapLine(m_plane[PLANE](m_lineNumber), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
+        return decodeBitmapLine(m_plane[PLANE].data(), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
 
     case ImageType::RunLength:
-        return decodeRunLengthLine(m_plane[PLANE](m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
+        return decodeRunLengthLine(m_plane[PLANE].data(), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
 
     case ImageType::Mosaic:
         panic("Unsupported type Mosaic");
@@ -113,7 +125,7 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
 void RendererSoftware::DrawLineBackdrop() noexcept
 {
     // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
-    backdropColorToRGB(m_backdropPlane(m_lineNumber), m_backdropColor);
+    *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToARGB(m_backdropColor);
 }
 
 void RendererSoftware::DrawCursor() noexcept
@@ -121,165 +133,116 @@ void RendererSoftware::DrawCursor() noexcept
     // Technically speaking the cursor is drawn when the drawing line number is the cursor's one (because video
     // is outputted continuously line by line).
     // But for here maybe we don't care.
+    const Pixel color = backdropCursorColorToARGB(m_cursorColor);
+    const Pixel black{0};
 
-    // TODO: Should this use the same backdrops colors (V.5.12) ?
-    const uint8_t A = bit<3>(m_cursorColor) ? PIXEL_FULL_INTENSITY : PIXEL_HALF_INTENSITY;
-    const uint8_t R = bit<2>(m_cursorColor) ? PIXEL_FULL_INTENSITY : 0;
-    const uint8_t G = bit<1>(m_cursorColor) ? PIXEL_FULL_INTENSITY : 0;
-    const uint8_t B = bit<0>(m_cursorColor) ? PIXEL_FULL_INTENSITY : 0;
-
-    uint8_t* pixels = m_cursorPlane(0); // Pixels are contiguous.
-    for(int y = 0; y < m_cursorPlane.m_height; y++)
+    Plane::iterator it = m_cursorPlane.begin();
+    for(size_t y = 0; y < m_cursorPlane.m_height; ++y)
     {
-        uint16_t mask = 1 << 15;
-        for(uint8_t x = 0; x < m_cursorPlane.m_width; x++)
+        for(int x = static_cast<int>(m_cursorPlane.m_width) - 1; x >= 0; --x)
         {
+            const uint16_t mask = (1 << x);
             if(m_cursorPatterns[y] & mask)
-            {
-                *pixels++ = A;
-                *pixels++ = R;
-                *pixels++ = G;
-                *pixels++ = B;
-            }
+                *it = color;
             else
-            {
-                *pixels = 0;
-                pixels += 4;
-            }
-            mask >>= 1;
+                *it = black;
+            ++it;
         }
     }
 }
 
 /** \brief Apply the given Image Contribution Factor to the given color component (V.5.9). */
-static constexpr uint8_t applyICF(const int color, const int icf) noexcept
+static constexpr uint8_t applyICFComponent(const int color, const int icf) noexcept
 {
     return static_cast<uint8_t>(((icf * (color - 16)) / 63) + 16);
 }
 
-/** \brief Apply mixing to the given color components after ICF (V.5.9.1). */
-static constexpr uint8_t mix(const int a, const int b) noexcept
+/** \brief Apply the given Image Contribution Factor to the given color component (V.5.9). */
+static constexpr void applyICF(Pixel& pixel, const int icf) noexcept
 {
-    return limu8(a + b - 16);
+    pixel.r = applyICFComponent(pixel.r, icf);
+    pixel.g = applyICFComponent(pixel.g, icf);
+    pixel.b = applyICFComponent(pixel.b, icf);
+}
+
+/** \brief Apply mixing to the given color components after ICF (V.5.9.1). */
+static constexpr void mix(Pixel& dst, const Pixel a, const Pixel b) noexcept
+{
+    dst.r = limu8(a.r + b.r - 16);
+    dst.g = limu8(a.g + b.g - 16);
+    dst.b = limu8(a.b + b.b - 16);
 }
 
 /** \brief Overlays or mix all the planes to the final screen.
  * \tparam MIX true to use mixing, false to use overlay.
  * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
- *
- * TODO: for overlay, first check which pixel has to be shown, then compute ICF only for this pixel.
- * split in two different functions?
  */
 template<bool MIX, bool PLANE_ORDER>
 void RendererSoftware::OverlayMix() noexcept
 {
-    uint8_t* screen = m_screen(m_lineNumber);
-    uint8_t* planeA = m_plane[A](m_lineNumber);
-    uint8_t* planeB = m_plane[B](m_lineNumber);
-
-    uint8_t* background = m_backdropPlane(m_lineNumber);
-    const uint8_t rbg = background[0];
-    const uint8_t gbg = background[1];
-    const uint8_t bbg = background[2];
+    Pixel* screen = m_screen.GetLinePointer(m_lineNumber);
+    Pixel* planeA = m_plane[A].data();
+    Pixel* planeB = m_plane[B].data();
+    const Pixel backdrop = *m_backdropPlane.GetLinePointer(m_lineNumber);
 
     for(uint16_t i = 0; i < m_plane[A].m_width; i++) // TODO: width[B].
     {
         HandleMatte<A>(i);
         HandleMatte<B>(i);
 
-        HandleTransparency<A>(planeA);
-        HandleTransparency<B>(planeB);
+        Pixel pa = *planeA++;
+        Pixel pb = *planeB++;
 
-        const uint8_t aa = *planeA++;
-        const uint8_t ra = applyICF(*planeA++, m_icf[A]);
-        const uint8_t ga = applyICF(*planeA++, m_icf[A]);
-        const uint8_t ba = applyICF(*planeA++, m_icf[A]);
+        HandleTransparency<A>(pa);
+        HandleTransparency<B>(pb);
 
-        const uint8_t ab = *planeB++;
-        const uint8_t rb = applyICF(*planeB++, m_icf[B]);
-        const uint8_t gb = applyICF(*planeB++, m_icf[B]);
-        const uint8_t bb = applyICF(*planeB++, m_icf[B]);
+        applyICF(pa, m_icf[A]);
+        applyICF(pb, m_icf[B]);
 
-        uint8_t afp, rfp, gfp, bfp, abp, rbp, gbp, bbp;
+        Pixel fp, bp;
         if constexpr(PLANE_ORDER) // Plane B in front.
         {
-            afp = ab;
-            rfp = rb;
-            gfp = gb;
-            bfp = bb;
-
-            abp = aa;
-            rbp = ra;
-            gbp = ga;
-            bbp = ba;
+            fp = pb;
+            bp = pa;
         }
         else // Plane A in front.
         {
-            afp = aa;
-            rfp = ra;
-            gfp = ga;
-            bfp = ba;
-
-            abp = ab;
-            rbp = rb;
-            gbp = gb;
-            bbp = bb;
+            fp = pa;
+            bp = pb;
         }
 
-        uint8_t r, g, b;
         if constexpr(MIX)
         {
-            if(abp == 0) // When mixing transparent pixels are black (V.5.9.1).
+            if(fp.a == 0) // When mixing transparent pixels are black (V.5.9.1).
             {
-                rbp = 16;
-                gbp = 16;
-                bbp = 16;
+                fp = BLACK_PIXEL;
             }
 
-            if(afp == 0)
+            if(bp.a == 0)
             {
-                rfp = 16;
-                gfp = 16;
-                bfp = 16;
+                bp = BLACK_PIXEL;
             }
 
-            r = mix(rbp, rfp);
-            g = mix(gbp, gfp);
-            b = mix(bbp, bfp);
+            mix(*screen++, fp, bp);
         }
         else // Overlay.
         {
+            Pixel pixel;
             // Plane transparency is either 0 or 255.
-            if(afp == 0 && abp == 0) // Front and back plane transparent: only show background.
+            if(fp.a == 0 && bp.a == 0) // Front and back plane transparent: only show background.
             {
-                r = rbg;
-                g = gbg;
-                b = bbg;
+                pixel = backdrop;
             }
-            else if(afp == 0) // Front plane transparent: show back plane.
+            else if(fp.a == 0) // Front plane transparent: show back plane.
             {
-                r = rbp;
-                g = gbp;
-                b = bbp;
+                pixel = bp;
             }
             else // Front plane visible: only show front plane.
             {
-                r = rfp;
-                g = gfp;
-                b = bfp;
+                pixel = fp;
             }
+            *screen++ = pixel;
         }
-
-        *screen++ = r;
-        *screen++ = g;
-        *screen++ = b;
-
-        /*
-        MCD212 figure 8-6
-        For overlay/mix:
-        - do the computation for a single pixel.
-        - write it to the destination buffer with memcpy for mosaic and double resolution.
-        */
     }
 }
 

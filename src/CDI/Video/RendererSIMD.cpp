@@ -2,26 +2,27 @@
 
 #include "../common/panic.hpp"
 #include "../common/utils.hpp"
-#include "../common/VideoSIMD.hpp"
-#include "../common/VideoU32.hpp"
+#include "VideoSIMD.hpp"
+#include "VideoDecoders.hpp"
 
 #include <cstring>
+#include <execution>
 
 namespace Video
 {
 
-/** \brief Converts the 4-bits backdrop color to ARGB.
+/** \brief Converts the 4-bits backdrop color to a Pixel.
  * \param color The 4 bit color code.
- * \returns The ARGB color.
+ * \returns The Pixel.
  */
-static constexpr uint32_t backdropCursorColorToARGB(const uint8_t color) noexcept
+static constexpr Pixel backdropCursorColorToARGB(const uint8_t color) noexcept
 {
     // Background plane has no transparency (Green book V.5.13).
-    const uint32_t c = (bit<3>(color)) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
-    uint32_t argb = 0xFF'00'00'00; // Set transparency for cursor plane.
-    if(bit<2>(color)) argb |= c << 16; // Red.
-    if(bit<1>(color)) argb |= c << 8; // Green.
-    if(bit<0>(color)) argb |= c; // Blue.
+    const uint8_t c = bit<3>(color) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
+    Pixel argb = 0xFF'00'00'00; // Set transparency for cursor plane.
+    if(bit<2>(color)) argb.r = c; // Red.
+    if(bit<1>(color)) argb.g = c; // Green.
+    if(bit<0>(color)) argb.b = c; // Blue.
     return argb;
 }
 
@@ -67,34 +68,10 @@ const Plane& RendererSIMD::RenderFrame() noexcept
     {
         DrawCursor();
         // TODO: double resolution
-        Video::paste(m_screenARGB.data(), m_screen.m_width, m_screen.m_height, m_cursorPlaneARGB.data(), m_cursorPlaneARGB.m_width, m_cursorPlaneARGB.m_height, m_cursorX >> 1, m_cursorY);
+        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height,
+                     m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height,
+                     m_cursorX >> 1, m_cursorY);
     }
-
-    // TODO: this should be on the GUI side.
-    Plane::iterator dstit = m_screen.begin();
-    PlaneSIMD::const_iterator it = m_screenARGB.cbegin();
-    for(size_t i = 0; i < m_screenARGB.PixelCount(); ++i, ++it, dstit += 3)
-    {
-        const PixelU32 pixel = *it;
-        dstit[0] = pixel >> 16;
-        dstit[1] = pixel >> 8;
-        dstit[2] = pixel;
-    }
-
-//     using FixedSIMD8 = stdx::fixed_size_simd<uint8_t, PixelSIMD::size()>;
-//     for(size_t i = 0; i < m_screenARGB.PixelCount(); ++i, it += PixelSIMD::size(), dstit += 3 /** FixedSIMD8::size()*/)
-//     {
-//         const PixelSIMD p{&*it, stdx::element_aligned};
-//
-//         const FixedSIMD8 r = stdx::static_simd_cast<uint8_t>(p >> 16);
-//         const FixedSIMD8 g = stdx::static_simd_cast<uint8_t>(p >> 8);
-//         const FixedSIMD8 b = stdx::static_simd_cast<uint8_t>(p);
-//
-//         // scalar ? or array.
-//         r.copy_to(&*dstit, stdx::element_aligned);
-//         g.copy_to(&*dstit, stdx::element_aligned);
-//         b.copy_to(&*dstit, stdx::element_aligned);
-//     }
 
     m_lineNumber = 0;
     return m_screen;
@@ -112,8 +89,7 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
 {
     if(m_codingMethod[PLANE] == ImageCodingMethod::OFF)
     {
-        const size_t length = m_plane[PLANE].m_width * m_plane[PLANE].m_bpp;
-        memset(m_plane[PLANE](m_lineNumber), 0, length);
+        std::fill_n(std::execution::unseq, m_planeLine[PLANE].begin(), m_plane[PLANE].m_width, 0);
         return 0;
     }
 
@@ -144,7 +120,7 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
 void RendererSIMD::DrawLineBackdrop() noexcept
 {
     // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
-    m_backdropColorARGB = backdropCursorColorToARGB(m_backdropColor);
+    *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToARGB(m_backdropColor);
 }
 
 void RendererSIMD::DrawCursor() noexcept
@@ -152,27 +128,41 @@ void RendererSIMD::DrawCursor() noexcept
     // Technically speaking the cursor is drawn when the drawing line number is the cursor's one (because video
     // is outputted continuously line by line).
     // But for here maybe we don't care.
-    using FixedPixelSIMD = stdx::fixed_size_simd<uint32_t, 16>;
 
-    const uint32_t color = backdropCursorColorToARGB(m_cursorColor);
-    const uint32_t black{0};
+    const Pixel color = backdropCursorColorToARGB(m_cursorColor);
+    const Pixel black{0};
 
-    int pattern = 0;
-    // TODO: benchmark, that may not be faster at all.
-    for(PlaneSIMD::iterator it = m_cursorPlaneARGB.begin(); it < m_cursorPlaneARGB.end(); it += FixedPixelSIMD::size(), ++pattern)
+    Plane::iterator it = m_cursorPlane.begin();
+    for(size_t y = 0; y < m_cursorPlane.m_height; ++y)
     {
-        FixedPixelSIMD pixel{&*it, stdx::element_aligned};
-
-        for(int x = m_cursorPlaneARGB.m_width - 1, pix = 0; --x >= 0; pix++)
+        for(int x = static_cast<int>(m_cursorPlane.m_width) - 1; x >= 0; --x)
         {
             const uint16_t mask = (1 << x);
-            if(m_cursorPatterns[pattern] & mask)
-                pixel[pix] = color;
+            if(m_cursorPatterns[y] & mask)
+                *it = color;
             else
-                pixel[pix] = black;
+                *it = black;
+            ++it;
         }
-        pixel.copy_to(&*it, stdx::element_aligned);
     }
+
+    // TODO: try in SIMD.
+//     using FixedPixelSIMD = stdx::fixed_size_simd<uint32_t, 16>;
+//     int pattern = 0;
+//     for(PlaneSIMD::iterator it = m_cursorPlane.begin(); it < m_cursorPlane.end(); it += FixedPixelSIMD::size(), ++pattern)
+//     {
+//         FixedPixelSIMD pixel{&*it, stdx::element_aligned};
+//
+//         for(int x = m_cursorPlane.m_width - 1, pix = 0; --x >= 0; pix++)
+//         {
+//             const uint16_t mask = (1 << x);
+//             if(m_cursorPatterns[pattern] & mask)
+//                 pixel[pix] = color;
+//             else
+//                 pixel[pix] = black;
+//         }
+//         pixel.copy_to(&*it, stdx::element_aligned);
+//     }
 }
 
 /** \brief Overlays or mix all the planes to the final screen.
@@ -223,7 +213,7 @@ static const PixelSIMD ALPHA_MASKK{0xFF'00'00'00}; // 0xFF'00'00'00
 template<bool PLANE_ORDER>
 void RendererSIMD::ApplyICFMixSIMDShift() noexcept
 {
-    PixelU32* screen = m_screenARGB.GetLinePointer(m_lineNumber);
+    Pixel* screen = m_screen.GetLinePointer(m_lineNumber);
     const PixelU32* planeFront;
     const PixelU32* planeBack;
     const uint8_t* icfFront;
@@ -316,7 +306,7 @@ void RendererSIMD::ApplyICFMixSIMDShift() noexcept
 
         const PixelSIMDSigned result = (rfp << 16) | (gfp << 8) | bfp;
 
-        result.copy_to(screen, stdx::element_aligned);
+        result.copy_to(reinterpret_cast<PixelU32*>(screen), stdx::element_aligned);
     }
 }
 // template void RendererSIMD::ApplyICFMixSIMDShift<false>() noexcept;
@@ -328,7 +318,7 @@ void RendererSIMD::ApplyICFMixSIMDShift() noexcept
 template<bool PLANE_ORDER>
 void RendererSIMD::ApplyICFMixSIMDCast() noexcept
 {
-    PixelU32* screen = m_screenARGB.GetLinePointer(m_lineNumber);
+    Pixel* screen = m_screen.GetLinePointer(m_lineNumber);
     const PixelU32* planeFront;
     const PixelU32* planeBack;
     const uint8_t* icfFront;
@@ -391,6 +381,9 @@ void RendererSIMD::ApplyICFMixSIMDCast() noexcept
         rgbF16 /= 63;
         rgbB16 /= 63;
 
+        // rgbF16 >>= 6;
+        // rgbB16 >>= 6;
+
         rgbF16 += SIXTEENN;
         // rgbB16 += SIXTEENN; Don't add 16 to back plane when applying ICF because the below mixing subtracts it.
 
@@ -400,7 +393,7 @@ void RendererSIMD::ApplyICFMixSIMDCast() noexcept
 
         const PixelSIMD result = std::bit_cast<PixelSIMD>(stdx::static_simd_cast<SIMDU8>(rgbF16));
 
-        result.copy_to(screen, stdx::element_aligned);
+        result.copy_to(reinterpret_cast<PixelU32*>(screen), stdx::element_aligned);
     }
 }
 // template void RendererSIMD::ApplyICFMixSIMDCast<false>() noexcept;
@@ -414,7 +407,7 @@ void RendererSIMD::ApplyICFMixSIMDCast() noexcept
 template<bool PLANE_ORDER>
 void RendererSIMD::ApplyICFOverlaySIMD() noexcept
 {
-    PixelU32* screen = m_screenARGB.GetLinePointer(m_lineNumber);
+    Pixel* screen = m_screen.GetLinePointer(m_lineNumber);
     const PixelU32* planeFront;
     const PixelU32* planeBack;
     const uint8_t* icfFront;
@@ -499,9 +492,9 @@ void RendererSIMD::ApplyICFOverlaySIMD() noexcept
         const PixelSIMDSigned::mask_type maskFrontZero = afp == 0;
         stdx::where(maskFrontZero, result) = planeB;
         const PixelSIMDSigned::mask_type maskFrontBackZero = maskFrontZero && abp == 0;
-        stdx::where(maskFrontBackZero, result) = m_backdropColorARGB;
+        stdx::where(maskFrontBackZero, result) = m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32();
 
-        result.copy_to(screen, stdx::element_aligned);
+        result.copy_to(reinterpret_cast<PixelU32*>(screen), stdx::element_aligned);
     }
 }
 

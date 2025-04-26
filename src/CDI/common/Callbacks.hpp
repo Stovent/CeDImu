@@ -1,7 +1,7 @@
 #ifndef CDI_COMMON_CALLBACKS_HPP
 #define CDI_COMMON_CALLBACKS_HPP
 
-#include "Video.hpp"
+#include "Video/VideoCommon.hpp"
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "../OS9/SystemCalls.hpp"
 

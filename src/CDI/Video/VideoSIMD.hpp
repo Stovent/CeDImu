@@ -1,9 +1,8 @@
 #ifndef CDI_COMMON_VIDEOSIMD_HPP
 #define CDI_COMMON_VIDEOSIMD_HPP
 
-#include "Video.hpp"
-#include "utils.hpp"
-// TODO: move to Video folder.
+#include "common/utils.hpp"
+#include "VideoCommon.hpp"
 
 #include <experimental/simd>
 namespace stdx = std::experimental;
@@ -12,6 +11,7 @@ namespace stdx = std::experimental;
 #endif
 
 #include <cstdint>
+#include <span>
 
 namespace Video
 {
@@ -42,17 +42,20 @@ public:
     uint16_t m_width; /**< Width of the plane. */
     uint16_t m_height; /**< Height of the plane. */
 
-    explicit PlaneSIMD(const uint16_t w = 0, const uint16_t h = 0, const size_t size = ARGB_MAX_SIZE)
+    constexpr explicit PlaneSIMD(const uint16_t w = 0, const uint16_t h = 0, const size_t size = ARGB_MAX_SIZE)
         : std::vector<uint32_t>(size, 0), m_width(w), m_height(h)
     {}
 
     /** \brief Returns a const pointer to the beginning of the given line. */
-    const uint32_t* GetLinePointer(const size_t line) const noexcept { return data() + line * m_width; }
+    constexpr const uint32_t* GetLinePointer(const size_t line) const noexcept { return data() + line * m_width; }
     /** \brief Returns a pointer to the beginning of the given line. */
-    uint32_t* GetLinePointer(const size_t line) noexcept { return data() + line * m_width; }
+    constexpr uint32_t* GetLinePointer(const size_t line) noexcept { return data() + line * m_width; }
 
     /** \brief Returns the number of pixels used by the plane. */
-    size_t PixelCount() const noexcept { return m_width * m_height; }
+    constexpr size_t PixelCount() const noexcept { return m_width * m_height; }
+
+    /** \brief Returns a span of the actual pixels used for this resolution. */
+    constexpr std::span<const PixelU32> GetSpan() const noexcept { return {data(), PixelCount()}; }
 };
 
 // Display file decoders.

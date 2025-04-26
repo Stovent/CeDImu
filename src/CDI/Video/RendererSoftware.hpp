@@ -2,18 +2,17 @@
 #define CDI_VIDEO_RENDERERSOFTWARE_HPP
 
 #include "Renderer.hpp"
-#include "../common/Video.hpp"
 
 namespace Video
 {
 
 /** \brief CD-i video renderer implementation using only C++ code.
- *
- * TODO: use uint32_t instead of uint8_t?
  */
 class RendererSoftware final : public Renderer
 {
 public:
+    static constexpr Pixel BLACK_PIXEL{0x00'10'10'10};
+
     RendererSoftware() {}
     virtual ~RendererSoftware() noexcept {}
 
