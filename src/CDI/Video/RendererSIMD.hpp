@@ -8,7 +8,7 @@
 
 #include <experimental/simd>
 namespace stdx = std::experimental; // remove when stable.
-#if __cpp_lib_simd
+#if __has_include(<simd>)
 #warning "SIMD is no longer experimental"
 #endif
 
@@ -28,7 +28,7 @@ class RendererSIMD final : public Renderer
 {
 public:
     /** \brief Makes sure the dst buffer in aligned with std::simd::size(), as its written to in chunks of this size. */
-    static constexpr size_t SIMD_LINE_WIDTH = SIMDAlign(PlaneSIMD::MAX_WIDTH);
+    static constexpr size_t SIMD_LINE_WIDTH = SIMDAlign(Plane::MAX_WIDTH);
     std::array<std::array<PixelU32, SIMD_LINE_WIDTH>, 2> m_planeLine{};
 
     std::array<std::array<uint8_t, SIMD_LINE_WIDTH>, 2> m_icfLine{};
@@ -48,9 +48,7 @@ public:
     void DrawCursor() noexcept;
 
     template<bool MIX, bool PLANE_ORDER> void OverlayMix() noexcept;
-    template<bool PLANE_ORDER> void ApplyICFMixSIMDShift() noexcept;
-    template<bool PLANE_ORDER> void ApplyICFMixSIMDCast() noexcept;
-    template<bool PLANE_ORDER> void ApplyICFOverlaySIMD() noexcept;
+    template<bool MIX, bool PLANE_ORDER> void HandleOverlayMixSIMD() noexcept;
 
     void ResetMatteSIMD() noexcept;
 

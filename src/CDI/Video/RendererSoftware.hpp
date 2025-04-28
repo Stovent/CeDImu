@@ -6,7 +6,7 @@
 namespace Video
 {
 
-/** \brief CD-i video renderer implementation using only C++ code.
+/** \brief Generic CD-i video renderer implementation.
  */
 class RendererSoftware final : public Renderer
 {
