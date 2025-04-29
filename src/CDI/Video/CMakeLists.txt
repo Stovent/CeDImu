@@ -5,13 +5,19 @@ target_sources(CeDImu
         Renderer.cpp
         Renderer.hpp
         RendererDCP.cpp
-        # RendererSIMD.cpp
-        # RendererSIMD.hpp
         RendererSoftware.cpp
         RendererSoftware.hpp
         VideoCommon.hpp
         VideoDecoders.cpp
         VideoDecoders.hpp
-        # VideoSIMD.cpp
-        # VideoSIMD.hpp
 )
+
+if(LIBCEDIMU_ENABLE_RENDERERSIMD)
+    target_sources(CeDImu
+        PRIVATE
+            RendererSIMD.cpp
+            RendererSIMD.hpp
+            VideoSIMD.cpp
+            VideoSIMD.hpp
+    )
+endif()

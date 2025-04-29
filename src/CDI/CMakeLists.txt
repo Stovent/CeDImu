@@ -9,9 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+option(LIBCEDIMU_ENABLE_RENDERERSIMD "Enable the SIMD renderer, requires std::simd support" OFF)
+message("libCeDImu enable RendererSIMD: " ${LIBCEDIMU_ENABLE_RENDERERSIMD})
 option(LIBCEDIMU_PROFILE_GNU "Add profile options for GNU compiler" OFF)
-option(LIBCEDIMU_ENABLE_ASAN "Add address sanitizer options" OFF)
 message("libCeDImu profile GNU: " ${LIBCEDIMU_PROFILE_GNU})
+option(LIBCEDIMU_ENABLE_ASAN "Add address sanitizer options" OFF)
 message("libCeDImu sanitize: " ${LIBCEDIMU_PROFILE_GNU})
 
 add_library(CeDImu ${LIBRARY_TYPE}
@@ -29,6 +31,10 @@ add_library(CeDImu ${LIBRARY_TYPE}
     PointingDevice.hpp
 )
 target_include_directories(CeDImu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(LIBCEDIMU_ENABLE_RENDERERSIMD)
+    target_compile_definitions(CeDImu PUBLIC LIBCEDIMU_ENABLE_RENDERERSIMD)
+endif()
 
 add_subdirectory(boards)
 add_subdirectory(common)

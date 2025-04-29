@@ -7,7 +7,7 @@
 
 static constexpr size_t WIDTH = 384;
 static constexpr size_t HEIGHT = 280;
-static constexpr size_t FRAMES = 9000;
+static constexpr size_t FRAMES = 10000;
 
 static constexpr std::array<uint8_t, WIDTH> LINEA{};
 static constexpr std::array<uint8_t, WIDTH> LINEB{};
