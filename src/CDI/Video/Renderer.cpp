@@ -5,6 +5,64 @@
 namespace Video
 {
 
+/** \brief Configures the display format and resolution.
+ * The input must only be a valid enum value.
+ */
+void Renderer::SetDisplayResolution(DisplayFormat display, Resolution resolution) noexcept
+{
+    if((display != DisplayFormat::NTSCMonitor && display != DisplayFormat::NTSCTV && display != DisplayFormat::PAL) &&
+       (resolution != Resolution::Normal && resolution != Resolution::Double && resolution != Resolution::High)
+    )
+        panic("Invalid display resolution");
+
+    const std::pair<size_t, size_t> sizes = getPixelResolution(display, resolution);
+    SetPlanesResolutions(sizes.first, sizes.first, sizes.second);
+}
+
+/** \brief Returns the `<width, height>` in pixels of the given display resolution combination.
+ * The input must only be a valid enum value.
+ */
+std::pair<size_t, size_t> Renderer::getPixelResolution(DisplayFormat display, Resolution resolution) noexcept
+{
+    size_t width = 0;
+    size_t height = 0;
+
+    switch(display)
+    {
+    case DisplayFormat::NTSCMonitor:
+        width = 360;
+        height = 240;
+        break;
+
+    case DisplayFormat::NTSCTV:
+        width = 384;
+        height = 240;
+        break;
+
+    case DisplayFormat::PAL:
+        width = 384;
+        height = 280;
+        break;
+    }
+
+    switch(resolution)
+    {
+    case Resolution::Normal:
+        break;
+
+    case Resolution::Double:
+        width *= 2;
+        break;
+
+    case Resolution::High:
+        width *= 2;
+        height *= 2;
+        break;
+    }
+
+    return std::make_pair(width, height);
+}
+
 /** \brief Sets the planes resolutions.
  *
  * This method must only be called after a frame has been drawn and before the next frame starts being drawn.
@@ -27,7 +85,7 @@ bool Renderer::isValidWidth(uint16_t width) noexcept
 
 bool Renderer::isValidHeight(uint16_t height) noexcept
 {
-    return (height == 240 || height == 280);
+    return (height == 240 || height == 280 || height == 480 || height == 560);
 }
 
 bool Renderer::validateResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept

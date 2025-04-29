@@ -71,6 +71,20 @@ public:
         PIXEL_FULL_INTENSITY = 0xFF, /**< Pixel is full-intensity. */
     };
 
+    enum class DisplayFormat
+    {
+        NTSCMonitor, /**< 525 lines (360 x 240). */
+        NTSCTV, /**< 525 lines (384 x 240). */
+        PAL, /**< 625 lines (384 x 280). */
+    };
+
+    enum class Resolution
+    {
+        Normal, /**< Same resolution as display format. */
+        Double, /**< Double horizontal resolution, normal vertical resolution. */
+        High, /**< Double horizontal and vertical resolution. */
+    };
+
     Renderer() {}
     virtual ~Renderer() noexcept {}
 
@@ -82,6 +96,9 @@ public:
 
     template<ImagePlane PLANE>
     bool ExecuteDCPInstruction(uint32_t instruction) noexcept;
+
+    void SetDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
+    static std::pair<size_t, size_t> getPixelResolution(DisplayFormat display, Resolution resolution) noexcept;
 
     void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
     static bool isValidWidth(uint16_t width) noexcept;
