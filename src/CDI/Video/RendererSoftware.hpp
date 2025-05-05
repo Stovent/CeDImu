@@ -11,8 +11,6 @@ namespace Video
 class RendererSoftware final : public Renderer
 {
 public:
-    static constexpr Pixel BLACK_PIXEL{0x00'10'10'10};
-
     RendererSoftware() {}
     virtual ~RendererSoftware() noexcept {}
 

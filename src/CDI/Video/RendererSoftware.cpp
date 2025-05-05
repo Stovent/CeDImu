@@ -16,21 +16,6 @@
 namespace Video
 {
 
-/** \brief Converts the 4-bits backdrop color to a Pixel.
- * \param color The 4 bit color code.
- * \returns The Pixel.
- */
-static constexpr Pixel backdropCursorColorToARGB(const uint8_t color) noexcept
-{
-    // Background plane has no transparency (Green book V.5.13).
-    const uint8_t c = bit<3>(color) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
-    Pixel argb = 0xFF'00'00'00; // Set transparency for cursor plane.
-    if(bit<2>(color)) argb.r = c; // Red.
-    if(bit<1>(color)) argb.g = c; // Green.
-    if(bit<0>(color)) argb.b = c; // Blue.
-    return argb;
-}
-
 /** \brief Draws the next line to draw.
  * \param lineA Line A data.
  * \param lineB Line B data.
@@ -109,10 +94,10 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
     switch(m_imageType[PLANE])
     {
     case ImageType::Normal:
-        return decodeBitmapLine(m_plane[PLANE].data(), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
+        return decodeBitmapLine(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
 
     case ImageType::RunLength:
-        return decodeRunLengthLine(m_plane[PLANE].data(), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
+        return decodeRunLengthLine(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
 
     case ImageType::Mosaic:
         panic("Unsupported type Mosaic");
@@ -125,7 +110,7 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
 void RendererSoftware::DrawLineBackdrop() noexcept
 {
     // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
-    *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToARGB(m_backdropColor);
+    *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToPixel(m_backdropColor);
 }
 
 void RendererSoftware::DrawCursor() noexcept
@@ -133,8 +118,7 @@ void RendererSoftware::DrawCursor() noexcept
     // Technically speaking the cursor is drawn when the drawing line number is the cursor's one (because video
     // is outputted continuously line by line).
     // But for here maybe we don't care.
-    const Pixel color = backdropCursorColorToARGB(m_cursorColor);
-    const Pixel black{0};
+    const Pixel color = backdropCursorColorToPixel(m_cursorColor);
 
     Plane::iterator it = m_cursorPlane.begin();
     for(size_t y = 0; y < m_cursorPlane.m_height; ++y)
@@ -145,7 +129,7 @@ void RendererSoftware::DrawCursor() noexcept
             if(m_cursorPatterns[y] & mask)
                 *it = color;
             else
-                *it = black;
+                *it = BLACK_PIXEL;
             ++it;
         }
     }
@@ -181,8 +165,8 @@ template<bool MIX, bool PLANE_ORDER>
 void RendererSoftware::OverlayMix() noexcept
 {
     Pixel* screen = m_screen.GetLinePointer(m_lineNumber);
-    Pixel* planeA = m_plane[A].data();
-    Pixel* planeB = m_plane[B].data();
+    Pixel* planeA = m_plane[A].GetLinePointer(m_lineNumber);
+    Pixel* planeB = m_plane[B].GetLinePointer(m_lineNumber);
     const Pixel backdrop = *m_backdropPlane.GetLinePointer(m_lineNumber);
 
     for(uint16_t i = 0; i < m_plane[A].m_width; i++) // TODO: width[B].

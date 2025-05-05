@@ -8,6 +8,8 @@
 static constexpr size_t WIDTH = 384;
 static constexpr size_t HEIGHT = 280;
 static constexpr size_t FRAMES = 10000;
+static constexpr Video::Renderer::DisplayFormat DISPLAY = Video::Renderer::DisplayFormat::PAL;
+static constexpr Video::Renderer::Resolution RESOLUTION = Video::Renderer::Resolution::Normal;
 
 static constexpr std::array<uint8_t, WIDTH> LINEA{};
 static constexpr std::array<uint8_t, WIDTH> LINEB{};
@@ -17,7 +19,7 @@ static void benchmarkRenderer()
 {
     // Configure the renderer.
     RENDERER renderer;
-    renderer.SetPlanesResolutions(WIDTH, WIDTH, HEIGHT);
+    renderer.SetDisplayResolution(DISPLAY, RESOLUTION);
     renderer.m_codingMethod[Video::Renderer::A] = Video::ImageCodingMethod::CLUT7;
     renderer.m_codingMethod[Video::Renderer::B] = Video::ImageCodingMethod::CLUT8;
     renderer.m_mix = true;

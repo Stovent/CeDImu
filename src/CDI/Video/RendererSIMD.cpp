@@ -12,21 +12,6 @@
 namespace Video
 {
 
-/** \brief Converts the 4-bits backdrop color to a Pixel.
- * \param color The 4 bit color code.
- * \returns The Pixel.
- */
-static constexpr Pixel backdropCursorColorToARGB(const uint8_t color) noexcept
-{
-    // Background plane has no transparency (Green book V.5.13).
-    const uint8_t c = bit<3>(color) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
-    Pixel argb = 0xFF'00'00'00; // Set transparency for cursor plane.
-    if(bit<2>(color)) argb.r = c; // Red.
-    if(bit<1>(color)) argb.g = c; // Green.
-    if(bit<0>(color)) argb.b = c; // Blue.
-    return argb;
-}
-
 /** \brief Draws the next line to draw.
  * \param lineA Line A data.
  * \param lineB Line B data.
@@ -121,7 +106,7 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
 void RendererSIMD::DrawLineBackdrop() noexcept
 {
     // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
-    *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToARGB(m_backdropColor);
+    *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToPixel(m_backdropColor);
 }
 
 void RendererSIMD::DrawCursor() noexcept
@@ -130,8 +115,7 @@ void RendererSIMD::DrawCursor() noexcept
     // is outputted continuously line by line).
     // But for here maybe we don't care.
 
-    const Pixel color = backdropCursorColorToARGB(m_cursorColor);
-    const Pixel black{0};
+    const Pixel color = backdropCursorColorToPixel(m_cursorColor);
 
     Plane::iterator it = m_cursorPlane.begin();
     for(size_t y = 0; y < m_cursorPlane.m_height; ++y)
@@ -142,7 +126,7 @@ void RendererSIMD::DrawCursor() noexcept
             if(m_cursorPatterns[y] & mask)
                 *it = color;
             else
-                *it = black;
+                *it = BLACK_PIXEL;
             ++it;
         }
     }
@@ -437,15 +421,15 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
     const uint8_t* icfBack;
     if constexpr(PLANE_ORDER)
     {
-        planeFront = m_planeLine[B].data();
-        planeBack = m_planeLine[A].data();
+        planeFront = m_planeLine[B].GetLinePointer(m_lineNumber);
+        planeBack = m_planeLine[A].GetLinePointer(m_lineNumber);
         icfFront = m_icfLine[B].data();
         icfBack = m_icfLine[A].data();
     }
     else
     {
-        planeFront = m_planeLine[A].data();
-        planeBack = m_planeLine[B].data();
+        planeFront = m_planeLine[A].GetLinePointer(m_lineNumber);
+        planeBack = m_planeLine[B].GetLinePointer(m_lineNumber);
         icfFront = m_icfLine[A].data();
         icfBack = m_icfLine[B].data();
     }

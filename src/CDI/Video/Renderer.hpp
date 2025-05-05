@@ -85,6 +85,8 @@ public:
         High, /**< Double horizontal and vertical resolution. */
     };
 
+    static constexpr Pixel BLACK_PIXEL{0x00'10'10'10};
+
     Renderer() {}
     virtual ~Renderer() noexcept {}
 
@@ -118,21 +120,13 @@ public:
         Mosaic,
     };
 
-    // template<ImagePlane PLANE>
-    // uint8_t DecodePixel(uint8_t* dst, const uint8_t* lineA, const uint8_t* lineB, uint32_t& previousDYUV) noexcept;
-    // void DecodeNormalImage() noexcept;
-    // void DecodeNormalImage(, uint8_t mosaicFactor) noexcept;
-    // void DecodeRunLengthImage() noexcept;
-    // void DecodeMosaicImage() noexcept;
-
     // TODO: organize and order the members correctly.
-    // TODO: Split into dedicated directory and separate files (Display Control) ?
 
     Plane m_screen{384, 280};
     // Plane m_screen{384, 280, SIMDAlign(Plane::RGB_MAX_SIZE)}; // align for SIMD test.
     std::array<Plane, 2> m_plane{Plane{384, 280}, Plane{384, 280}};
-    Plane m_backdropPlane{1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT * 3};
-    Plane m_cursorPlane{Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_SIZE}; /**< The alpha is 0, 127 or 255. */ // TODO: also make the cursor RGB like the background ?
+    Plane m_backdropPlane{1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT};
+    Plane m_cursorPlane{Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_SIZE}; /**< The alpha is 0, 127 or 255. */
 
     uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. */
 
@@ -162,13 +156,14 @@ public:
 
     /** \brief Handles the transparency of the current pixel for each plane.
      * \param pixel The ARGB pixel.
+     * TODO: do not compute colorKey if not CLUT.
      */
     template<ImagePlane PLANE> void HandleTransparency(Pixel& pixel) noexcept
     {
         const bool boolean = !bit<3>(m_transparencyControl[PLANE]);
         uint32_t color = static_cast<uint32_t>(pixel) & 0x00'FF'FF'FF;
         color = clutColorKey(color | m_maskColorRgb[PLANE]);
-        const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]); // TODO: don't compute if not CLUT.
+        const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]);
 
         pixel.a = PIXEL_FULL_INTENSITY;
 
@@ -217,6 +212,7 @@ public:
 
     // Backdrop.
     uint8_t m_backdropColor : 4{}; /**< YRGB color code. */
+    static Pixel backdropCursorColorToPixel(uint8_t color) noexcept;
 
     // Cursor.
     bool m_cursorEnabled{};
