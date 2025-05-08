@@ -421,15 +421,15 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
     const uint8_t* icfBack;
     if constexpr(PLANE_ORDER)
     {
-        planeFront = m_planeLine[B].GetLinePointer(m_lineNumber);
-        planeBack = m_planeLine[A].GetLinePointer(m_lineNumber);
+        planeFront = m_planeLine[B].data();
+        planeBack = m_planeLine[A].data();
         icfFront = m_icfLine[B].data();
         icfBack = m_icfLine[A].data();
     }
     else
     {
-        planeFront = m_planeLine[A].GetLinePointer(m_lineNumber);
-        planeBack = m_planeLine[B].GetLinePointer(m_lineNumber);
+        planeFront = m_planeLine[A].data();
+        planeBack = m_planeLine[B].data();
         icfFront = m_icfLine[A].data();
         icfBack = m_icfLine[B].data();
     }

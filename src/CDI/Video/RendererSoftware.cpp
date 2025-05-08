@@ -174,25 +174,28 @@ void RendererSoftware::OverlayMix() noexcept
         HandleMatte<A>(i);
         HandleMatte<B>(i);
 
-        Pixel pa = *planeA++;
-        Pixel pb = *planeB++;
+        Pixel& pa = *planeA++;
+        Pixel& pb = *planeB++;
 
         HandleTransparency<A>(pa);
         HandleTransparency<B>(pb);
 
-        applyICF(pa, m_icf[A]);
-        applyICF(pb, m_icf[B]);
+        Pixel a = pa;
+        Pixel b = pb;
+
+        applyICF(a, m_icf[A]);
+        applyICF(b, m_icf[B]);
 
         Pixel fp, bp;
         if constexpr(PLANE_ORDER) // Plane B in front.
         {
-            fp = pb;
-            bp = pa;
+            fp = b;
+            bp = a;
         }
         else // Plane A in front.
         {
-            fp = pa;
-            bp = pb;
+            fp = a;
+            bp = b;
         }
 
         if constexpr(MIX)

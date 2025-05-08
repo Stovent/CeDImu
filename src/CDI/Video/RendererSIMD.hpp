@@ -17,6 +17,7 @@ namespace Video
 
 /** \brief CD-i video renderer implementation using std::simd.
  *
+ * TODO: allow VDSC Viewer to show the raw planes with transparency.
  * TODO: change the algorithms to adapt to the remaining size of pixels to process.
  * Basically the video resolutions are always multiples of 8, and sometimes multiples of 16.
  * There may be something interesting to do with this.
@@ -32,9 +33,6 @@ public:
     std::array<std::array<PixelU32, SIMD_LINE_WIDTH>, 2> m_planeLine{};
 
     std::array<std::array<uint8_t, SIMD_LINE_WIDTH>, 2> m_icfLine{};
-    // std::array<uint8_t, 2> m_currentICF{};
-    // std::array<std::array<uint8_t, SIMD_LINE_WIDTH>, 2> m_matteFlagLine{};
-    // uint32_t m_currentMatteCommand{0};
 
     RendererSIMD() {}
     virtual ~RendererSIMD() noexcept {}
@@ -56,6 +54,8 @@ public:
      * \param pixel The ARGB pixel.
      *
      * TODO: this may be SIMDable.
+     * It seems that transparency control remains the same for the entire line.
+     * Can we use this to remove the redundent switch on each loop?
      */
     template<ImagePlane PLANE> void HandleTransparencySIMD(uint32_t& pixel) noexcept
     {
