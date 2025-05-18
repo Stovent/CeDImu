@@ -10,7 +10,7 @@ const BiosConfig defaultBiosConfig {
     .name = "BIOS config",
     .biosFilePath = "",
     .nvramFileName = "",
-    .initialTime = std::to_string(IRTC::defaultTime),
+    .initialTime = std::to_string(IRTC::DEFAULT_TIME),
     .boardType = Boards::AutoDetect,
     .PAL = false,
     .has32KbNvram = false,

@@ -31,11 +31,11 @@ public:
     std::unique_ptr<ISlave> m_slave; /**< The slave processor. */
     std::unique_ptr<IRTC> m_timekeeper; /**< The NVRAM chip. */
 
-    static std::unique_ptr<CDI> NewCDI(Boards board, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
-    static std::unique_ptr<CDI> NewMono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
-    static std::unique_ptr<CDI> NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
-    static std::unique_ptr<CDI> NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
-    static std::unique_ptr<CDI> NewSoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = defaultConfig, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewCDI(Boards board, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewMono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewSoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
 
     virtual ~CDI() noexcept;
 
@@ -78,14 +78,13 @@ public:
 protected:
     friend SCC68070;
 
-    CDI() = delete;
     CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());
 
     /** \brief Runs in a thread and schedule all the components. */
     virtual void Scheduler() = 0;
+    virtual void IncrementTime(double ns);
 
     virtual void Reset(bool resetCPU) = 0;
-    virtual void IncrementTime(double ns);
 
     virtual uint8_t  GetByte(uint32_t addr, BusFlags flags) = 0;
     virtual uint16_t GetWord(uint32_t addr, BusFlags flags) = 0;

@@ -25,7 +25,7 @@ public:
 
     enum class Register
     {
-        D0 = 0,
+        D0,
         D1,
         D2,
         D3,
@@ -34,7 +34,7 @@ public:
         D6,
         D7,
 
-        A0 = 8,
+        A0,
         A1,
         A2,
         A3,
@@ -105,16 +105,14 @@ public:
         uint8_t priority; /**< Group and priority. */
         uint16_t data; /**< Additional data (used to store the syscall in Trap 0 instructions). */
 
-        Exception() = delete;
-        Exception(const ExceptionVector vec, const uint16_t d = 0) : vector(vec), priority(GetPriority(vec)), data(d) {}
+        constexpr Exception(const ExceptionVector vec, const uint16_t d = 0) noexcept : vector{vec}, priority{getPriority(vec)}, data{d} {}
 
-        bool operator<(const Exception& other) const
+        constexpr bool operator<(const Exception& other) const noexcept
         {
             return this->priority < other.priority;
         }
 
-    private:
-        static constexpr uint8_t GetPriority(const ExceptionVector vec)
+        static constexpr uint8_t getPriority(const ExceptionVector vec) noexcept
         {
             if(vec == ResetSSPPC) return 0;
             if(vec == AddressError) return 1;
@@ -158,12 +156,12 @@ public:
     SCC68070(const SCC68070&) = delete;
     SCC68070(SCC68070&&) = delete;
 
-    InterpreterResult SingleStep(size_t stopCycles);
-    InterpreterResult SingleStepException(size_t stopCycles);
+    [[nodiscard]] InterpreterResult SingleStep(size_t stopCycles);
+    [[nodiscard]] InterpreterResult SingleStepException(size_t stopCycles);
     void Reset();
     void PushException(const Exception& ex);
     uint16_t GetNextWord(BusFlags flags = BUS_NORMAL);
-    uint16_t PeekNextWord() const noexcept;
+    [[nodiscard]] uint16_t PeekNextWord() const noexcept;
 
     void INT1();
     void INT2();
@@ -172,16 +170,16 @@ public:
 
     void AddBreakpoint(uint32_t address);
     void RemoveBreakpoint(uint32_t address);
-    void ClearAllBreakpoints();
+    void ClearBreakpoints() noexcept;
 
     /** \brief Returns the byte at the given peripheral address.
      * \param addr The address in peripheral memory (so between 0 and Peripheral::Last).
      */
-    uint8_t PeekPeripheral(uint32_t addr) const noexcept;
+    [[nodiscard]] uint8_t PeekPeripheral(uint32_t addr) const noexcept;
 
     void SetRegister(Register reg, uint32_t value);
-    std::map<Register, uint32_t> GetCPURegisters() const;
-    std::vector<InternalRegister> GetInternalRegisters() const;
+    [[nodiscard]] std::map<Register, uint32_t> GetCPURegisters() const;
+    [[nodiscard]] std::vector<InternalRegister> GetInternalRegisters() const;
 
     enum Peripheral : uint32_t
     {
@@ -281,80 +279,85 @@ private:
     std::array<uint8_t, Peripheral::Size> m_peripherals;
     uint16_t currentOpcode;
     uint32_t lastAddress;
+    constexpr void SetTXReady() noexcept { m_peripherals[USR] |= 0x04; }
+    constexpr void SetRXReady() noexcept { m_peripherals[USR] |= 0x01; }
+    constexpr void UnsetTXReady() noexcept { m_peripherals[USR] &= ~0x04; }
+    constexpr void UnsetRXReady() noexcept { m_peripherals[USR] &= ~0x01; }
 
     // Registers
-    uint32_t D[8];
-    uint32_t A_[8]; // A_[7] is a dummy register, use A() for safety.
+    std::array<uint32_t, 8> D;
+    std::array<uint32_t, 8> A_; // A_[7] is a dummy register, use A() for safety.
     uint32_t PC;
     uint16_t SR;
     uint32_t USP;
     uint32_t SSP;
 
-    constexpr uint32_t& A(const uint8_t reg) { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
-    constexpr uint32_t A(const uint8_t reg) const { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
+    static constexpr uint16_t SR_UPPER_MASK{0xA700};
+    [[nodiscard]] constexpr uint32_t& A(const uint8_t reg) noexcept { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
+    [[nodiscard]] constexpr uint32_t A(const uint8_t reg) const noexcept { return reg == 7 ? (GetS() ? SSP : USP) : A_[reg]; }
 
     // Conditional Codes
-    constexpr bool GetS() const { return bit<13>(SR); }
-    void SetS(bool S = 1);
-    constexpr bool GetX() const { return bit<4>(SR); }
-    void SetX(bool X = 1);
-    constexpr bool GetN() const { return bit<3>(SR); }
-    void SetN(bool N = 1);
-    constexpr bool GetZ() const { return bit<2>(SR); }
-    void SetZ(bool Z = 1);
-    constexpr bool GetV() const { return bit<1>(SR); }
-    void SetV(bool V = 1);
-    constexpr bool GetC() const { return bit<0>(SR); }
-    void SetC(bool C = 1);
-    void SetXC(bool XC = 1); // Set both X and C at the same time
-    void SetVC(bool VC = 1); // Set both V and C at the same time
-    constexpr uint8_t GetIPM() const { return bits<8, 10>(SR); }; // Interrupt Priority Mask
+    constexpr bool GetS() const noexcept { return bit<13>(SR); }
+    void SetS(bool S = 1) noexcept;
+    constexpr bool GetX() const noexcept { return bit<4>(SR); }
+    void SetX(bool X = 1) noexcept;
+    constexpr bool GetN() const noexcept { return bit<3>(SR); }
+    void SetN(bool N = 1) noexcept;
+    constexpr bool GetZ() const noexcept { return bit<2>(SR); }
+    void SetZ(bool Z = 1) noexcept;
+    constexpr bool GetV() const noexcept { return bit<1>(SR); }
+    void SetV(bool V = 1) noexcept;
+    constexpr bool GetC() const noexcept { return bit<0>(SR); }
+    void SetC(bool C = 1) noexcept;
+    void SetXC(bool XC = 1) noexcept; // Set both X and C at the same time
+    void SetVC(bool VC = 1) noexcept; // Set both V and C at the same time
+    constexpr uint8_t GetIPM() const noexcept { return bits<8, 10>(SR); }; // Interrupt Priority Mask
 
     // Exceptions
     std::priority_queue<Exception> m_exceptions;
     void ClearExceptions();
 
-    size_t ProcessPendingExceptions();
-    uint16_t ProcessException(ExceptionVector vector);
+    [[nodiscard]] size_t ProcessPendingExceptions();
+    [[nodiscard]] uint16_t ProcessException(ExceptionVector vector);
     static std::string exceptionVectorToString(ExceptionVector vector);
 
     // Addressing Modes
-    uint32_t GetEffectiveAddress(uint8_t mode, uint8_t reg, uint8_t sizeInBytes, uint16_t& calcTime);
-    int32_t GetIndexRegister(uint16_t bew) const;
+    [[nodiscard]] uint32_t GetEffectiveAddress(uint8_t mode, uint8_t reg, uint8_t sizeInBytes, uint16_t& calcTime);
+    [[nodiscard]] int32_t GetIndexRegister(uint16_t bew) const;
 
-    uint32_t AddressRegisterIndirectWithPostincrement(uint8_t reg, uint8_t sizeInByte);
-    uint32_t AddressRegisterIndirectWithPredecrement(uint8_t reg, uint8_t sizeInByte);
-    uint32_t AddressRegisterIndirectWithDisplacement(uint8_t reg);
-    uint32_t AddressRegisterIndirectWithIndex8(uint8_t reg);
+    [[nodiscard]] uint32_t AddressRegisterIndirectWithPostincrement(uint8_t reg, uint8_t sizeInByte);
+    [[nodiscard]] uint32_t AddressRegisterIndirectWithPredecrement(uint8_t reg, uint8_t sizeInByte);
+    [[nodiscard]] uint32_t AddressRegisterIndirectWithDisplacement(uint8_t reg);
+    [[nodiscard]] uint32_t AddressRegisterIndirectWithIndex8(uint8_t reg);
 
-    uint32_t ProgramCounterIndirectWithDisplacement();
-    uint32_t ProgramCounterIndirectWithIndex8();
+    [[nodiscard]] uint32_t ProgramCounterIndirectWithDisplacement();
+    [[nodiscard]] uint32_t ProgramCounterIndirectWithIndex8();
 
-    uint32_t AbsoluteShortAddressing();
-    uint32_t AbsoluteLongAddressing();
+    [[nodiscard]] uint32_t AbsoluteShortAddressing();
+    [[nodiscard]] uint32_t AbsoluteLongAddressing();
 
-    std::string DisassembleAddressingMode(uint32_t extWordAddress, uint8_t eamode, uint8_t eareg, uint8_t size, bool hexImmediateData = false) const;
+    [[nodiscard]] std::string DisassembleAddressingMode(uint32_t extWordAddress, uint8_t eamode, uint8_t eareg, uint8_t size, bool hexImmediateData = false) const;
 
     // Addressing Modes Memory Access
-    uint8_t  GetByte(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
-    uint16_t GetWord(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
-    uint32_t GetLong(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint8_t  GetByte(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint16_t GetWord(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint32_t GetLong(uint8_t mode, uint8_t reg, uint16_t& calcTime, BusFlags flags = BUS_NORMAL);
 
     void SetByte(uint8_t mode, uint8_t reg, uint16_t& calcTime, uint8_t  data, BusFlags flags = BUS_NORMAL);
     void SetWord(uint8_t mode, uint8_t reg, uint16_t& calcTime, uint16_t data, BusFlags flags = BUS_NORMAL);
     void SetLong(uint8_t mode, uint8_t reg, uint16_t& calcTime, uint32_t data, BusFlags flags = BUS_NORMAL);
 
     // Direct Memory Access
-    uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL);
-    uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
-    uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL);
 
     void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL);
     void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL);
     void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL);
 
     // Peripherals
-    uint8_t GetPeripheral(uint32_t addr, BusFlags flags);
+    [[nodiscard]] uint8_t GetPeripheral(uint32_t addr, BusFlags flags);
     void SetPeripheral(uint32_t addr, uint8_t data, BusFlags flags);
     void IncrementTimer(double ns);
 
@@ -393,12 +396,12 @@ private:
         &SCC68070::GT,
         &SCC68070::LE,
     };
-    const char* DisassembleConditionalCode(uint8_t cc) const;
+    [[nodiscard]] const char* DisassembleConditionalCode(uint8_t cc) const;
 
     // Instruction Set
     void ResetOperation();
-    typedef uint16_t    (SCC68070::*ILUTFunctionPointer)();
-    typedef std::string (SCC68070::*DLUTFunctionPointer)(uint32_t) const;
+    using ILUTFunctionPointer = uint16_t (SCC68070::*)();
+    using DLUTFunctionPointer = std::string (SCC68070::*)(uint32_t) const;
     void GenerateInstructionSet();
     void GenerateInstructionOpcodes(const char* format, std::vector<std::vector<int>> values, ILUTFunctionPointer instFunc, DLUTFunctionPointer disFunc);
 
@@ -607,13 +610,6 @@ constexpr const char* CPURegisterToString(const SCC68070::Register reg)
     }
 }
 
-#define   SET_TX_READY() m_peripherals[USR] |= 0x04;
-#define   SET_RX_READY() m_peripherals[USR] |= 0x01;
-#define UNSET_TX_READY() m_peripherals[USR] &= ~0x04;
-#define UNSET_RX_READY() m_peripherals[USR] &= ~0x01;
-
-#define SR_UPPER_MASK (0xA700)
-
 /* shorts for addressing modes */
 
 #define ARIWPo(register, sizeInByte) AddressRegisterIndirectWithPostincrement(register, sizeInByte)
@@ -628,31 +624,31 @@ constexpr const char* CPURegisterToString(const SCC68070::Register reg)
 #define ALA() AbsoluteLongAddressing()
 
 // IT(Instruction Timing) + Addressing mode macro + size
-#define ITREG 0 // register
-#define ITARIBW 4 // Address Register Indirect (ARI)
-#define ITARIL 8
+inline constexpr uint16_t ITREG = 0; // register
+inline constexpr uint16_t ITARIBW = 4; // Address Register Indirect (ARI)
+inline constexpr uint16_t ITARIL = 8;
 
-#define ITARIWPoBW 4 // ARI with postincrement
-#define ITARIWPoL 8
-#define ITARIWPrBW 7 // ARI with predecrement
-#define ITARIWPrL 11
+inline constexpr uint16_t ITARIWPoBW = 4; // ARI with postincrement
+inline constexpr uint16_t ITARIWPoL = 8;
+inline constexpr uint16_t ITARIWPrBW = 7; // ARI with predecrement
+inline constexpr uint16_t ITARIWPrL = 11;
 
-#define ITARIWDBW 11 // ARI with displacement
-#define ITARIWDL 15
-#define ITARIWI8BW 14 // ARI with index 8
-#define ITARIWI8L 18
+inline constexpr uint16_t ITARIWDBW = 11; // ARI with displacement
+inline constexpr uint16_t ITARIWDL = 15;
+inline constexpr uint16_t ITARIWI8BW = 14; // ARI with index 8
+inline constexpr uint16_t ITARIWI8L = 18;
 
-#define ITPCIWDBW 11 // PC with displacement
-#define ITPCIWDL 15
-#define ITPCIWI8BW 14 // PC with index 8
-#define ITPCIWI8L 18
+inline constexpr uint16_t ITPCIWDBW = 11; // PC with displacement
+inline constexpr uint16_t ITPCIWDL = 15;
+inline constexpr uint16_t ITPCIWI8BW = 14; // PC with index 8
+inline constexpr uint16_t ITPCIWI8L = 18;
 
-#define ITASBW 8 // Absolute short
-#define ITASL 12
-#define ITALBW 12 // Absolute long
-#define ITALL 16
+inline constexpr uint16_t ITASBW = 8; // Absolute short
+inline constexpr uint16_t ITASL = 12;
+inline constexpr uint16_t ITALBW = 12; // Absolute long
+inline constexpr uint16_t ITALL = 16;
 
-#define ITIBW 4 // immediate
-#define ITIL 8
+inline constexpr uint16_t ITIBW = 4; // immediate
+inline constexpr uint16_t ITIL = 8;
 
 #endif // CDI_CORES_SCC68070_SCC68070_HPP

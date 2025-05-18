@@ -14,7 +14,7 @@
 SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     : currentPC(0)
     , totalCycleCount(0)
-    , cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
+    , cycleDelay((1.0 / clockFrequency) * 1'000'000'000)
     , m_cdi(idc)
     , m_uartInMutex()
     , m_uartIn{}
@@ -56,7 +56,7 @@ void SCC68070::Reset()
 void SCC68070::ResetInternal()
 {
     std::fill(m_peripherals.begin(), m_peripherals.end(), 0);
-    SET_TX_READY()
+    SetTXReady();
 }
 
 void SCC68070::ClearExceptions()
@@ -138,7 +138,7 @@ void SCC68070::RemoveBreakpoint(const uint32_t address)
         m_breakpoints.erase(it);
 }
 
-void SCC68070::ClearAllBreakpoints()
+void SCC68070::ClearBreakpoints() noexcept
 {
     m_breakpoints.clear();
 }
@@ -311,49 +311,49 @@ void SCC68070::DumpCPURegisters()
     }
 }
 
-void SCC68070::SetS(const bool S)
+void SCC68070::SetS(const bool S) noexcept
 {
     SR &= 0b1101'1111'1111'1111;
     SR |= static_cast<uint16_t>(S) << 13;
 }
 
-void SCC68070::SetX(const bool X)
+void SCC68070::SetX(const bool X) noexcept
 {
     SR &= 0b1111'1111'1110'1111;
     SR |= static_cast<uint16_t>(X) << 4;
 }
 
-void SCC68070::SetN(const bool N)
+void SCC68070::SetN(const bool N) noexcept
 {
     SR &= 0b1111'1111'1111'0111;
     SR |= static_cast<uint16_t>(N) << 3;
 }
 
-void SCC68070::SetZ(const bool Z)
+void SCC68070::SetZ(const bool Z) noexcept
 {
     SR &= 0b1111'1111'1111'1011;
     SR |= static_cast<uint16_t>(Z) << 2;
 }
 
-void SCC68070::SetV(const bool V)
+void SCC68070::SetV(const bool V) noexcept
 {
     SR &= 0b1111'1111'1111'1101;
     SR |= static_cast<uint16_t>(V) << 1;
 }
 
-void SCC68070::SetC(const bool C)
+void SCC68070::SetC(const bool C) noexcept
 {
     SR &= 0b1111'1111'1111'1110;
     SR |= static_cast<uint16_t>(C);
 }
 
-void SCC68070::SetXC(const bool XC)
+void SCC68070::SetXC(const bool XC) noexcept
 {
     SetX(XC);
     SetC(XC);
 }
 
-void SCC68070::SetVC(const bool VC)
+void SCC68070::SetVC(const bool VC) noexcept
 {
     SetV(VC);
     SetC(VC);
