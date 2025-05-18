@@ -294,7 +294,7 @@ CPUViewer::CPUViewer(MainFrame* mainFrame, CeDImu& cedimu)
             if(m_cedimu.m_cdi)
             {
                 std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
-                m_cedimu.m_cdi->m_cpu.ClearAllBreakpoints();
+                m_cedimu.m_cdi->m_cpu.ClearBreakpoints();
             }
         });
         buttonsSizer->Add(clearButton);

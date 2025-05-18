@@ -15,9 +15,9 @@ uint8_t SCC68070::GetPeripheral(uint32_t addr, const BusFlags flags)
     std::unique_lock<std::mutex> lock(m_uartInMutex);
 
     if(m_uartIn.size())
-        SET_RX_READY()
+        SetRXReady();
     else
-        UNSET_RX_READY()
+        UnsetRXReady();
 
     if(addr == URHR)
     {
