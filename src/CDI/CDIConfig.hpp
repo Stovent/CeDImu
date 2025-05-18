@@ -16,10 +16,11 @@ struct CDIConfig
     bool has32KBNVRAM; /**< True if the board has 32KB of NVRAM, false for 8KB. */
 };
 
-constexpr CDIConfig defaultConfig = {
-    true,
-    IRTC::defaultTime,
-    false,
-}; /**< Default configuration used by CDI if no one is provided. */
+/** \brief Default configuration used by CDI if no one is provided. */
+inline constexpr CDIConfig DEFAULT_CONFIG{
+    .PAL = true,
+    .initialTime = IRTC::DEFAULT_TIME,
+    .has32KBNVRAM = false,
+};
 
 #endif // CDI_CDICONFIG_HPP

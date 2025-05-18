@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.25)
 
+# set(CMAKE_CXX_CLANG_TIDY
+#     clang-tidy;
+#     -header-filter=.;
+#     -checks=bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,-modernize-use-trailing-return-type;)
+    # -checks=bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,
+    # performance-*,portability-*,readability-*;)
+
 project(libCeDImu)
 
 set(CMAKE_C_STANDARD 23)

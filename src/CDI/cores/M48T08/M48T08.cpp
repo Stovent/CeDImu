@@ -20,14 +20,14 @@ M48T08::M48T08(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time
     : IRTC(cdi)
     , m_sram{}
     , m_nsec(0.0)
-    , m_internalClock(std::chrono::system_clock::from_time_t(initialTime.value_or(IRTC::defaultTime)))
+    , m_internalClock(std::chrono::system_clock::from_time_t(initialTime.value_or(IRTC::DEFAULT_TIME)))
 {
     if(!state.empty())
     {
         if(state.size() != m_sram.size())
             throw std::invalid_argument("M48T08 initial state size must be 8192 bytes");
 
-        std::copy(state.begin(), state.begin() + m_sram.size(), m_sram.begin());
+        std::copy(state.begin(), state.end(), m_sram.begin()); // Guaranteed same size as sram.
         if(initialTime.has_value())
             ClockToSRAM();
         else

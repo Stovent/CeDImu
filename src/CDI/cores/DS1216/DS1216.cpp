@@ -43,7 +43,7 @@ DS1216::DS1216(CDI& cdi, std::span<const uint8_t> state, std::optional<std::time
     , m_sram{}
     , m_clock{}
     , m_nsec(0.0)
-    , m_internalClock(std::chrono::system_clock::from_time_t(initialTime.value_or(IRTC::defaultTime)))
+    , m_internalClock(std::chrono::system_clock::from_time_t(initialTime.value_or(IRTC::DEFAULT_TIME)))
     , m_patternCount(-1)
     , m_pattern(64)
 {

@@ -10,10 +10,10 @@ class CDI;
 class IRTC
 {
 public:
-    static constexpr std::time_t defaultTime = 599616000; // 1989/01/01 00:00:00
+    static constexpr std::time_t DEFAULT_TIME = 599616000; // 1989/01/01 00:00:00
     CDI& cdi;
 
-    explicit IRTC(CDI& idc) : cdi(idc) {}
+    explicit IRTC(CDI& idc) : cdi{idc} {}
     virtual ~IRTC() noexcept = default;
 
     IRTC(const IRTC&) = delete;
