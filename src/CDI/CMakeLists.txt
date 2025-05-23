@@ -4,7 +4,7 @@ project(libCeDImu)
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -64,7 +64,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_link_options(CeDImu PUBLIC -fsanitize=address -static-libasan)
     endif()
 
-    # target_compile_options(CeDImu PRIVATE -Wnrvo)
+    if(CMAKE_HOST_WIN32)
+        # GCC does not support 32-byte aligned stack https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54412
+        target_compile_options(CeDImu PRIVATE -Wa,-muse-unaligned-vector-move)
+    endif()
+
+    target_compile_options(CeDImu PRIVATE -Wnrvo)
     target_link_libraries(CeDImu PRIVATE stdc++fs stdc++exp)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if(LIBCEDIMU_ENABLE_ASAN)

@@ -219,6 +219,9 @@ protected:
 /** \brief Handles the transparency of the current pixel for each plane.
  * \param pixel The ARGB pixel.
  * TODO: do not compute colorKey if not CLUT.
+ *
+ * It seems that transparency control remains the same for the entire line.
+ * Can we use this to remove the redundent switch on each loop?
  */
 template<Renderer::ImagePlane PLANE> constexpr void Renderer::HandleTransparency(Pixel& pixel) noexcept
 {

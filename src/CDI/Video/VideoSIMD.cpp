@@ -89,7 +89,7 @@ static constexpr std::array<int, 256> matrixUToB = generateUToB();
  * If the coding method is RGB555, dataA must contain the channel A data and dataB must contain the channel B data.
  * If it is not RGB555, dataB is the source data and dataA remain unused.
  */
-uint16_t decodeBitmapLineSIMD(PixelU32* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
+uint16_t decodeBitmapLineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
 {
     if(icm == ImageCodingMethod::DYUV)
         return decodeDYUVLineSIMD(dst, dataB, width, initialDYUV);
@@ -109,7 +109,7 @@ uint16_t decodeBitmapLineSIMD(PixelU32* dst, const uint8_t* dataA, const uint8_t
  * \param is4BPP true for RL3, false for RL7.
  * \return The number of raw bytes read from data.
  */
-uint16_t decodeRunLengthLineSIMD(PixelU32* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept
+uint16_t decodeRunLengthLineSIMD(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept
 {
     uint16_t index = 0;
 
@@ -130,8 +130,8 @@ uint16_t decodeRunLengthLineSIMD(PixelU32* dst, const uint8_t* data, uint16_t wi
                 --count; // one memcpy less than the pixels because of the initial decode.
             }
 
-            PixelU32* pixels = &dst[x++];
-            PixelU32* pixels2 = &dst[x++];
+            Pixel* pixels = &dst[x++];
+            Pixel* pixels2 = &dst[x++];
             decodeCLUTSIMD(pixels, color1, CLUTTable);
             decodeCLUTSIMD(pixels2, color2, CLUTTable);
             for(int i = 0; i < count; i++)
@@ -157,7 +157,7 @@ uint16_t decodeRunLengthLineSIMD(PixelU32* dst, const uint8_t* data, uint16_t wi
                 --count; // one memcpy less than the pixels because of the initial decode.
             }
 
-            PixelU32* pixels = &dst[x++];
+            Pixel* pixels = &dst[x++];
             decodeCLUTSIMD(pixels, color, CLUTTable);
             for(int i = 0; i < count; i++)
             {
@@ -177,7 +177,7 @@ uint16_t decodeRunLengthLineSIMD(PixelU32* dst, const uint8_t* data, uint16_t wi
  * \return The number of raw bytes read from each data source.
  * \attention \p dst, \p dataA and \p dataB are written/read in chunks of std::simd::size(). Make sure the buffers can be read and written beyond the actual line length.
  */
-uint16_t decodeRGB555LineSIMD(PixelU32* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
+uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
 {
     // TODO: ensure we do not index out of bound.
     using SIMD8 = stdx::native_simd<uint8_t>;
@@ -201,7 +201,7 @@ uint16_t decodeRGB555LineSIMD(PixelU32* dst, const uint8_t* dataA, const uint8_t
                          stdx::static_simd_cast<uint32_t>(green) << 8 |
                          stdx::static_simd_cast<uint32_t>(blue);
 
-        result.copy_to(dst, stdx::element_aligned);
+        result.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
     };
 
     return width;
@@ -214,7 +214,7 @@ uint16_t decodeRGB555LineSIMD(PixelU32* dst, const uint8_t* dataA, const uint8_t
  * \param initialDYUV The initial value to be used by the DYUV decoder.
  * \return The number of raw bytes read from \p dyuv.
  */
-uint16_t decodeDYUVLineSIMD(PixelU32* dst, const uint8_t* dyuv, uint16_t width, uint16_t initialDYUV) noexcept
+uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint16_t width, uint16_t initialDYUV) noexcept
 {
     uint32_t previous = initialDYUV;
 
@@ -239,7 +239,7 @@ uint16_t decodeDYUVLineSIMD(PixelU32* dst, const uint8_t* dyuv, uint16_t width, 
  *
  * If \p icm is ImageCodingMethod::CLUT77 or the video plane is plane B, then sent `&CLUT[128]` as the \p CLUTTable.
  */
-uint16_t decodeCLUTLineSIMD(PixelU32* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept
+uint16_t decodeCLUTLineSIMD(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept
 {
     if(icm == ImageCodingMethod::CLUT4)
     {
@@ -269,7 +269,7 @@ uint16_t decodeCLUTLineSIMD(PixelU32* dst, const uint8_t* data, uint16_t width, 
     }
 }
 
-static constexpr void matrixRGBSIMD(PixelU32* pixel, const int Y, const uint8_t U, const uint8_t V) noexcept
+static constexpr void matrixRGBSIMD(Pixel* pixel, const int Y, const uint8_t U, const uint8_t V) noexcept
 {
     const uint32_t r = limu8(Y + matrixVToR[V]);
     const uint32_t g = limu8(Y - (matrixUToG[U] + matrixVToG[V]));
@@ -285,7 +285,7 @@ static constexpr void matrixRGBSIMD(PixelU32* pixel, const int Y, const uint8_t 
  *
  * TODO: SIMD with original algorithm https://github.com/Stovent/CeDImu/commit/22464aacb5c2590886b98176183e6c2e240835e0
  */
-void decodeDYUVSIMD(PixelU32* dst, const uint16_t pixel, uint32_t& previous) noexcept
+void decodeDYUVSIMD(Pixel* dst, const uint16_t pixel, uint32_t& previous) noexcept
 {
     // Green book V.4.4.2
     uint8_t u2 = bits<12, 15>(pixel);
@@ -307,35 +307,6 @@ void decodeDYUVSIMD(PixelU32* dst, const uint16_t pixel, uint32_t& previous) noe
 
     matrixRGBSIMD(dst, y1, u1, v1);
     matrixRGBSIMD(&dst[1], y2, u2, v2);
-}
-
-/** \brief Copy the ARGB pixels to an ARGB plane.
- *
- * \param dst The destination ARGB plane.
- * \param dstWidth The width of the destination plane.
- * \param dstHeight The height of the destination plane.
- * \param src The source ARGB plane.
- * \param srcWidth The width of the source plane.
- * \param srcHeight The width of the source plane.
- * \param xOffset The x offset in pixels where the paste will occur on dst.
- * \param yOffset The y offset in pixels where the paste will occur on dst.
- *
- * If the source does not fit in the destination, only the pixels that fit in the destination are copied.
- */
-void paste(PixelU32* dst, const uint16_t dstWidth, const uint16_t dstHeight, const PixelU32* src, const uint16_t srcWidth, const uint16_t srcHeight, const uint16_t xOffset, const uint16_t yOffset)
-{
-    for(uint16_t dy = yOffset, sy = 0; dy < dstHeight && sy < srcHeight; ++dy, ++sy)
-    {
-              PixelU32* dstRow = dst + dstWidth * dy;
-        const PixelU32* srcRow = src + srcWidth * sy;
-        for(uint16_t dx = xOffset, sx = 0; dx < dstWidth && sx < srcWidth; ++dx, ++sx)
-        {
-            if((srcRow[sx] & 0xFF'00'00'00) != 0) // Alpha is either 0 or 255.
-            {
-                dstRow[dx] = srcRow[sx];
-            }
-        }
-    }
 }
 
 } // namespace Video

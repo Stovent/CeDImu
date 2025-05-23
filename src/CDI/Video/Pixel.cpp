@@ -4,6 +4,7 @@ namespace Video
 {
 
 /** \brief Compile-time unit test function for Pixel. */
+[[maybe_unused]]
 static consteval void testPixel()
 {
     static_assert(Pixel{1, 2, 3, 4}.AsU32() == 0x01020304);
@@ -11,6 +12,7 @@ static consteval void testPixel()
     constexpr Pixel p{0x11223344};
     static_assert(p.AsU32() == 0x11223344);
     static_assert(static_cast<uint32_t>(p) == 0x11223344);
+    // static_assert(*p.AsU32Pointer() == 0x11223344);
     static_assert(p.a == 0x11);
     static_assert(p.r == 0x22);
     static_assert(p.g == 0x33);

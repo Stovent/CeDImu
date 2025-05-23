@@ -1,6 +1,7 @@
 #include <print>
 #include <source_location>
 #include <stdexcept>
+#include <type_traits>
 
 /** \brief Structure that holds the format string and the automatic source location.
  * Implementation thanks to this article: https://buildingblock.ai/panic
