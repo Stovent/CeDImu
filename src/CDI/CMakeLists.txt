@@ -48,9 +48,14 @@ if(LIBCEDIMU_ENABLE_LOG)
     target_compile_definitions(CeDImu PUBLIC ENABLE_LOG)
 endif()
 
-if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(CeDImu PRIVATE -Wall -Wextra -pedantic) # -march=native
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # Common flags for GCC and Clang.
+    target_compile_options(CeDImu PRIVATE -Wall -Wextra -pedantic -march=native)
     # target_compile_options(CeDImu PRIVATE -Wmaybe-uninitialized -Wduplicated-cond -Wlogical-op -Wmisleading-indentation -Wreturn-type -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual)
+
+    if(LIBCEDIMU_ENABLE_ASAN)
+        target_compile_options(CeDImu PRIVATE -fsanitize=address)
+        target_link_options(CeDImu PUBLIC -fsanitize=address -static-libasan)
+    endif()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -59,21 +64,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_link_options(CeDImu PUBLIC -pg -no-pie)
     endif()
 
-    if(LIBCEDIMU_ENABLE_ASAN)
-        target_compile_options(CeDImu PRIVATE -fsanitize=address)
-        target_link_options(CeDImu PUBLIC -fsanitize=address -static-libasan)
-    endif()
-
-    if(CMAKE_HOST_WIN32)
+    if(WIN32)
         # GCC does not support 32-byte aligned stack https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54412
         target_compile_options(CeDImu PRIVATE -Wa,-muse-unaligned-vector-move)
     endif()
 
     target_compile_options(CeDImu PRIVATE -Wnrvo)
     target_link_libraries(CeDImu PRIVATE stdc++fs stdc++exp)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    if(LIBCEDIMU_ENABLE_ASAN)
-        target_compile_options(CeDImu PRIVATE -fsanitize=address)
-        target_link_options(CeDImu PUBLIC -fsanitize=address -static-libasan)
-    endif()
+# elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()

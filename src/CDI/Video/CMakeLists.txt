@@ -17,6 +17,7 @@ if(LIBCEDIMU_ENABLE_RENDERERSIMD)
         PRIVATE
             RendererSIMD.cpp
             RendererSIMD.hpp
+            SIMD.hpp
             VideoSIMD.cpp
             VideoSIMD.hpp
     )

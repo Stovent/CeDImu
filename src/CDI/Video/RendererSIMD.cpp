@@ -184,47 +184,42 @@ void RendererSIMD::OverlayMix() noexcept
     HandleOverlayMixSIMD<MIX, PLANE_ORDER>();
 }
 
-using PixelSIMDSigned = stdx::native_simd<int32_t>;
-using SIMDU8 = stdx::native_simd<uint8_t>;
-using SIMDS16 = stdx::native_simd<int16_t>;
-using FixedS16 = stdx::fixed_size_simd<int16_t, SIMDS16::size() * sizeof(SIMDS16::value_type)>;
-
-static const PixelSIMDSigned SIXTEEN{16};
-static const FixedS16 SIXTEENN{16};
-static const PixelSIMDSigned U8_MIN{0};
-static const FixedS16 U8_MINN{0};
-static const PixelSIMDSigned U8_MAX{255};
-static const FixedS16 U8_MAXX{255};
-static const PixelSIMDSigned ALPHA_MASK{-16777216}; // 0xFF'00'00'00
-static const PixelSIMD ALPHA_MASKK{0xFF'00'00'00}; // 0xFF'00'00'00
+static inline constexpr SIMDNativePixelSigned SIXTEEN{16};
+static inline constexpr SIMDFixedS16 SIXTEENN{16};
+static inline constexpr SIMDNativePixelSigned U8_MIN{0};
+static inline constexpr SIMDFixedS16 U8_MINN{0};
+static inline constexpr SIMDNativePixelSigned U8_MAX{255};
+static inline constexpr SIMDFixedS16 U8_MAXX{255};
+static inline constexpr SIMDNativePixelSigned ALPHA_MASK{-16777216}; // 0xFF'00'00'00
+static inline constexpr SIMDNativePixel ALPHA_MASKK{0xFF'00'00'00}; // 0xFF'00'00'00
 
 /** \brief Applies ICF and mixes using SIMD (algorithm that shifts and masks RGB components).
  */
 // template<typename SIMD>
 static constexpr void applyICFMixSIMDShift(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack) noexcept
 {
-    PixelSIMDSigned icfF{icfFront, stdx::element_aligned};
-    PixelSIMDSigned icfB{icfBack, stdx::element_aligned};
+    SIMDNativePixelSigned icfF{icfFront, stdx::element_aligned};
+    SIMDNativePixelSigned icfB{icfBack, stdx::element_aligned};
 
-    PixelSIMDSigned planeF{planeFront->AsU32Pointer(), stdx::element_aligned};
-    PixelSIMDSigned planeB{planeBack->AsU32Pointer(), stdx::element_aligned};
+    SIMDNativePixelSigned planeF{planeFront->AsU32Pointer(), stdx::element_aligned};
+    SIMDNativePixelSigned planeB{planeBack->AsU32Pointer(), stdx::element_aligned};
 
     // transparent areas of an image simply give no contribution to the final display
     // - that is they are equivalent to black areas.
-    const PixelSIMDSigned::mask_type maskF = (planeF & ALPHA_MASK) == 0;
-    const PixelSIMDSigned::mask_type maskB = (planeB & ALPHA_MASK) == 0;
+    const SIMDNativePixelSigned::mask_type maskF = (planeF & ALPHA_MASK) == 0;
+    const SIMDNativePixelSigned::mask_type maskB = (planeB & ALPHA_MASK) == 0;
     stdx::where(maskF, planeF) = 0x00'10'10'10;
     stdx::where(maskB, planeB) = 0x00'10'10'10;
     stdx::where(maskF, icfF) = 63;
     stdx::where(maskB, icfB) = 63;
 
-    PixelSIMDSigned rfp = planeF >> 16 & 0xFF;
-    PixelSIMDSigned gfp = planeF >> 8 & 0xFF;
-    PixelSIMDSigned bfp = planeF & 0xFF;
+    SIMDNativePixelSigned rfp = planeF >> 16 & 0xFF;
+    SIMDNativePixelSigned gfp = planeF >> 8 & 0xFF;
+    SIMDNativePixelSigned bfp = planeF & 0xFF;
 
-    PixelSIMDSigned rbp = planeB >> 16 & 0xFF;
-    PixelSIMDSigned gbp = planeB >> 8 & 0xFF;
-    PixelSIMDSigned bbp = planeB & 0xFF;
+    SIMDNativePixelSigned rbp = planeB >> 16 & 0xFF;
+    SIMDNativePixelSigned gbp = planeB >> 8 & 0xFF;
+    SIMDNativePixelSigned bbp = planeB & 0xFF;
 
     rfp -= SIXTEEN;
     gfp -= SIXTEEN;
@@ -271,7 +266,7 @@ static constexpr void applyICFMixSIMDShift(Pixel* screen, const Pixel* planeFron
     gfp = stdx::clamp(gfp, U8_MIN, U8_MAX);
     bfp = stdx::clamp(bfp, U8_MIN, U8_MAX);
 
-    const PixelSIMDSigned result = (rfp << 16) | (gfp << 8) | bfp;
+    const SIMDNativePixelSigned result = (rfp << 16) | (gfp << 8) | bfp;
 
     result.copy_to(screen->AsU32Pointer(), stdx::element_aligned);
 }
@@ -283,16 +278,16 @@ static constexpr void applyICFMixSIMDShift(Pixel* screen, const Pixel* planeFron
 // template<typename SIMD>
 static constexpr void applyICFMixSIMDCast(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack) noexcept
 {
-    PixelSIMD icfF{icfFront, stdx::element_aligned};
-    PixelSIMD icfB{icfBack, stdx::element_aligned};
+    SIMDNativePixel icfF{icfFront, stdx::element_aligned};
+    SIMDNativePixel icfB{icfBack, stdx::element_aligned};
 
-    PixelSIMD planeF{planeFront->AsU32Pointer(), stdx::element_aligned};
-    PixelSIMD planeB{planeBack->AsU32Pointer(), stdx::element_aligned};
+    SIMDNativePixel planeF{planeFront->AsU32Pointer(), stdx::element_aligned};
+    SIMDNativePixel planeB{planeBack->AsU32Pointer(), stdx::element_aligned};
 
     // transparent areas of an image simply give no contribution to the final display
     // - that is they are equivalent to black areas.
-    const PixelSIMD::mask_type maskF = (planeF & ALPHA_MASKK) == 0;
-    const PixelSIMD::mask_type maskB = (planeB & ALPHA_MASKK) == 0;
+    const SIMDNativePixel::mask_type maskF = (planeF & ALPHA_MASKK) == 0;
+    const SIMDNativePixel::mask_type maskB = (planeB & ALPHA_MASKK) == 0;
     stdx::where(maskF, planeF) = 0x00'10'10'10;
     stdx::where(maskB, planeB) = 0x00'10'10'10;
     stdx::where(maskF, icfF) = 63;
@@ -304,15 +299,15 @@ static constexpr void applyICFMixSIMDCast(Pixel* screen, const Pixel* planeFront
     // icfF |= (icfF << 16) | (icfF << 8);
     // icfB |= (icfB << 16) | (icfB << 8);
 
-    SIMDU8 rgbF8 = std::bit_cast<SIMDU8>(planeF);
-    SIMDU8 rgbB8 = std::bit_cast<SIMDU8>(planeB);
-    SIMDU8 icfF8 = std::bit_cast<SIMDU8>(icfF);
-    SIMDU8 icfB8 = std::bit_cast<SIMDU8>(icfB);
+    const SIMDNativeU8 rgbF8 = std::bit_cast<SIMDNativeU8>(planeF);
+    const SIMDNativeU8 rgbB8 = std::bit_cast<SIMDNativeU8>(planeB);
+    const SIMDNativeU8 icfF8 = std::bit_cast<SIMDNativeU8>(icfF);
+    const SIMDNativeU8 icfB8 = std::bit_cast<SIMDNativeU8>(icfB);
 
-    FixedS16 rgbF16 = stdx::static_simd_cast<int16_t>(rgbF8);
-    FixedS16 rgbB16 = stdx::static_simd_cast<int16_t>(rgbB8);
-    FixedS16 icfF16 = stdx::static_simd_cast<int16_t>(icfF8);
-    FixedS16 icfB16 = stdx::static_simd_cast<int16_t>(icfB8);
+    SIMDFixedS16 rgbF16 = stdx::static_simd_cast<int16_t>(rgbF8);
+    SIMDFixedS16 rgbB16 = stdx::static_simd_cast<int16_t>(rgbB8);
+    SIMDFixedS16 icfF16 = stdx::static_simd_cast<int16_t>(icfF8);
+    SIMDFixedS16 icfB16 = stdx::static_simd_cast<int16_t>(icfB8);
 
     rgbF16 -= SIXTEENN;
     rgbB16 -= SIXTEENN;
@@ -333,7 +328,8 @@ static constexpr void applyICFMixSIMDCast(Pixel* screen, const Pixel* planeFront
 
     rgbF16 = stdx::clamp(rgbF16, U8_MINN, U8_MAXX);
 
-    const PixelSIMD result = std::bit_cast<PixelSIMD>(stdx::static_simd_cast<SIMDU8>(rgbF16));
+    const SIMDNativePixel result =
+        std::bit_cast<SIMDNativePixel>(stdx::static_simd_cast<SIMDNativeU8>(rgbF16));
 
     result.copy_to(screen->AsU32Pointer(), stdx::element_aligned);
 }
@@ -345,20 +341,20 @@ static constexpr void applyICFMixSIMDCast(Pixel* screen, const Pixel* planeFront
 // template<typename SIMD>
 static constexpr void applyICFOverlaySIMDShift(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack, const uint32_t backdrop) noexcept
 {
-    PixelSIMDSigned planeF{planeFront->AsU32Pointer(), stdx::element_aligned};
-    PixelSIMDSigned planeB{planeBack->AsU32Pointer(), stdx::element_aligned};
-    const PixelSIMDSigned icfF{icfFront, stdx::element_aligned};
-    const PixelSIMDSigned icfB{icfBack, stdx::element_aligned};
+    SIMDNativePixelSigned planeF{planeFront->AsU32Pointer(), stdx::element_aligned};
+    SIMDNativePixelSigned planeB{planeBack->AsU32Pointer(), stdx::element_aligned};
+    const SIMDNativePixelSigned icfF{icfFront, stdx::element_aligned};
+    const SIMDNativePixelSigned icfB{icfBack, stdx::element_aligned};
 
-    const PixelSIMDSigned afp = planeF >> 24 & 0xFF;
-    PixelSIMDSigned rfp = planeF >> 16 & 0xFF;
-    PixelSIMDSigned gfp = planeF >> 8 & 0xFF;
-    PixelSIMDSigned bfp = planeF & 0xFF;
+    const SIMDNativePixelSigned afp = planeF >> 24 & 0xFF;
+    SIMDNativePixelSigned rfp = planeF >> 16 & 0xFF;
+    SIMDNativePixelSigned gfp = planeF >> 8 & 0xFF;
+    SIMDNativePixelSigned bfp = planeF & 0xFF;
 
-    const PixelSIMDSigned abp = planeB >> 24 & 0xFF;
-    PixelSIMDSigned rbp = planeB >> 16 & 0xFF;
-    PixelSIMDSigned gbp = planeB >> 8 & 0xFF;
-    PixelSIMDSigned bbp = planeB & 0xFF;
+    const SIMDNativePixelSigned abp = planeB >> 24 & 0xFF;
+    SIMDNativePixelSigned rbp = planeB >> 16 & 0xFF;
+    SIMDNativePixelSigned gbp = planeB >> 8 & 0xFF;
+    SIMDNativePixelSigned bbp = planeB & 0xFF;
 
     rfp -= SIXTEEN;
     gfp -= SIXTEEN;
@@ -403,10 +399,10 @@ static constexpr void applyICFOverlaySIMDShift(Pixel* screen, const Pixel* plane
     planeF = (rfp << 16) | (gfp << 8) | bfp;
     planeB = (rbp << 16) | (gbp << 8) | bbp;
 
-    PixelSIMDSigned result{planeF};
-    const PixelSIMDSigned::mask_type maskFrontZero = afp == 0;
+    SIMDNativePixelSigned result{planeF};
+    const SIMDNativePixelSigned::mask_type maskFrontZero = afp == 0;
     stdx::where(maskFrontZero, result) = planeB;
-    const PixelSIMDSigned::mask_type maskFrontBackZero = maskFrontZero && abp == 0;
+    const SIMDNativePixelSigned::mask_type maskFrontBackZero = maskFrontZero && abp == 0;
     stdx::where(maskFrontBackZero, result) = backdrop;
 
     result.copy_to(screen->AsU32Pointer(), stdx::element_aligned);
@@ -417,16 +413,16 @@ static constexpr void applyICFOverlaySIMDShift(Pixel* screen, const Pixel* plane
 // template<typename SIMD>
 static constexpr void applyICFOverlaySIMDCast(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack, const uint32_t backdrop) noexcept
 {
-    PixelSIMD icfF{icfFront, stdx::element_aligned};
-    PixelSIMD icfB{icfBack, stdx::element_aligned};
+    SIMDNativePixel icfF{icfFront, stdx::element_aligned};
+    SIMDNativePixel icfB{icfBack, stdx::element_aligned};
 
-    PixelSIMD planeF{planeFront->AsU32Pointer(), stdx::element_aligned};
-    PixelSIMD planeB{planeBack->AsU32Pointer(), stdx::element_aligned};
+    SIMDNativePixel planeF{planeFront->AsU32Pointer(), stdx::element_aligned};
+    SIMDNativePixel planeB{planeBack->AsU32Pointer(), stdx::element_aligned};
 
     // transparent areas of an image simply give no contribution to the final display
     // - that is they are equivalent to black areas.
-    const PixelSIMD::mask_type maskF = (planeF & ALPHA_MASKK) == 0;
-    const PixelSIMD::mask_type maskB = (planeB & ALPHA_MASKK) == 0;
+    const SIMDNativePixel::mask_type maskF = (planeF & ALPHA_MASKK) == 0;
+    const SIMDNativePixel::mask_type maskB = (planeB & ALPHA_MASKK) == 0;
     stdx::where(maskF, planeF) = 0x00'10'10'10;
     stdx::where(maskB, planeB) = 0x00'10'10'10;
     stdx::where(maskF, icfF) = 63;
@@ -438,15 +434,15 @@ static constexpr void applyICFOverlaySIMDCast(Pixel* screen, const Pixel* planeF
     // icfF |= (icfF << 16) | (icfF << 8);
     // icfB |= (icfB << 16) | (icfB << 8);
 
-    SIMDU8 rgbF8 = std::bit_cast<SIMDU8>(planeF);
-    SIMDU8 rgbB8 = std::bit_cast<SIMDU8>(planeB);
-    SIMDU8 icfF8 = std::bit_cast<SIMDU8>(icfF);
-    SIMDU8 icfB8 = std::bit_cast<SIMDU8>(icfB);
+    const SIMDNativeU8 rgbF8 = std::bit_cast<SIMDNativeU8>(planeF);
+    const SIMDNativeU8 rgbB8 = std::bit_cast<SIMDNativeU8>(planeB);
+    const SIMDNativeU8 icfF8 = std::bit_cast<SIMDNativeU8>(icfF);
+    const SIMDNativeU8 icfB8 = std::bit_cast<SIMDNativeU8>(icfB);
 
-    FixedS16 rgbF16 = stdx::static_simd_cast<int16_t>(rgbF8);
-    FixedS16 rgbB16 = stdx::static_simd_cast<int16_t>(rgbB8);
-    FixedS16 icfF16 = stdx::static_simd_cast<int16_t>(icfF8);
-    FixedS16 icfB16 = stdx::static_simd_cast<int16_t>(icfB8);
+    SIMDFixedS16 rgbF16 = stdx::static_simd_cast<int16_t>(rgbF8);
+    SIMDFixedS16 rgbB16 = stdx::static_simd_cast<int16_t>(rgbB8);
+    SIMDFixedS16 icfF16 = stdx::static_simd_cast<int16_t>(icfF8);
+    SIMDFixedS16 icfB16 = stdx::static_simd_cast<int16_t>(icfB8);
 
     rgbF16 -= SIXTEENN;
     rgbB16 -= SIXTEENN;
@@ -463,10 +459,10 @@ static constexpr void applyICFOverlaySIMDCast(Pixel* screen, const Pixel* planeF
     rgbF16 += SIXTEENN;
     rgbB16 += SIXTEENN;
 
-    const PixelSIMD resultF{std::bit_cast<PixelSIMD>(stdx::static_simd_cast<SIMDU8>(rgbF16))};
-    const PixelSIMD resultB{std::bit_cast<PixelSIMD>(stdx::static_simd_cast<SIMDU8>(rgbB16))};
+    const SIMDNativePixel resultF{std::bit_cast<SIMDNativePixel>(stdx::static_simd_cast<SIMDNativeU8>(rgbF16))};
+    const SIMDNativePixel resultB{std::bit_cast<SIMDNativePixel>(stdx::static_simd_cast<SIMDNativeU8>(rgbB16))};
 
-    PixelSIMD result{resultF};
+    SIMDNativePixel result{resultF};
     stdx::where(maskF, result) = resultB;
     stdx::where(maskF && maskB, result) = backdrop;
 

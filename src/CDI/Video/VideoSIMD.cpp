@@ -1,4 +1,5 @@
 #include "VideoSIMD.hpp"
+#include "SIMD.hpp"
 #include "common/utils.hpp"
 
 #include <algorithm>
@@ -180,26 +181,25 @@ uint16_t decodeRunLengthLineSIMD(Pixel* dst, const uint8_t* data, uint16_t width
 uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
 {
     // TODO: ensure we do not index out of bound.
-    using SIMD8 = stdx::native_simd<uint8_t>;
-    using FIXED32 = stdx::fixed_size_simd<uint32_t, SIMD8::size()>;
+    using SIMDFixedU32 = stdx::fixed_size_simd<uint32_t, SIMDNativeU8::size()>;
 
     const uint8_t* endA = dataA + width;
 
-    static const SIMD8 alphaMask{0x80};
-    for(; dataA < endA; dataA += SIMD8::size())
+    static const SIMDNativeU8 alphaMask{0x80};
+    for(; dataA < endA; dataA += SIMDNativeU8::size())
     {
-        SIMD8 a{dataA, stdx::element_aligned};
-        SIMD8 b{dataB, stdx::element_aligned};
+        SIMDNativeU8 a{dataA, stdx::element_aligned};
+        SIMDNativeU8 b{dataB, stdx::element_aligned};
 
         // TODO: should I use simd_mask anyway?
-        SIMD8 alpha = (a & alphaMask);
-        SIMD8 red = a << 1 & 0xF8;
-        SIMD8 green = (a << 6) | (b >> 5 & 0x38);
-        SIMD8 blue = b << 3;
-        FIXED32 result = stdx::static_simd_cast<uint32_t>(alpha) << 24 |
-                         stdx::static_simd_cast<uint32_t>(red) << 16 |
-                         stdx::static_simd_cast<uint32_t>(green) << 8 |
-                         stdx::static_simd_cast<uint32_t>(blue);
+        SIMDNativeU8 alpha = (a & alphaMask);
+        SIMDNativeU8 red = a << 1 & 0xF8;
+        SIMDNativeU8 green = (a << 6) | (b >> 5 & 0x38);
+        SIMDNativeU8 blue = b << 3;
+        SIMDFixedU32 result = stdx::static_simd_cast<uint32_t>(alpha) << 24 |
+                              stdx::static_simd_cast<uint32_t>(red) << 16 |
+                              stdx::static_simd_cast<uint32_t>(green) << 8 |
+                              stdx::static_simd_cast<uint32_t>(blue);
 
         result.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
     };

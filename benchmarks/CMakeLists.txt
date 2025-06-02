@@ -7,5 +7,5 @@ add_executable(benchmarkRenderers benchmarkRenderers.cpp)
 target_link_libraries(benchmarkRenderers CeDImu)
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(benchmarkRenderers PUBLIC -Wall -Wextra -pedantic)
+    target_compile_options(benchmarkRenderers PUBLIC -Wall -Wextra -pedantic -march=native)
 endif()

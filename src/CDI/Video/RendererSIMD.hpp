@@ -2,15 +2,10 @@
 #define CDI_VIDEO_RENDERERSIMD_HPP
 
 #include "Renderer.hpp"
+#include "SIMD.hpp"
 #include "VideoSIMD.hpp"
 
 #include <array>
-
-#include <experimental/simd>
-namespace stdx = std::experimental; // remove when stable.
-#if __has_include(<simd>)
-#warning "SIMD is no longer experimental"
-#endif
 
 namespace Video
 {

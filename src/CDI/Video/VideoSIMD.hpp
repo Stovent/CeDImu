@@ -4,26 +4,11 @@
 #include "common/utils.hpp"
 #include "VideoCommon.hpp"
 
-#include <experimental/simd>
-namespace stdx = std::experimental;
-#if __cpp_lib_simd
-#warning "SIMD is no longer experimental"
-#endif
-
 #include <cstdint>
 #include <span>
 
 namespace Video
 {
-
-using PixelSIMD = stdx::native_simd<Pixel::ARGB32>;
-inline constexpr size_t SIMD_SIZE = PixelSIMD::size();
-
-/** \brief Increases the given size to be a multiple of SIMD width. */
-constexpr size_t SIMDAlign(const size_t size) noexcept
-{
-    return size + PixelSIMD::size() - (size % PixelSIMD::size());
-}
 
 // Display file decoders.
 uint16_t decodeBitmapLineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept;
