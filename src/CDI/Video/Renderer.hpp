@@ -147,14 +147,6 @@ public:
     std::array<bool, 2> m_holdEnabled{}; /**< Pixel Hold Enabled (overlay V.25). */
     std::array<uint8_t, 2> m_holdFactor{1, 1}; /**< Pixel Hold Factor (overlay V.25). */
 
-    // Transparency.
-    bool m_mix{true}; /**< true when mixing is enabled. */
-    std::array<uint8_t, 2> m_transparencyControl{};
-    std::array<uint32_t, 2> m_transparentColorRgb{}; /**< RGB data in the lowest 24 bits. */
-    std::array<uint32_t, 2> m_maskColorRgb{}; /**< RGB data in the lowest 24 bits. */
-
-    template<ImagePlane PLANE> constexpr void HandleTransparency(Pixel& pixel) noexcept;
-
     // Backdrop.
     uint8_t m_backdropColor : 4{}; /**< YRGB color code. */
     static Pixel backdropCursorColorToPixel(uint8_t color) noexcept;
@@ -170,6 +162,31 @@ public:
 
     // Image Contribution Factor.
     std::array<uint8_t, 2> m_icf{};
+    // TODO: ensure SIMD alignment
+    std::array<std::array<uint8_t, Plane::MAX_WIDTH>, 2> m_icfLine{}; /**< ICF for the whole line. */
+
+    // Transparency.
+    bool m_mix{true}; /**< true when mixing is enabled. */
+    std::array<uint8_t, 2> m_transparencyControl{};
+    std::array<uint32_t, 2> m_transparentColorRgb{}; /**< RGB data in the lowest 24 bits. */
+    std::array<uint32_t, 2> m_maskColorRgb{}; /**< RGB data in the lowest 24 bits. */
+
+    /** \brief The condition for transparency, excluding the boolean bit.
+     * Pixel is transparent if the mechanism is equal to the inverted bit 3.
+     */
+    enum class TransparentIf
+    {
+        AlwaysNever = 0b000,
+        ColorKey    = 0b001,
+        TransparencyBit = 0b010,
+        MatteFlag0  = 0b011,
+        MatteFlag1  = 0b100,
+        MatteFlag0OrColorKey = 0b101,
+        MatteFlag1OrColorKey = 0b110,
+    };
+
+    template<ImagePlane PLANE, TransparentIf TRANSPARENT, bool BOOL_FLAG>
+    constexpr void HandleTransparency(Pixel& pixel) noexcept;
 
     // Matte (Region of the MCD212).
     static constexpr size_t MATTE_NUM = 8; // Should never have to change.
@@ -179,6 +196,12 @@ public:
     std::array<uint8_t, 2> m_nextMatte{};
     constexpr void ResetMatte() noexcept;
     template<ImagePlane PLANE> constexpr void HandleMatte(uint16_t pos) noexcept;
+
+    void HandleMatteAndTransparency(uint16_t lineNumber) noexcept;
+    template<TransparentIf TRANSPARENCY_A, bool FLAG_A>
+    void HandleMatteAndTransparencyDispatchB(uint16_t lineNumber) noexcept;
+    template<TransparentIf TRANSPARENCY_A, bool FLAG_A, TransparentIf TRANSPARENCY_B, bool FLAG_B>
+    void HandleMatteAndTransparencyLoop(uint16_t lineNumber) noexcept;
 
     enum ControlProgramInstruction : uint8_t
     {
@@ -215,65 +238,6 @@ protected:
     /** \brief Masks the given color to the actually used bytes (V.5.7.2.2). */
     static constexpr uint32_t clutColorKey(const uint32_t color) { return color & 0x00FC'FCFCu; }
 };
-
-/** \brief Handles the transparency of the current pixel for each plane.
- * \param pixel The ARGB pixel.
- * TODO: do not compute colorKey if not CLUT.
- *
- * It seems that transparency control remains the same for the entire line.
- * Can we use this to remove the redundent switch on each loop?
- */
-template<Renderer::ImagePlane PLANE> constexpr void Renderer::HandleTransparency(Pixel& pixel) noexcept
-{
-    const bool boolean = !bit<3>(m_transparencyControl[PLANE]);
-    uint32_t color = static_cast<uint32_t>(pixel) & 0x00'FF'FF'FF;
-    color = clutColorKey(color | m_maskColorRgb[PLANE]);
-    const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]);
-
-    pixel.a = PIXEL_FULL_INTENSITY;
-
-    switch(bits<0, 2>(m_transparencyControl[PLANE]))
-    {
-    case 0b000: // Always/Never.
-        pixel.a = PIXEL_FULL_INTENSITY + boolean; // Branchless.
-        break;
-
-    case 0b001: // Color Key.
-        if(colorKey == boolean)
-            pixel.a = PIXEL_TRANSPARENT;
-        break;
-
-    case 0b010: // Transparent Bit.
-        // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
-        // TODO: disable if not RGB555.
-        if((pixel.a == PIXEL_FULL_INTENSITY) != boolean)
-            pixel.a = PIXEL_TRANSPARENT;
-        break;
-
-    case 0b011: // Matte Flag 0.
-        if(m_matteFlags[0] == boolean)
-            pixel.a = PIXEL_TRANSPARENT;
-        break;
-
-    case 0b100: // Matte Flag 1.
-        if(m_matteFlags[1] == boolean)
-            pixel.a = PIXEL_TRANSPARENT;
-        break;
-
-    case 0b101: // Matte Flag 0 or Color Key.
-        if(m_matteFlags[0] == boolean || colorKey == boolean)
-            pixel.a = PIXEL_TRANSPARENT;
-        break;
-
-    case 0b110: // Matte Flag 1 or Color Key.
-        if(m_matteFlags[1] == boolean || colorKey == boolean)
-            pixel.a = PIXEL_TRANSPARENT;
-        break;
-
-    default: // Reserved.
-        break;
-    }
-}
 
 /** \brief Called at the beginning of each line to reset the matte state.
  */

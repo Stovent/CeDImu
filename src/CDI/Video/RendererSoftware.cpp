@@ -169,22 +169,15 @@ void RendererSoftware::OverlayMix() noexcept
     Pixel* planeB = m_plane[B].GetLinePointer(m_lineNumber);
     const Pixel backdrop = *m_backdropPlane.GetLinePointer(m_lineNumber);
 
+    HandleMatteAndTransparency(m_lineNumber);
+
     for(uint16_t i = 0; i < m_plane[A].m_width; i++) // TODO: width[B].
     {
-        HandleMatte<A>(i);
-        HandleMatte<B>(i);
+        Pixel a = *planeA++;
+        Pixel b = *planeB++;
 
-        Pixel& pa = *planeA++;
-        Pixel& pb = *planeB++;
-
-        HandleTransparency<A>(pa);
-        HandleTransparency<B>(pb);
-
-        Pixel a = pa;
-        Pixel b = pb;
-
-        applyICF(a, m_icf[A]);
-        applyICF(b, m_icf[B]);
+        applyICF(a, m_icfLine[A][i]);
+        applyICF(b, m_icfLine[B][i]);
 
         Pixel fp, bp;
         if constexpr(PLANE_ORDER) // Plane B in front.

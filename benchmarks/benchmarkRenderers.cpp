@@ -4,6 +4,7 @@
 #include <array>
 #include <chrono>
 #include <print>
+#include <string_view>
 
 static constexpr size_t WIDTH = 384;
 static constexpr size_t HEIGHT = 280;
@@ -15,7 +16,7 @@ static constexpr std::array<uint8_t, WIDTH> LINEA{};
 static constexpr std::array<uint8_t, WIDTH> LINEB{};
 
 template<typename RENDERER>
-static void benchmarkRenderer()
+static void benchmarkRenderer(std::string_view name)
 {
     // Configure the renderer.
     RENDERER renderer;
@@ -38,6 +39,7 @@ static void benchmarkRenderer()
     const std::chrono::high_resolution_clock::time_point finish = std::chrono::high_resolution_clock::now();
     const std::chrono::nanoseconds delta = finish - start;
 
+    std::print("{} ", name);
     std::println("{}  {}  {}/f  {}",
         delta,
         std::chrono::duration_cast<std::chrono::microseconds>(delta),
@@ -48,6 +50,6 @@ static void benchmarkRenderer()
 
 int main()
 {
-    benchmarkRenderer<Video::RendererSoftware>();
-    benchmarkRenderer<Video::RendererSIMD>();
+    benchmarkRenderer<Video::RendererSoftware>("Soft");
+    benchmarkRenderer<Video::RendererSIMD>("SIMD");
 }

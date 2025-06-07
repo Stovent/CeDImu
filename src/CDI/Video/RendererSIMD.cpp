@@ -85,7 +85,7 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
 {
     if(m_codingMethod[PLANE] == ImageCodingMethod::OFF)
     {
-        std::fill_n(std::execution::unseq, m_planeLine[PLANE].begin(), m_plane[PLANE].m_width, 0);
+        std::fill_n(std::execution::unseq, m_plane[PLANE].GetLinePointer(m_lineNumber), m_plane[PLANE].m_width, 0);
         return 0;
     }
 
@@ -100,10 +100,10 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
     switch(m_imageType[PLANE])
     {
     case ImageType::Normal:
-        return decodeBitmapLineSIMD(m_planeLine[PLANE].data(), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
+        return decodeBitmapLineSIMD(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
 
     case ImageType::RunLength:
-        return decodeRunLengthLineSIMD(m_planeLine[PLANE].data(), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
+        return decodeRunLengthLineSIMD(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
 
     case ImageType::Mosaic:
         panic("Unsupported type Mosaic");
@@ -167,19 +167,7 @@ void RendererSIMD::DrawCursor() noexcept
 template<bool MIX, bool PLANE_ORDER>
 void RendererSIMD::OverlayMix() noexcept
 {
-    Pixel* planeA = m_planeLine[A].data();
-    Pixel* planeB = m_planeLine[B].data();
-
-    for(uint16_t i = 0; i < m_plane[A].m_width; ++i) // TODO: width[B].
-    {
-        HandleMatte<A>(i);
-        HandleMatte<B>(i);
-        // These two lines below adds a little noticable delay.
-        m_icfLine[A][i] = m_icf[A];
-        m_icfLine[B][i] = m_icf[B];
-        HandleTransparency<A>(*planeA++);
-        HandleTransparency<B>(*planeB++);
-    }
+    HandleMatteAndTransparency(m_lineNumber);
 
     HandleOverlayMixSIMD<MIX, PLANE_ORDER>();
 }
@@ -483,15 +471,15 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
     const uint8_t* icfBack;
     if constexpr(PLANE_ORDER)
     {
-        planeFront = m_planeLine[B].data();
-        planeBack = m_planeLine[A].data();
+        planeFront = m_plane[B].GetLinePointer(m_lineNumber);
+        planeBack = m_plane[A].GetLinePointer(m_lineNumber);
         icfFront = m_icfLine[B].data();
         icfBack = m_icfLine[A].data();
     }
     else
     {
-        planeFront = m_planeLine[A].data();
-        planeBack = m_planeLine[B].data();
+        planeFront = m_plane[A].GetLinePointer(m_lineNumber);
+        planeBack = m_plane[B].GetLinePointer(m_lineNumber);
         icfFront = m_icfLine[A].data();
         icfBack = m_icfLine[B].data();
     }
@@ -503,8 +491,8 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
             applyICFMixSIMDCast(screen, planeFront, planeBack, icfFront, icfBack);
             // applyICFMixSIMDShift(screen, planeFront, planeBack, icfFront, icfBack);
         else // Overlay.
-            // applyICFOverlaySIMDCast(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
-            applyICFOverlaySIMDShift(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
+            applyICFOverlaySIMDCast(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
+            // applyICFOverlaySIMDShift(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
     }
 }
 

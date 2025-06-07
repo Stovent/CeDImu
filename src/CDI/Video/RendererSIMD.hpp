@@ -25,9 +25,6 @@ class RendererSIMD final : public Renderer
 public:
     /** \brief Makes sure the dst buffer in aligned with std::simd::size(), as its written to in chunks of this size. */
     static constexpr size_t SIMD_LINE_WIDTH = SIMDAlign(Plane::MAX_WIDTH);
-    std::array<std::array<Pixel, SIMD_LINE_WIDTH>, 2> m_planeLine{};
-
-    std::array<std::array<uint8_t, SIMD_LINE_WIDTH>, 2> m_icfLine{};
 
     RendererSIMD() {}
     virtual ~RendererSIMD() noexcept {}

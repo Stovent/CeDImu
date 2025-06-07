@@ -201,6 +201,7 @@ uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, uint16_t width, co
  * \param width Width of the line in pixels.
  * \return The number of raw bytes read from each data source.
  * \attention \p dst, \p dataA and \p dataB are written/read in chunks of std::simd::size(). Make sure the buffers can be read and written beyond the actual line length.
+ * The transparency bit is set in the alpha byte (0xFF when the bit is 1, 0 otherwise).
  */
 uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
 {
