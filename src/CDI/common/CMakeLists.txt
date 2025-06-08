@@ -1,7 +1,5 @@
 target_sources(CeDImu
     PRIVATE
-        Audio.cpp
-        Audio.hpp
         Callbacks.cpp
         Callbacks.hpp
         CycleCounter.cpp

@@ -26,6 +26,8 @@ option(LIBCEDIMU_ENABLE_ASAN "Add address sanitizer options" OFF)
 message("libCeDImu sanitize: " ${LIBCEDIMU_ENABLE_ASAN})
 
 add_library(CeDImu ${LIBRARY_TYPE}
+    Audio.cpp
+    Audio.hpp
     CDI.cpp
     CDI.hpp
     CDIConfig.hpp

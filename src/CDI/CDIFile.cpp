@@ -1,6 +1,6 @@
 #include "CDIFile.hpp"
+#include "Audio.hpp"
 #include "CDIDisc.hpp"
-#include "common/Audio.hpp"
 #include "common/utils.hpp"
 
 #include <array>
