@@ -8,6 +8,7 @@
 /** \brief Software implementation of the Green Book, with the memory map of a Mono3 board.
  *
  * TODO:
+ * - For GUI this should be a checkbox until SoftCDI is capable of running without an existing system ROM.
  * - Have a custom NVRAM size? Or force 32Kb?
  */
 class SoftCDI : public CDI
