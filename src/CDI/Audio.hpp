@@ -1,5 +1,5 @@
-#ifndef CDI_COMMON_AUDIO_HPP
-#define CDI_COMMON_AUDIO_HPP
+#ifndef CDI_AUDIO_HPP
+#define CDI_AUDIO_HPP
 
 #include <cstdint>
 #include <fstream>
@@ -30,4 +30,4 @@ void writeWAV(const std::string& basename, std::vector<int16_t>& left, std::vect
 
 } // namespace Audio
 
-#endif // CDI_COMMON_AUDIO_HPP
+#endif // CDI_AUDIO_HPP
