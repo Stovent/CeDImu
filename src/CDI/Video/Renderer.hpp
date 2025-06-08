@@ -122,7 +122,6 @@ public:
     // TODO: organize and order the members correctly.
 
     Plane m_screen{384, 280};
-    // Plane m_screen{384, 280, SIMDAlign(Plane::RGB_MAX_SIZE)}; // align for SIMD test.
     std::array<Plane, 2> m_plane{Plane{384, 280}, Plane{384, 280}};
     Plane m_backdropPlane{1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT};
     Plane m_cursorPlane{Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_SIZE}; /**< The alpha is 0, 127 or 255. */
@@ -162,7 +161,6 @@ public:
 
     // Image Contribution Factor.
     std::array<uint8_t, 2> m_icf{};
-    // TODO: ensure SIMD alignment
     std::array<std::array<uint8_t, Plane::MAX_WIDTH>, 2> m_icfLine{}; /**< ICF for the whole line. */
 
     // Transparency.
@@ -240,10 +238,16 @@ protected:
 };
 
 /** \brief Called at the beginning of each line to reset the matte state.
+ *
+ * TODO: how does ICF behave after the frame?
+ * - is it reset to m_icf[A/B] on each line?
+ * - does it keep the latest value for all the next line? (so m_icfLine[A/B].fill(m_icfLine[A/B][last]);)
  */
 constexpr void Renderer::ResetMatte() noexcept
 {
     m_matteFlags.fill(false);
+    // m_icfLine[A].fill(0);
+    // m_icfLine[B].fill(0);
 
     if(!m_matteNumber) // One matte.
     {

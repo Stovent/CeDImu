@@ -24,24 +24,6 @@ using SIMDNativeU8 = stdx::native_simd<uint8_t>;
 using SIMDNativeS16 = stdx::native_simd<int16_t>;
 using SIMDFixedS16 = stdx::fixed_size_simd<int16_t, SIMDNativeS16::size() * sizeof(SIMDNativeS16::value_type)>;
 
-/** \brief Types common to the cast algorithm of RendererSIMD. */
-struct NativeCast
-{
-    using ValueType = Pixel::ARGB32;
-    using PixelSIMD = stdx::native_simd<ValueType>;
-    using PixelSIMDU8 = SIMDNativeU8;
-};
-
-/** \brief Types common to the cast algorithm of RendererSIMD. */
-template<size_t WIDTH>
-struct FixedCast
-{
-    using ValueType = Pixel::ARGB32;
-    using PixelSIMD = stdx::fixed_size_simd<ValueType, WIDTH>;
-    using PixelSIMDU8 = stdx::fixed_size_simd<uint8_t, WIDTH * 4>;
-};
-
-
 inline constexpr size_t SIMD_SIZE = SIMDNativePixel::size();
 
 /** \brief Gives the number of elements that cannot be processed by a native-width SIMD.
