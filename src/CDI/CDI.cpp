@@ -85,11 +85,6 @@ CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDID
     , m_disc(std::move(disc))
     , m_callbacks(std::move(callbacks))
     , m_cpu(*this, m_config.PAL ? SCC68070::PAL_FREQUENCY : SCC68070::NTSC_FREQUENCY)
-    , m_slave()
-    , m_timekeeper()
-    , m_schedulerThread()
-    , m_loop(false)
-    , m_isRunning(false)
     , m_speedDelay(m_cpu.cycleDelay)
 {
 }
@@ -114,14 +109,14 @@ void CDI::Run(const bool loop)
 {
     if(!m_isRunning)
     {
-        if(m_schedulerThread.joinable())
-            m_schedulerThread.join();
-
-        this->m_loop = loop;
         if(loop)
-            m_schedulerThread = std::thread(&CDI::Scheduler, this);
+            m_schedulerThread = std::jthread(std::bind_front(&CDI::Scheduler, this));
         else
-            Scheduler();
+        {
+            std::stop_source stopSource{};
+            stopSource.request_stop();
+            Scheduler(stopSource.get_token());
+        }
     }
 }
 
@@ -133,7 +128,7 @@ void CDI::Run(const bool loop)
  */
 void CDI::Stop(const bool wait)
 {
-    m_loop = false;
+    m_schedulerThread.request_stop();
     if(m_schedulerThread.joinable())
     {
         if(wait)
