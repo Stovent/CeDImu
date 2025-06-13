@@ -28,8 +28,8 @@ public:
     Callbacks m_callbacks; /**< The user callbacks. */
 
     SCC68070 m_cpu; /**< The main CPU. */
-    std::unique_ptr<ISlave> m_slave; /**< The slave processor. */
-    std::unique_ptr<IRTC> m_timekeeper; /**< The NVRAM chip. */
+    std::unique_ptr<ISlave> m_slave{}; /**< The slave processor. */
+    std::unique_ptr<IRTC> m_timekeeper{}; /**< The NVRAM chip. */
 
     static std::unique_ptr<CDI> NewCDI(Boards board, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
     static std::unique_ptr<CDI> NewMono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
@@ -81,7 +81,7 @@ protected:
     CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());
 
     /** \brief Runs in a thread and schedule all the components. */
-    virtual void Scheduler() = 0;
+    virtual void Scheduler(std::stop_token stopToken) = 0;
     virtual void IncrementTime(double ns);
 
     virtual void Reset(bool resetCPU) = 0;
@@ -94,9 +94,8 @@ protected:
     virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags) = 0;
     virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags) = 0;
 
-    std::thread m_schedulerThread;
-    std::atomic_bool m_loop; /**< Used by the scheduler to know when to stop executing. */
-    std::atomic_bool m_isRunning; /**< Set by the scheduler to tell if it's running. */
+    std::jthread m_schedulerThread{};
+    std::atomic_bool m_isRunning{false}; /**< Set by the scheduler to tell if it's running. */
     double m_speedDelay; // used for emulation speed.
 };
 

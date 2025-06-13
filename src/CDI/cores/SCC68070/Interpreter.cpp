@@ -17,7 +17,7 @@ SCC68070::InterpreterResult SCC68070::SingleStep(const size_t stopCycles)
 {
     InterpreterResult res = SingleStepException(stopCycles);
 
-    if(holds_alternative<Exception>(res.second))
+    if(std::holds_alternative<Exception>(res.second))
         PushException(std::get<Exception>(res.second));
 
     return res;
@@ -88,44 +88,44 @@ SCC68070::InterpreterResult SCC68070::SingleStepException(const size_t stopCycle
  */
 size_t SCC68070::ProcessPendingExceptions()
 {
+    if(m_exceptions.empty())
+        return 0;
+
     size_t executionCycles = 0;
 
-    if(!m_exceptions.empty())
+    std::priority_queue<Exception> unprocessedExceptions; // Used to store the interrupts that can't be processed because their priority is too low.
+
+    while(m_exceptions.size())
     {
-        std::priority_queue<Exception> unprocessedExceptions; // Used to store the interrupts that can't be processed because their priority is too low.
+        const Exception ex = m_exceptions.top();
+        m_exceptions.pop();
 
-        while(m_exceptions.size())
+        if((ex.vector >= Level1ExternalInterruptAutovector && ex.vector <= Level7ExternalInterruptAutovector) ||
+            (ex.vector >= Level1OnChipInterruptAutovector && ex.vector <= Level7OnChipInterruptAutovector))
         {
-            const Exception ex = m_exceptions.top();
-            m_exceptions.pop();
-
-            if((ex.vector >= Level1ExternalInterruptAutovector && ex.vector <= Level7ExternalInterruptAutovector) ||
-               (ex.vector >= Level1OnChipInterruptAutovector && ex.vector <= Level7OnChipInterruptAutovector))
+            const uint8_t level = ex.vector & 0x7;
+            if(level != 7 && level <= GetIPM())
             {
-                const uint8_t level = ex.vector & 0x7;
-                if(level != 7 && level <= GetIPM())
-                {
-                    unprocessedExceptions.push(ex);
-                    continue;
-                }
+                unprocessedExceptions.push(ex);
+                continue;
             }
-
-            if(m_cdi.m_callbacks.HasOnLogException())
-            {
-                const uint32_t returnAddress = ex.vector == 32 || ex.vector == 45 || ex.vector == 47 ? PC + 2 : PC;
-                const OS9::SystemCallType syscallType = OS9::SystemCallType(ex.vector == Trap0Instruction ? ex.data : -1);
-                const std::string inputs = ex.vector == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->m_cdi.GetPointer(addr); }) : "";
-                const OS9::SystemCall syscall{syscallType, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), inputs, ""};
-                m_cdi.m_callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
-            }
-//             DumpCPURegisters();
-            executionCycles += ProcessException(ex.vector);
         }
-        while(unprocessedExceptions.size())
+
+        if(m_cdi.m_callbacks.HasOnLogException())
         {
-            m_exceptions.push(unprocessedExceptions.top());
-            unprocessedExceptions.pop();
+            const uint32_t returnAddress = ex.vector == 32 || ex.vector == 45 || ex.vector == 47 ? PC + 2 : PC;
+            const OS9::SystemCallType syscallType = OS9::SystemCallType(ex.vector == Trap0Instruction ? ex.data : -1);
+            const std::string inputs = ex.vector == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->m_cdi.GetPointer(addr); }) : "";
+            const OS9::SystemCall syscall{syscallType, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), inputs, ""};
+            m_cdi.m_callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
         }
+//        DumpCPURegisters();
+        executionCycles += ProcessException(ex.vector);
+    }
+    while(unprocessedExceptions.size())
+    {
+        m_exceptions.push(unprocessedExceptions.top());
+        unprocessedExceptions.pop();
     }
 
     return executionCycles;

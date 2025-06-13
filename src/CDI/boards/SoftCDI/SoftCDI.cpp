@@ -100,7 +100,7 @@ SoftCDI::~SoftCDI()
     Stop(true);
 }
 
-void SoftCDI::Scheduler()
+void SoftCDI::Scheduler(const std::stop_token stopToken)
 {
     m_isRunning = true;
     std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
@@ -135,7 +135,7 @@ void SoftCDI::Scheduler()
         {
             break;
         }
-    } while(m_loop);
+    } while(!stopToken.stop_requested());
 
     m_isRunning = false;
 }
