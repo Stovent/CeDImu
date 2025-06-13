@@ -25,7 +25,7 @@ public:
     SoftCDI(SoftCDI&&) = delete;
     SoftCDI& operator=(SoftCDI&&) = delete;
 
-    virtual void Scheduler() override;
+    virtual void Scheduler(std::stop_token stopToken) override;
 
     virtual void Reset(const bool resetCPU) override;
     virtual uint32_t GetBIOSBaseAddress() const override;
