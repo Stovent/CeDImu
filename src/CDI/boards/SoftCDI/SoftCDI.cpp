@@ -103,7 +103,6 @@ SoftCDI::~SoftCDI()
 void SoftCDI::Scheduler(const std::stop_token stopToken)
 {
     m_isRunning = true;
-    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
 
     do
     {
@@ -111,9 +110,6 @@ void SoftCDI::Scheduler(const std::stop_token stopToken)
 
         const double ns = res.first * m_cpu.cycleDelay;
         CDI::IncrementTime(ns);
-
-        start += std::chrono::duration<double, std::nano>(res.first * m_speedDelay);
-        std::this_thread::sleep_until(start);
 
         if(std::holds_alternative<SCC68070::Exception>(res.second))
         {

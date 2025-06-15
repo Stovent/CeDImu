@@ -28,7 +28,6 @@ public:
     virtual void Scheduler(std::stop_token stopToken) override;
 
     virtual void Reset(const bool resetCPU) override;
-    virtual uint32_t GetBIOSBaseAddress() const override;
 
     virtual uint8_t  PeekByte(uint32_t addr) const noexcept override;
     virtual uint16_t PeekWord(uint32_t addr) const noexcept override;
@@ -48,6 +47,7 @@ public:
 
     virtual uint32_t GetTotalFrameCount() override;
     virtual const OS9::BIOS& GetBIOS() const override;
+    virtual uint32_t GetBIOSBaseAddress() const override;
 
     virtual std::vector<InternalRegister> GetVDSCInternalRegisters() override;
     virtual std::vector<InternalRegister> GetVDSCControlRegisters() override;
