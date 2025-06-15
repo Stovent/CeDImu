@@ -26,7 +26,6 @@ Mono3::~Mono3() noexcept
 void Mono3::Scheduler(const std::stop_token stopToken)
 {
     m_isRunning = true;
-    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
 
     do
     {
@@ -37,9 +36,6 @@ void Mono3::Scheduler(const std::stop_token stopToken)
         CDI::IncrementTime(ns);
         m_mcd212.IncrementTime(ns);
         m_ciap.IncrementTime(ns);
-
-        start += std::chrono::duration<double, std::nano>(cycles * m_speedDelay);
-        std::this_thread::sleep_until(start);
     } while(!stopToken.stop_requested());
 
     m_isRunning = false;

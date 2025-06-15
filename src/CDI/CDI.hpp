@@ -47,7 +47,6 @@ public:
 
     void Run(bool loop = true);
     void Stop(bool wait = true);
-    void SetEmulationSpeed(double speed);
     bool IsRunning() const { return m_isRunning; }
 
     virtual uint8_t  PeekByte(uint32_t addr) const noexcept = 0;
@@ -63,6 +62,8 @@ public:
      */
     virtual const uint8_t* GetPointer(uint32_t addr) const;
 
+    /** \brief Returns the number of frames per second the system displays. */
+    virtual uint8_t GetFrameRate() const noexcept { return m_config.PAL ? 50 : 60; }
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
     virtual uint32_t GetBIOSBaseAddress() const = 0;
@@ -96,7 +97,6 @@ protected:
 
     std::jthread m_schedulerThread{};
     std::atomic_bool m_isRunning{false}; /**< Set by the scheduler to tell if it's running. */
-    double m_speedDelay; // used for emulation speed.
 };
 
 #endif // CDI_CDI_HPP

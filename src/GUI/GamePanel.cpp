@@ -8,20 +8,51 @@
 
 #include <wx/dcclient.h>
 
+#if _WIN32
+#include <windows.h>
+#endif
+
+#include <thread>
+
 wxBEGIN_EVENT_TABLE(GamePanel, wxPanel)
     EVT_PAINT(GamePanel::OnPaintEvent)
     EVT_KEY_DOWN(GamePanel::OnKeyDown)
     EVT_KEY_UP(GamePanel::OnKeyUp)
 wxEND_EVENT_TABLE()
 
+// /** \brief Spin-loop sleep for accurate timing.
+//  * High CPU usage (thread always at 100%), looses ~5% max speed perfs.
+//  */
+// template<typename CLOCK, typename TIME_POINT = CLOCK::time_point>
+// [[maybe_unused]]
+// static void sleepUntilSpin(const TIME_POINT& target)
+// {
+//     while(CLOCK::now() < target);
+// }
+
+// /** \brief More accurate sleep function on Windows.
+//  * Slight loss of max speed performances.
+//  */
+// template<typename CLOCK, typename TIME_POINT = CLOCK::time_point>
+// static void sleepUntil(const TIME_POINT& target)
+// {
+// #if _WIN32
+//     while(CLOCK::now() < target)
+//         Sleep(1);
+// #else
+//     std::this_thread::sleep_until(target);
+// #endif
+// }
+
 GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu)
     : wxPanel(parent)
     , m_mainFrame(parent)
     , m_cedimu(cedimu)
-    , m_screen(0, 0)
-    , m_stopOnNextFrame(false)
 {
     SetDoubleBuffered(true);
+#if _WIN32
+    timeBeginPeriod(1); // Request 1ms sleep granularity
+#endif
 
     m_cedimu.SetOnFrameCompleted([this] (const Video::Plane& plane) {
         if(m_mainFrame->m_cpuViewer != nullptr)
@@ -36,11 +67,30 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu)
             this->m_mainFrame->m_pauseMenuItem->Check();
         }
 
-        std::lock_guard<std::mutex> __(this->m_screenMutex);
-        if(this->m_screen.Create(plane.m_width, plane.m_height))
         {
-            splitARGB(plane.GetSpan(), nullptr, this->m_screen.GetData());
-            this->Refresh();
+            std::lock_guard<std::mutex> __(this->m_screenMutex);
+            if(this->m_screen.Create(plane.m_width, plane.m_height))
+            {
+                splitARGB(plane.GetSpan(), nullptr, this->m_screen.GetData());
+                this->Refresh();
+            }
+        }
+
+        // Pause for emulation speed.
+        const Duration delta{this->m_cedimu.GetEmulationSpeedFrameDelay()};
+        const TimePoint target = m_lastFrame + delta;
+        const TimePoint now = Clock::now();
+
+        if(target <= now) // Emulation is faster than UI rendering.
+        {
+            m_lastFrame = now;
+        }
+        else
+        {
+            m_lastFrame = target;
+            std::this_thread::sleep_until(target);
+            // sleepUntilSpin<Clock>(target);
+            // sleepUntil<Clock>(target);
         }
     });
 }
@@ -48,6 +98,9 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu)
 GamePanel::~GamePanel()
 {
     m_cedimu.SetOnFrameCompleted(nullptr);
+#if _WIN32
+    timeEndPeriod(1);
+#endif
 }
 
 void GamePanel::Reset()

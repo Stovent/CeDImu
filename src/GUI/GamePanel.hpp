@@ -8,16 +8,22 @@ class MainFrame;
 #include <wx/dc.h>
 #include <wx/panel.h>
 
+#include <chrono>
 #include <mutex>
 
 class GamePanel : public wxPanel
 {
 public:
+    using Clock = std::chrono::high_resolution_clock;
+    using Duration = Clock::duration;
+    using TimePoint = Clock::time_point;
+
     MainFrame* m_mainFrame;
     CeDImu& m_cedimu;
     std::mutex m_screenMutex;
-    wxImage m_screen;
-    bool m_stopOnNextFrame;
+    wxImage m_screen{0, 0};
+    bool m_stopOnNextFrame{false};
+    TimePoint m_lastFrame{};
 
     GamePanel() = delete;
     GamePanel(MainFrame* parent, CeDImu& cedimu);
