@@ -10,7 +10,8 @@
 #include <fstream>
 #include <mutex>
 
-extern const float CPU_SPEEDS[];
+extern const double CPU_SPEEDS[];
+extern const uint64_t SPEED_NUMERATORS[];
 
 class CeDImu : public wxApp
 {
@@ -19,6 +20,7 @@ public:
     std::unique_ptr<CDI> m_cdi;
     CDIDisc m_disc;
     uint16_t m_cpuSpeed;
+    double m_emuSpeedDelay{0.0}; /**< Delta in nanoseconds between two frames for emulation speed. */
     Callbacks m_callbacks;
 
     std::string m_biosName;
@@ -37,6 +39,11 @@ public:
 
     void StartEmulation();
     void StopEmulation();
+    /** \brief Returns the delay between two frames to match the emulation speed.
+     * \returns The delay in nanoseconds.
+     * Emulation speed is not clocking the emulated cores, it simply runs the system faster or slower than real time.
+     */
+    uint64_t GetEmulationSpeedFrameDelay() const noexcept { return SPEED_NUMERATORS[m_cpuSpeed] / m_cdi->GetFrameRate(); }
     void IncreaseEmulationSpeed();
     void DecreaseEmulationSpeed();
 

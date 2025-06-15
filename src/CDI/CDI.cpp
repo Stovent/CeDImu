@@ -85,7 +85,6 @@ CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDID
     , m_disc(std::move(disc))
     , m_callbacks(std::move(callbacks))
     , m_cpu(*this, m_config.PAL ? SCC68070::PAL_FREQUENCY : SCC68070::NTSC_FREQUENCY)
-    , m_speedDelay(m_cpu.cycleDelay)
 {
 }
 
@@ -136,19 +135,6 @@ void CDI::Stop(const bool wait)
         else
             m_schedulerThread.detach();
     }
-}
-
-/** \brief Set the CPU emulated speed.
- *
- * \param speed The speed multiplier based on the clock frequency used in the constructor.
- *
- * This method only changes the emulation speed, not the clock frequency.
- * A multiplier of 2 will make the CPU runs twice as fast, the GPU to run at twice the framerate,
- * the timekeeper to increment twice as fast, etc.
- */
-void CDI::SetEmulationSpeed(const double speed)
-{
-    m_speedDelay = m_cpu.cycleDelay / speed;
 }
 
 /** \brief Returns a pointer to the given address.

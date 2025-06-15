@@ -13,11 +13,11 @@
 #include <memory>
 #include <span>
 
-constexpr float CPU_SPEEDS[] = {
-    0.01,
-    0.03,
-    0.06,
-    0.12,
+constexpr double CPU_SPEEDS[] = {
+    0.015625,
+    0.03125,
+    0.0625,
+    0.125,
     0.25,
     0.33,
     0.5,
@@ -27,11 +27,34 @@ constexpr float CPU_SPEEDS[] = {
     2,
     3,
     4,
+    6,
     8,
     16,
     32,
     64,
 };
+
+constexpr uint64_t SPEED_NUMERATORS[] = {
+    64'000'000'000,
+    32'000'000'000,
+    16'000'000'000,
+     8'000'000'000,
+     4'000'000'000,
+     3'000'000'000,
+     2'000'000'000,
+     1'333'333'333,
+     1'000'000'000,
+       666'666'666,
+       500'000'000,
+       333'333'333,
+       250'000'000,
+       166'666'666,
+       125'000'000,
+        62'500'000,
+        31'250'000,
+        15'625'000,
+};
+static_assert(sizeof(CPU_SPEEDS) == sizeof(SPEED_NUMERATORS));
 
 static constexpr int DEFAULT_CPU_SPEED = 8;
 static constexpr int MAX_CPU_SPEED = sizeof CPU_SPEEDS / sizeof *CPU_SPEEDS - 1;
@@ -131,7 +154,6 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     if(!m_cdi)
         return false;
 
-    m_cdi->SetEmulationSpeed(CPU_SPEEDS[m_cpuSpeed]);
     return true;
 }
 
@@ -175,21 +197,13 @@ void CeDImu::StopEmulation()
 void CeDImu::IncreaseEmulationSpeed()
 {
     if(m_cpuSpeed < MAX_CPU_SPEED)
-    {
-        std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
-        if(m_cdi)
-            m_cdi->SetEmulationSpeed(CPU_SPEEDS[++m_cpuSpeed]);
-    }
+        ++m_cpuSpeed;
 }
 
 void CeDImu::DecreaseEmulationSpeed()
 {
     if(m_cpuSpeed > 0)
-    {
-        std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
-        if(m_cdi)
-            m_cdi->SetEmulationSpeed(CPU_SPEEDS[--m_cpuSpeed]);
-    }
+        --m_cpuSpeed;
 }
 
 void CeDImu::WriteInstruction(const LogInstruction& inst)
