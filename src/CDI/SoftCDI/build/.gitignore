@@ -1,3 +1,5 @@
-*.R
+*
 
 !.gitignore
+!CIAPDRIV
+!SYSGO
