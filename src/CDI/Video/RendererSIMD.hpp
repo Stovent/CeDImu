@@ -3,7 +3,7 @@
 
 #include "Renderer.hpp"
 #include "SIMD.hpp"
-#include "VideoSIMD.hpp"
+#include "VideoDecodersSIMD.hpp"
 
 #include <array>
 

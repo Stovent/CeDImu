@@ -99,12 +99,13 @@ public:
     bool ExecuteDCPInstruction(uint32_t instruction) noexcept;
 
     void SetDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
+    static bool isValidDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
     static std::pair<size_t, size_t> getPixelResolution(DisplayFormat display, Resolution resolution) noexcept;
 
     void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
     static bool isValidWidth(uint16_t width) noexcept;
     static bool isValidHeight(uint16_t height) noexcept;
-    static bool validateResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
+    static bool isValidPixelResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
 
     void SetCursorEnabled(bool enabled) noexcept;
     void SetCursorResolution(bool doubleResolution) noexcept;

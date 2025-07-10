@@ -33,12 +33,6 @@ template<size_t WIDTH>
 struct SIMDReminder : std::integral_constant<size_t, WIDTH % SIMD_SIZE>
 {};
 
-/** \brief Increases the given size to be a multiple of SIMD width. */
-constexpr size_t SIMDAlign(const size_t size) noexcept
-{
-    return size + SIMD_SIZE - (size % SIMD_SIZE);
-}
-
 } // namespace Video
 
 #endif // CDI_VIDEO_SIMD_HPP

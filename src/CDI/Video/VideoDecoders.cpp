@@ -34,8 +34,8 @@ public:
     using pointer = value_type*;
     using iterator_category  = std::forward_iterator_tag;
 
-    constexpr CountingIterator() : m_count{0} {}
-    constexpr explicit CountingIterator(const value_type& min) : m_count{min} {}
+    constexpr CountingIterator() noexcept : m_count{0} {}
+    constexpr explicit CountingIterator(const value_type& min) noexcept : m_count{min} {}
 
     constexpr CountingIterator(const CountingIterator& other) noexcept = default;
     constexpr CountingIterator& operator=(const CountingIterator& other) noexcept = default;
@@ -296,7 +296,7 @@ static constexpr void matrixRGB(Pixel* pixel, const int Y, const uint8_t U, cons
  * \param pixel The pixel to decode.
  * \param previous The previous pixel colors.
  *
- * TODO: U32 with original algorithm https://github.com/Stovent/CeDImu/commit/22464aacb5c2590886b98176183e6c2e240835e0
+ * Pixel with original algorithm https://github.com/Stovent/CeDImu/commit/22464aacb5c2590886b98176183e6c2e240835e0
  */
 void decodeDYUV(Pixel* dst, const uint16_t pixel, uint32_t& previous) noexcept
 {

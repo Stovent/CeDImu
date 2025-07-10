@@ -18,7 +18,7 @@ if(LIBCEDIMU_ENABLE_RENDERERSIMD)
             RendererSIMD.cpp
             RendererSIMD.hpp
             SIMD.hpp
-            VideoSIMD.cpp
-            VideoSIMD.hpp
+            VideoDecodersSIMD.cpp
+            VideoDecodersSIMD.hpp
     )
 endif()

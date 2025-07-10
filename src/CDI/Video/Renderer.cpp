@@ -10,13 +10,17 @@ namespace Video
  */
 void Renderer::SetDisplayResolution(DisplayFormat display, Resolution resolution) noexcept
 {
-    if((display != DisplayFormat::NTSCMonitor && display != DisplayFormat::NTSCTV && display != DisplayFormat::PAL) &&
-       (resolution != Resolution::Normal && resolution != Resolution::Double && resolution != Resolution::High)
-    )
+    if(!isValidDisplayResolution(display, resolution))
         panic("Invalid display resolution");
 
     const std::pair<size_t, size_t> sizes = getPixelResolution(display, resolution);
     SetPlanesResolutions(sizes.first, sizes.first, sizes.second);
+}
+
+bool Renderer::isValidDisplayResolution(DisplayFormat display, Resolution resolution) noexcept
+{
+    return (display == DisplayFormat::NTSCMonitor || display == DisplayFormat::NTSCTV || display == DisplayFormat::PAL)
+        && (resolution == Resolution::Normal || resolution == Resolution::Double || resolution == Resolution::High);
 }
 
 /** \brief Returns the `<width, height>` in pixels of the given display resolution combination.
@@ -70,7 +74,7 @@ std::pair<size_t, size_t> Renderer::getPixelResolution(DisplayFormat display, Re
  */
 void Renderer::SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
 {
-    if(!validateResolution(widthA, widthB, height))
+    if(!isValidPixelResolution(widthA, widthB, height))
         panic("Invalid resolution combination: {} {} {}", widthA, widthB, height);
 
     m_plane[A].m_width = m_screen.m_width = widthA;
@@ -88,7 +92,7 @@ bool Renderer::isValidHeight(uint16_t height) noexcept
     return (height == 240 || height == 280 || height == 480 || height == 560);
 }
 
-bool Renderer::validateResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
+bool Renderer::isValidPixelResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
 {
     return isValidWidth(widthA) && isValidWidth(widthB) && isValidHeight(height);
 }

@@ -12,8 +12,8 @@
 
 #include "../common/panic.hpp"
 #include "../common/utils.hpp"
-#include "VideoSIMD.hpp"
 #include "VideoDecoders.hpp"
+#include "VideoDecodersSIMD.hpp"
 
 #include <bit>
 #include <cstring>
@@ -104,7 +104,7 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
         return decodeBitmapLineSIMD(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
 
     case ImageType::RunLength:
-        return decodeRunLengthLineSIMD(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
+        return decodeRunLengthLine(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
 
     case ImageType::Mosaic:
         panic("Unsupported type Mosaic");
