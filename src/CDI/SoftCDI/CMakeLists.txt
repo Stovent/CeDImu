@@ -1,11 +1,12 @@
-option(CEDIMU_REBUILD_SOFTCDI "Whether to re-build SoftCDI headers from sources. If OFF, will use the provided headers without modifications." OFF)
+option(LIBCEDIMU_REBUILD_SOFTCDI "Whether to re-build SoftCDI headers from sources. If OFF, will use the provided headers without modifications." OFF)
+message("libCeDImu rebuild SoftCDI: " ${LIBCEDIMU_REBUILD_SOFTCDI})
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(SoftCDI INTERFACE modules.hpp)
 
-if(CEDIMU_REBUILD_SOFTCDI)
+if(LIBCEDIMU_REBUILD_SOFTCDI)
     set(OS9C "" CACHE PATH "OS9 compiler root directory")
 
     find_program(DOSBOX
@@ -49,8 +50,7 @@ if(CEDIMU_REBUILD_SOFTCDI)
         -c "exit"
 
         DEPENDS ${SOFTCDI_SOURCES}
-        BYPRODUCTS ${SOFTCDI_MODULES}
-        SOURCES modules.hpp
+        BYPRODUCTS ${SOFTCDI_MODULES} modules.hpp
     )
     add_dependencies(SoftCDI GenerateSoftCDI)
 endif()

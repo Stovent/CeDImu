@@ -27,7 +27,7 @@ Main:
 
 * Open CD to read application name
 	moveq #Read_,d0
-	lea CDDevice(pc),a0
+	lea CDDeviceRaw(pc),a0
 	os9 I$Open		d0.w is the path number
 	bcs.b End
 
@@ -44,7 +44,7 @@ Main:
 
 * Save main module name
 * Make sure the pathlist ends with an invalid byte
-	lea DiscLabel(pc),a0
+	lea DiscLabel(a6),a0
 	move.b #0,702(a0)
 * The name contains spaces to fill the remaining space, but F$PrsNam ignores it
 
@@ -85,7 +85,8 @@ End:
 
 T2Device	dc.b	"/t2",0
 NvrDevice	dc.b	"/nvr",0
-CDDevice	dc.b	"/cd@",0
+CDDevice	dc.b	"/cd",0
+CDDeviceRaw	dc.b	"/cd@",0
 NullString	dc.b	0
 HelloWorld	dc.b	"Hello, world",0
 HelloWorldEnd	equ	*-HelloWorld

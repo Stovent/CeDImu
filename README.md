@@ -114,7 +114,7 @@ The CMake options below controls how to build CeDImu and the build macros listed
 
 `CEDIMU_ENABLE_LTO`: If ON, compiles the executable with link-time optimisations (default: `ON`).
 
-`CEDIMU_REBUILD_SOFTCDI`: If ON, will build the SoftCDI modules from sources (requires DOSBox). If OFF, will use the prebuilt module binaries (default: `OFF`).
+`LIBCEDIMU_REBUILD_SOFTCDI`: If ON, will build the SoftCDI modules from sources (requires DOSBox). If OFF, will use the prebuilt module binaries (default: `OFF`).
 
 #### Windows
 

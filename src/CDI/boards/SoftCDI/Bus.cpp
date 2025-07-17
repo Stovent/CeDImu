@@ -99,8 +99,8 @@ uint8_t SoftCDI::GetByte(const uint32_t addr, const BusFlags flags)
     }
     else if(addr >= TimekeeperBegin && addr < TimekeeperEnd && isEven(addr))
     {
-        data = m_timekeeper->GetByte((addr - TimekeeperBegin) >> 1, flags);
-        location = MemoryAccessLocation::RTC;
+        // Timekeeper does the logging.
+        return m_timekeeper->GetByte((addr - TimekeeperBegin) >> 1, flags);
     }
     else if(addr == 0x4FFFF1)
     // if(addr >= MCD212RegistersBegin && addr < MCD212RegistersEnd)
@@ -141,6 +141,13 @@ uint16_t SoftCDI::GetWord(const uint32_t addr, const BusFlags flags)
     {
         data = GET_ARRAY16(m_bios, addr - BIOSBegin);
         location = MemoryAccessLocation::BIOS;
+    }
+    else if(addr == 0x4FFFF0)
+    // if(addr >= MCD212RegistersBegin && addr < MCD212RegistersEnd)
+    {
+        m_csr1r = ~m_csr1r;
+        data = m_csr1r;
+        location = MemoryAccessLocation::VDSC;
     }
     else
     {
