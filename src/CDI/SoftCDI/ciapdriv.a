@@ -16,7 +16,7 @@ EntryTable	dc.w	Init
 		dc.w	GetStat
 		dc.w	SetStat
 		dc.w	Term
-		dc.w	0	Trap handler
+		dc.w	0		Trap handler
 		dc.w	Play	CDFM specific (GB VII.3.1.5)
 
 Init
@@ -60,6 +60,12 @@ Term
 * d1.w = Error code
 Play
 	softcdi CdfmDriver_Play
+	movea.l $52(a1),a3	Get FM's Play Control Block address
+	move.w #$100,0(a3)	PCB_Stat, Play is finished
+
+	move.w P$ID(a4),d0
+	move.w #S$Wake,d1
+	os9 F$Send			Wake up file manager
 	rts
 
 	vsect
