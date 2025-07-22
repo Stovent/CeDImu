@@ -248,6 +248,18 @@ enum Error
     E_Share = 253,
     E_DeadLk = 254,
     E_Format = 255,
+
+    E_IllPrm = 0x600,
+    E_IdFull = 0x601,
+    E_BadSiz = 0x602,
+    E_RgFull = 0x603,
+    E_UnID = 0x604,
+    E_NullRg = 0x605,
+    E_BadMod = 0x606,
+    E_NoFont = 0x607,
+    E_NoDM = 0x608,
+    E_NoPlay = 0x609,
+    E_Abort = 0x60A,
 };
 
 struct SystemCall
