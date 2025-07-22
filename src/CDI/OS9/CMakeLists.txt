@@ -2,6 +2,7 @@ target_sources(CeDImu
     PRIVATE
         BIOS.cpp
         BIOS.hpp
+        Kernel.cpp
         Kernel.hpp
         Stt.cpp
         Stt.hpp
