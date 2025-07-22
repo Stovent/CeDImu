@@ -60,8 +60,12 @@ Term
 * d1.w = Error code
 Play
 	softcdi CdfmDriver_Play
-	movea.l $52(a1),a3	Get FM's Play Control Block address
-	move.w #$100,0(a3)	PCB_Stat, Play is finished
+
+	movea.l PD_PCB(a1),a3	Get FM's Play Control Block address
+	move.w #$100,PCB_Stat(a3)	PCB_Stat, Play is finished
+
+	movea.l PD_DTPtr(a1),a2		Get Drive table
+	clr.w V_PLAY(a2)			Clear current play selection
 
 	move.w P$ID(a4),d0
 	move.w #S$Wake,d1

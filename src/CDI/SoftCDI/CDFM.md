@@ -14,7 +14,7 @@ The offsets below are from the beginning of the path descriptor.
 - [0x50]: Set to 1 in FUN_00001086.
 - [0x52]: Pointer to a Play Control Block used when calling I$Read/IChgDir.
 - [0x56]: Pointer to a Play Control List used when calling I$Read.
-- [0x5A]: Pointer to the Control Index List for Video/Program related data.
+- [0x5A]: Pointer to the Channel Index List for Video/Program related data.
 - [0x5E]: Pointer to the drive table.
 - [0x84]: Drive number of this path (starting at 0).
 - [0x8E]: initial value when initializing PCB_Chan of play control block.
