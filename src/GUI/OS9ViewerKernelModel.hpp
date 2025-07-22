@@ -47,7 +47,7 @@ class OS9ViewerKernelModel : public wxDataViewModel
 {
 public:
     CeDImu& m_cedimu;
-    OS9::Kernel m_kernel;
+    // OS9::Kernel m_kernel;
 
     OS9ViewerKernelModelNodePtr m_root;
 
