@@ -4,6 +4,7 @@
 
 #include "Kernel.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 
@@ -15,65 +16,85 @@ static constexpr std::array<uint8_t, 0x30> MODULE_HEADER{
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1D, 0x3F,
 };
 
-struct EmulatedMemory : public OS9::MemoryAccess
+template<typename T = uint8_t>
+struct EmulatedMemory : public OS9::EmulatedMemoryAccess
 {
-    std::array<uint8_t, 256> memory{};
+    std::array<T, 256> memory{};
 
-    virtual constexpr uint8_t GetByte(uint32_t addr) const noexcept override
+    constexpr EmulatedMemory()
     {
-        return memory[addr];
-    }
-
-    virtual constexpr uint16_t GetWord(uint32_t addr) const noexcept override
-    {
-        return GET_ARRAY16(memory, addr);
-    }
-
-
-    virtual constexpr void SetByte(uint32_t addr, uint8_t data) noexcept override
-    {
-        memory.at(addr) = data;
-    }
-
-    virtual constexpr void SetWord(uint32_t addr, uint16_t data) noexcept override
-    {
-        memory.at(addr) = data >> 8;
-        memory.at(addr + 1) = data;
+        GetByte = [this] (uint32_t addr) { return memory.at(addr); };
+        GetWord = [this] (uint32_t addr) { return GET_ARRAY16(memory, addr); };
+        SetByte = [this] (uint32_t addr, uint8_t data) { memory.at(addr) = data; };
+        SetWord = [this] (uint32_t addr, uint16_t data) { memory.at(addr) = data >> 8; memory.at(addr + 1) = data; };
     }
 };
 
-static constexpr bool test()
+static consteval bool test()
 {
     EmulatedMemory memory{};
 
-    // After the dummy module.
-    OS9::U8 byte{memory, 0x30};
+    OS9::U32 data{memory, 0x30};
+    ASSERT(data.Address() == 0x30);
     ASSERT(memory.memory[0x30] == 0);
-    ASSERT(byte.Read() == 0);
-    ASSERT(byte == 0);
+    ASSERT(memory.memory[0x31] == 0);
+    ASSERT(memory.memory[0x32] == 0);
+    ASSERT(memory.memory[0x33] == 0);
+    ASSERT(data.Read() == 0);
+    ASSERT(data == 0);
 
-    byte = 42;
-    ASSERT(memory.memory[0x30] == 42);
-    ASSERT(byte.Read() == 42);
-    ASSERT(byte == 42);
+    data = 0x12345678;
+    ASSERT(memory.memory[0x30] == 0x12);
+    ASSERT(memory.memory[0x31] == 0x34);
+    ASSERT(memory.memory[0x32] == 0x56);
+    ASSERT(memory.memory[0x33] == 0x78);
+    ASSERT(data.Read() == 0x12345678);
+    ASSERT(data == 0x12345678);
 
-    OS9::Pointer<OS9::U8> ptr{memory, 0x34};
+    OS9::Pointer<OS9::U32> ptr{memory, 0x34};
+    ASSERT(ptr.PointerAddress() == 0x34);
     ASSERT(ptr.TargetAddress() == 0);
     ptr = 0x30;
     ASSERT(ptr.TargetAddress() == 0x30);
-    ASSERT((*ptr) == 42);
+    ASSERT(*ptr == 0x12345678);
 
     *ptr = 84;
     ASSERT((*ptr).Read() == 84);
 
+    OS9::Pointer<OS9::U32> ptrEnd{memory, 0x38};
+    ASSERT(ptrEnd.TargetAddress() == 0);
+    ptrEnd = 0x40;
+    ASSERT(ptrEnd.TargetAddress() == 0x40);
+    ASSERT((ptrEnd - ptr) == 4);
+
     return true;
 }
 
-static constexpr bool testModule()
+static consteval bool testString()
+{
+    static constexpr char ALPHABET[] = "abcdefghijklmnopqrstuvwxyz";
+    EmulatedMemory<char> memory{};
+    std::copy_n(ALPHABET, sizeof ALPHABET, memory.memory.data());
+
+    // After the string
+    OS9::Pointer<OS9::CString> ptr{memory, 0x30};
+    // ptr is 0.
+    ASSERT(memory.memory[0] == 'a');
+    ASSERT(memory.memory[1] == 'b');
+    ASSERT(memory.memory[25] == 'z');
+    ASSERT(memory.memory[26] == 0);
+    ASSERT((*ptr).Read() == ALPHABET);
+    ASSERT(*ptr == ALPHABET);
+
+    return true;
+}
+
+static consteval bool testModule()
 {
     EmulatedMemory memory{};
     std::copy(MODULE_HEADER.begin(), MODULE_HEADER.end(), memory.memory.begin());
 
+    // After the dummy module header.
     OS9::Pointer<OS9::Module> ptr{memory, 0x30};
     ASSERT(ptr.TargetAddress() == 0);
 
@@ -84,4 +105,5 @@ static constexpr bool testModule()
 }
 
 static_assert(test());
+static_assert(testString());
 static_assert(testModule());
