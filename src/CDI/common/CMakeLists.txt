@@ -4,6 +4,8 @@ target_sources(CeDImu
         Audio.hpp
         Callbacks.cpp
         Callbacks.hpp
+        Function.cpp
+        Function.hpp
         panic.hpp
         types.hpp
         utils.hpp
