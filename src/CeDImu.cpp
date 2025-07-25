@@ -291,12 +291,32 @@ uint16_t CeDImu::GetWord(const uint32_t addr)
     return 0;
 }
 
+void CeDImu::SetByte(uint32_t, uint8_t)
+{
+    throw std::logic_error("Unimplemented CeDImu::SetByte");
+}
+
+void CeDImu::SetWord(uint32_t, uint16_t)
+{
+    throw std::logic_error("Unimplemented CeDImu::SetWord");
+}
+
 const uint8_t* CeDImu::GetPointer(const uint32_t addr)
 {
     LockGuard lock(m_cdiMutex);
     if(m_cdi)
         return m_cdi->GetPointer(addr);
     return nullptr;
+}
+
+OS9::EmulatedMemoryAccess CeDImu::GetEmulatedMemoryAccess() noexcept
+{
+    return OS9::EmulatedMemoryAccess {
+        std::bind(&CeDImu::GetByte, this, std::placeholders::_1),
+        std::bind(&CeDImu::GetWord, this, std::placeholders::_1),
+        std::bind(&CeDImu::SetByte, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&CeDImu::SetWord, this, std::placeholders::_1, std::placeholders::_2),
+    };
 }
 
 void CeDImu::SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback)

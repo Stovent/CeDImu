@@ -4,6 +4,7 @@
 #include "Config.hpp"
 
 #include "CDI/CDI.hpp"
+#include "CDI/OS9/Kernel.hpp"
 
 #include <wx/app.h>
 
@@ -48,7 +49,10 @@ public:
 
     uint8_t GetByte(uint32_t addr);
     uint16_t GetWord(uint32_t addr);
+    void SetByte(uint32_t addr, uint8_t data);
+    void SetWord(uint32_t addr, uint16_t data);
     const uint8_t* GetPointer(uint32_t addr);
+    OS9::EmulatedMemoryAccess GetEmulatedMemoryAccess() noexcept;
 
     void SetOnLogDisassembler(const std::function<void(const LogInstruction&)>& callback);
     void SetOnUARTOut(const std::function<void(uint8_t)>& callback);

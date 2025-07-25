@@ -45,13 +45,16 @@ public:
     virtual uint32_t GetRAMSize() const = 0;
     virtual RAMBank GetRAMBank1() const = 0;
     virtual RAMBank GetRAMBank2() const = 0;
+
     /** \brief Returns a pointer to the given address.
      * The returned pointer is only valid for the given memory bank and must not be assumed to be consecutive with all the memory map.
      * Specifically, RAM bank 1 and 2 may be non-consecutive, and ROM is very likely allocated separately.
      */
     virtual const uint8_t* GetPointer(uint32_t addr) const;
-    uint8_t PeekByte(uint32_t addr) { return GetByte(addr, NoFlags); }
-    uint16_t PeekWord(uint32_t addr) { return GetWord(addr, NoFlags); }
+
+    virtual uint8_t  PeekByte(uint32_t addr) const noexcept = 0;
+    virtual uint16_t PeekWord(uint32_t addr) const noexcept = 0;
+    virtual uint32_t PeekLong(uint32_t addr) const noexcept = 0;
 
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
@@ -74,10 +77,6 @@ protected:
 
     virtual void Reset(bool resetCPU) = 0;
     virtual void IncrementTime(double ns);
-
-    virtual uint8_t  PeekByte(uint32_t addr) const noexcept = 0;
-    virtual uint16_t PeekWord(uint32_t addr) const noexcept = 0;
-    virtual uint32_t PeekLong(uint32_t addr) const noexcept = 0;
 
     virtual uint8_t  GetByte(uint32_t addr, BusFlags flags) = 0;
     virtual uint16_t GetWord(uint32_t addr, BusFlags flags) = 0;
