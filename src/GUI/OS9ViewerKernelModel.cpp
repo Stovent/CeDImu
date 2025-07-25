@@ -26,17 +26,17 @@ OS9ViewerKernelModelNode* OS9ViewerKernelModelNode::AddChildren(Args&&... args)
 
 OS9ViewerKernelModelNodePtr OS9ViewerKernelModel::BuildRootNode()
 {
-    OS9::Pointer<OS9::SystemGlobals> globals = m_kernel.m_systemGlobals;
+    OS9::SystemGlobals globals = *m_systemGlobalsPtr;
     OS9ViewerKernelModelNodePtr rootNode{new OS9ViewerKernelModelNode{nullptr, "System globals"}};
-    rootNode->AddChildren("D_ID", toHex(globals->D_ID.Read()));
+    rootNode->AddChildren("D_ID", toHex(globals.D_ID.Read()));
     OS9ViewerKernelModelNode* modDirNode = rootNode->AddChildren("D_ModDir");
 
-    ssize_t modCount = globals->D_ModDirEnd - globals->D_ModDir;
+    ssize_t modCount = globals.D_ModDirEnd - globals.D_ModDir;
     for(ssize_t i = 0; i < modCount; i++)
     {
         OS9ViewerKernelModelNode* arrayNode = modDirNode->AddChildren(std::format("[{}]", i));
         OS9ViewerKernelModelNode* moduleNode = arrayNode->AddChildren("MD_MPtr");
-        OS9::ModuleDirectoryEntry modDir = globals->D_ModDir[i];
+        OS9::ModuleDirectoryEntry modDir = globals.D_ModDir[i];
 
         arrayNode->AddChildren("MD_Group", toHex(modDir.MD_Group.Read(), true));
         arrayNode->AddChildren("MD_Static", toHex(modDir.MD_Static.Read(), true));
@@ -44,13 +44,14 @@ OS9ViewerKernelModelNodePtr OS9ViewerKernelModel::BuildRootNode()
         arrayNode->AddChildren("MD_MChk", toHex(modDir.MD_MChk.Read()));
 
         OS9::Module module = *modDir.MD_MPtr;
-        const uint8_t* pointer = m_kernel.m_memory.GetPointer(modDir.MD_MPtr.TargetAddress());
+        // const uint8_t* pointer = m_kernel.m_memory.GetPointer(modDir.MD_MPtr.TargetAddress());
         moduleNode->AddChildren("M$ID", toHex(module.M_ID.Read()));
         moduleNode->AddChildren("M$SysRev", std::to_string(module.M_SysRev.Read()));
         moduleNode->AddChildren("M$Size", toHex(module.M_Size.Read(), true)); // std::to_string
         moduleNode->AddChildren("M$Owner", toHex(module.M_Owner.Read()));
         const uint32_t nameOffset = module.M_Name.Read();
-        moduleNode->AddChildren("M$Name", reinterpret_cast<const char*>(pointer + nameOffset));
+        const OS9::CString name{m_emulatedMemoryAccess, module.Address() + nameOffset};
+        moduleNode->AddChildren("M$Name", name);
         moduleNode->AddChildren("M$Accs", toHex(module.M_Accs.Read(), true));
         moduleNode->AddChildren("M$Type", std::to_string(module.M_Type.Read()));
         moduleNode->AddChildren("M$Lang", std::to_string(module.M_Lang.Read()));
@@ -67,9 +68,11 @@ OS9ViewerKernelModelNodePtr OS9ViewerKernelModel::BuildRootNode()
 
 OS9ViewerKernelModel::OS9ViewerKernelModel(CeDImu& cedimu)
     : m_cedimu{cedimu}
-    , m_kernel{{std::bind(&CeDImu::GetByte, &m_cedimu, std::placeholders::_1),
-                std::bind(&CeDImu::GetWord, &m_cedimu, std::placeholders::_1),
-                std::bind(&CeDImu::GetPointer, &m_cedimu, std::placeholders::_1)}}
+    , m_emulatedMemoryAccess{m_cedimu.GetEmulatedMemoryAccess()}
+    // TODO: 0x18'0000 for MiniMMC board. Make this generic.
+    // Read the pointer at 0x0 in RAM, and if 0 then it's not initialized yet and don't show anything.
+    , m_systemGlobalsPtr{m_emulatedMemoryAccess, 0x40'0000} // System globals are at the address of the initial SSP .
+    // , m_kernel{m_cedimuMemoryAccess}
     , m_root{BuildRootNode()}
 {
 }

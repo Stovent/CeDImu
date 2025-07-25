@@ -47,6 +47,8 @@ class OS9ViewerKernelModel : public wxDataViewModel
 {
 public:
     CeDImu& m_cedimu;
+    OS9::EmulatedMemoryAccess m_emulatedMemoryAccess;
+    OS9::Pointer<OS9::SystemGlobals> m_systemGlobalsPtr;
     // OS9::Kernel m_kernel;
 
     OS9ViewerKernelModelNodePtr m_root;
