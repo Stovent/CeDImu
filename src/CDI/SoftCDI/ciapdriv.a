@@ -20,9 +20,21 @@ EntryTable	dc.w	Init
 		dc.w	Play	CDFM specific (GB VII.3.1.5)
 
 Init
-	softcdi $102
+* Register IRQ handler
+	moveq #CdfmDriver_Vector,d0		Vector number
+	moveq #CdfmDriver_Priority,d1		priority
+	lea Irq(pc),a0		IRQ service routine entry point
+*						device static storage is already in a2
+	movea.l #CdfmDriver_Port,a3		port address
+	os9 F$IRQ
+	bcc.s Init_NoError
+	moveq #0,d0
+	os9 F$PErr
+
+Init_NoError
 	rts
 
+* This call is synchronous, meaning it must F$Sleep until the data has been read.
 Read
 	softcdi $102
 	rts
@@ -40,7 +52,16 @@ SetStat
 	rts
 
 Term
-	softcdi $106
+* Remove IRQ entry
+	moveq #CdfmDriver_Vector,d0		Vector number
+	movea.l #0,a0		delete IRQ service routine entry point
+*						device static storage is already in a2
+	os9 F$IRQ
+	bcc.s Term_NoError
+	moveq #0,d0
+	os9 F$PErr
+
+Term_NoError
 	rts
 
 * GB VII.3.1.5.7
@@ -58,6 +79,9 @@ Term
 * Output: None
 * Error Output: cc = Carry bit set to one
 * d1.w = Error code
+*
+* Play is asynchronous, meaning the data is being read after the system call has returned.
+* However for some reads, it should sleep (like reading the Disc Label).
 Play
 	softcdi CdfmDriver_Play
 
@@ -70,6 +94,21 @@ Play
 	move.w P$ID(a4),d0
 	move.w #S$Wake,d1
 	os9 F$Send			Wake up file manager
+	rts
+
+* Service routines conform to the following register conventions:
+* INPUT: (a2) = global static pointer
+* 	(a3) = port address
+* 	(a6) = system global data pointer (D_’s)
+* 	(a7) = system stack (in active proc’s descriptor)
+* OUTPUT: None
+* ERROR OUTPUT: Carry bit set if the device did not cause the interrupt.
+* WARNING: Interrupt service routines may destroy the following registers: d0,
+* d1, a0, a2, a3, and/or a6. You must preserve all other registers used.
+*
+* The idea is after 1/75th of a second the virtual machine scheduler triggers an IRQ to my driver.
+* The IRQ handler will send a signal to CDFM to tell it the sector has been read.
+Irq
 	rts
 
 	vsect
