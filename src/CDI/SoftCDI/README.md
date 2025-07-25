@@ -45,3 +45,50 @@ See `The OS-9 guru - chapter 6` and the [OS-9 Assembler/Linker](http://icdia.co.
 - go to `d:` and run `build.bat`.
 - If successful, the host folder `$SOFTCDI/build` contains the compiled modules.
 - On Linux, cd to `$SOFTCDI` and run `generate_headers.sh` to embed the binaries in .h files.
+
+## TODO
+
+- rename sysgo to launcher
+- rename ciapdriv to something like cdfmdriv because I do not have a ciap
+
+## Useful notes
+
+### Assembly labels and offsets
+From the OS-9 Assembler/Linker document and binary analysis, we can understand how labels works.
+See Chapter 1, section `Label Fields` and Chapter 7, sections `Program and Data Memory References` and onward.
+Let's consider a sample below, where label CDDevice is at 0xFB position from the begining of the module header:
+
+```
+    psect ...
+
+Main
+    ...
+	lea CDDevice(a0),a0         lea (0xfb,A0),A0
+	lea CDDevice(pc),a0         lea (0x6b,PC),A0
+	lea DiscLabel(a0),a0        lea (-0x7ff0,A0),A0
+	lea DiscLabel(pc),a0        lea (-0x7ff0,PC),A0
+	lea Main(a0),a0             lea (0x4e,A0),A0 -> address of the Main entry point.
+	lea Main(pc),a0             lea (-0x42,PC),A0
+
+T2Device	dc.b	"/t2",0
+NvrDevice	dc.b	"/nvr",0
+CDDevice	dc.b	"/cd",0
+
+	vsect
+unused		ds.b $10
+DiscLabel	ds.b $8000
+	ends
+
+	ends
+```
+
+We can clearly see that every label in the vsect section is their offset from the start of the static storage section,
+minus 0x8000 to account for the biased A6.
+
+We can also see that labels in code relative NOT to PC like `CDDevice(a0)`, then the label is just its offset from the
+start of the module header.
+But labels in code relative to PC like `CDDevice(pc)` are the offset from the current instruction (+2).
+
+Unsurprisingly, we can see that code labels are not different.
+
+This doesn't seem to be affected by an org directive.

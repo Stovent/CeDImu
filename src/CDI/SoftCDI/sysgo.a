@@ -13,7 +13,7 @@ stderr		equ	2
 
 	psect sysgo,typelang,attrrevs,edition,stacksize,entrypt
 
-Main:
+Main
 	moveq #Write_,d0
 	lea T2Device(pc),a0
 	os9 I$Open
@@ -38,6 +38,7 @@ Main:
 
 * Read the disc label
 	move.l #$800,d1
+* This is most definitely a bug, as disc label isn't relative to PC.
 	lea DiscLabel(pc),a0
 	os9 I$Read
 	bcs.b End
@@ -78,7 +79,7 @@ Main:
 	lea NullString(pc),a1
 	os9 F$Chain
 
-End:
+End
 * Exit program
 	moveq #0,d1	return 0
 	os9 F$Exit
