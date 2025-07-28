@@ -4,6 +4,7 @@ target_sources(CeDImu
         ISlave.hpp
 )
 
+add_subdirectory(CDDrive)
 add_subdirectory(DS1216)
 add_subdirectory(M48T08)
 add_subdirectory(MC68HC05)

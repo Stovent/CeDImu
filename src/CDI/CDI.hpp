@@ -19,7 +19,7 @@
 #include <string_view>
 #include <thread>
 
-class Mono3;
+class CDDrive;
 
 /** \brief Base class for a CD-i player.
  */
@@ -81,6 +81,7 @@ public:
     virtual const Video::Plane& GetCursor() = 0;
 
 protected:
+    friend CDDrive;
     friend SCC68070;
 
     CDIDisc m_disc; /**< CDI disc. */

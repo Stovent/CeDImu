@@ -78,10 +78,11 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
  * \throw std::runtime_error if the given BIOS can't be patched.
  */
 SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
-    : CDI("SoftCDI", config, std::move(callbacks), std::move(disc))
+    : CDI("SoftCDI", config, std::move(callbacks))
     , m_ram0(RAM_BANK_SIZE, 0)
     , m_ram1(RAM_BANK_SIZE, 0)
     , m_bios(makeSoftcdiBiosFromMono3(bios))
+    , m_cdDrive{*this, std::move(disc)}
     // , m_nvramMaxAddress(config.has32KBNVRAM ? 0x330000 : 0x324000)
 {
     m_slave = std::make_unique<HLE::IKAT>(*this, config.PAL, 0x310000, PointingDevice::Class::Maneuvering);
@@ -109,7 +110,7 @@ void SoftCDI::Scheduler(const std::stop_token stopToken)
         const SCC68070::InterpreterResult res = m_cpu.SingleStepException(25);
 
         const double ns = res.first * m_cpu.cycleDelay;
-        CDI::IncrementTime(ns);
+        IncrementTime(ns);
 
         if(std::holds_alternative<SCC68070::Exception>(res.second))
         {
@@ -136,6 +137,14 @@ void SoftCDI::Scheduler(const std::stop_token stopToken)
     m_isRunning = false;
 }
 
+void SoftCDI::IncrementTime(double ns)
+{
+    CDI::IncrementTime(ns);
+    std::optional<uint8_t> irq = m_cdDrive.IncrementTime(ns);
+    if(irq)
+        m_cpu.PushException({static_cast<SCC68070::ExceptionVector>(*irq)});
+}
+
 void SoftCDI::Reset(const bool resetCPU)
 {
     if(resetCPU)
@@ -155,6 +164,11 @@ uint32_t SoftCDI::GetTotalFrameCount()
 const OS9::BIOS& SoftCDI::GetBIOS() const
 {
     return m_bios;
+}
+
+CDIDisc& SoftCDI::GetDisc() noexcept
+{
+    return m_cdDrive.GetDisc();
 }
 
 std::vector<InternalRegister> SoftCDI::GetVDSCInternalRegisters()

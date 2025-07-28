@@ -2,6 +2,7 @@
 #define CDI_BOARDS_SOFTCDI_SOFTCDI_HPP
 
 #include "../../CDI.hpp"
+#include "../../cores/CDDrive/CDDrive.hpp"
 
 #include <span>
 
@@ -45,6 +46,7 @@ public:
     virtual RAMBank GetRAMBank1() const override;
     virtual RAMBank GetRAMBank2() const override;
 
+    virtual CDIDisc& GetDisc() noexcept override;
     virtual uint32_t GetTotalFrameCount() override;
     virtual const OS9::BIOS& GetBIOS() const override;
     virtual uint32_t GetBIOSBaseAddress() const override;
@@ -58,16 +60,21 @@ public:
     virtual const Video::Plane& GetCursor() override;
 
 private:
+    virtual void IncrementTime(double ns) override;
+
     static constexpr size_t RAM_BANK_SIZE = 0x80000u; // 512KB
     std::vector<uint8_t> m_ram0;
     std::vector<uint8_t> m_ram1;
     OS9::BIOS m_bios;
+    CDDrive m_cdDrive;
     // const uint32_t m_nvramMaxAddress;
 
     // Specifics to allow the BIOS to initialize.
     uint8_t m_csr1r; /**< CSR1R register of MCD212 to emulate Display Active. */
 
     void DispatchSystemCall(uint16_t syscall) noexcept;
+
+    void CdfmDriverPlay() noexcept;
 
     /** \brief SoftCDI memory map. */
     enum MemoryMap : uint32_t
