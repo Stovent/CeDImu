@@ -100,9 +100,9 @@ bool CDIDisc::ExportSectorsInfo(const std::string& path)
     uint32_t LBN = 0;
     ForEachSector([&] (const CDISector& sector) {
         out << std::right << std::setw(6) << std::to_string(LBN++)
-            << std::setw(4) << std::to_string(sector.header.minute)
-            << std::setw(5) << std::to_string(sector.header.second)
-            << std::setw(5) << std::to_string(sector.header.sector)
+            << std::setw(4) << std::to_string(sector.header.time.minute)
+            << std::setw(5) << std::to_string(sector.header.time.second)
+            << std::setw(5) << std::to_string(sector.header.time.sector)
             << std::setw(5) << std::to_string(sector.header.mode)
             << std::setw(5) << std::to_string(sector.subheader.fileNumber)
             << std::setw(8) << std::to_string(sector.subheader.channelNumber)

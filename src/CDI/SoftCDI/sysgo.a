@@ -38,8 +38,7 @@ Main
 
 * Read the disc label
 	move.l #$800,d1
-* This is most definitely a bug, as disc label isn't relative to PC.
-	lea DiscLabel(pc),a0
+	lea DiscLabel(a6),a0
 	os9 I$Read
 	bcs.b End
 
@@ -63,9 +62,8 @@ Main
 * Load main module
 	moveq #Exec_,d0
 	moveq #0,d1
-	lea DiscLabel(pc),a0
+	lea DiscLabel(a6),a0
 	lea 574(a0),a0		Load module name
-*	lea DiscLabel+574(pc),a0
 	os9 F$Load
 
 * Chain to main module
@@ -95,6 +93,6 @@ HelloWorldEnd	equ	*-HelloWorld
 	vsect
 DiscLabel	ds.b $8000
 * ModuleName	ds.b 129	Additional byte for the null byte
-
 	ends
+
 	ends

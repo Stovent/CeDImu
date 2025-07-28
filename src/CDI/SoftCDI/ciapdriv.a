@@ -19,19 +19,44 @@ EntryTable	dc.w	Init
 		dc.w	0		Trap handler
 		dc.w	Play	CDFM specific (GB VII.3.1.5)
 
+* (a1) address of the device descriptor module
+* (a2) address of the driver’s static variable storage
+* (a4) address of the process descriptor requesting the I/O function
+* (a6) address of the system global variable storage area
 Init
 * Register IRQ handler
 	moveq #CdfmDriver_Vector,d0		Vector number
-	moveq #CdfmDriver_Priority,d1		priority
+	moveq #CdfmDriver_Priority,d1	priority
 	lea Irq(pc),a0		IRQ service routine entry point
 *						device static storage is already in a2
 	movea.l #CdfmDriver_Port,a3		port address
 	os9 F$IRQ
-	bcc.s Init_NoError
+	bcc.s Init_IRQ_NoError
 	moveq #0,d0
 	os9 F$PErr
+Init_IRQ_NoError
 
-Init_NoError
+* Initialize device static storage
+	clr.w V_LPRC(a2)		No last active process ID.
+	clr.w V_WAKE(a2)		No process ID to wake for now.
+	moveq #1,d0
+	move.b d0,V_NDRV(a2)	A single drive.
+
+* Initialize drive table
+	lea DRVBEG(a2),a5
+	clr.l V_LastPos(a5)		Last seek position
+	clr.l V_PTAdd(a5)		Path Table Address
+	clr.l V_ChanMask(a5)	Channel mask
+	clr.l V_APMask(a5)		Audio channel mask
+	clr.b V_PlayFlag(a5)	Play in progress flag
+	clr.b V_Paused(a5)		Drive paused flag
+	move.b #CdfmDriver_Priority,V_IRQlv(a5)		Hardware interrupt level
+	clr.b V_ROMFlag(a5)		CDROM disc flag
+	clr.l V_SoundMap(a5)	Pointer to current playing soundmap descriptor
+	clr.w V_ASigPrc(a5)		Process identifier for audio signal
+	clr.b V_AudOff(a5)		Flag for turning off audio
+	clr.b V_AudPlay(a5)		Flag for soundmap output
+
 	rts
 
 * This call is synchronous, meaning it must F$Sleep until the data has been read.
@@ -83,20 +108,23 @@ Term_NoError
 * Play is asynchronous, meaning the data is being read after the system call has returned.
 * However for some reads, it should sleep (like reading the Disc Label).
 Play
+	move.w PD_PROCID(a1),d0
+	move.w d0,V_WAKE(a2)		Set the process ID to wake up
+
+	movea.l PD_PCBptr(a1),a3	Get play control block address
+	movea.l PCB_Data(a3),a5		Get CIL pointer for computer data
+*	Take channel 0 for now, as IIRC CDFM sets all the channels to the same PCL
+	movea.l 0(a5),a5			Get Play Control List
+
+	movea.l PCL_Buf(a5),a0		Pointer to buffer
+	move.l PCL_BufSz(a5),d2		Buffer size
+	move.l PD_PSRT(a1),d0		Logical starting sector of Play selection
+	move.l PCB_Rec(a3),d1		Maximum number of records to play
 	softcdi CdfmDriver_Play
 
-	movea.l PD_PCB(a1),a3	Get FM's Play Control Block address
-	move.w #$100,PCB_Stat(a3)	PCB_Stat, Play is finished
-
-	movea.l PD_DTPtr(a1),a2		Get Drive table
-	clr.w V_PLAY(a2)			Clear current play selection
-
-	move.w P$ID(a4),d0
-	move.w #S$Wake,d1
-	os9 F$Send			Wake up file manager
 	rts
 
-* Service routines conform to the following register conventions:
+* IRQ service routines conform to the following register conventions:
 * INPUT: (a2) = global static pointer
 * 	(a3) = port address
 * 	(a6) = system global data pointer (D_’s)
@@ -109,10 +137,25 @@ Play
 * The idea is after 1/75th of a second the virtual machine scheduler triggers an IRQ to my driver.
 * The IRQ handler will send a signal to CDFM to tell it the sector has been read.
 Irq
+	softcdi $110
+	movem.l d2-d7/a1/a4/a5,-(sp)
+
+	lea DRVBEG(a2),a5			Get drive table address
+	movea.l V_PLAY(a5),a1		Get play path descriptor address
+	movea.l PD_PCBptr(a1),a4	Get play control block address
+
+	move.w #$100,PCB_Stat(a4)	Play is finished
+
+	move.w V_WAKE(a2),d0		Get process ID to wake
+	move.w PCB_Sig(a4),d1		Get signal to send
+	os9 F$Send					Wake up file manager
+
+	movem.l (sp)+,d2-d7/a1/a4/a5
 	rts
 
 	vsect
-	ds.w 0x50
+			ds.b 54		CDFM Device Driver Static Storage size
+DriveTable	ds.b 80		1 drive table entry.
 	ends
 
 	ends
