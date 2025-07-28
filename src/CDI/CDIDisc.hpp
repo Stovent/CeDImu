@@ -4,9 +4,11 @@
 #include "CDIDirectory.hpp"
 #include "CDIFile.hpp"
 
+#include <optional>
 #include <fstream>
 #include <functional>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -15,11 +17,51 @@ static constexpr size_t MAX_CHANNEL_NUMBER = 32;
 /** \brief The max number of channels on audio sectors (Green book Appendix II.1.2). */
 static constexpr size_t MAX_AUDIO_CHANNEL_NUMBER = 16;
 
+/** \brief Represent a time location on a disc in binary format (not BCD).
+ * Sector and Frame are synonymous.
+ */
+struct DiscTime
+{
+    uint8_t minute; /**< \brief The minute */
+    uint8_t second; /**< \brief The second */
+    uint8_t sector; /**< \brief The sector (frame) */
+
+    static constexpr uint32_t FRAMES_PER_SECOND = 75;
+    static constexpr uint32_t SECONDS_PER_MINUTE = 60;
+    static constexpr uint32_t FRAMES_PER_MINUTE = SECONDS_PER_MINUTE * FRAMES_PER_SECOND;
+
+    /** \brief Returns the logical sector number corresponding to the disc time.
+     * \throws std::out_of_range when the disc time is below 2 seconds.
+     */
+    constexpr uint32_t LSN() const
+    {
+        if(minute == 0 && second < 2) [[unlikely]]
+            throw std::out_of_range("DiscTime can't be below 0:2:0");
+        const uint32_t lsn = (minute * FRAMES_PER_MINUTE) + (second * FRAMES_PER_SECOND) + sector;
+        return lsn - 150u; // Subtract 2s (150 frames).
+    }
+};
+
+constexpr DiscTime& operator++(DiscTime& discTime) noexcept
+{
+    ++discTime.sector;
+    if(discTime.sector >= DiscTime::FRAMES_PER_SECOND)
+    {
+        discTime.sector = 0;
+        ++discTime.second;
+        if(discTime.second >= DiscTime::SECONDS_PER_MINUTE)
+        {
+            discTime.second = 0;
+            ++discTime.minute;
+        }
+    }
+
+    return discTime;
+}
+
 struct DiscHeader
 {
-    uint8_t minute;
-    uint8_t second;
-    uint8_t sector;
+    DiscTime time;
     uint8_t mode; // should be 2 for CD-I tracks
 };
 
@@ -29,18 +71,6 @@ struct DiscSubheader
     uint8_t channelNumber;
     uint8_t submode;
     uint8_t codingInformation;
-};
-
-/** \struct DiscTime
- * \brief Represent a location on a disc.
- */
-struct DiscTime
-{
-    uint8_t minute; /**< \brief The minute */
-    uint8_t second; /**< \brief The second */
-    uint8_t sector; /**< \brief The sector */
-    uint32_t lsn; /**< \brief The logical sector number. */
-    uint32_t pos; /**< \brief The position in the disc file. */
 };
 
 enum SubmodeBits : uint8_t
@@ -62,7 +92,7 @@ struct CDISector
     DiscSubheader subheader;
     std::vector<uint8_t> data;
 
-    uint16_t GetSectorDataSize() const { return (subheader.submode & cdiform) ? 2324 : 2048; }
+    constexpr uint16_t GetSectorDataSize() const noexcept { return (subheader.submode & cdiform) ? 2324 : 2048; }
 };
 
 /** \brief Encapsulates an ISO of a CD-I disc.
@@ -86,6 +116,7 @@ public:
     bool Good();
     DiscTime GetTime();
 
+    std::optional<CDISector> GetSector(uint32_t lsn);
     const CDIFile* GetFile(std::string path);
 
     bool ExportAudio(const std::string& path);

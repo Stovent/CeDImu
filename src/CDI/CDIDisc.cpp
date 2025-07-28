@@ -79,13 +79,15 @@ bool CDIDisc::Good()
 */
 DiscTime CDIDisc::GetTime()
 {
-    return {
-        m_header.minute,
-        m_header.second,
-        m_header.sector,
-        (m_header.minute * 60u * 75u) + ((m_header.second - 2) * 75u) + m_header.sector, // 75 = sectors per second, 60 = seconds per minutes
-        Tell(),
-    };
+    return m_header.time;
+}
+
+std::optional<CDISector> CDIDisc::GetSector(const uint32_t lsn)
+{
+    if(!GotoLBN(lsn))
+        return std::nullopt;
+
+    return m_currentSector;
 }
 
 /** \brief Get file from its path on the disc.
@@ -133,9 +135,9 @@ void CDIDisc::UpdateSectorInfo()
     char s[8];
     m_disc.read(s, 8);
 
-    m_header.minute = PBCDToByte(s[0]);
-    m_header.second = PBCDToByte(s[1]);
-    m_header.sector = PBCDToByte(s[2]);
+    m_header.time.minute = PBCDToByte(s[0]);
+    m_header.time.second = PBCDToByte(s[1]);
+    m_header.time.sector = PBCDToByte(s[2]);
     m_header.mode = s[3];
     m_subheader.fileNumber = s[4];
     m_subheader.channelNumber = s[5];
@@ -154,9 +156,9 @@ void CDIDisc::UpdateCurrentSector()
     char s[12];
     m_disc.read(s, 12);
 
-    m_currentSector.header.minute = PBCDToByte(s[0]);
-    m_currentSector.header.second = PBCDToByte(s[1]);
-    m_currentSector.header.sector = PBCDToByte(s[2]);
+    m_currentSector.header.time.minute = PBCDToByte(s[0]);
+    m_currentSector.header.time.second = PBCDToByte(s[1]);
+    m_currentSector.header.time.sector = PBCDToByte(s[2]);
     m_currentSector.header.mode = s[3];
 
     m_currentSector.subheader.fileNumber = s[4];
