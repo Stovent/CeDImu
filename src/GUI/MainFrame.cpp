@@ -162,8 +162,9 @@ void MainFrame::UpdateUI()
         {
             // Title.
             biosTitle = m_cedimu.m_cdi->m_boardName + " (" + m_cedimu.m_biosName + ") | ";
-            if(!m_cedimu.m_cdi->m_disc.m_gameName.empty())
-                discTitle = m_cedimu.m_cdi->m_disc.m_gameName + " | ";
+            const CDIDisc& disc = m_cedimu.m_cdi->GetDisc();
+            if(!disc.m_gameName.empty())
+                discTitle = disc.m_gameName + " | ";
 
             // Status bar.
             cycleRate = m_cedimu.m_cdi->m_cpu.totalCycleCount - m_oldCycleCount;

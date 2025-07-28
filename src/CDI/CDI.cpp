@@ -82,9 +82,9 @@ std::unique_ptr<CDI> CDI::NewSoftCDI(OS9::BIOS bios, std::span<const uint8_t> nv
 CDI::CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc)
     : m_boardName(boardName)
     , m_config(std::move(config))
-    , m_disc(std::move(disc))
     , m_callbacks(std::move(callbacks))
     , m_cpu(*this, m_config.PAL ? SCC68070::PAL_FREQUENCY : SCC68070::NTSC_FREQUENCY)
+    , m_disc(std::move(disc))
 {
 }
 
@@ -155,6 +155,11 @@ const uint8_t* CDI::GetPointer(const uint32_t addr) const
         return &bios[addr - base];
 
     return nullptr;
+}
+
+CDIDisc& CDI::GetDisc() noexcept
+{
+    return m_disc;
 }
 
 void CDI::IncrementTime(const double ns)

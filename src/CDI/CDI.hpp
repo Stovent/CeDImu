@@ -28,7 +28,6 @@ class CDI
 public:
     const std::string m_boardName; /**< Name of the hardware architecture (see http://icdia.co.uk/players/comparison.html). */
     const CDIConfig m_config; /**< Configuration of the CDI context. */
-    CDIDisc m_disc; /**< CDI disc. */
     Callbacks m_callbacks; /**< The user callbacks. */
 
     SCC68070 m_cpu; /**< The main CPU. */
@@ -66,6 +65,7 @@ public:
      */
     virtual const uint8_t* GetPointer(uint32_t addr) const;
 
+    virtual CDIDisc& GetDisc() noexcept;
     /** \brief Returns the number of frames per second the system displays. */
     virtual uint8_t GetFrameRate() const noexcept { return m_config.PAL ? 50 : 60; }
     virtual uint32_t GetTotalFrameCount() = 0;
@@ -82,6 +82,8 @@ public:
 
 protected:
     friend SCC68070;
+
+    CDIDisc m_disc; /**< CDI disc. */
 
     CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());
 
