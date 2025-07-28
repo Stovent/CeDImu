@@ -160,7 +160,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
 bool CeDImu::OpenDisc(const std::string& filename)
 {
     if(m_cdi)
-        return m_cdi->m_disc.Open(filename);
+        return m_cdi->GetDisc().Open(filename);
 
     return m_disc.Open(filename);
 }
@@ -169,13 +169,13 @@ void CeDImu::CloseDisc()
 {
     m_disc.Close();
     if(m_cdi)
-        m_cdi->m_disc.Close();
+        m_cdi->GetDisc().Close();
 }
 
 CDIDisc& CeDImu::GetDisc()
 {
     if(m_cdi)
-        return m_cdi->m_disc;
+        return m_cdi->GetDisc();
 
     return m_disc;
 }
