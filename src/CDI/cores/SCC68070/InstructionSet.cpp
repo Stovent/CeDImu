@@ -20,8 +20,10 @@ uint16_t SCC68070::ProcessException(const ExceptionVector vector)
         return 43;
     }
 
-    if(vector == Trace || (vector >= SpuriousInterrupt && vector <= Level7ExternalInterruptAutovector) || \
-                          (vector >= Level1OnChipInterruptAutovector && vector <= Level7OnChipInterruptAutovector))
+    if(vector == Trace ||
+      (vector >= SpuriousInterrupt && vector <= Level7ExternalInterruptAutovector) ||
+      (vector >= Level1OnChipInterruptAutovector && vector <= Level7OnChipInterruptAutovector) ||
+      (vector >= UserInterrupt))
     {
         m_stop = false;
     }
