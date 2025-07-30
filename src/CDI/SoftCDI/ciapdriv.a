@@ -25,10 +25,10 @@ EntryTable	dc.w	Init
 * (a6) address of the system global variable storage area
 Init
 * Register IRQ handler
-	moveq #CdfmDriver_Vector,d0		Vector number
-	moveq #CdfmDriver_Priority,d1	priority
-	lea Irq(pc),a0		IRQ service routine entry point
-*						device static storage is already in a2
+	move.b #CdfmDriver_Vector,d0	Vector number
+	move.b #CdfmDriver_Priority,d1	priority
+	lea Irq(pc),a0					IRQ service routine entry point
+*									device static storage is already in a2
 	movea.l #CdfmDriver_Port,a3		port address
 	os9 F$IRQ
 	bcc.s Init_IRQ_NoError
@@ -78,7 +78,7 @@ SetStat
 
 Term
 * Remove IRQ entry
-	moveq #CdfmDriver_Vector,d0		Vector number
+	move.b #CdfmDriver_Vector,d0		Vector number
 	movea.l #0,a0		delete IRQ service routine entry point
 *						device static storage is already in a2
 	os9 F$IRQ
