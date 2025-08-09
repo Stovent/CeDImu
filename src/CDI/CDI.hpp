@@ -55,11 +55,12 @@ public:
     virtual uint32_t GetRAMSize() const = 0;
     virtual RAMBank GetRAMBank1() const = 0;
     virtual RAMBank GetRAMBank2() const = 0;
-    /** \brief Returns a pointer to the given address.
-     * The returned pointer is only valid for the given memory bank and must not be assumed to be consecutive with all the memory map.
+    /** \brief Returns a span from the given address to the end of its memory bank.
+     * The returned span is only for a single bank of memory, as they are most likely not contiguous.
      * Specifically, RAM bank 1 and 2 may be non-consecutive, and ROM is very likely allocated separately.
+     * If no span is associated with the address, an empty span is returned (span.data() == nullptr).
      */
-    virtual const uint8_t* GetPointer(uint32_t addr) const;
+    virtual std::span<const uint8_t> GetPointer(uint32_t addr) const noexcept;
 
     virtual CDIDisc& GetDisc() noexcept;
     /** \brief Returns the number of frames per second the system displays. */
@@ -97,6 +98,10 @@ protected:
     virtual void SetByte(uint32_t addr, uint8_t  data, BusFlags flags) = 0;
     virtual void SetWord(uint32_t addr, uint16_t data, BusFlags flags) = 0;
     virtual void SetLong(uint32_t addr, uint32_t data, BusFlags flags) = 0;
+
+//     /** \brief Returns a span from the given address to the end of its memory bank.
+//      */
+//     virtual std::span<uint8_t> GetPointer(uint32_t addr) noexcept;
 
     std::jthread m_schedulerThread{};
     std::atomic_bool m_isRunning{false}; /**< Set by the scheduler to tell if it's running. */

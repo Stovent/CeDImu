@@ -17,6 +17,8 @@ class CDI;
 class MCD212
 {
 public:
+    // TODO: NTSC runs at 30.2098 MHz.
+
     static constexpr Video::Renderer::ImagePlane PlaneA = Video::Renderer::A;
     static constexpr Video::Renderer::ImagePlane PlaneB = Video::Renderer::B;
 

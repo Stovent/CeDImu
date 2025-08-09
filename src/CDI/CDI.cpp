@@ -137,25 +137,36 @@ void CDI::Stop(const bool wait)
     }
 }
 
-/** \brief Returns a pointer to the given address.
- */
-const uint8_t* CDI::GetPointer(const uint32_t addr) const
+std::span<const uint8_t> CDI::GetPointer(const uint32_t addr) const noexcept
 {
     const RAMBank ram1 = GetRAMBank1();
     if(addr >= ram1.base && addr < ram1.base + ram1.data.size())
-        return &ram1.data[addr - ram1.base];
+        return ram1.data;
 
     const RAMBank ram2 = GetRAMBank2();
     if(addr >= ram2.base && addr < ram2.base + ram2.data.size())
-        return &ram2.data[addr - ram2.base];
+        return ram2.data;
 
     const OS9::BIOS& bios = GetBIOS();
     const uint32_t base = GetBIOSBaseAddress();
     if(addr >= base && addr < base + bios.GetSize())
-        return &bios[addr - base];
+        return {bios.CBegin() + (addr - base), bios.CEnd()};
 
-    return nullptr;
+    return {};
 }
+
+// std::span<uint8_t> CDI::GetPointer(const uint32_t addr) noexcept
+// {
+//     const RAMBank ram1 = GetRAMBank1();
+//     if(addr >= ram1.base && addr < ram1.base + ram1.data.size())
+//         return ram1.data;
+//
+//     const RAMBank ram2 = GetRAMBank2();
+//     if(addr >= ram2.base && addr < ram2.base + ram2.data.size())
+//         return ram2.data;
+//
+//     return {};
+// }
 
 CDIDisc& CDI::GetDisc() noexcept
 {
