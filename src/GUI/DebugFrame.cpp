@@ -243,7 +243,7 @@ DebugFrame::DebugFrame(MainFrame* mainFrame, CeDImu& cedimu)
                 }
                 else
                 {
-                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [&] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi->GetPointer(addr); });
+                    outputs = OS9::systemCallOutputsToString(it->second.systemCall.type, registers, [&] (const uint32_t addr) -> const uint8_t* { return this->m_cedimu.m_cdi->GetPointer(addr).data(); });
                 }
 
                 const OS9::SystemCall syscall = {it->second.systemCall.type, "", "", cc ? std::string(error) : outputs};
