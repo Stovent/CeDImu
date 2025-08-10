@@ -33,12 +33,12 @@ uint16_t MCD212::PeekWord(const uint32_t addr) const noexcept
 {
     if(addr < 0x400000)
     {
-        return GET_ARRAY16(m_memory, addr);
+        return getArray16(m_memory, addr);
     }
 
     if(addr < 0x4FFC00)
     {
-        return GET_ARRAY16(m_bios, addr - 0x400000);
+        return getArray16(m_bios, addr - 0x400000);
     }
 
     if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
@@ -98,7 +98,7 @@ uint16_t MCD212::GetWord(const uint32_t addr, const BusFlags flags)
     if(m_memorySwapCount < 4) [[unlikely]]
     {
         m_memorySwapCount++;
-        return GET_ARRAY16(m_bios, addr);
+        return getArray16(m_bios, addr);
     }
 
     uint16_t data;
@@ -106,12 +106,12 @@ uint16_t MCD212::GetWord(const uint32_t addr, const BusFlags flags)
 
     if(addr < 0x400000)
     {
-        data = GET_ARRAY16(m_memory, addr);
+        data = getArray16(m_memory, addr);
         LOG(location = MemoryAccessLocation::RAM;)
     }
     else if(addr < 0x4FFC00)
     {
-        data = GET_ARRAY16(m_bios, addr - 0x400000);
+        data = getArray16(m_bios, addr - 0x400000);
         LOG(location = MemoryAccessLocation::BIOS;)
     }
     else if(addr == 0x4FFFE0) // word size: MSB is 0, LSB is the register
