@@ -11,14 +11,14 @@ namespace OS9
  * \param memory A pointer to the beginning of the additional header.
  */
 ModuleExtraHeader::ModuleExtraHeader(const uint8_t* memory) noexcept :
-    M_Exec(GET_ARRAY32(memory, 0x00)),
-    M_Excpt(GET_ARRAY32(memory, 0x04)),
-    M_Mem(GET_ARRAY32(memory, 0x08)),
-    M_Stack(GET_ARRAY32(memory, 0x0C)),
-    M_IData(GET_ARRAY32(memory, 0x10)),
-    M_IRefs(GET_ARRAY32(memory, 0x14)),
-    M_Init(GET_ARRAY32(memory, 0x18)),
-    M_Term(GET_ARRAY32(memory, 0x1C))
+    M_Exec(getArray32(memory, 0x00)),
+    M_Excpt(getArray32(memory, 0x04)),
+    M_Mem(getArray32(memory, 0x08)),
+    M_Stack(getArray32(memory, 0x0C)),
+    M_IData(getArray32(memory, 0x10)),
+    M_IRefs(getArray32(memory, 0x14)),
+    M_Init(getArray32(memory, 0x18)),
+    M_Term(getArray32(memory, 0x1C))
 {}
 
 /** \brief OS9 Module Header.
@@ -26,16 +26,16 @@ ModuleExtraHeader::ModuleExtraHeader(const uint8_t* memory) noexcept :
  * \param beg Its location in the BIOS memory area.
  */
 ModuleHeader::ModuleHeader(const uint8_t* memory, const uint32_t beg) :
-    M_SysRev(GET_ARRAY16(memory, 0x02)),
-    M_Size(GET_ARRAY32(memory, 0x04)),
-    M_Owner(GET_ARRAY32(memory, 0x08)),
-    M_Name(GET_ARRAY32(memory, 0x0C)),
-    M_Accs(GET_ARRAY16(memory, 0x10)),
+    M_SysRev(getArray16(memory, 0x02)),
+    M_Size(getArray32(memory, 0x04)),
+    M_Owner(getArray32(memory, 0x08)),
+    M_Name(getArray32(memory, 0x0C)),
+    M_Accs(getArray16(memory, 0x10)),
     M_Type(static_cast<ModuleType>(memory[0x12])),
     M_Lang(memory[0x13]),
     M_Attr(memory[0x14]),
     M_Revs(memory[0x15]),
-    M_Edit(GET_ARRAY16(memory, 0x16)),
+    M_Edit(getArray16(memory, 0x16)),
     extra(&memory[0x30]),
     name(reinterpret_cast<const char*>(&memory[M_Name])),
     begin(beg),
@@ -92,7 +92,7 @@ bool BIOS::Has8KBNVRAM() const noexcept
     {
         if(mod.name == "nvr")
         {
-            const uint16_t size = GET_ARRAY16(m_memory, mod.begin + 74);
+            const uint16_t size = getArray16(m_memory, mod.begin + 74);
             if(size == 0x1FF8) // 8KB
                 return true;
         }
@@ -102,7 +102,7 @@ bool BIOS::Has8KBNVRAM() const noexcept
 
 bool BIOS::ReplaceModule(std::span<const uint8_t> module)
 {
-    const char* name = reinterpret_cast<const char*>(&module[GET_ARRAY32(module, 0x0C)]);
+    const char* name = reinterpret_cast<const char*>(&module[getArray32(module, 0x0C)]);
     const ModuleIterator old = std::find_if(m_modules.begin(), m_modules.end(), [&] (const ModuleHeader& header) -> bool { return header.name == name; });
 
     if(old != m_modules.end() && module.size() <= old->M_Size) // Overwrite the old module if the new one fits.
@@ -126,7 +126,7 @@ void BIOS::LoadModules()
             uint16_t parity = 0xFFFF; // Header Parity Check
             for(int j = 0; j < 0x30; j += 2)
             {
-                const uint16_t word = GET_ARRAY16(m_memory, i + j);
+                const uint16_t word = getArray16(m_memory, i + j);
                 parity ^= word;
             }
             if(parity == 0)

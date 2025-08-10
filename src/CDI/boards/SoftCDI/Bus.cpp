@@ -44,17 +44,17 @@ uint16_t SoftCDI::PeekWord(const uint32_t addr) const noexcept
 {
     if(addr < 0x080000)
     {
-        return GET_ARRAY16(m_ram0, addr);
+        return getArray16(m_ram0, addr);
     }
 
     if(addr >= 0x200000 && addr < 0x280000)
     {
-        return GET_ARRAY16(m_ram1, addr - 0x200000);
+        return getArray16(m_ram1, addr - 0x200000);
     }
 
     if(addr >= 0x400000 && addr < 0x4FFFE0)
     {
-        return GET_ARRAY16(m_bios, addr - 0x400000);
+        return getArray16(m_bios, addr - 0x400000);
     }
 
     if(addr >= SCC68070::Peripheral::Base && addr < SCC68070::Peripheral::Last)
@@ -129,17 +129,17 @@ uint16_t SoftCDI::GetWord(const uint32_t addr, const BusFlags flags)
 
     if(addr < RAM0End)
     {
-        data = GET_ARRAY16(m_ram0, addr);
+        data = getArray16(m_ram0, addr);
         location = MemoryAccessLocation::RAM;
     }
     else if(addr >= RAM1Begin && addr < RAM1End)
     {
-        data = GET_ARRAY16(m_ram1, addr - RAM1Begin);
+        data = getArray16(m_ram1, addr - RAM1Begin);
         location = MemoryAccessLocation::RAM;
     }
     else if(addr >= BIOSBegin && addr < BIOSEnd)
     {
-        data = GET_ARRAY16(m_bios, addr - BIOSBegin);
+        data = getArray16(m_bios, addr - BIOSBegin);
         location = MemoryAccessLocation::BIOS;
     }
     else if(addr == 0x4FFFF0)

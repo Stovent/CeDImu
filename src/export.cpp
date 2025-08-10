@@ -87,7 +87,7 @@ void exportVideo(CDIDisc& disc, std::string exportDir)
                     if(cluts.compare("cluts") != 0)
                         return;
 
-                    uint16_t offset = GET_ARRAY16(sector.data, 22);
+                    uint16_t offset = getArray16(sector.data, 22);
                     for(int bank = 0; bank < 256; bank += 64)
                         for(int i = 0; i < 64; i++)
                         {
@@ -98,7 +98,7 @@ void exportVideo(CDIDisc& disc, std::string exportDir)
                                 break;
                             }
                             addr -= 0x80;
-                            CLUT[bank + addr] = GET_ARRAY32(sector.data, offset) & 0x00FF'FFFFu; // High byte is address.
+                            CLUT[bank + addr] = getArray32(sector.data, offset) & 0x00FF'FFFFu; // High byte is address.
                             offset += 4;
                         }
                 }
