@@ -1,12 +1,18 @@
+/** \file utils.hpp
+ * \brief Utility functions.
+ */
+
 #ifndef CDI_COMMON_UTILS_HPP
 #define CDI_COMMON_UTILS_HPP
 
 #include <algorithm>
 #include <concepts>
 #include <cstdint>
+#include <cstring>
 #include <format>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 /** \brief Shortcut name for `static_cast<R>(data)`.
@@ -199,13 +205,58 @@ inline const void* subarrayOfArray(const void* container, size_t containerSize, 
     return nullptr;
 }
 
-/** \brief Reads a big-endian uint16_t starting at the given offset in the given array. */
-#define GET_ARRAY16(array, index) (as<uint16_t>(array[(index)]) << 8 | as<uint16_t>(array[(index)+1]))
+/** \brief Makes a uint16_t from the two given uint8_t. */
+constexpr uint16_t makeU16(uint8_t bits0_7, uint8_t bits8_15) noexcept
+{
+    return static_cast<uint16_t>(bits8_15) << 8 | bits0_7;
+}
 
-/** \brief Reads a big-endian uint32_t starting at the given offset in the given array. */
-#define GET_ARRAY32(array, index) (as<uint32_t>(array[(index)]) << 24 | \
-                                   as<uint32_t>(array[(index)+1]) << 16 | \
-                                   as<uint32_t>(array[(index)+2]) << 8 | \
-                                   as<uint32_t>(array[(index)+3]))
+/** \brief Makes a uint32_t from the four given uint8_t. */
+constexpr uint32_t makeU32(uint8_t bits0_7, uint8_t bits8_15, uint8_t bits16_23, uint8_t bits24_31) noexcept
+{
+    return static_cast<uint32_t>(bits24_31) << 24 | static_cast<uint32_t>(bits16_23) << 16 |
+           static_cast<uint32_t>(bits8_15) << 8 | bits0_7;
+}
+
+template<typename T, typename VALUE>
+concept Indexable = requires(T a, size_t index)
+{
+    a[index];
+    requires std::same_as<std::remove_cvref_t<decltype(a[index])>, VALUE>;
+};
+
+/** \brief Reads a big-endian uint16_t starting at the given index in the given array.
+ * Overload specialized for trivial arrays.
+ */
+inline uint16_t getArray16(const uint8_t* array, size_t index) noexcept
+{
+    uint16_t x;
+    std::memcpy(&x, array + index, sizeof x);
+    return std::byteswap(x);
+}
+
+/** \brief Reads a big-endian uint16_t starting at the given index in the given array. */
+template<Indexable<uint8_t> T>
+constexpr uint16_t getArray16(T& array, size_t index) noexcept(noexcept(array[index]))
+{
+    return makeU16(array[index + 1], array[index]);
+}
+
+/** \brief Reads a big-endian uint32_t starting at the given index in the given array.
+ * Overload specialized for trivial arrays.
+ */
+inline uint32_t getArray32(const uint8_t* array, size_t index) noexcept
+{
+    uint32_t x;
+    std::memcpy(&x, array + index, sizeof x);
+    return std::byteswap(x);
+}
+
+/** \brief Reads a big-endian uint32_t starting at the given index in the given array. */
+template<Indexable<uint8_t> T>
+constexpr uint32_t getArray32(T& array, size_t index) noexcept(noexcept(array[index]))
+{
+    return makeU32(array[index + 3], array[index + 2], array[index + 1], array[index]);
+}
 
 #endif // CDI_COMMON_UTILS_HPP

@@ -7,4 +7,5 @@ target_sources(CeDImu
         panic.hpp
         types.hpp
         utils.hpp
+        utilsTest.cpp
 )
