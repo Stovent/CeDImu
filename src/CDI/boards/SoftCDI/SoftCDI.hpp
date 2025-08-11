@@ -72,9 +72,12 @@ private:
     // Specifics to allow the BIOS to initialize.
     uint8_t m_csr1r; /**< CSR1R register of MCD212 to emulate Display Active. */
 
+    // System call handling.
     void DispatchSystemCall(uint16_t syscall) noexcept;
 
-    void CdfmDriverPlay() noexcept;
+    void CDDrivePlay() noexcept;
+    void CDDriveDmaSector() noexcept;
+    void CDDriveGetSubheader() noexcept;
 
     /** \brief SoftCDI memory map. */
     enum MemoryMap : uint32_t
@@ -100,7 +103,9 @@ private:
     enum SystemCalls : uint16_t
     {
         _Min = 0x100, /**< Minimal syscall index to not overlap with OS-9. */
-        CDFMDriverPlay = 0x101,
+        CdDrivePlay = 0x101,
+        CdDriveDmaSector = 0x102,
+        CdDriveGetSubheader = 0x103,
         UCMGetStat = 0x104,
         UCMSetStat = 0x105,
     };

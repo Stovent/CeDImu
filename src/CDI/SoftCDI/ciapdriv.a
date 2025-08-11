@@ -31,10 +31,10 @@ Init
 *									device static storage is already in a2
 	movea.l #CdfmDriver_Port,a3		port address
 	os9 F$IRQ
-	bcc.s Init_IRQ_NoError
+	bcc.s _Init_IRQ_NoError
 	moveq #0,d0
 	os9 F$PErr
-Init_IRQ_NoError
+_Init_IRQ_NoError
 
 * Initialize device static storage
 	clr.w V_LPRC(a2)		No last active process ID.
@@ -87,6 +87,7 @@ Term
 	os9 F$PErr
 
 Term_NoError
+* TODO: Wait until any pending I/O has completed
 	rts
 
 * GB VII.3.1.5.7
@@ -112,15 +113,13 @@ Play
 	move.w d0,V_WAKE(a2)		Set the process ID to wake up
 
 	movea.l PD_PCBptr(a1),a3	Get play control block address
-	movea.l PCB_Data(a3),a5		Get CIL pointer for computer data
-*	Take channel 0 for now, as IIRC CDFM sets all the channels to the same PCL
-	movea.l 0(a5),a5			Get Play Control List
 
-	movea.l PCL_Buf(a5),a0		Pointer to buffer
-	move.l PCL_BufSz(a5),d2		Buffer size
 	move.l PD_PSRT(a1),d0		Logical starting sector of Play selection
 	move.l PCB_Rec(a3),d1		Maximum number of records to play
-	softcdi CdfmDriver_Play
+	move.b PD_FNum(a1),d2		File number
+	move.l PCB_Chan(a3),d3		Channel selection mask
+* TODO: Audio to audio processor channel selection mask
+	softcdi CdDrive_Play
 
 	rts
 
@@ -136,21 +135,142 @@ Play
 *
 * The idea is after 1/75th of a second the virtual machine scheduler triggers an IRQ to my driver.
 * The IRQ handler will send a signal to CDFM to tell it the sector has been read.
+* The basic logic of the handler is described in VII.3.1.5.8 The IRQ Service Request Subroutine.
+*
+* TODO: handle play termination
+* Play is terminated by any of the following conditions:
+* 1. EOF is encountered.
+* 2. PCB_Rec goes to zero.
+* 3. A software abort is received (SS_Abort, SS_Eject).
+* 4. A hardware or software fatal error occurs (error in header, etc.)
 Irq
-	softcdi $110
 	movem.l d2-d7/a1/a4/a5,-(sp)
 
+	clr.l d4
+	clr.l d5
+	clr.l d6
+	clr.l d7
+
+	softcdi CdDrive_GetSubheader
+	lsr.l #8,d0
+	move.b d0,d5		D5.b holds the channel number
+	lsr.l #8,d0
+	move.b d0,d6		D6.b holds the submode
+	lsr.l #8,d0
+	move.b d0,d7		D7.b holds the coding information
+
+* Read the correct PCL from the correct data type and channel
 	lea DRVBEG(a2),a5			Get drive table address
 	movea.l V_PLAY(a5),a1		Get play path descriptor address
 	movea.l PD_PCBptr(a1),a4	Get play control block address
+	btst #3,d6
+	bne.s _Irq_SubmodeData
+	btst #2,d6
+	bne.s _Irq_SubmodeAudio
+	movea.l PCB_Video(a4),a5	Get CIL pointer for video data
+	move.l #2324,d4				Size of sector data
+	bra.s _Irq_ProcessPCL
 
-	move.w #$100,PCB_Stat(a4)	Play is finished
+_Irq_SubmodeData
+	movea.l PCB_Data(a4),a5		Get CIL pointer for computer data
+	move.l #2048,d4				Size of sector data
+	bra.s _Irq_ProcessPCL
 
-	move.w V_WAKE(a2),d0		Get process ID to wake
+_Irq_SubmodeAudio
+	movea.l PCB_Audio(a4),a5	Get CIL pointer for audio data
+	move.l #2304,d4				Size of sector data
+
+_Irq_ProcessPCL
+* Check if PCL is valid
+	lsl #2,d5				channel number as offset in 4-bytes steps
+	lea 0(a5,d5.w),a6		Get the CIL in A6
+	movea.l (a6),a5			Get Play Control List
+	cmpa.l #0,a5
+	beq.s _Irq_return
+
+* Check if PCL buffer is null
+	movea.l PCL_Buf(a5),a0
+	cmpa.l #0,a0
+	beq.s _Irq_return			Data buffer nullptr
+	btst #0,PCL_Ctrl(a5)		Buffer full flag?
+	bne.s _Irq_return			TODO: terminate the play and return an overrun error
+
+	bsr.s IsPCL_BufFull
+	bcs.s _Irq_return
+
+* Copy from CD drive to memory
+	adda.l PCL_Cnt(a5),a0
+	move.l d4,d0				Buffer size is the size of the excepted sector
+	softcdi CdDrive_DmaSector
+	move.b d6,PCL_Smode(a5)
+	move.b d7,PCL_Type(a5)
+* PCB_Rec is decremented below because I need its value there
+	bsr.s IncrementPCL_Buf
+
+* Handle if the play is terminated
+	move.w d6,PCB_Stat(a4)		Reset PCB_Stat, the low byte is the submode
+	subq.l #1,PCB_Rec(a4)
+	bne.s _Irq_NotTerminated	Is the play terminated?
+	ori #$100,PCB_Stat(a4)		Play is finished
+
+* PCL signal is sent first from IncrementPCL_Buf, then the PCB signal.
 	move.w PCB_Sig(a4),d1		Get signal to send
+	beq.s _Irq_NoSignal
+	move.w PD_PROCID(a1),d0		Get process ID to wake
 	os9 F$Send					Wake up file manager
 
+_Irq_NoSignal
+_Irq_NotTerminated
+* Move to the next Play path descriptor
+	movea.l PD_NxtPD(a1),a0
+	cmp.l PD_LstPD(a1),a0
+	bne.s _Irq_NextPlay			If we already are in the last play list
+	movea.l #0,a0
+_Irq_NextPlay
+	lea DRVBEG(a2),a5			Get drive table address
+	move.l a0,V_PLAY(a5)
+
+_Irq_return
 	movem.l (sp)+,d2-d7/a1/a4/a5
+	andi #$FE,ccr		Clear carry bit -> the IRQ was for this driver.
+	rts
+
+* Checks if PCL_Buf is not empty. Modifies d0,d1.
+* Returns the carry flag set when the buffer is full.
+* a5: PCL
+* d4.l: size of sector data (VII-50 footnote 9)
+IsPCL_BufFull
+* TODO: check the buffer full bit instead?
+	move.l PCL_Cnt(a5),d0
+	move.l PCL_BufSz(a5),d1
+	mulu.w d4,d1		Convert BufSz to byte size
+	cmp.l d1,d0			Sets the carry if BufSz is bigger than Cnt (meaning buffer not full)
+* If they are the same, carry is not set, but the buffer is still full.
+	eori #1,ccr			Invert the result for error
+	rts
+
+* Handles the increment of the PCL, handle the overflow case.
+* a1: path descriptor
+* a5: PCL
+* d4.l: size of sector data (VII-50 footnote 9)
+IncrementPCL_Buf
+	add.l d4,PCL_Cnt(a5)
+	bsr.s IsPCL_BufFull
+	bcc.s _IncrementPCL_Buf_return
+	ori.b #1,PCL_Ctrl(a5)		Set buffer full flag
+
+	move.w PCL_Sig(a5),d1		Get signal to send
+	beq.s _IncrementPCL_Buf_NoSignal
+	move.w PD_PROCID(a1),d0		Get process ID to wake
+	os9 F$Send
+_IncrementPCL_Buf_NoSignal
+
+	movea PCL_Nxt(a5),a0
+	cmpa.l #0,a0
+	beq.s _IncrementPCL_Buf_return
+	move.l a0,(a6)			Copy next PCL entry to CIL
+
+_IncrementPCL_Buf_return
 	rts
 
 	vsect
