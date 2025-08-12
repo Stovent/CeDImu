@@ -141,11 +141,11 @@ std::span<const uint8_t> CDI::GetPointer(const uint32_t addr) const noexcept
 {
     const RAMBank ram1 = GetRAMBank1();
     if(addr >= ram1.base && addr < ram1.base + ram1.data.size())
-        return ram1.data;
+        return {ram1.data.cbegin() + (addr - ram1.base), ram1.data.cend()};
 
     const RAMBank ram2 = GetRAMBank2();
     if(addr >= ram2.base && addr < ram2.base + ram2.data.size())
-        return ram2.data;
+        return {ram2.data.cbegin() + (addr - ram2.base), ram2.data.cend()};
 
     const OS9::BIOS& bios = GetBIOS();
     const uint32_t base = GetBIOSBaseAddress();
