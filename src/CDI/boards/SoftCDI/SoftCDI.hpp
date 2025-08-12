@@ -75,6 +75,7 @@ private:
     // System call handling.
     void DispatchSystemCall(uint16_t syscall) noexcept;
 
+    void SoftCDIDebug() noexcept;
     void CDDrivePlay() noexcept;
     void CDDriveDmaSector() noexcept;
     void CDDriveGetSubheader() noexcept;
@@ -103,6 +104,7 @@ private:
     enum SystemCalls : uint16_t
     {
         _Min = 0x100, /**< Minimal syscall index to not overlap with OS-9. */
+        SoftCDI_Debug = 0x100, /**< Not stable system call that does nothing, used for debug purposes. */
         CdDrivePlay = 0x101,
         CdDriveDmaSector = 0x102,
         CdDriveGetSubheader = 0x103,

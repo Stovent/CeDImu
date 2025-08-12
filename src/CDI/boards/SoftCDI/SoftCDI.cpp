@@ -116,7 +116,7 @@ void SoftCDI::Scheduler(const std::stop_token stopToken)
         {
             const SCC68070::Exception ex = std::get<SCC68070::Exception>(res.second);
 
-            if(ex.vector == SCC68070::Trap0Instruction && ex.data > SystemCalls::_Min) // SoftCDI syscall.
+            if(ex.vector == SCC68070::Trap0Instruction && ex.data >= SystemCalls::_Min) // SoftCDI syscall.
             {
                 const uint16_t syscall = ex.data;
 
