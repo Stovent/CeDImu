@@ -8,6 +8,10 @@ void SoftCDI::DispatchSystemCall(const uint16_t syscall) noexcept
 {
     switch(syscall)
     {
+    case SoftCDI_Debug:
+        SoftCDIDebug();
+        break;
+
     case CdDrivePlay:
         CDDrivePlay();
         break;
@@ -31,6 +35,14 @@ void SoftCDI::DispatchSystemCall(const uint16_t syscall) noexcept
     default:
         std::println("Unknown system call 0x{:X}", syscall);
     }
+}
+
+/** \brief Used to print debug info in SoftCDI. */
+void SoftCDI::SoftCDIDebug() noexcept
+{
+    [[maybe_unused]] std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
+
+    std::println("Debug");
 }
 
 /** \brief Handles Play routine of the CDFM device driver.

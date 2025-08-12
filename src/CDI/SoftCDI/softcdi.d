@@ -1,4 +1,5 @@
 * SoftCDI system calls values (taken from SoftCDI.hpp)
+SoftCDI_Debug equ $100
 CdDrive_Play equ $101
 CdDrive_DmaSector equ $102
 CdDrive_GetSubheader equ $103
