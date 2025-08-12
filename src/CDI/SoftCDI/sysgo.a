@@ -1,5 +1,7 @@
 	nam sysgo
 	use c:\DEFS\OSKDEFS.D
+	use softcdi.d
+	use softcdi.m
 
 typelang	equ	(Prgrm<<8)+Objct
 attrrevs	equ	(ReEnt<<8)+$99
@@ -28,7 +30,7 @@ Main
 * Open CD to read application name
 	moveq #Read_,d0
 	lea CDDeviceRaw(pc),a0
-	os9 I$Open		d0.w is the path number
+	os9 I$Open				d0.w is the path number
 	bcs.b End
 
 * Seek to Disc Label
@@ -42,13 +44,22 @@ Main
 	os9 I$Read
 	bcs.b End
 
-* Save main module name
-* Make sure the pathlist ends with an invalid byte
+* Copy the application identifier to its null-terminated buffer
 	lea DiscLabel(a6),a0
-	move.b #0,702(a0)
-* The name contains spaces to fill the remaining space, but F$PrsNam ignores it
+	lea 574(a0),a0
+	lea ModuleName(a6),a1
+	move.w #127,d1
+	bra.s _nameCopy
+_nameCopyLoop
+	move.b d0,(a1)
+	addq #1,a0
+	addq #1,a1
+_nameCopy
+	move.b (a0),d0
+	cmpi.b #32,d0
+	dbeq d1,_nameCopyLoop
 
-* Change data directory to /cd
+* Change data and exec directories to /cd
 	moveq #Updat_,d0
 	lea CDDevice(pc),a0
 	os9 I$ChgDir
@@ -62,9 +73,9 @@ Main
 * Load main module
 	moveq #Exec_,d0
 	moveq #0,d1
-	lea DiscLabel(a6),a0
-	lea 574(a0),a0		Load module name
+	lea ModuleName(a6),a0
 	os9 F$Load
+	bcs.b End
 
 * Chain to main module
 	moveq #0,d0
@@ -72,8 +83,7 @@ Main
 	moveq #0,d2
 	moveq #3,d3
 	moveq #0,d4
-	lea DiscLabel(pc),a0
-	lea 574(a0),a0		Load module name
+	lea ModuleName(a6),a0
 	lea NullString(pc),a1
 	os9 F$Chain
 
@@ -91,8 +101,8 @@ HelloWorld	dc.b	"Hello, world",0
 HelloWorldEnd	equ	*-HelloWorld
 
 	vsect
-DiscLabel	ds.b $8000
-* ModuleName	ds.b 129	Additional byte for the null byte
+DiscLabel	ds.b $800
+ModuleName	ds.b 129	Additional byte for the null byte, the area is already zeroed in vsect.
 	ends
 
 	ends
