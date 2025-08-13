@@ -252,7 +252,7 @@ std::string SCC68070::DisassembleASr(const uint32_t) const
     if(ir)
         leftOperand = "D" + std::to_string(count);
     else
-        leftOperand = "#" + std::to_string(count);
+        leftOperand = "#" + std::to_string(count ? count : 8);
 
     if(dr)
         return std::string("ASL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
@@ -636,7 +636,7 @@ std::string SCC68070::DisassembleLSr(const uint32_t) const
     if(ir)
         leftOperand = "D" + std::to_string(count);
     else
-        leftOperand = "#" + std::to_string(count);
+        leftOperand = "#" + std::to_string(count ? count : 8);
 
     if(dr)
         return std::string("LSL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
@@ -927,7 +927,7 @@ std::string SCC68070::DisassembleROr(const uint32_t) const
     if(ir)
         leftOperand = std::format("D{}", count);
     else
-        leftOperand = std::format("#{}", count);
+        leftOperand = std::format("#{}", count ? count : 8);
 
     if(dr)
         return std::string("ROL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
@@ -959,7 +959,7 @@ std::string SCC68070::DisassembleROXr(const uint32_t) const
     if(ir)
         leftOperand = std::format("D{}", count);
     else
-        leftOperand = std::format("#{}", count);
+        leftOperand = std::format("#{}", count ? count : 8);
 
     if(dr)
         return std::string("ROXL") + (size == 0 ? ".B " : size == 1 ? ".W " : ".L ") + leftOperand + ", D" + std::to_string(reg);
@@ -1136,7 +1136,7 @@ std::string SCC68070::DisassembleTST(const uint32_t pc) const
     else
         size = 4;
 
-    return "TST " + DisassembleAddressingMode(pc+2, eamode, eareg, size);
+    return std::string("TST") + (size == 1 ? ".B " : size == 2 ? ".W " : ".L ") + DisassembleAddressingMode(pc+2, eamode, eareg, size);
 }
 
 std::string SCC68070::DisassembleUNLK(const uint32_t) const
