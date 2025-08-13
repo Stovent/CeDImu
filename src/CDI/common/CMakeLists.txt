@@ -2,8 +2,8 @@ target_sources(CeDImu
     PRIVATE
         Callbacks.cpp
         Callbacks.hpp
-        CycleCounter.cpp
         CycleCounter.hpp
+        CycleCounterTest.cpp
         panic.hpp
         types.hpp
         utils.hpp
