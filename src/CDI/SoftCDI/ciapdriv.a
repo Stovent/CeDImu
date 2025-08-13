@@ -213,14 +213,6 @@ _Irq_ProcessPCL
 	bne.s _Irq_NotTerminated	Is the play terminated?
 	ori #$100,PCB_Stat(a4)		Play is finished
 
-* PCL signal is sent first from IncrementPCL_Buf, then the PCB signal.
-	move.w PCB_Sig(a4),d1		Get signal to send
-	beq.s _Irq_NoSignal
-	move.w PD_PROCID(a1),d0		Get process ID to wake
-	os9 F$Send					Wake up file manager
-
-_Irq_NoSignal
-_Irq_NotTerminated
 * Move to the next Play path descriptor
 	movea.l PD_NxtPD(a1),a0
 	cmp.l PD_LstPD(a1),a0
@@ -230,6 +222,14 @@ _Irq_NextPlay
 	lea DRVBEG(a2),a5			Get drive table address
 	move.l a0,V_PLAY(a5)
 
+* PCL signal is sent first from IncrementPCL_Buf, then the PCB signal.
+	move.w PCB_Sig(a4),d1		Get signal to send
+	beq.s _Irq_NoSignal
+	move.w PD_PROCID(a1),d0		Get process ID to wake
+	os9 F$Send					Wake up file manager
+
+_Irq_NoSignal
+_Irq_NotTerminated
 _Irq_return
 	movem.l (sp)+,d2-d7/a1/a4/a5
 	andi #$FE,ccr		Clear carry bit -> the IRQ was for this driver.
