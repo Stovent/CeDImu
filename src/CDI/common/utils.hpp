@@ -49,6 +49,8 @@ constexpr auto zeroExtend = as<R, T>;
 template<size_t BITNUM, std::integral T>
 constexpr bool bit(const T data) noexcept
 {
+    static_assert(BITNUM < (sizeof(T) * 8));
+
     return (data & (1 << BITNUM)) != 0;
 }
 
