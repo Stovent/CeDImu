@@ -221,6 +221,7 @@ _Irq_ProcessPCL
 _Irq_NextPlay
 	lea DRVBEG(a2),a5			Get drive table address
 	move.l a0,V_PLAY(a5)
+	clr.l PD_PCBptr(a1)
 
 * PCL signal is sent first from IncrementPCL_Buf, then the PCB signal.
 	move.w PCB_Sig(a4),d1		Get signal to send
