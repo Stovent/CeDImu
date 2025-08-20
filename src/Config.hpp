@@ -2,6 +2,7 @@
 #define CONFIG_HPP
 
 #include "CDI/common/types.hpp"
+#include "CDI/cores/IRTC.hpp"
 
 #include <ctime>
 #include <string>
@@ -19,9 +20,19 @@ struct BiosConfig
     Boards boardType;
     bool PAL;
     bool has32KbNvram;
+    bool useSoftCDIModules;
 };
 
-extern const BiosConfig defaultBiosConfig;
+inline const BiosConfig DEFAULT_BIOS_CONFIG {
+    .name = "BIOS config",
+    .biosFilePath = "",
+    .nvramFileName = "",
+    .initialTime = std::to_string(IRTC::DEFAULT_TIME),
+    .boardType = Boards::AutoDetect,
+    .PAL = false,
+    .has32KbNvram = false,
+    .useSoftCDIModules = false,
+};
 
 // Disc
 extern std::string discDirectory;

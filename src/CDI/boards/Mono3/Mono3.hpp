@@ -7,13 +7,15 @@
 
 #include <span>
 
-class Mono3 : public CDI
+class Mono3 : virtual public CDI
 {
 public:
+    static constexpr size_t BIOS_SIZE = 0x7'FFFF;
+
     Mono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc(), std::string_view boardName = "Mono-III");
     virtual ~Mono3() noexcept;
 
-    virtual void Scheduler(std::stop_token stopToken) override;
+    virtual void IncrementTime(double ns) override;
 
     virtual void Reset(bool resetCPU) override;
 
@@ -45,7 +47,7 @@ public:
     virtual const Video::Plane& GetBackground() override;
     virtual const Video::Plane& GetCursor() override;
 
-private:
+protected:
     MCD212 m_mcd212;
     HLE::CIAP m_ciap;
     const uint32_t m_nvramMaxAddress;

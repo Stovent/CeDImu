@@ -17,7 +17,7 @@ struct CDIConfig
 };
 
 /** \brief Default configuration used by CDI if no one is provided. */
-inline constexpr CDIConfig DEFAULT_CONFIG{
+inline constexpr CDIConfig DEFAULT_CDICONFIG {
     .PAL = true,
     .initialTime = IRTC::DEFAULT_TIME,
     .has32KBNVRAM = false,

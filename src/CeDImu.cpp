@@ -144,7 +144,7 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
     try
     {
         std::lock_guard<std::recursive_mutex> lock(m_cdiMutex);
-        m_cdi = CDI::NewCDI(biosConfig.boardType, std::span(bios.get(), biosSize), nvram, config, m_callbacks, std::move(m_disc));
+        m_cdi = CDI::NewCDI(biosConfig.boardType, biosConfig.useSoftCDIModules, std::span(bios.get(), biosSize), nvram, config, m_callbacks, std::move(m_disc));
     }
     catch(const std::exception& e)
     {

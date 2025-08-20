@@ -140,9 +140,11 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         // PAL and NVRAM check boxes
         m_palCheckBox = new wxCheckBox(biosConfigPage, wxID_ANY, "PAL");
         m_nvramCheckBox = new wxCheckBox(biosConfigPage, wxID_ANY, "32KB NVRAM");
+        m_softCdiCheckbox = new wxCheckBox(biosConfigPage, wxID_ANY, "SoftCDI modules");
         wxBoxSizer* checkBoxSizer = new wxBoxSizer(wxHORIZONTAL);
         checkBoxSizer->Add(m_palCheckBox, wxSizerFlags(1).Border());
         checkBoxSizer->Add(m_nvramCheckBox, wxSizerFlags(1).Border());
+        checkBoxSizer->Add(m_softCdiCheckbox, wxSizerFlags(1).Border());
 
         // Initial timestamp
         m_initialTime = new wxTextCtrl(biosConfigPage, wxID_ANY);
@@ -286,7 +288,7 @@ void SettingsFrame::OnNewConfig(wxCommandEvent&)
 
         SaveSelection();
         m_lastSelection = m_biosConfigs.size();
-        Config::BiosConfig& config = m_biosConfigs.emplace_back(Config::defaultBiosConfig);
+        Config::BiosConfig& config = m_biosConfigs.emplace_back(Config::DEFAULT_BIOS_CONFIG);
         config.name = name;
 
         m_biosList->InsertItems(1, &name, m_lastSelection);
@@ -339,6 +341,7 @@ void SettingsFrame::LoadSelection()
     m_boardChoice->SetSelection(static_cast<int>(config.boardType));
     m_palCheckBox->SetValue(config.PAL);
     m_nvramCheckBox->SetValue(config.has32KbNvram);
+    m_softCdiCheckbox->SetValue(config.useSoftCDIModules);
 }
 
 void SettingsFrame::SaveSelection()
@@ -354,6 +357,7 @@ void SettingsFrame::SaveSelection()
     config.boardType = static_cast<Boards>(m_boardChoice->GetSelection());
     config.PAL = m_palCheckBox->GetValue();
     config.has32KbNvram = m_nvramCheckBox->GetValue();
+    config.useSoftCDIModules = m_softCdiCheckbox->GetValue();
 }
 
 void SettingsFrame::CheckControls()
@@ -367,4 +371,5 @@ void SettingsFrame::CheckControls()
     m_boardChoice->Enable(enable);
     m_palCheckBox->Enable(enable);
     m_nvramCheckBox->Enable(enable);
+    m_softCdiCheckbox->Enable(enable);
 }

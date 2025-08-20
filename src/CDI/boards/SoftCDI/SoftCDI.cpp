@@ -79,10 +79,10 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
  */
 SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
     : CDI("SoftCDI", config, std::move(callbacks))
+    , SoftCDIScheduler{std::move(disc)}
     , m_ram0(RAM_BANK_SIZE, 0)
     , m_ram1(RAM_BANK_SIZE, 0)
     , m_bios(makeSoftcdiBiosFromMono3(bios))
-    , m_cdDrive{*this, std::move(disc)}
     // , m_nvramMaxAddress(config.has32KBNVRAM ? 0x330000 : 0x324000)
 {
     m_slave = std::make_unique<HLE::IKAT>(*this, config.PAL, 0x310000, PointingDevice::Class::Maneuvering);
@@ -101,54 +101,14 @@ SoftCDI::~SoftCDI()
     Stop(true);
 }
 
-void SoftCDI::Scheduler(const std::stop_token stopToken)
-{
-    m_isRunning = true;
-
-    do
-    {
-        const SCC68070::InterpreterResult res = m_cpu.SingleStepException(25);
-
-        const double ns = res.first * m_cpu.cycleDelay;
-        IncrementTime(ns);
-
-        if(std::holds_alternative<SCC68070::Exception>(res.second))
-        {
-            const SCC68070::Exception ex = std::get<SCC68070::Exception>(res.second);
-
-            if(ex.vector == SCC68070::Trap0Instruction && ex.data >= SystemCalls::_Min) // SoftCDI syscall.
-            {
-                const uint16_t syscall = ex.data;
-
-                m_cpu.GetNextWord(); // Skip syscall ID when returning.
-                DispatchSystemCall(syscall);
-            }
-            else // CPU exception/OS-9 syscall.
-            {
-                m_cpu.PushException(ex);
-            }
-        }
-        else if(std::holds_alternative<SCC68070::Breakpoint>(res.second))
-        {
-            break;
-        }
-    } while(!stopToken.stop_requested());
-
-    m_isRunning = false;
-}
-
 void SoftCDI::IncrementTime(double ns)
 {
-    CDI::IncrementTime(ns);
-    std::optional<uint8_t> irq = m_cdDrive.IncrementTime(ns);
-    if(irq)
-        m_cpu.PushException({static_cast<SCC68070::ExceptionVector>(*irq)});
+    SoftCDIScheduler::IncrementTime(ns);
 }
 
 void SoftCDI::Reset(const bool resetCPU)
 {
-    if(resetCPU)
-        m_cpu.Reset();
+    SoftCDIScheduler::Reset(resetCPU);
 }
 
 uint32_t SoftCDI::GetBIOSBaseAddress() const
