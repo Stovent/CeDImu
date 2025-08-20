@@ -16,6 +16,8 @@ public:
 
     explicit CDDrive(CDI& cdi, CDIDisc disc = CDIDisc());
 
+    void Reset() noexcept;
+
     constexpr CDIDisc& GetDisc() noexcept { return m_disc; }
 
     std::optional<uint8_t> IncrementTime(double ns) noexcept;

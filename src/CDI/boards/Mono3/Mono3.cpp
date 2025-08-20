@@ -23,29 +23,17 @@ Mono3::~Mono3() noexcept
     Stop(true);
 }
 
-void Mono3::Scheduler(const std::stop_token stopToken)
+void Mono3::IncrementTime(const double ns)
 {
-    m_isRunning = true;
-
-    do
-    {
-        const SCC68070::InterpreterResult res = m_cpu.SingleStep(25);
-        const size_t cycles = res.first;
-
-        const double ns = cycles * m_cpu.cycleDelay;
-        CDI::IncrementTime(ns);
-        m_mcd212.IncrementTime(ns);
-        m_ciap.IncrementTime(ns);
-    } while(!stopToken.stop_requested());
-
-    m_isRunning = false;
+    CDI::IncrementTime(ns);
+    m_mcd212.IncrementTime(ns);
+    m_ciap.IncrementTime(ns);
 }
 
 void Mono3::Reset(const bool resetCPU)
 {
+    CDI::Reset(resetCPU);
     m_mcd212.Reset();
-    if(resetCPU)
-        m_cpu.Reset();
 }
 
 uint32_t Mono3::GetTotalFrameCount()

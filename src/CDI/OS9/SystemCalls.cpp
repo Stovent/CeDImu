@@ -385,7 +385,7 @@ std::string systemCallOutputsToString(const SystemCallType call, const std::map<
     case SystemCallType::I_ReadLn:  snprintf(args, 256, "d1.l=%u", REG(D1)); break;
     case SystemCallType::I_WritLn:  snprintf(args, 256, "d1.l=%u", REG(D1)); break;
     case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.l=%u d1.l=%u d2.l=%u", REG(D0), REG(D1), REG(D2)); break;
-    case SystemCallType::I_SetStt:  return "TODO";
+    case SystemCallType::I_SetStt:  snprintf(args, 256, "d0.l=%u d1.l=%u d2.l=%u", REG(D0), REG(D1), REG(D2)); break;
     case SystemCallType::I_Close:   return "";
     default: snprintf(args, 256, "Unknown system call %d", static_cast<int>(call));
     }

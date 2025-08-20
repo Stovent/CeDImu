@@ -11,6 +11,18 @@ CDDrive::CDDrive(CDI& cdi, CDIDisc disc)
 {
 }
 
+void CDDrive::Reset() noexcept
+{
+    m_timeNs = 0.0;
+
+    m_lastSector = {};
+
+    m_discLsn = 0;
+    m_sectorsLeft = 0;
+    m_fileNumber = 0;
+    m_channelMask = 0;
+}
+
 /** \brief Increments the emulated time.
  * \param ns The time to advance in nanoseconds.
  * \return The vector number to trigger to the CPU if required, std::nullopt otherwise.

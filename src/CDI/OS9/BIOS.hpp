@@ -88,6 +88,10 @@ public:
 
     const std::vector<ModuleHeader>& GetModules() const noexcept { return m_modules; }
 
+    /** \brief Replaces the module in the BIOS with the given one, matching by name.
+     * \param module The new module. Must be smaller in size than the original one.
+     * \return true on success, false on error.
+     */
     bool ReplaceModule(std::span<const uint8_t> module);
 
 private:

@@ -32,6 +32,7 @@ public:
     wxCheckBox* m_palCheckBox;
     wxCheckBox* m_nvramCheckBox;
     wxCheckBox* m_littleEndianCheckBox;
+    wxCheckBox* m_softCdiCheckbox;
     wxTextCtrl* m_initialTime;
 
     int m_keyUp;
