@@ -6,16 +6,6 @@
 namespace Config
 {
 
-const BiosConfig defaultBiosConfig {
-    .name = "BIOS config",
-    .biosFilePath = "",
-    .nvramFileName = "",
-    .initialTime = std::to_string(IRTC::DEFAULT_TIME),
-    .boardType = Boards::AutoDetect,
-    .PAL = false,
-    .has32KbNvram = false,
-};
-
 // Disc
 std::string discDirectory = "";
 
@@ -60,7 +50,7 @@ bool loadConfig()
     bool hasGroup = conf.GetFirstGroup(str, lIndexGroup);
     while(hasGroup)
     {
-        bioses.push_back(defaultBiosConfig); // Adds a new config entry.
+        bioses.push_back(DEFAULT_BIOS_CONFIG); // Adds a new config entry.
 
         hasGroup = conf.GetNextGroup(str, lIndexGroup);
     }
@@ -70,27 +60,30 @@ bool loadConfig()
     {
         conf.SetPath("/bios/" + std::to_string(index++));
 
-        if(!conf.Read("name", &str)) return false;
-        entry.name = str.ToStdString();
+        if(conf.Read("name", &str))
+            entry.name = str.ToStdString();
 
-        if(!conf.Read("biosFilePath", &str)) return false;
-        entry.biosFilePath = str.ToStdString();
+        if(conf.Read("biosFilePath", &str))
+            entry.biosFilePath = str.ToStdString();
 
-        if(!conf.Read("nvramFileName", &str)) return false;
-        entry.nvramFileName = str.ToStdString();
+        if(conf.Read("nvramFileName", &str))
+            entry.nvramFileName = str.ToStdString();
 
-        if(!conf.Read("initialTime", &str)) return false;
-        entry.initialTime = str.ToStdString();
+        if(conf.Read("initialTime", &str))
+            entry.initialTime = str.ToStdString();
 
         int val;
-        if(!conf.Read("boardType", &val)) return false;
-        entry.boardType = static_cast<Boards>(val);
+        if(conf.Read("boardType", &val))
+            entry.boardType = static_cast<Boards>(val);
 
-        if(!conf.Read("PAL", &val)) return false;
-        entry.PAL = val;
+        if(conf.Read("PAL", &val))
+            entry.PAL = val;
 
-        if(!conf.Read("has32KbNvram", &val)) return false;
-        entry.has32KbNvram = val;
+        if(conf.Read("has32KbNvram", &val))
+            entry.has32KbNvram = val;
+
+        if(conf.Read("useSoftCDIModules", &val))
+            entry.useSoftCDIModules = val;
     }
 
     return true;
@@ -130,6 +123,7 @@ bool saveConfig()
         if(!conf.Write("boardType", static_cast<int>(entry.boardType))) return false;
         if(!conf.Write("PAL", entry.PAL)) return false;
         if(!conf.Write("has32KbNvram", entry.has32KbNvram)) return false;
+        if(!conf.Write("useSoftCDIModules", entry.useSoftCDIModules)) return false;
     }
 
     return conf.Flush(); // Technically it saves twice, here and in the dtor, but np I hope.

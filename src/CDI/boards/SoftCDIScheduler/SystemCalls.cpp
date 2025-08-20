@@ -1,10 +1,11 @@
-#include "SoftCDI.hpp"
+#include "SoftCDIScheduler.hpp"
+#include "../../cores/SCC68070/SCC68070.hpp"
 
 #include <print>
 
 using enum SCC68070::Register;
 
-void SoftCDI::DispatchSystemCall(const uint16_t syscall) noexcept
+void SoftCDIScheduler::DispatchSystemCall(const uint16_t syscall) noexcept
 {
     switch(syscall)
     {
@@ -35,10 +36,15 @@ void SoftCDI::DispatchSystemCall(const uint16_t syscall) noexcept
     default:
         std::println("Unknown system call 0x{:X}", syscall);
     }
+
+    /*
+    CDFM 410CBE
+    ciapdriv 42518C
+    */
 }
 
 /** \brief Used to print debug info in SoftCDI. */
-void SoftCDI::SoftCDIDebug() noexcept
+void SoftCDIScheduler::SoftCDIDebug() noexcept
 {
     [[maybe_unused]] std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
 
@@ -51,7 +57,7 @@ void SoftCDI::SoftCDIDebug() noexcept
  * - d2.b: file number.
  * - d3.l: channel mask.
  */
-void SoftCDI::CDDrivePlay() noexcept
+void SoftCDIScheduler::CDDrivePlay() noexcept
 {
     std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
 
@@ -63,7 +69,7 @@ void SoftCDI::CDDrivePlay() noexcept
  * - a0: pointer to the destination buffer.
  * - d0.l: size of the destination buffer.
  */
-void SoftCDI::CDDriveDmaSector() noexcept
+void SoftCDIScheduler::CDDriveDmaSector() noexcept
 {
     std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
 
@@ -72,7 +78,7 @@ void SoftCDI::CDDriveDmaSector() noexcept
 }
 
 /** \brief Returns the last read sector subheader in D0. */
-void SoftCDI::CDDriveGetSubheader() noexcept
+void SoftCDIScheduler::CDDriveGetSubheader() noexcept
 {
     const uint32_t subheader = m_cdDrive.GetLastSectorSubheader();
     std::println("Get subheader 0x{:X}", subheader);

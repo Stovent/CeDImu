@@ -1,8 +1,7 @@
 #ifndef CDI_BOARDS_SOFTCDI_SOFTCDI_HPP
 #define CDI_BOARDS_SOFTCDI_SOFTCDI_HPP
 
-#include "../../CDI.hpp"
-#include "../../cores/CDDrive/CDDrive.hpp"
+#include "../SoftCDIScheduler/SoftCDIScheduler.hpp"
 
 #include <span>
 
@@ -12,7 +11,7 @@
  * - For GUI this should be a checkbox until SoftCDI is capable of running without an existing system ROM.
  * - Have a custom NVRAM size? Or force 32Kb?
  */
-class SoftCDI : public CDI
+class SoftCDI : virtual public SoftCDIScheduler
 {
 public:
     static constexpr size_t BIOS_SIZE = 0x08'0000; /**< The size in bytes of the BIOS image. */
@@ -25,10 +24,6 @@ public:
 
     SoftCDI(SoftCDI&&) = delete;
     SoftCDI& operator=(SoftCDI&&) = delete;
-
-    virtual void Scheduler(std::stop_token stopToken) override;
-
-    virtual void Reset(const bool resetCPU) override;
 
     virtual uint8_t  PeekByte(uint32_t addr) const noexcept override;
     virtual uint16_t PeekWord(uint32_t addr) const noexcept override;
@@ -62,23 +57,16 @@ public:
 private:
     virtual void IncrementTime(double ns) override;
 
+    virtual void Reset(const bool resetCPU) override;
+
     static constexpr size_t RAM_BANK_SIZE = 0x80000u; // 512KB
     std::vector<uint8_t> m_ram0;
     std::vector<uint8_t> m_ram1;
     OS9::BIOS m_bios;
-    CDDrive m_cdDrive;
     // const uint32_t m_nvramMaxAddress;
 
     // Specifics to allow the BIOS to initialize.
     uint8_t m_csr1r; /**< CSR1R register of MCD212 to emulate Display Active. */
-
-    // System call handling.
-    void DispatchSystemCall(uint16_t syscall) noexcept;
-
-    void SoftCDIDebug() noexcept;
-    void CDDrivePlay() noexcept;
-    void CDDriveDmaSector() noexcept;
-    void CDDriveGetSubheader() noexcept;
 
     /** \brief SoftCDI memory map. */
     enum MemoryMap : uint32_t
@@ -97,20 +85,6 @@ private:
         MCD212RegistersEnd   = 0x50'0000,
     };
     static_assert(BIOSEnd <= MCD212RegistersBegin, "BIOS too big");
-
-    /** \brief SoftCDI system calls.
-     * TODO: organise this list.
-     */
-    enum SystemCalls : uint16_t
-    {
-        _Min = 0x100, /**< Minimal syscall index to not overlap with OS-9. */
-        SoftCDI_Debug = 0x100, /**< Not stable system call that does nothing, used for debug purposes. */
-        CdDrivePlay = 0x101,
-        CdDriveDmaSector = 0x102,
-        CdDriveGetSubheader = 0x103,
-        UCMGetStat = 0x104,
-        UCMSetStat = 0x105,
-    };
 };
 
 #endif // CDI_BOARDS_SOFTCDI_SOFTCDI_HPP

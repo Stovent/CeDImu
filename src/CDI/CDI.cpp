@@ -1,9 +1,11 @@
 #include "CDI.hpp"
 #include "boards/Mono3/Mono3.hpp"
+#include "boards/Mono3SoftCDI/Mono3SoftCDI.hpp"
 #include "boards/SoftCDI/SoftCDI.hpp"
 
 /** \brief Creates a new CD-i instance.
  * \param board The type of board to use.
+ * \param useSoftCDI false to use the regular LLE emulator, true to use some SoftCDI modules.
  * \param systemBios System BIOS data.
  * \param nvram The initial state of the NVRAM, or an empty span to use a clean NVRAM.
  * \param config The player configuration.
@@ -18,7 +20,7 @@
  *
  * User needs to ensure the NVRAM data size corresponds to the NVRAM size in the config (or auto-detected).
  */
-std::unique_ptr<CDI> CDI::NewCDI(Boards board, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+std::unique_ptr<CDI> CDI::NewCDI(Boards board, bool useSoftCDI, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
     const OS9::BIOS bios(systemBios);
 
@@ -31,13 +33,22 @@ std::unique_ptr<CDI> CDI::NewCDI(Boards board, std::span<const uint8_t> systemBi
     switch(board)
     {
     case Boards::Mono3:
-        return NewMono3(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
+        if(useSoftCDI)
+            return NewMono3SoftCDI(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
+        else
+            return NewMono3(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 
     case Boards::Mono4:
-        return NewMono4(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
+        if(useSoftCDI)
+            return NewMono4SoftCDI(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
+        else
+            return NewMono4(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 
     case Boards::Roboco:
-        return NewRoboco(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
+        if(useSoftCDI)
+            return NewRobocoSoftCDI(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
+        else
+            return NewRoboco(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 
     case Boards::SoftCDI:
         return NewSoftCDI(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
@@ -55,6 +66,14 @@ std::unique_ptr<CDI> CDI::NewMono3(OS9::BIOS bios, std::span<const uint8_t> nvra
     return std::make_unique<Mono3>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
 }
 
+/** \brief Creates a new Mono3 player with SoftCDI modules.
+ * See CDI::NewCDI for a description of the parameters.
+ */
+std::unique_ptr<CDI> CDI::NewMono3SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+{
+    return std::make_unique<Mono3SoftCDI>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc));
+}
+
 /** \brief Creates a new Mono4 player.
  * See CDI::NewCDI for a description of the parameters.
  */
@@ -63,12 +82,28 @@ std::unique_ptr<CDI> CDI::NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvra
     return std::make_unique<Mono3>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc), "Mono-IV");
 }
 
+/** \brief Creates a new Mono4 player with SoftCDI modules.
+ * See CDI::NewCDI for a description of the parameters.
+ */
+std::unique_ptr<CDI> CDI::NewMono4SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+{
+    return std::make_unique<Mono3SoftCDI>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc), "Mono-IV");
+}
+
 /** \brief Creates a new Roboco player.
  * See CDI::NewCDI for a description of the parameters.
  */
 std::unique_ptr<CDI> CDI::NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
 {
     return std::make_unique<Mono3>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc), "Roboco");
+}
+
+/** \brief Creates a new Roboco player with SoftCDI modules.
+ * See CDI::NewCDI for a description of the parameters.
+ */
+std::unique_ptr<CDI> CDI::NewRobocoSoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
+{
+    return std::make_unique<Mono3SoftCDI>(std::move(bios), nvram, std::move(config), std::move(callbacks), std::move(disc), "Roboco");
 }
 
 /** \brief Creates a new SoftCDI player.
@@ -173,8 +208,31 @@ CDIDisc& CDI::GetDisc() noexcept
     return m_disc;
 }
 
+void CDI::Scheduler(const std::stop_token stopToken)
+{
+    m_isRunning = true;
+
+    do
+    {
+        const SCC68070::InterpreterResult res = m_cpu.SingleStep(25);
+        const size_t cycles = res.first;
+
+        const double ns = cycles * m_cpu.cycleDelay;
+        IncrementTime(ns);
+    } while(!stopToken.stop_requested());
+
+    m_isRunning = false;
+}
+
 void CDI::IncrementTime(const double ns)
 {
     m_slave->IncrementTime(ns);
     m_timekeeper->IncrementClock(ns);
+}
+
+void CDI::Reset(bool resetCPU)
+{
+    if(resetCPU)
+        m_cpu.Reset();
+    // TODO: reset slave and IRTC too?
 }

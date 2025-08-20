@@ -30,11 +30,14 @@ public:
     std::unique_ptr<ISlave> m_slave{}; /**< The slave processor. */
     std::unique_ptr<IRTC> m_timekeeper{}; /**< The NVRAM chip. */
 
-    static std::unique_ptr<CDI> NewCDI(Boards board, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
-    static std::unique_ptr<CDI> NewMono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
-    static std::unique_ptr<CDI> NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
-    static std::unique_ptr<CDI> NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
-    static std::unique_ptr<CDI> NewSoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewCDI(Boards board, bool useSoftCDI, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewMono3(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewMono3SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewMono4(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewMono4SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewRoboco(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewRobocoSoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
+    static std::unique_ptr<CDI> NewSoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
 
     virtual ~CDI() noexcept;
 
@@ -86,10 +89,12 @@ protected:
     CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());
 
     /** \brief Runs in a thread and schedule all the components. */
-    virtual void Scheduler(std::stop_token stopToken) = 0;
+    virtual void Scheduler(std::stop_token stopToken);
+    /** \brief Increments the emulated time of all the components. */
     virtual void IncrementTime(double ns);
 
-    virtual void Reset(bool resetCPU) = 0;
+    /** \brief Resets all the components. */
+    virtual void Reset(bool resetCPU);
 
     virtual uint8_t  GetByte(uint32_t addr, BusFlags flags) = 0;
     virtual uint16_t GetWord(uint32_t addr, BusFlags flags) = 0;
