@@ -33,6 +33,7 @@ class Function<R(TArgs...)> {
 
 public:
     constexpr Function() {}
+    constexpr Function(std::nullptr_t) {}
 
     template <class Fn>
     constexpr Function(Fn fn) : fn{std::make_unique<implementation<Fn>>(fn)} {}
