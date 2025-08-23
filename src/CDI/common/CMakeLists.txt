@@ -4,8 +4,8 @@ target_sources(CeDImu
         Audio.hpp
         Callbacks.cpp
         Callbacks.hpp
-        Function.cpp
         Function.hpp
+        FunctionTest.cpp
         types.hpp
         utils.hpp
         Video.cpp
