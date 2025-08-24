@@ -4,6 +4,7 @@ target_sources(CeDImu
         BIOS.hpp
         Kernel.cpp
         Kernel.hpp
+        KernelTest.cpp
         Stt.cpp
         Stt.hpp
         SystemCalls.cpp

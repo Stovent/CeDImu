@@ -36,7 +36,7 @@ void SCC68070::Interpreter()
                 const uint32_t returnAddress = ex.vector == 32 || ex.vector == 45 || ex.vector == 47 ? PC + 2 : PC;
                 const OS9::SystemCallType syscallType = OS9::SystemCallType(ex.vector == Trap0Instruction ? ex.data : -1);
                 const std::string inputs = ex.vector == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->m_cdi.GetPointer(addr); }) : "";
-                const OS9::SystemCall syscall = {syscallType, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), inputs, ""};
+                const OS9::SystemCall syscall = {syscallType, m_cdi.GetModuleNameAt(currentPC), inputs, ""};
                 m_cdi.m_callbacks.OnLogException({ex.vector, returnAddress, exceptionVectorToString(ex.vector), syscall});
             }
 //            DumpCPURegisters();
@@ -60,7 +60,7 @@ void SCC68070::Interpreter()
                 currentOpcode = GetNextWord(BUS_INSTRUCTION);
                 if(m_cdi.m_callbacks.HasOnLogDisassembler())
                 {
-                    const LogInstruction inst = {currentPC, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), (this->*DLUT[currentOpcode])(currentPC)};
+                    const LogInstruction inst = {currentPC, m_cdi.GetModuleNameAt(currentPC), (this->*DLUT[currentOpcode])(currentPC)};
                     m_cdi.m_callbacks.OnLogDisassembler(inst);
                 }
                 executionCycles += (this->*ILUT[currentOpcode])();

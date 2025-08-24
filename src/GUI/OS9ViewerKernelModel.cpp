@@ -3,64 +3,85 @@
 
 #define ITEM_ID_TO_NODE(item) (static_cast<OS9ViewerKernelModelNode*>(item.GetID()))
 
-OS9ViewerKernelModelNode::OS9ViewerKernelModelNode(OS9ViewerKernelModelNode* parent, const std::string& containerName)
+OS9ViewerKernelModelNode::OS9ViewerKernelModelNode(OS9ViewerKernelModelNode* parent, const std::string& containerName, const std::string& displayName)
     : m_member{containerName}
     , m_value{}
+    , m_name{displayName}
     , m_isContainer{true}
     , m_parent{parent}
 {}
 
-OS9ViewerKernelModelNode::OS9ViewerKernelModelNode(OS9ViewerKernelModelNode* parent, const std::string& itemName, const std::string& itemValue)
+OS9ViewerKernelModelNode::OS9ViewerKernelModelNode(OS9ViewerKernelModelNode* parent, const std::string& itemName, const std::string& itemValue, const std::string& displayName)
     : m_member{itemName}
     , m_value{itemValue}
+    , m_name{displayName}
     , m_isContainer{false}
     , m_parent{parent}
 {}
 
+/** \brief Contructs in this node the child (without the parent pointer which is automatically added).
+ * \return The newly constructed child.
+ */
+OS9ViewerKernelModelNode* OS9ViewerKernelModelNode::AddContainer(const std::string& containerName, const std::string& displayName)
+{
+    return AddChildren(containerName, displayName);
+}
+
+OS9ViewerKernelModelNode* OS9ViewerKernelModelNode::AddItem(const std::string& itemName, const std::string& itemValue, const std::string& displayName)
+{
+    return AddChildren(itemName, itemValue, displayName);
+}
+
 template<typename... Args>
 OS9ViewerKernelModelNode* OS9ViewerKernelModelNode::AddChildren(Args&&... args)
 {
-    m_children.emplace_back(std::make_unique<OS9ViewerKernelModelNode, OS9ViewerKernelModelNode*, Args...>(this, std::forward<Args>(args)...));
+    m_children.emplace_back(std::make_unique<OS9ViewerKernelModelNode, OS9ViewerKernelModelNode*, Args...>(this, args...));
     return m_children.rbegin()->get();
 }
 
 OS9ViewerKernelModelNodePtr OS9ViewerKernelModel::BuildRootNode()
 {
-    OS9::SystemGlobals globals = *m_systemGlobalsPtr;
-    OS9ViewerKernelModelNodePtr rootNode{new OS9ViewerKernelModelNode{nullptr, "System globals"}};
-    rootNode->AddChildren("D_ID", toHex(globals.D_ID.Read()));
-    OS9ViewerKernelModelNode* modDirNode = rootNode->AddChildren("D_ModDir");
+    const OS9::Kernel* kernel = m_cedimu.m_cdi->GetKernel();
+    if(kernel == nullptr)
+        return OS9ViewerKernelModelNodePtr{new OS9ViewerKernelModelNode{nullptr, "System globals not initialized", ""}};
+
+    OS9::SystemGlobals globals = *kernel->m_systemGlobals;
+
+    OS9ViewerKernelModelNodePtr rootNode{new OS9ViewerKernelModelNode{nullptr, "System globals", ""}};
+    rootNode->AddItem("D_ID", toHex(globals.D_ID.Read()));
+    OS9ViewerKernelModelNode* modDirNode = rootNode->AddContainer("D_ModDir");
 
     ssize_t modCount = globals.D_ModDirEnd - globals.D_ModDir;
     for(ssize_t i = 0; i < modCount; i++)
     {
-        OS9ViewerKernelModelNode* arrayNode = modDirNode->AddChildren(std::format("[{}]", i));
-        OS9ViewerKernelModelNode* moduleNode = arrayNode->AddChildren("MD_MPtr");
+        OS9ViewerKernelModelNode* arrayNode = modDirNode->AddContainer(std::format("[{}]", i));
+        OS9ViewerKernelModelNode* moduleNode = arrayNode->AddContainer("MD_MPtr");
         OS9::ModuleDirectoryEntry modDir = globals.D_ModDir[i];
 
-        arrayNode->AddChildren("MD_Group", toHex(modDir.MD_Group.Read(), true));
-        arrayNode->AddChildren("MD_Static", toHex(modDir.MD_Static.Read(), true));
-        arrayNode->AddChildren("MD_Link", std::to_string(modDir.MD_Link.Read()));
-        arrayNode->AddChildren("MD_MChk", toHex(modDir.MD_MChk.Read()));
+        arrayNode->AddItem("MD_Group", toHex(modDir.MD_Group.Read(), true));
+        arrayNode->AddItem("MD_Static", toHex(modDir.MD_Static.Read(), true));
+        arrayNode->AddItem("MD_Link", std::to_string(modDir.MD_Link.Read()));
+        arrayNode->AddItem("MD_MChk", toHex(modDir.MD_MChk.Read()));
 
         OS9::Module module = *modDir.MD_MPtr;
         // const uint8_t* pointer = m_kernel.m_memory.GetPointer(modDir.MD_MPtr.TargetAddress());
-        moduleNode->AddChildren("M$ID", toHex(module.M_ID.Read()));
-        moduleNode->AddChildren("M$SysRev", std::to_string(module.M_SysRev.Read()));
-        moduleNode->AddChildren("M$Size", toHex(module.M_Size.Read(), true)); // std::to_string
-        moduleNode->AddChildren("M$Owner", toHex(module.M_Owner.Read()));
+        moduleNode->AddItem("M$ID", toHex(module.M_ID.Read()));
+        moduleNode->AddItem("M$SysRev", std::to_string(module.M_SysRev.Read()));
+        moduleNode->AddItem("M$Size", toHex(module.M_Size.Read(), true)); // std::to_string
+        moduleNode->AddItem("M$Owner", toHex(module.M_Owner.Read()));
         const uint32_t nameOffset = module.M_Name.Read();
-        const OS9::CString name{m_emulatedMemoryAccess, module.Address() + nameOffset};
-        moduleNode->AddChildren("M$Name", name);
-        moduleNode->AddChildren("M$Accs", toHex(module.M_Accs.Read(), true));
-        moduleNode->AddChildren("M$Type", std::to_string(module.M_Type.Read()));
-        moduleNode->AddChildren("M$Lang", std::to_string(module.M_Lang.Read()));
-        moduleNode->AddChildren("M$Attr", toHex(module.M_Attr.Read(), true));
-        moduleNode->AddChildren("M$Revs", std::to_string(module.M_Revs.Read()));
-        moduleNode->AddChildren("M$Edit", std::to_string(module.M_Edit.Read()));
-        moduleNode->AddChildren("M$Usage", toHex(module.M_Usage.Read(), true));
-        moduleNode->AddChildren("M$Symbol", toHex(module.M_Symbol.Read(), true));
-        moduleNode->AddChildren("M$Parity", toHex(module.M_Parity.Read()));
+        const OS9::CString name{kernel->m_memory, module.Address() + nameOffset};
+        arrayNode->m_name = name;
+        moduleNode->AddItem("M$Name", std::to_string(module.M_Name.Read()));
+        moduleNode->AddItem("M$Accs", toHex(module.M_Accs.Read(), true));
+        moduleNode->AddItem("M$Type", std::to_string(module.M_Type.Read()));
+        moduleNode->AddItem("M$Lang", std::to_string(module.M_Lang.Read()));
+        moduleNode->AddItem("M$Attr", toHex(module.M_Attr.Read(), true));
+        moduleNode->AddItem("M$Revs", std::to_string(module.M_Revs.Read()));
+        moduleNode->AddItem("M$Edit", std::to_string(module.M_Edit.Read()));
+        moduleNode->AddItem("M$Usage", toHex(module.M_Usage.Read(), true));
+        moduleNode->AddItem("M$Symbol", toHex(module.M_Symbol.Read(), true));
+        moduleNode->AddItem("M$Parity", toHex(module.M_Parity.Read()));
     }
 
     return rootNode;
@@ -68,17 +89,26 @@ OS9ViewerKernelModelNodePtr OS9ViewerKernelModel::BuildRootNode()
 
 OS9ViewerKernelModel::OS9ViewerKernelModel(CeDImu& cedimu)
     : m_cedimu{cedimu}
-    , m_emulatedMemoryAccess{m_cedimu.GetEmulatedMemoryAccess()}
-    // TODO: 0x18'0000 for MiniMMC board. Make this generic.
-    // Read the pointer at 0x0 in RAM, and if 0 then it's not initialized yet and don't show anything.
-    , m_systemGlobalsPtr{m_emulatedMemoryAccess, 0x40'0000} // System globals are at the address of the initial SSP .
-    // , m_kernel{m_cedimuMemoryAccess}
     , m_root{BuildRootNode()}
 {
 }
 
 OS9ViewerKernelModel::~OS9ViewerKernelModel()
 {
+}
+
+bool OS9ViewerKernelModel::IsContainer(const wxDataViewItem& item) const
+{
+    if(!item.IsOk())
+        return true; // Root item is a container.
+
+    const OS9ViewerKernelModelNode* node = ITEM_ID_TO_NODE(item);
+    return node->IsContainer();
+}
+
+bool OS9ViewerKernelModel::HasContainerColumns(const wxDataViewItem&) const
+{
+    return true;
 }
 
 void OS9ViewerKernelModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const
@@ -100,6 +130,10 @@ void OS9ViewerKernelModel::GetValue(wxVariant& variant, const wxDataViewItem& it
         variant = wxAny(node->m_value.c_str());
         break;
 
+    case ColumnName:
+        variant = wxAny(node->m_name.c_str());
+        break;
+
     default:
         wxASSERT_MSG(false, "Invalid column in GetValue");
     }
@@ -117,15 +151,6 @@ wxDataViewItem OS9ViewerKernelModel::GetParent(const wxDataViewItem& item) const
 
     OS9ViewerKernelModelNode* node = ITEM_ID_TO_NODE(item);
     return wxDataViewItem{node->GetParent()};
-}
-
-bool OS9ViewerKernelModel::IsContainer(const wxDataViewItem& item) const
-{
-    if(!item.IsOk())
-        return true; // Root item is a container.
-
-    const OS9ViewerKernelModelNode* node = ITEM_ID_TO_NODE(item);
-    return node->IsContainer();
 }
 
 unsigned int OS9ViewerKernelModel::GetChildren(const wxDataViewItem& item, wxDataViewItemArray& array) const
