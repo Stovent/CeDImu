@@ -8,6 +8,7 @@
 #include "cores/ISlave.hpp"
 #include "cores/SCC68070/SCC68070.hpp"
 #include "OS9/BIOS.hpp"
+#include "OS9/Kernel.hpp"
 
 #include <memory>
 #include <span>
@@ -59,6 +60,8 @@ public:
     virtual uint32_t GetTotalFrameCount() = 0;
     virtual const OS9::BIOS& GetBIOS() const = 0;
     virtual uint32_t GetBIOSBaseAddress() const = 0;
+    const OS9::Kernel* GetKernel() const;
+    std::string GetModuleNameAt(uint32_t addr) const;
 
     virtual std::vector<InternalRegister> GetVDSCInternalRegisters() = 0;
     virtual std::vector<InternalRegister> GetVDSCControlRegisters() = 0;
@@ -68,9 +71,13 @@ public:
     virtual const Video::Plane& GetBackground() = 0;
     virtual const Video::Plane& GetCursor() = 0;
 
+
 protected:
     friend Mono3;
     friend SCC68070;
+
+    OS9::EmulatedMemoryAccess GetEmulatedMemoryAccessCallbacks() const;
+    OS9::Kernel m_kernel{GetEmulatedMemoryAccessCallbacks()};
 
     CDI() = delete;
     CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());

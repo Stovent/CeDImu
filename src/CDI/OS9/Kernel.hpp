@@ -29,7 +29,7 @@ struct EmulatedMemoryAccess
 
     Function<void(uint32_t, uint8_t)> SetByte;
     Function<void(uint32_t, uint16_t)> SetWord;
-    constexpr void SetLong(uint32_t addr, uint32_t data) noexcept { SetWord(addr, data >> 16); SetWord(addr + 2, data); }
+    constexpr void SetLong(uint32_t addr, uint32_t data) const noexcept { SetWord(addr, data >> 16); SetWord(addr + 2, data); }
 };
 
 /** \brief Interface of a type that can be read from or written to emulated memory.
@@ -64,7 +64,7 @@ struct Pointer final
 {
     using TargetType = T;
 
-    constexpr Pointer(EmulatedMemoryAccess& memory, uint32_t address)
+    constexpr Pointer(const EmulatedMemoryAccess& memory, uint32_t address)
         : m_memory{memory}, m_address{address} {}
 
     /** \brief Returns the TargetType struct initialized from the address in emulated memory. */
@@ -91,11 +91,20 @@ struct Pointer final
     /** \brief Returns the address of the pointer itself. */
     constexpr uint32_t PointerAddress() const noexcept { return m_address; }
 
-private:
+    // TODO: how to implement operator++()? because it requires modifying the memory. But for local pointers we do not want this.
+    // constexpr Pointer<T>& operator++() noexcept { m_address += T::SIZEOF; return *this; }
 
-    EmulatedMemoryAccess& m_memory;
+private:
+    const EmulatedMemoryAccess& m_memory;
     uint32_t m_address; /**< The address of the pointer itself. */
 };
+
+/** \brief Compares the target address of both pointers. */
+template<typename T>
+constexpr bool operator==(const Pointer<T>& left, const Pointer<T>& right)
+{
+    return left.TargetAddress() == right.TargetAddress();
+}
 
 /** \brief Pointer subtraction which returns the difference in number of elements (and not in bytes). */
 template<typename T>
@@ -108,7 +117,7 @@ constexpr ssize_t operator-(const Pointer<T>& left, const Pointer<T>& right)
 class U8 final : public Type<uint8_t, 1>
 {
 public:
-    constexpr U8(EmulatedMemoryAccess& memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
+    constexpr U8(const EmulatedMemoryAccess& memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
 
     /** \brief Actually read the value from the emulated memory. */
     constexpr ValueType Read() const noexcept override
@@ -135,7 +144,7 @@ public:
     constexpr uint32_t Address() const noexcept override { return m_address; }
 
 private:
-    EmulatedMemoryAccess& m_memory;
+    const EmulatedMemoryAccess& m_memory;
     uint32_t m_address;
 };
 
@@ -143,7 +152,7 @@ private:
 class U16 final : public Type<uint16_t, 2>
 {
 public:
-    constexpr U16(EmulatedMemoryAccess& memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
+    constexpr U16(const EmulatedMemoryAccess& memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
 
     /** \brief Actually read the value from the emulated memory. */
     constexpr ValueType Read() const noexcept override
@@ -170,7 +179,7 @@ public:
     constexpr uint32_t Address() const noexcept override { return m_address; }
 
 private:
-    EmulatedMemoryAccess& m_memory;
+    const EmulatedMemoryAccess& m_memory;
     uint32_t m_address;
 };
 
@@ -178,7 +187,7 @@ private:
 class U32 final : public Type<uint32_t, 4>
 {
 public:
-    constexpr U32(EmulatedMemoryAccess& memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
+    constexpr U32(const EmulatedMemoryAccess& memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
 
     /** \brief Actually read the value from the emulated memory. */
     constexpr ValueType Read() const noexcept override
@@ -205,7 +214,7 @@ public:
     constexpr uint32_t Address() const noexcept override { return m_address; }
 
 private:
-    EmulatedMemoryAccess& m_memory;
+    const EmulatedMemoryAccess& m_memory;
     uint32_t m_address;
 };
 
@@ -213,7 +222,7 @@ private:
 class CString
 {
 public:
-    constexpr CString(EmulatedMemoryAccess& memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
+    constexpr CString(const EmulatedMemoryAccess& memoryAccess, uint32_t address) : m_memory{memoryAccess}, m_address{address} {}
 
     /** \brief Actually read the value from the emulated memory. */
     constexpr std::string Read() const noexcept
@@ -238,7 +247,7 @@ public:
     constexpr uint32_t Address() const noexcept { return m_address; }
 
 private:
-    EmulatedMemoryAccess& m_memory;
+    const EmulatedMemoryAccess& m_memory;
     uint32_t m_address;
 };
 
@@ -249,7 +258,7 @@ constexpr bool operator==(CString cstr, const char* constChar)
 
 constexpr bool operator==(const char* constChar, CString cstr)
 {
-    return cstr.Read() == constChar;
+    return cstr == constChar;
 }
 
 /** \brief Module. */
@@ -257,7 +266,7 @@ struct Module
 {
     // static constexpr size_t SIZEOF = 0; // Array of modules doesn't exist.
 
-    constexpr Module(EmulatedMemoryAccess& memory, uint32_t address)
+    constexpr Module(const EmulatedMemoryAccess& memory, uint32_t address)
         : M_ID{memory, address}
         , M_SysRev{memory, address + 0x02}
         , M_Size{memory, address + 0x04}
@@ -301,7 +310,7 @@ struct ModuleDirectoryEntry
 {
     static constexpr size_t SIZEOF = 0x10;
 
-    constexpr ModuleDirectoryEntry(EmulatedMemoryAccess& memory, uint32_t address)
+    constexpr ModuleDirectoryEntry(const EmulatedMemoryAccess& memory, uint32_t address)
         : MD_MPtr{memory, address}
         , MD_Group{memory, address + 0x4}
         , MD_Static{memory, address + 0x8}
@@ -328,7 +337,7 @@ private:
  */
 struct SystemGlobals
 {
-    constexpr SystemGlobals(EmulatedMemoryAccess& memory, uint32_t address)
+    constexpr SystemGlobals(const EmulatedMemoryAccess& memory, uint32_t address)
         : D_ID{memory, address}
         , D_ModDir{memory, address + 0x3C}
         , D_ModDirEnd{memory, address + 0x40}
@@ -352,26 +361,32 @@ private:
 };
 
 /** \brief Kernel state in emulated memory.
- * TODO: is it really necessary? You can directly have a pointer to the SystemGlobals.
- * I guess add useful features to this so it can work.
+ * This class is a convenient API to interact with the kernel in memory.
  */
-// class Kernel
-// {
-// public:
-//     Kernel() = delete;
-//     /** \brief Constructs a kernel state.
-//      * \param getWord Callback used to read memory. Must not modify the original data.
-//      */
-//     Kernel(EmulatedMemoryAccess& memoryAccess)
-//         : m_memory{memoryAccess}
-//         , m_systemGlobals{memoryAccess, 0} // The pointer itself is the initial stack pointer
-//     {
-//     }
-//
-//     EmulatedMemoryAccess& m_memory;
-//
-//     Pointer<SystemGlobals> m_systemGlobals; /**< System Globals structure. */
-// };
+class Kernel
+{
+public:
+    /** \brief Constructs a kernel state.
+     * \param getWord Callback used to read memory. Must not modify the original data.
+     */
+    Kernel(EmulatedMemoryAccess memoryAccess)
+        : m_memory{std::move(memoryAccess)}
+        , m_systemGlobals{m_memory, 0} // The pointer itself is the initial stack pointer
+    {
+    }
+
+    /** \brief Returns whether the system globals struct is valid and can be manipulated. */
+    bool IsValid() const noexcept;
+
+    /** \brief Searches the given address in the module list.
+     * \param addr The address to search.
+     * \return an empty string if not found.
+     */
+    std::string GetModuleNameAt(uint32_t addr) const;
+
+    EmulatedMemoryAccess m_memory;
+    Pointer<SystemGlobals> m_systemGlobals; /**< System Globals structure. */
+};
 
 } // namespace OS9
 

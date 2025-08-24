@@ -19,19 +19,18 @@ class OS9ViewerKernelModelNode
 public:
     std::string m_member;
     std::string m_value;
+    std::string m_name;
 
     /** \brief Constructs a container. */
-    OS9ViewerKernelModelNode(OS9ViewerKernelModelNode* parent, const std::string& containerName);
+    OS9ViewerKernelModelNode(OS9ViewerKernelModelNode* parent, const std::string& containerName, const std::string& displayName);
     /** \brief Constructs an item. */
-    OS9ViewerKernelModelNode(OS9ViewerKernelModelNode* parent, const std::string& itemName, const std::string& itemValue);
+    OS9ViewerKernelModelNode(OS9ViewerKernelModelNode* parent, const std::string& itemName, const std::string& itemValue, const std::string& displayName);
 
     bool IsContainer() const { return m_isContainer; }
 
-    /** \brief Contructs in this node the child (without the parent pointer which is automatically added).
-     * \return The newly constructed child.
-     */
-    template<typename... Args>
-    OS9ViewerKernelModelNode* AddChildren(Args&&... args);
+    OS9ViewerKernelModelNode* AddContainer(const std::string& containerName, const std::string& displayName = "");
+    OS9ViewerKernelModelNode* AddItem(const std::string& itemName, const std::string& itemValue, const std::string& displayName = "");
+
     const OS9ViewerKernelModelNodePtrVector& GetChildren() const noexcept { return m_children; }
     OS9ViewerKernelModelNodePtrVector& GetChildren() noexcept { return m_children; }
 
@@ -41,15 +40,15 @@ private:
     bool m_isContainer;
     OS9ViewerKernelModelNode* m_parent;
     OS9ViewerKernelModelNodePtrVector m_children;
+
+    template<typename... Args>
+    OS9ViewerKernelModelNode* AddChildren(Args&&... args);
 };
 
 class OS9ViewerKernelModel : public wxDataViewModel
 {
 public:
     CeDImu& m_cedimu;
-    OS9::EmulatedMemoryAccess m_emulatedMemoryAccess;
-    OS9::Pointer<OS9::SystemGlobals> m_systemGlobalsPtr;
-    // OS9::Kernel m_kernel;
 
     OS9ViewerKernelModelNodePtr m_root;
 
@@ -57,20 +56,21 @@ public:
     {
         ColumnMember,
         ColumnValue,
-        // ColumnHexValue,
+        ColumnName,
     };
 
-    OS9ViewerKernelModel() = delete;
     OS9ViewerKernelModel(CeDImu& cedimu);
     ~OS9ViewerKernelModel();
 
     OS9ViewerKernelModelNodePtr BuildRootNode();
-    // void BuildRootNode();
+
+    virtual bool IsContainer(const wxDataViewItem& item) const override;
+    virtual bool HasContainerColumns(const wxDataViewItem& item) const override;
 
     virtual void GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const override;
     virtual bool SetValue(const wxVariant&, const wxDataViewItem&, unsigned int) override;
+
     virtual wxDataViewItem GetParent(const wxDataViewItem& item) const override;
-    virtual bool IsContainer(const wxDataViewItem& item) const override;
     virtual unsigned int GetChildren(const wxDataViewItem& item, wxDataViewItemArray& array) const override;
 };
 

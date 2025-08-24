@@ -1,6 +1,8 @@
 #include "CDI.hpp"
 #include "boards/Mono3/Mono3.hpp"
 
+#include <functional>
+
 /** \brief Creates a new CD-i instance.
  * \param board The type of board to use.
  * \param systemBios System BIOS data (in big endian format).
@@ -103,6 +105,37 @@ const uint8_t* CDI::GetPointer(const uint32_t addr) const
         return &bios[addr - base];
 
     return nullptr;
+}
+
+OS9::EmulatedMemoryAccess CDI::GetEmulatedMemoryAccessCallbacks() const
+{
+    return OS9::EmulatedMemoryAccess {
+        .GetByte = std::bind(&CDI::PeekByte, this, std::placeholders::_1),
+        .GetWord = std::bind(&CDI::PeekWord, this, std::placeholders::_1),
+        .SetByte = nullptr,
+        .SetWord = nullptr,
+    };
+}
+
+/** \brief Returns a pointer to the kernel for inspection, or nullptr if the system globals is not valid yet. */
+const OS9::Kernel* CDI::GetKernel() const
+{
+    if(m_kernel.IsValid())
+        return &m_kernel;
+    else
+        return nullptr;
+}
+
+/** \brief Returns the name of the module that contains the given address instruction.
+ * This searches in the system globals module list first. If it is not valid yet it searches in the ROMed modules only.
+ */
+std::string CDI::GetModuleNameAt(const uint32_t addr) const
+{
+    const OS9::Kernel* kernel = GetKernel();
+    if(kernel != nullptr)
+        return kernel->GetModuleNameAt(addr);
+
+    return GetBIOS().GetModuleNameAt(addr - GetBIOSBaseAddress());
 }
 
 void CDI::IncrementTime(const double ns)

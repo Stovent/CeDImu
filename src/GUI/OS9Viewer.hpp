@@ -14,7 +14,6 @@ class OS9Viewer : public wxFrame
     wxAuiNotebook* m_auiNotebook;
 
 public:
-    OS9Viewer() = delete;
     OS9Viewer(MainFrame* mainFrame, CeDImu& cedimu);
     ~OS9Viewer();
 };
