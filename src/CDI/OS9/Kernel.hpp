@@ -82,8 +82,8 @@ struct Pointer final
 
     constexpr TargetType operator[](size_t index) const noexcept
     {
-        const uint32_t addr = TargetAddress() + as<uint32_t>(index * T::SIZEOF);
-        return T{m_memory, addr};
+        const uint32_t addr = TargetAddress() + as<uint32_t>(index * TargetType::SIZEOF);
+        return TargetType{m_memory, addr};
     }
 
     /** \brief Value of the pointer. */
@@ -92,7 +92,7 @@ struct Pointer final
     constexpr uint32_t PointerAddress() const noexcept { return m_address; }
 
     // TODO: how to implement operator++()? because it requires modifying the memory. But for local pointers we do not want this.
-    // constexpr Pointer<T>& operator++() noexcept { m_address += T::SIZEOF; return *this; }
+    // constexpr Pointer<TargetType>& operator++() noexcept { m_address += TargetType::SIZEOF; return *this; }
 
 private:
     const EmulatedMemoryAccess& m_memory;
@@ -108,10 +108,36 @@ constexpr bool operator==(const Pointer<T>& left, const Pointer<T>& right)
 
 /** \brief Pointer subtraction which returns the difference in number of elements (and not in bytes). */
 template<typename T>
-constexpr ssize_t operator-(const Pointer<T>& left, const Pointer<T>& right)
+constexpr ptrdiff_t operator-(const Pointer<T>& left, const Pointer<T>& right)
 {
     return (left.TargetAddress() - right.TargetAddress()) / T::SIZEOF;
 }
+
+/** \brief A contiguous number of elements in emulated memory.
+ * \tparam T The type of each element.
+ * \tparam N The number of elements in the array.
+ */
+template<typename T/*, size_t N*/>
+struct Array final
+{
+    using ElementType = T;
+
+    constexpr Array(const EmulatedMemoryAccess& memory, uint32_t address)
+        : m_memory{memory}, m_address{address} {}
+
+    constexpr ElementType operator[](size_t index) const noexcept
+    {
+        const uint32_t addr = Address() + as<uint32_t>(index * ElementType::SIZEOF);
+        return ElementType{m_memory, addr};
+    }
+
+    /** \brief Returns the address of the first element in the array. */
+    constexpr uint32_t Address() const noexcept { return m_address; }
+
+private:
+    const EmulatedMemoryAccess& m_memory;
+    uint32_t m_address; /**< The address of the first element in the array. */
+};
 
 /** \brief uint8_t. */
 class U8 final : public Type<uint8_t, 1>
@@ -331,6 +357,54 @@ private:
     uint32_t m_address;
 };
 
+/** \brief Process Descriptor. */
+struct ProcessDescriptor
+{
+    static constexpr size_t SIZEOF = 0x800;
+
+    constexpr ProcessDescriptor(const EmulatedMemoryAccess& memory, uint32_t address)
+        : P$ID{memory, address}
+        , P$PID{memory, address + 0x2}
+        , P$SID{memory, address + 0x4}
+        , P$CID{memory, address + 0x6}
+        , P$User{memory, address + 0x14}
+        , P$Prior{memory, address + 0x18}
+        , P$Age{memory, address + 0x1A}
+        , P$State{memory, address + 0x1C}
+        , P$QueuID{memory, address + 0x20}
+        , P$QueueN{memory, address + 0x30}
+        , P$QueueP{memory, address + 0x34}
+        , P$PModul{memory, address + 0x38}
+        , P$MemImg{memory, address + 0x1A8}
+        , P$BlkSiz{memory, address + 0x228}
+        , P$Data{memory, address + 0x32C}
+        , P$DataSz{memory, address + 0x330}
+        , m_address{address}
+    {}
+
+    constexpr uint32_t Address() const noexcept { return m_address; }
+
+    U16 P$ID; /**< Process ID. */
+    U16 P$PID; /**< Process ID of the parent. */
+    U16 P$SID; /**< Process ID of the first sibling. */
+    U16 P$CID; /**< Process ID of the first child. */
+    U32 P$User; /**< Group number and user ID. */
+    U16 P$Prior; /**< Process priority. */
+    U16 P$Age; /**< Process age. */
+    U16 P$State; /**< Process state (high byte only). */
+    U8 P$QueuID; /**< ASCII charactere that indicates which queue the process is in. */
+    Pointer<ProcessDescriptor> P$QueueN; /**< Next process in the queue. */
+    Pointer<ProcessDescriptor> P$QueueP; /**< Previous process in the queue. */
+    Pointer<Module> P$PModul; /**< Program module that was forked for this process. */
+    Array<U32> P$MemImg; /**< Table of addresses of memory areas allocated. */
+    Array<U32> P$BlkSiz; /**< Table of sizes of allocated memory areas. */
+    U32 P$Data; /**< Address of the process' static storage. */
+    U32 P$DataSz; /**< Size of the process' static storage. */
+
+private:
+    uint32_t m_address;
+};
+
 /** \brief OS-9 System Globals.
  * Refer to The OS-9 Guru for a description of it.
  * Not all of it is declared here, I only use it for the purpose of finding kernel data.
@@ -339,22 +413,56 @@ struct SystemGlobals
 {
     constexpr SystemGlobals(const EmulatedMemoryAccess& memory, uint32_t address)
         : D_ID{memory, address}
+        , D_NoSleep{memory, address + 0x02}
+        , D_Init{memory, address + 0x20}
+        , D_Clock{memory, address + 0x24}
+        , D_TckSec{memory, address + 0x28}
+        , D_Year{memory, address + 0x2A}
+        , D_Month{memory, address + 0x2C}
+        , D_Day{memory, address + 0x2D}
+        , D_Compat{memory, address + 0x2E}
+        , D_68881{memory, address + 0x2F}
+        , D_Julian{memory, address + 0x30}
+        , D_Second{memory, address + 0x34}
         , D_ModDir{memory, address + 0x3C}
         , D_ModDirEnd{memory, address + 0x40}
         // , D_PrcDBT{memory}
         // , D_PthDBT{memory}
-        // , D_Proc{memory}
+        , D_Proc{memory, address + 0x4C}
+        , D_SysPrc{memory, address + 0x50}
+        , D_Ticks{memory, address + 0x54}
+        , D_TotRAM{memory, address + 0x6C}
+        , D_MinBlk{memory, address + 0x70}
+        , D_BlkSiz{memory, address + 0x7C}
         , m_address{address}
     {}
 
     constexpr uint32_t Address() const noexcept { return m_address; }
 
     U16 D_ID;
+    U16 D_NoSleep;
+    Pointer<Module> D_Init;
+    U32 D_Clock;
+    U16 D_TckSec;
+    U16 D_Year;
+    U8 D_Month;
+    U8 D_Day;
+    U8 D_Compat;
+    U8 D_68881;
+    U32 D_Julian;
+    U32 D_Second;
+
     Pointer<ModuleDirectoryEntry> D_ModDir; // Class that wraps the two with begin/end methods for iterator access?
     Pointer<ModuleDirectoryEntry> D_ModDirEnd;
-    // EmulatedMemory::Member<0x44, void*> D_PrcDBT;
-    // EmulatedMemory::Member<0x48, void*> D_PthDBT;
-    // EmulatedMemory::Member<0x4C, void*> D_Proc; /**< The current process. */
+    // Pointer<ProcessDescriptor> D_PrcDBT;
+    // Pointer<PathDescriptor> D_PthDBT;
+    Pointer<ProcessDescriptor> D_Proc; /**< The current process. */
+    Pointer<ProcessDescriptor> D_SysPrc; /**< System process descriptor. */
+    U32 D_Ticks; /**< Tick count since coldstart. */
+
+    U32 D_TotRAM;
+    U32 D_MinBlk;
+    U32 D_BlkSiz;
 
 private:
     uint32_t m_address;

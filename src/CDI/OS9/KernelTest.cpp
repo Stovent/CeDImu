@@ -85,6 +85,30 @@ static consteval bool testPointer()
 }
 static_assert(testPointer());
 
+static consteval bool testArray()
+{
+    EmulatedMemory memory{};
+
+    OS9::Array<OS9::U32> arr{memory, 0x10};
+    ASSERT(arr.Address() == 0x10);
+    ASSERT(arr[0] == 0);
+    ASSERT(arr[1] == 0);
+    ASSERT(arr[2] == 0);
+    ASSERT(arr[3] == 0);
+
+    arr[0] = 1;
+    arr[1] = 10;
+    arr[2] = 100;
+    arr[3] = 1000;
+    ASSERT(arr[0] == 1);
+    ASSERT(arr[1] == 10);
+    ASSERT(arr[2] == 100);
+    ASSERT(arr[3] == 1000);
+
+    return true;
+}
+static_assert(testArray());
+
 static consteval bool testString()
 {
     static constexpr char ALPHABET[] = "abcdefghijklmnopqrstuvwxyz";
