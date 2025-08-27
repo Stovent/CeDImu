@@ -1,7 +1,7 @@
 target_sources(CeDImu
     PRIVATE
-        Pixel.cpp
         Pixel.hpp
+        PixelTest.cpp
         Renderer.cpp
         Renderer.hpp
         RendererDCP.cpp

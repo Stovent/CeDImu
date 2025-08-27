@@ -44,6 +44,8 @@ struct alignas(uint32_t) Pixel
     constexpr const ARGB32* AsU32Pointer() const noexcept { return reinterpret_cast<const ARGB32*>(this); }
     constexpr ARGB32* AsU32Pointer() noexcept { return reinterpret_cast<ARGB32*>(this); }
 
+    constexpr bool operator==(const Pixel& other) const = default;
+
     constexpr Pixel& operator=(const ARGB32 argb) noexcept
     {
         a = argb >> 24;

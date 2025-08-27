@@ -7,6 +7,8 @@
 
 #include "Pixel.hpp"
 
+#include <version>
+
 #include <experimental/simd>
 namespace stdx = std::experimental;
 #if __cpp_lib_simd
