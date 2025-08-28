@@ -228,7 +228,7 @@ uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB
  * \param initialDYUV The initial value to be used by the DYUV decoder.
  * \return The number of raw bytes read from \p dyuv.
  */
-uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* dyuv, uint16_t width, uint16_t initialDYUV) noexcept
+uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* dyuv, uint16_t width, uint32_t initialDYUV) noexcept
 {
     uint32_t previous = initialDYUV;
 

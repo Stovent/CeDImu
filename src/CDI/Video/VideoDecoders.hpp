@@ -11,7 +11,7 @@ uint16_t decodeBitmapLine(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB
 uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept;
 
 uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept;
-uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* data, uint16_t width, uint16_t initialDYUV) noexcept;
+uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* data, uint16_t width, uint32_t initialDYUV) noexcept;
 uint16_t decodeCLUTLine(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept;
 
 // Real-Time Decoders (set pixels in ARGB format)
