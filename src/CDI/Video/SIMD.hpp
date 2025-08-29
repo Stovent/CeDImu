@@ -23,8 +23,7 @@ using SIMDNativePixelSigned = stdx::native_simd<std::make_signed_t<Pixel::ARGB32
 template<size_t WIDTH>
 using SIMDFixedPixelSigned = stdx::fixed_size_simd<std::make_signed_t<Pixel::ARGB32>, WIDTH>;
 using SIMDNativeU8 = stdx::native_simd<uint8_t>;
-using SIMDNativeS16 = stdx::native_simd<int16_t>;
-using SIMDFixedS16 = stdx::fixed_size_simd<int16_t, SIMDNativeS16::size() * sizeof(SIMDNativeS16::value_type)>;
+using SIMDFixedS16 = stdx::rebind_simd_t<int16_t, SIMDNativeU8>;
 
 inline constexpr size_t SIMD_SIZE = SIMDNativePixel::size();
 

@@ -4,6 +4,7 @@
 #include <bit>
 #include <cstdint>
 #include <stdbit.h>
+#include <type_traits>
 
 #if __STDC_VERSION_STDBIT_H__ < 202311L
 #error need __STDC_ENDIAN_NATIVE__ compiler support
@@ -41,17 +42,24 @@ struct alignas(uint32_t) Pixel
 
     constexpr explicit operator ARGB32() const noexcept { return std::bit_cast<ARGB32>(*this); }
 
-    constexpr const ARGB32* AsU32Pointer() const noexcept { return reinterpret_cast<const ARGB32*>(this); }
-    constexpr ARGB32* AsU32Pointer() noexcept { return reinterpret_cast<ARGB32*>(this); }
+    // reinterpret_cast is not constexpr compatible.
+    const ARGB32* AsU32Pointer() const noexcept { return reinterpret_cast<const ARGB32*>(this); }
+    ARGB32* AsU32Pointer() noexcept { return reinterpret_cast<ARGB32*>(this); }
 
     constexpr bool operator==(const Pixel& other) const = default;
 
     constexpr Pixel& operator=(const ARGB32 argb) noexcept
     {
-        a = argb >> 24;
-        r = argb >> 16;
-        g = argb >> 8;
-        b = argb;
+        if(std::is_constant_evaluated())
+        {
+            a = argb >> 24;
+            r = argb >> 16;
+            g = argb >> 8;
+            b = argb;
+        }
+        else
+            *AsU32Pointer() = argb;
+
         return *this;
     }
 

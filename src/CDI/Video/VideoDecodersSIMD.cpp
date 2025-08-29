@@ -50,25 +50,24 @@ uint16_t decodeBitmapLineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* d
 uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
 {
     // TODO: ensure we do not index out of bound.
-    using SIMDFixedU32 = stdx::fixed_size_simd<uint32_t, SIMDNativeU8::size()>;
+    using SIMDFixedU32 = stdx::rebind_simd_t<uint32_t, SIMDNativeU8>;
 
     const uint8_t* endA = dataA + width;
 
-    static const SIMDNativeU8 alphaMask{0x80};
+    const SIMDFixedU32 alphaMask{0x8000};
     for(; dataA < endA; dataA += SIMDNativeU8::size())
     {
-        SIMDNativeU8 a{dataA, stdx::element_aligned};
-        SIMDNativeU8 b{dataB, stdx::element_aligned};
+        const SIMDNativeU8 da{dataA, stdx::element_aligned};
+        const SIMDNativeU8 db{dataB, stdx::element_aligned};
 
-        // TODO: should I use simd_mask anyway?
-        SIMDNativeU8 alpha = (a & alphaMask);
-        SIMDNativeU8 red = a << 1 & 0xF8;
-        SIMDNativeU8 green = (a << 6) | (b >> 5 & 0x38);
-        SIMDNativeU8 blue = b << 3;
-        SIMDFixedU32 result = stdx::static_simd_cast<uint32_t>(alpha) << 24 |
-                              stdx::static_simd_cast<uint32_t>(red) << 16 |
-                              stdx::static_simd_cast<uint32_t>(green) << 8 |
-                              stdx::static_simd_cast<uint32_t>(blue);
+        const SIMDFixedU32 a = stdx::static_simd_cast<uint32_t>(da);
+        const SIMDFixedU32 b = stdx::static_simd_cast<uint32_t>(db);
+        const SIMDFixedU32 data = a << 8 | b;
+
+        SIMDFixedU32 result = (data & alphaMask);
+        result |= data << 9 & 0x00F8'0000;
+        result |= data << 6 & 0x0000'F800;
+        result |= data << 3 & 0x0000'00F8;
 
         result.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
     };

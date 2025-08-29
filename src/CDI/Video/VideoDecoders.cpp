@@ -208,7 +208,7 @@ uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB
     for(uint16_t x = 0; x < width; x++)
     {
         // This version is highly vectorizable (to GCC) compared to manipulating dataA and dataB bytes independently.
-        uint16_t pixel = as<uint16_t>(*dataA++) << 8;
+        uint16_t pixel = static_cast<uint16_t>(*dataA++) << 8;
         pixel |= *dataB++;
 
         dst->a = (pixel & 0x8000) ? 0xFF : 0;

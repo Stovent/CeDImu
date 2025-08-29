@@ -6,16 +6,14 @@
 #include <print>
 #include <string_view>
 
-static constexpr size_t WIDTH = 384;
-static constexpr size_t HEIGHT = 280;
+static constexpr size_t WIDTH = 768;
 static constexpr size_t FRAMES = 10000;
 static constexpr Video::Renderer::DisplayFormat DISPLAY = Video::Renderer::DisplayFormat::PAL;
-static constexpr Video::Renderer::Resolution RESOLUTION = Video::Renderer::Resolution::Normal;
 
 static constexpr std::array<uint8_t, WIDTH> LINEA{};
 static constexpr std::array<uint8_t, WIDTH> LINEB{};
 
-template<typename RENDERER>
+template<typename RENDERER, Video::Renderer::Resolution RESOLUTION>
 static void benchmarkRenderer(std::string_view name)
 {
     // Configure the renderer.
@@ -25,11 +23,14 @@ static void benchmarkRenderer(std::string_view name)
     renderer.m_codingMethod[Video::Renderer::B] = Video::ImageCodingMethod::CLUT8;
     renderer.m_mix = true;
 
+    // Heigt is set by the previous SetDisplayResolution
+    const size_t height = renderer.m_plane[Video::Renderer::A].m_height;
+
     // Benchmark
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     for(size_t f = 0; f < FRAMES; ++f)
     {
-        for(size_t y = 0; y < HEIGHT; ++y)
+        for(size_t y = 0; y < height; ++y)
         {
             renderer.DrawLine(LINEA.data(), LINEB.data());
         }
@@ -50,6 +51,12 @@ static void benchmarkRenderer(std::string_view name)
 
 int main()
 {
-    benchmarkRenderer<Video::RendererSoftware>("Soft");
-    benchmarkRenderer<Video::RendererSIMD>("SIMD");
+    benchmarkRenderer<Video::RendererSoftware, Video::Renderer::Resolution::Normal>("Normal Soft");
+    benchmarkRenderer<Video::RendererSIMD, Video::Renderer::Resolution::Normal>("Normal SIMD");
+
+    benchmarkRenderer<Video::RendererSoftware, Video::Renderer::Resolution::Double>("Double Soft");
+    benchmarkRenderer<Video::RendererSIMD, Video::Renderer::Resolution::Double>("Double SIMD");
+
+    benchmarkRenderer<Video::RendererSoftware, Video::Renderer::Resolution::High>("High   Soft");
+    benchmarkRenderer<Video::RendererSIMD, Video::Renderer::Resolution::High>("High   SIMD");
 }
