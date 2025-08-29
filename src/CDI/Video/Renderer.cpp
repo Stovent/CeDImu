@@ -142,6 +142,21 @@ void Renderer::SetCursorPattern(const uint8_t line, const uint16_t pattern) noex
     m_cursorPatterns.at(line) = pattern;
 }
 
+/** \brief Checks if the given ICM for both planes are valid according to Green Book V.4.4.8. */
+bool Renderer::isAllowedImageCodingCombination(ImageCodingMethod planeA, ImageCodingMethod planeB) noexcept
+{
+    using enum ImageCodingMethod;
+
+    if(planeB == RGB555 && planeA != OFF)
+        return false;
+
+    if((planeA == CLUT8 || planeA == CLUT77) && planeB != DYUV)
+        return false;
+
+    // If I implement QHY, if(planeB == QHY && planeA != DYUV) return false;
+    return true;
+}
+
 /** \brief Converts the 4-bits backdrop color to a Pixel.
  * \param color The 4 bit color code.
  * \returns The Pixel.

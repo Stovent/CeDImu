@@ -107,6 +107,9 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
             m_matteNumber = bit<19>(instruction);
             m_codingMethod[B] = decodeCodingMethod1(bits<8, 11>(instruction));
             m_codingMethod[A] = decodeCodingMethod0(bits<0, 3>(instruction));
+            if(!isAllowedImageCodingCombination(m_codingMethod[A], m_codingMethod[B]))
+                std::println("Invalid image coding combination {} {}",
+                    static_cast<int>(m_codingMethod[A]), static_cast<int>(m_codingMethod[B]));
             // TODO: what to do with external video enabled?
             m_externalVideo = bit<18>(instruction);
             return false;

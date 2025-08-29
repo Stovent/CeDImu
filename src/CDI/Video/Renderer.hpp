@@ -11,11 +11,6 @@
 namespace Video
 {
 
-static constexpr uint32_t argbArrayToU32(uint8_t* pixels) noexcept
-{
-    return (as<uint32_t>(pixels[1]) << 16) | (as<uint32_t>(pixels[2]) << 8) | as<uint32_t>(pixels[3]);
-}
-
 static constexpr bool matteMF(const uint32_t matteCommand) noexcept
 {
     return bit<16>(matteCommand);
@@ -84,6 +79,13 @@ public:
         High, /**< Double horizontal and vertical resolution. */
     };
 
+    enum class ImageType
+    {
+        Normal,
+        RunLength,
+        Mosaic,
+    };
+
     static constexpr Pixel BLACK_PIXEL{0x00'10'10'10};
 
     Renderer() {}
@@ -91,6 +93,8 @@ public:
 
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
+    Renderer(Renderer&&) = delete;
+    Renderer& operator=(Renderer&&) = delete;
 
     virtual std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept = 0;
     virtual const Plane& RenderFrame() noexcept = 0;
@@ -113,13 +117,6 @@ public:
     void SetCursorColor(uint8_t argb) noexcept;
     void SetCursorPattern(uint8_t line, uint16_t pattern) noexcept;
 
-    enum class ImageType
-    {
-        Normal,
-        RunLength,
-        Mosaic,
-    };
-
     // TODO: organize and order the members correctly.
 
     Plane m_screen{384, 280};
@@ -139,6 +136,7 @@ public:
     bool m_matteNumber{}; /**< false for 1 matte, true for 2. */
     bool m_externalVideo{};
     std::array<ImageCodingMethod, 2> m_codingMethod{ImageCodingMethod::OFF, ImageCodingMethod::OFF};
+    static bool isAllowedImageCodingCombination(ImageCodingMethod planeA, ImageCodingMethod planeB) noexcept;
 
     // Display Parameters.
     std::array<ImageType, 2> m_imageType{ImageType::Normal, ImageType::Normal};

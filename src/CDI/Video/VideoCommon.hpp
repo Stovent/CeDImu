@@ -16,12 +16,12 @@ namespace Video
 enum class ImageCodingMethod
 {
     OFF,
-    CLUT8,
+    CLUT8, /**< Plane A only. */
     CLUT7,
-    CLUT77,
+    CLUT77, /**< Plane A only. */
     CLUT4,
     DYUV,
-    RGB555,
+    RGB555, /**< Plane B only. */
 };
 
 enum class ControlArea
