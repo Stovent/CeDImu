@@ -23,7 +23,7 @@ static void benchmarkRenderer(std::string_view name)
     renderer.m_codingMethod[Video::Renderer::B] = Video::ImageCodingMethod::CLUT8;
     renderer.m_mix = true;
 
-    // Heigt is set by the previous SetDisplayResolution
+    // Height is set by the previous SetDisplayResolution
     const size_t height = renderer.m_plane[Video::Renderer::A].m_height;
 
     // Benchmark

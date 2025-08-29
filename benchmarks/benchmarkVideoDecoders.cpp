@@ -94,6 +94,7 @@ int main()
     benchmarkRGB555Line<Video::decodeRGB555LineSIMD>("RGB555 SIMD");
 
     benchmarkDYUVLine<Video::decodeDYUVLine>("DYUV Soft");
+    benchmarkDYUVLine<Video::decodeDYUVLineLUT>("DYUV  LUT");
 
     benchmarkCLUTLine<Video::decodeCLUTLine>("CLUT Soft");
 }

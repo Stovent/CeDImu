@@ -58,46 +58,6 @@ private:
 namespace Video
 {
 
-/** \brief Green book Figure V.18 */
-static constexpr std::array<uint8_t, 16> dequantizer{0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
-
-static constexpr std::array<int, 256> generateVToR() noexcept
-{
-    std::array<int, 256> array{};
-    for(int i = 0; i < 256; i++)
-        array[i] = (351 * (i - 128)) / 256;
-    return array;
-}
-
-static constexpr std::array<int, 256> generateVToG() noexcept
-{
-    std::array<int, 256> array{};
-    for(int i = 0; i < 256; i++)
-        array[i] = (179 * (i - 128)) / 256;
-    return array;
-}
-
-static constexpr std::array<int, 256> generateUToG() noexcept
-{
-    std::array<int, 256> array{};
-    for(int i = 0; i < 256; i++)
-        array[i] = (86 * (i - 128)) / 256;
-    return array;
-}
-
-static constexpr std::array<int, 256> generateUToB() noexcept
-{
-    std::array<int, 256> array{};
-    for(int i = 0; i < 256; i++)
-        array[i] = (444 * (i - 128)) / 256;
-    return array;
-}
-
-static constexpr std::array<int, 256> matrixVToR = generateVToR();
-static constexpr std::array<int, 256> matrixVToG = generateVToG();
-static constexpr std::array<int, 256> matrixUToG = generateUToG();
-static constexpr std::array<int, 256> matrixUToB = generateUToB();
-
 /** \brief Decode a bitmap file line.
  *
  * \param dst Where the decoded line will be written to in ARGB.
@@ -221,24 +181,52 @@ uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB
     return width;
 }
 
+static constexpr void matrixRGB(Pixel* pixel, const int Y, const uint8_t U, const uint8_t V) noexcept
+{
+    pixel->r = limu8(Y + matrixVToR[V]);
+    pixel->g = limu8(Y - (matrixUToG[U] + matrixVToG[V]));
+    pixel->b = limu8(Y + matrixUToB[U]);
+}
+
 /** \brief Decode a DYUV line to ARGB.
  * \param dst Where the ARGB data will be written to.
- * \param dyuv The source DYUV data.
+ * \param data The source DYUV data.
  * \param width Width of the line in pixels.
  * \param initialDYUV The initial value to be used by the DYUV decoder.
- * \return The number of raw bytes read from \p dyuv.
+ * \return The number of raw bytes read from \p data.
  */
-uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* dyuv, uint16_t width, uint32_t initialDYUV) noexcept
+uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* data, uint16_t width, uint32_t initialDYUV) noexcept
 {
-    uint32_t previous = initialDYUV;
+    uint8_t py = bits<16, 23>(initialDYUV);
+    uint8_t pu = bits<8, 15>(initialDYUV);
+    uint8_t pv = initialDYUV;
 
-    CountingIterator<int, 2> it{0};
+    for(uint16_t index = 0; index < width; index += 2)
+    {
+        const uint8_t high = data[index];
+        const uint8_t low = data[index + 1];
 
-    std::for_each_n(it, width >> 1, [dst, dyuv, &previous] (const int index) {
-        uint16_t pixel = as<uint16_t>(dyuv[index]) << 8;
-        pixel |= dyuv[index + 1];
-        decodeDYUV(&dst[index], pixel, previous);
-    });
+        // Green book V.4.4.2
+        uint8_t u2 = bits<4, 7>(high);
+        uint8_t y1 = bits<0, 3>(high);
+        uint8_t v2 = bits<4, 7>(low);
+        uint8_t y2 = bits<0, 3>(low);
+
+        y1 = py + dequantizer[y1];
+        u2 = pu + dequantizer[u2];
+        v2 = pv + dequantizer[v2];
+        y2 = y1 + dequantizer[y2];
+        const uint8_t u1 = (as<uint16_t>(pu) + as<uint16_t>(u2)) >> 1;
+        const uint8_t v1 = (as<uint16_t>(pv) + as<uint16_t>(v2)) >> 1;
+
+        // Store previous.
+        py = y2;
+        pu = u2;
+        pv = v2;
+
+        matrixRGB(dst, y1, u1, v1);
+        matrixRGB(&dst[1], y2, u2, v2);
+    }
 
     return width;
 }
@@ -281,45 +269,6 @@ uint16_t decodeCLUTLine(Pixel* dst, const uint8_t* data, uint16_t width, const u
 
         return width;
     }
-}
-
-static constexpr void matrixRGB(Pixel* pixel, const int Y, const uint8_t U, const uint8_t V) noexcept
-{
-    pixel->r = limu8(Y + matrixVToR[V]);
-    pixel->g = limu8(Y - (matrixUToG[U] + matrixVToG[V]));
-    pixel->b = limu8(Y + matrixUToB[U]);
-}
-
-/** \brief Convert DYUV to ARGB.
- *
- * \param dst Where the two pixels will be written to.
- * \param pixel The pixel to decode.
- * \param previous The previous pixel colors.
- *
- * Pixel with original algorithm https://github.com/Stovent/CeDImu/commit/22464aacb5c2590886b98176183e6c2e240835e0
- */
-void decodeDYUV(Pixel* dst, const uint16_t pixel, uint32_t& previous) noexcept
-{
-    // Green book V.4.4.2
-    uint8_t u2 = bits<12, 15>(pixel);
-    uint8_t y1 = bits<8, 11>(pixel);
-    uint8_t v2 = bits<4, 7>(pixel);
-    uint8_t y2 = bits<0, 3>(pixel);
-
-    const uint8_t py = bits<16, 23>(previous);
-    const uint8_t pu = bits<8, 15>(previous);
-    const uint8_t pv = previous;
-
-    y1 = py + dequantizer[y1];
-    u2 = pu + dequantizer[u2];
-    v2 = pv + dequantizer[v2];
-    y2 = y1 + dequantizer[y2];
-    const uint8_t u1 = (as<uint16_t>(pu) + as<uint16_t>(u2)) >> 1;
-    const uint8_t v1 = (as<uint16_t>(pv) + as<uint16_t>(v2)) >> 1;
-    previous = as<uint32_t>(y2) << 16 | as<uint32_t>(u2) << 8 | v2;
-
-    matrixRGB(dst, y1, u1, v1);
-    matrixRGB(&dst[1], y2, u2, v2);
 }
 
 /** \brief Copy the ARGB pixels to an ARGB plane.
