@@ -19,8 +19,8 @@ void MCD212::DrawVideoLine()
 
     SetDA();
 
-    if(m_renderer.m_lineNumber == 0)
-        m_renderer.SetPlanesResolutions(GetHorizontalResolution1(), GetHorizontalResolution2(), GetVerticalResolution());
+    // if(m_renderer.m_lineNumber == 0)
+    //     m_renderer.SetPlanesResolutions(GetHorizontalResolution1(), GetHorizontalResolution2(), GetVerticalResolution());
 
     if(GetSM() && isEven(m_totalFrameCount))
         UnsetPA();

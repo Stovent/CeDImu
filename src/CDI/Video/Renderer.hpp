@@ -16,29 +16,12 @@ static constexpr bool matteMF(const uint32_t matteCommand) noexcept
     return bit<16>(matteCommand);
 }
 
-static constexpr uint8_t matteOp(const uint32_t matteCommand) noexcept
-{
-    return bits<20, 23>(matteCommand);
-}
-
-static constexpr uint8_t matteICF(const uint32_t matteCommand) noexcept
-{
-    return bits<10, 15>(matteCommand);
-}
-
-static constexpr uint16_t matteXPosition(const uint32_t matteCommand) noexcept
-{
-    return bits<1, 9>(matteCommand); // TODO: handle double resolution.
-}
-
 /** \brief CD-i video renderer base class as described in the Green Book.
  *
  * Every array member with 2 elements means its meant to be index based on the plane number \ref ImagePlane.
  *
- * I absolutely really need to implement multi resolutions because my code just assumes normal res for all the planes.
- *
  * TODO:
- * - Handle Width, Height, double resolution.
+ * - Handle high resolution height.
  * - Should the renderer manage the line count and draw itself the final frame and the cursor when reached,
  *   or let it to the user of the renderer with a `Plane RenderFrame();` method ?
  * - Let all members public because the MCD212/VSD has access to them all ?
@@ -65,18 +48,26 @@ public:
         PIXEL_FULL_INTENSITY = 0xFF, /**< Pixel is full-intensity. */
     };
 
-    enum class DisplayFormat
-    {
-        NTSCMonitor, /**< 525 lines (360 x 240). */
-        NTSCTV, /**< 525 lines (384 x 240). */
-        PAL, /**< 625 lines (384 x 280). */
-    };
+    // enum class DisplayFormat
+    // {
+    //     NTSCMonitor, /**< 525 lines (360 x 240). */
+    //     NTSCTV, /**< 525 lines (384 x 240). */
+    //     PAL, /**< 625 lines (384 x 280). */
+    // };
 
-    enum class Resolution
+    // enum class Resolution
+    // {
+    //     Normal, /**< Same resolution as display format. */
+    //     Double, /**< Double horizontal resolution, normal vertical resolution. */
+    //     High, /**< Double horizontal and vertical resolution. */
+    // };
+
+    // This enum exists to explicitely indicate that double resolution is 4 bits per pixels, and 8 for high res.
+    enum class BitsPerPixel
     {
-        Normal, /**< Same resolution as display format. */
-        Double, /**< Double horizontal resolution, normal vertical resolution. */
-        High, /**< Double horizontal and vertical resolution. */
+        Normal8, /**< 8 bits/pixel, Normal Resolution. */
+        Double4, /**< 4 bits/pixel, Double or High Resolution. */
+        High8, /**< 8 bits/pixel, High Resolution. */
     };
 
     enum class ImageType
@@ -102,14 +93,16 @@ public:
     template<ImagePlane PLANE>
     bool ExecuteDCPInstruction(uint32_t instruction) noexcept;
 
-    void SetDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
-    static bool isValidDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
-    static std::pair<size_t, size_t> getPixelResolution(DisplayFormat display, Resolution resolution) noexcept;
+    bool m_use360Pixels; /**< Set by the video chip, stored at the start of the frame for its entirety. */
 
-    void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
-    static bool isValidWidth(uint16_t width) noexcept;
-    static bool isValidHeight(uint16_t height) noexcept;
-    static bool isValidPixelResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
+//     void SetDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
+//     static bool isValidDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
+//     static std::pair<size_t, size_t> getPixelResolution(DisplayFormat display, Resolution resolution) noexcept;
+//
+//     void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
+//     static bool isValidWidth(uint16_t width) noexcept;
+//     static bool isValidHeight(uint16_t height) noexcept;
+//     static bool isValidPixelResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
 
     void SetCursorEnabled(bool enabled) noexcept;
     void SetCursorResolution(bool doubleResolution) noexcept;
@@ -119,8 +112,9 @@ public:
 
     // TODO: organize and order the members correctly.
 
-    Plane m_screen{384, 280};
-    std::array<Plane, 2> m_plane{Plane{384, 280}, Plane{384, 280}};
+    // TODO: set those to always double resolution.
+    Plane m_screen{0, 280};
+    std::array<Plane, 2> m_plane{Plane{0, 280}, Plane{0, 280}};
     Plane m_backdropPlane{1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT};
     Plane m_cursorPlane{Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_SIZE}; /**< The alpha is 0, 127 or 255. */
 
@@ -141,7 +135,7 @@ public:
     // Display Parameters.
     std::array<ImageType, 2> m_imageType{ImageType::Normal, ImageType::Normal};
     std::array<uint8_t, 2> m_pixelRepeatFactor{1, 1}; /**< (Raw pixel decoding V.26). */
-    std::array<bool, 2> m_bps{}; /**< false for 8 bits per pixels, true for 4 bps. */
+    std::array<BitsPerPixel, 2> m_bps{BitsPerPixel::Normal8, BitsPerPixel::Normal8}; /**< Bits per pixel. */
     std::array<bool, 2> m_holdEnabled{}; /**< Pixel Hold Enabled (overlay V.25). */
     std::array<uint8_t, 2> m_holdFactor{1, 1}; /**< Pixel Hold Factor (overlay V.25). */
 
@@ -229,6 +223,8 @@ public:
     };
 
 protected:
+    bool m_360Pixels; /**< true when a line has 360 pixels, false when the line has 384. */
+
     /** \brief Returns the lowest 24-bits that contains the DCP command. */
     static constexpr uint32_t dcpExtractCommand(const uint32_t inst) { return inst & 0x00FF'FFFFu; }
 
@@ -258,80 +254,6 @@ constexpr void Renderer::ResetMatte() noexcept
     {
         m_nextMatte[A] = 0;
         m_nextMatte[B] = MATTE_HALF;
-    }
-}
-
-/** \brief Handles the matte flags for the given plane at the given pixel position.
- * \param pos The current pixel position (in normal resolution).
- */
-template<Renderer::ImagePlane PLANE> constexpr void Renderer::HandleMatte(uint16_t pos) noexcept
-{
-    if(!m_matteNumber) // One matte.
-    {
-        if(m_nextMatte[PLANE] >= m_matteControl.size())
-            return;
-    }
-    else // Two mattes.
-    {
-        if constexpr(PLANE == A)
-        {
-            if(m_nextMatte[A] >= MATTE_HALF)
-                return;
-        }
-        else
-            if(m_nextMatte[B] >= m_matteControl.size())
-                return;
-    }
-
-    const uint32_t command = m_matteControl[m_nextMatte[PLANE]];
-    if(matteXPosition(command) > pos)
-        return;
-
-    ++m_nextMatte[PLANE];
-
-    /* TODO: matte flag index changed should be based on its index. V.5.10.2 note 8 */
-    const uint8_t op = matteOp(command);
-    switch(op)
-    {
-    case 0b0000:
-        m_nextMatte[PLANE] = m_matteControl.size();
-        break;
-
-    case 0b0100:
-        m_icf[A] = matteICF(command);
-        break;
-
-    case 0b0110:
-        m_icf[B] = matteICF(command);
-        break;
-
-    case 0b1000:
-        m_matteFlags[PLANE] = false;
-        break;
-
-    case 0b1001:
-        m_matteFlags[PLANE] = true;
-        break;
-
-    case 0b1100:
-        m_icf[A] = matteICF(command);
-        m_matteFlags[PLANE] = false;
-        break;
-
-    case 0b1101:
-        m_icf[A] = matteICF(command);
-        m_matteFlags[PLANE] = true;
-        break;
-
-    case 0b1110:
-        m_icf[B] = matteICF(command);
-        m_matteFlags[PLANE] = false;
-        break;
-
-    case 0b1111:
-        m_icf[B] = matteICF(command);
-        m_matteFlags[PLANE] = true;
-        break;
     }
 }
 

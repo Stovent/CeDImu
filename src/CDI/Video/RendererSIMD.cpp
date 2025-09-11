@@ -30,6 +30,19 @@ namespace Video
  */
 std::pair<uint16_t, uint16_t> RendererSIMD::DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept
 {
+    if(m_lineNumber == 0)
+    {
+        m_360Pixels = m_use360Pixels;
+        if(m_360Pixels)
+        {
+            m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = 720;
+        }
+        else
+        {
+            m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = 768;
+        }
+    }
+
     ResetMatte();
 
     const uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
@@ -64,10 +77,9 @@ const Plane& RendererSIMD::RenderFrame() noexcept
     if(m_cursorEnabled)
     {
         DrawCursor();
-        // TODO: double resolution
         Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height,
                      m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height,
-                     m_cursorX >> 1, m_cursorY);
+                     m_cursorX, m_cursorY);
     }
 
     m_lineNumber = 0;
@@ -90,21 +102,44 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
         return 0;
     }
 
-    const bool is4BPP = false; // TODO.
-
     const uint32_t* clut;
     if constexpr(PLANE == A)
         clut = m_codingMethod[A] == ICM(CLUT77) && m_clutSelectHigh ? &m_clut[128] : m_clut.data();
     else
         clut = &m_clut[128];
 
+    const ImageCodingMethod icm = m_codingMethod[PLANE];
+
     switch(m_imageType[PLANE])
     {
     case ImageType::Normal:
-        return decodeBitmapLineSIMD(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
+        if(icm == ImageCodingMethod::CLUT4)
+            if(m_360Pixels)
+                return decodeBitmapLineSIMD<720>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
+            else
+                return decodeBitmapLineSIMD<768>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
+        else
+            if(m_360Pixels)
+                return decodeBitmapLineSIMD<360>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
+            else
+                return decodeBitmapLineSIMD<384>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
 
     case ImageType::RunLength:
-        return decodeRunLengthLine(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
+        if(m_bps[PLANE] == BitsPerPixel::Double4) // RL3
+            if(m_360Pixels)
+                return decodeRunLengthLine<720, true>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+            else
+                return decodeRunLengthLine<768, true>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+        else if(m_bps[PLANE] == BitsPerPixel::High8) // RL7 high
+            if(m_360Pixels)
+                return decodeRunLengthLine<720, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+            else
+                return decodeRunLengthLine<768, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+        else
+            if(m_360Pixels)
+                return decodeRunLengthLine<360, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+            else
+                return decodeRunLengthLine<384, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
 
     case ImageType::Mosaic:
         panic("Unsupported type Mosaic");
@@ -172,14 +207,6 @@ void RendererSIMD::OverlayMix() noexcept
 
     switch(m_plane[A].m_width)
     {
-    case 360:
-        HandleOverlayMixSIMD<MIX, PLANE_ORDER, SIMDReminder<360>::value>();
-        break;
-
-    case 384:
-        HandleOverlayMixSIMD<MIX, PLANE_ORDER, SIMDReminder<384>::value>();
-        break;
-
     case 720:
         HandleOverlayMixSIMD<MIX, PLANE_ORDER, SIMDReminder<720>::value>();
         break;
@@ -508,9 +535,10 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
         icfBack = m_icfLine[B].data();
     }
 
+    // Both planes always have the same width.
     constexpr int simdSize = static_cast<int>(SIMD_SIZE);
     for(int width = static_cast<int>(m_plane[A].m_width); width >= simdSize; width -= simdSize,
-        planeFront += SIMD_SIZE, planeBack += SIMD_SIZE, icfFront += SIMD_SIZE, icfBack += SIMD_SIZE, screen += SIMD_SIZE) // TODO: width[B].
+        planeFront += SIMD_SIZE, planeBack += SIMD_SIZE, icfFront += SIMD_SIZE, icfBack += SIMD_SIZE, screen += SIMD_SIZE)
     {
         if constexpr(MIX) // Mixing.
             applyICFMixSIMDCast(screen, planeFront, planeBack, icfFront, icfBack);

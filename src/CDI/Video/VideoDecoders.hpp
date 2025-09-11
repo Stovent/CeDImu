@@ -9,15 +9,20 @@ namespace Video
 {
 
 // Display file decoders.
+template<uint16_t WIDTH>
+uint16_t decodeBitmapLine(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept;
 uint16_t decodeBitmapLine(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept;
+
+template<uint16_t WIDTH, bool RL3>
+uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, const uint32_t* CLUTTable) noexcept;
 uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept;
 
-uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept;
-uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* data, uint16_t width, uint32_t initialDYUV) noexcept;
-uint16_t decodeCLUTLine(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept;
-
-// Real-Time Decoders (set pixels in ARGB format)
-void decodeDYUV(Pixel* dst, uint16_t pixel, uint32_t& previous) noexcept;
+template<uint16_t WIDTH>
+uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept;
+template<uint16_t WIDTH>
+uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
+template<uint16_t WIDTH>
+uint16_t decodeCLUTLine(Pixel* dst, const uint8_t* data, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept;
 
 /** \brief Convert CLUT color to ARGB.
  *

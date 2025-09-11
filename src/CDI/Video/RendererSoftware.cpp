@@ -23,6 +23,19 @@ namespace Video
  */
 std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept
 {
+    if(m_lineNumber == 0)
+    {
+        m_360Pixels = m_use360Pixels;
+        if(m_360Pixels)
+        {
+            m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = 720;
+        }
+        else
+        {
+            m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = 768;
+        }
+    }
+
     ResetMatte();
 
     const uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
@@ -57,10 +70,9 @@ const Plane& RendererSoftware::RenderFrame() noexcept
     if(m_cursorEnabled)
     {
         DrawCursor();
-        // TODO: double resolution.
         Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height,
                      m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height,
-                     m_cursorX >> 1, m_cursorY);
+                     m_cursorX, m_cursorY);
     }
 
     m_lineNumber = 0;
@@ -83,21 +95,44 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
         return 0;
     }
 
-    const bool is4BPP = false; // TODO.
-
     const uint32_t* clut;
     if constexpr(PLANE == A)
         clut = m_codingMethod[A] == ICM(CLUT77) && m_clutSelectHigh ? &m_clut[128] : m_clut.data();
     else
         clut = &m_clut[128];
 
+    const ImageCodingMethod icm = m_codingMethod[PLANE];
+
     switch(m_imageType[PLANE])
     {
     case ImageType::Normal:
-        return decodeBitmapLine(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, m_plane[PLANE].m_width, clut, m_dyuvInitialValue[PLANE], m_codingMethod[PLANE]);
+        if(icm == ImageCodingMethod::CLUT4)
+            if(m_360Pixels)
+                return decodeBitmapLine<720>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
+            else
+                return decodeBitmapLine<768>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
+        else
+            if(m_360Pixels)
+                return decodeBitmapLine<360>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
+            else
+                return decodeBitmapLine<384>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
 
     case ImageType::RunLength:
-        return decodeRunLengthLine(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, m_plane[PLANE].m_width, clut, is4BPP);
+        if(m_bps[PLANE] == BitsPerPixel::Double4) // RL3
+            if(m_360Pixels)
+                return decodeRunLengthLine<720, true>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+            else
+                return decodeRunLengthLine<768, true>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+        else if(m_bps[PLANE] == BitsPerPixel::High8) // RL7 high
+            if(m_360Pixels)
+                return decodeRunLengthLine<720, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+            else
+                return decodeRunLengthLine<768, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+        else
+            if(m_360Pixels)
+                return decodeRunLengthLine<360, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
+            else
+                return decodeRunLengthLine<384, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
 
     case ImageType::Mosaic:
         panic("Unsupported type Mosaic");
@@ -171,7 +206,7 @@ void RendererSoftware::OverlayMix() noexcept
 
     HandleMatteAndTransparency(m_lineNumber);
 
-    for(uint16_t i = 0; i < m_plane[A].m_width; i++) // TODO: width[B].
+    for(uint16_t i = 0; i < m_plane[A].m_width; i++) // Both planes always have the same width.
     {
         Pixel a = *planeA++;
         Pixel b = *planeB++;

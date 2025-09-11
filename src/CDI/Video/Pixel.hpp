@@ -4,7 +4,6 @@
 #include <bit>
 #include <cstdint>
 #include <stdbit.h>
-#include <type_traits>
 
 #if __STDC_VERSION_STDBIT_H__ < 202311L
 #error need __STDC_ENDIAN_NATIVE__ compiler support
@@ -50,7 +49,7 @@ struct alignas(uint32_t) Pixel
 
     constexpr Pixel& operator=(const ARGB32 argb) noexcept
     {
-        if(std::is_constant_evaluated())
+        if consteval
         {
             a = argb >> 24;
             r = argb >> 16;
@@ -58,7 +57,9 @@ struct alignas(uint32_t) Pixel
             b = argb;
         }
         else
+        {
             *AsU32Pointer() = argb;
+        }
 
         return *this;
     }

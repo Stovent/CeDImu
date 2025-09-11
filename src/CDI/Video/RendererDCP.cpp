@@ -66,6 +66,25 @@ static constexpr Renderer::ImageType decodeImageType(const uint8_t type) noexcep
     return Renderer::ImageType::Mosaic;
 }
 
+/** \brief Figure V.49. */
+static constexpr Renderer::BitsPerPixel decodeBitsPerPixel(const uint8_t bps) noexcept
+{
+    switch(bps)
+    {
+    case 0:
+        return Renderer::BitsPerPixel::Normal8;
+
+    case 1:
+        return Renderer::BitsPerPixel::Double4;
+
+    case 2:
+        return Renderer::BitsPerPixel::High8;
+
+    default:
+        panic("Invalid bits per pixel {}", bps);
+    }
+}
+
 /** \brief Executes the given DCP intruction.
  * \tparam PLANE The plane executing the instruction.
  * \return true if a video interrupt has to be generated, false otherwise.
@@ -191,7 +210,7 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
     case LoadDisplayParameters: // Load display parameters.
         m_imageType[PLANE] = decodeImageType(bits<0, 1>(instruction));
         m_pixelRepeatFactor[PLANE] = 1 << (1 + bits<2, 3>(instruction));
-        m_bps[PLANE] = bit<8>(instruction);
+        m_bps[PLANE] = decodeBitsPerPixel(bits<8, 9>(instruction));
         break;
 
     case SetCLUTBank: // Set CLUT bank.

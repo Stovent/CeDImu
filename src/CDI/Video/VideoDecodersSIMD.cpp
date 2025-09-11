@@ -1,6 +1,7 @@
 #include "VideoDecodersSIMD.hpp"
 #include "SIMD.hpp"
 #include "VideoDecoders.hpp"
+#include "common/panic.hpp"
 #include "common/utils.hpp"
 
 #include <algorithm>
@@ -12,15 +13,12 @@
 #define MAKE_GREEN_INDEX(Y, U, V) (as<uint32_t>(Y) << 16 | as<uint32_t>(U) << 8 | V)
 #define MAKE_BLUE_INDEX(Y, U) (as<uint16_t>(Y) << 8 | U)
 
-namespace Video
-{
-
 static constexpr std::array<uint8_t, 0x1'0000> generateRedLUT() noexcept
 {
     std::array<uint8_t, 0x1'0000> array{};
     for(int y = 0; y < 256; ++y)
         for(int v = 0; v < 256; ++v)
-            array[MAKE_RED_INDEX(y, v)] = limu8(y + matrixVToR[v]);
+            array[MAKE_RED_INDEX(y, v)] = limu8(y + Video::matrixVToR[v]);
     return array;
 }
 
@@ -32,7 +30,7 @@ static std::vector<uint8_t> generateGreenLUT() noexcept
     for(int y = 0; y < 256; ++y)
         for(int u = 0; u < 256; ++u)
             for(int v = 0; v < 256; ++v)
-                array[MAKE_GREEN_INDEX(y, u, v)] = limu8(y - (matrixUToG[u] + matrixVToG[v]));
+                array[MAKE_GREEN_INDEX(y, u, v)] = limu8(y - (Video::matrixUToG[u] + Video::matrixVToG[v]));
     return array;
 }
 
@@ -41,20 +39,22 @@ static constexpr std::array<uint8_t, 0x1'0000> generateBlueLUT() noexcept
     std::array<uint8_t, 0x1'0000> array{};
     for(int y = 0; y < 256; ++y)
         for(int u = 0; u < 256; ++u)
-            array[MAKE_BLUE_INDEX(y, u)] = limu8(y + matrixUToB[u]);
+            array[MAKE_BLUE_INDEX(y, u)] = limu8(y + Video::matrixUToB[u]);
     return array;
 }
 
 static constexpr std::array<uint8_t, 0x1'0000> redLUT = generateRedLUT();
-static std::vector<uint8_t> greenLUT = generateGreenLUT();
+static const std::vector<uint8_t> greenLUT = generateGreenLUT();
 static constexpr std::array<uint8_t, 0x1'0000> blueLUT = generateBlueLUT();
 
-/** \brief Decode a bitmap file line.
- *
+namespace Video
+{
+
+/** \brief Decode a bitmap file line to double resolution ARGB.
+ * \tparam WIDTH The number of source pixels to decode.
  * \param dst Where the decoded line will be written to in ARGB.
  * \param dataA See below.
  * \param dataB See below.
- * \param width The width of the line.
  * \param CLUTTable The CLUT table to use.
  * \param initialDYUV The initial value to be used by the DYUV decoder.
  * \param icm The coding method of the file.
@@ -64,33 +64,52 @@ static constexpr std::array<uint8_t, 0x1'0000> blueLUT = generateBlueLUT();
  *
  * If the coding method is RGB555, dataA must contain the channel A data and dataB must contain the channel B data.
  * If it is not RGB555, dataB is the source data and dataA remain unused.
+ *
+ * \warning The pixels are always decoded to double resolution (720 or 768 pixels), no matter the source width.
+ * When the source width is normal resolution, the pixels are simply duplicated.
  */
-uint16_t decodeBitmapLineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
+template<uint16_t WIDTH>
+uint16_t decodeBitmapLineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
 {
     if(icm == ImageCodingMethod::DYUV)
-        return decodeDYUVLineLUT(dst, dataB, width, initialDYUV);
+        return decodeDYUVLineLUT<WIDTH>(dst, dataB, initialDYUV);
 
     if(icm == ImageCodingMethod::RGB555)
-        return decodeRGB555LineSIMD(dst, dataA, dataB, width);
+    {
+        if constexpr(WIDTH == 360 || WIDTH == 384)
+        {
+            return decodeRGB555LineSIMD<WIDTH>(dst, dataA, dataB);
+        }
+        else
+        {
+            panic("RGB555 is only usable in normal resolution");
+        }
+    }
 
-    return decodeCLUTLine(dst, dataB, width, CLUTTable, icm);
+    return decodeCLUTLine<WIDTH>(dst, dataB, CLUTTable, icm);
 }
+template uint16_t decodeBitmapLineSIMD<360>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept;
+template uint16_t decodeBitmapLineSIMD<384>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept;
+template uint16_t decodeBitmapLineSIMD<720>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept;
+template uint16_t decodeBitmapLineSIMD<768>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept;
 
 /** \brief Decode a RGB555 line to ARGB using SIMD.
+ * \tparam WIDTH The number or source pixels to decode.
  * \param dst Where the ARGB data will be written to.
  * \param dataA The plane A data (high order byte of the pixel).
  * \param dataB The plane B data (low order byte of the pixel).
- * \param width Width of the line in pixels.
  * \return The number of raw bytes read from each data source.
  * \attention \p dst, \p dataA and \p dataB are written/read in chunks of std::simd::size(). Make sure the buffers can be read and written beyond the actual line length.
  * The transparency bit is set in the alpha byte (0x80 when the bit is 1, 0 otherwise).
  */
-uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, uint16_t width) noexcept
+template<uint16_t WIDTH>
+uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept
 {
     // TODO: ensure we do not index out of bound.
     using SIMDFixedU32 = stdx::rebind_simd_t<uint32_t, SIMDNativeU8>;
+    using SIMDFixedU64 = stdx::rebind_simd_t<uint64_t, SIMDFixedU32>;
 
-    const uint8_t* endA = dataA + width;
+    const uint8_t* endA = dataA + WIDTH;
 
     const SIMDFixedU32 alphaMask{0x8000};
     for(; dataA < endA; dataA += SIMDNativeU8::size())
@@ -102,16 +121,24 @@ uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* d
         const SIMDFixedU32 b = stdx::static_simd_cast<uint32_t>(db);
         const SIMDFixedU32 data = a << 8 | b;
 
-        SIMDFixedU32 result = (data & alphaMask);
+        SIMDFixedU32 result = (data & alphaMask) << 16;
         result |= data << 9 & 0x00F8'0000;
         result |= data << 6 & 0x0000'F800;
         result |= data << 3 & 0x0000'00F8;
 
-        result.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
+        // Duplicate the pixels.
+        SIMDFixedU64 result64 = stdx::static_simd_cast<uint64_t>(result);
+        result64 |= result64 << 32;
+
+        result64.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
     };
 
-    return width;
+    return WIDTH;
 }
+template uint16_t decodeRGB555LineSIMD<320>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept;
+template uint16_t decodeRGB555LineSIMD<384>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept;
+template<> uint16_t decodeRGB555LineSIMD<720>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept = delete;
+template<> uint16_t decodeRGB555LineSIMD<768>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept = delete;
 
 /** \brief Matrixes the YUV values to RGB.
  * The LUT for green is not constexpr because it is a 16MB array which we can't reasonably generate at compile-time.
@@ -124,22 +151,23 @@ static constexpr void matrixRGB(Pixel* pixel, const int Y, const uint8_t U, cons
 }
 
 /** \brief Decode a DYUV line to ARGB using a LUT.
+ * \tparam WIDTH The number of source pixels to decode.
  * \param dst Where the ARGB data will be written to.
  * \param dyuv The source DYUV data.
- * \param width Width of the line in pixels.
  * \param initialDYUV The initial value to be used by the DYUV decoder.
  * \return The number of raw bytes read from \p dyuv.
  *
  * This is not a SIMD decoder as it is impossible because each pixel depends on the decoded value of the previous one.
  * However this is another approach that heavily uses LUTs to remove as much calculations as possible.
  */
-uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* data, uint16_t width, uint32_t initialDYUV) noexcept
+template<uint16_t WIDTH>
+uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept
 {
     uint8_t py = bits<16, 23>(initialDYUV);
     uint8_t pu = bits<8, 15>(initialDYUV);
     uint8_t pv = initialDYUV;
 
-    for(uint16_t index = 0; index < width; index += 2)
+    for(uint16_t index = 0; index < WIDTH; index += 2)
     {
         const uint8_t high = data[index];
         const uint8_t low = data[index + 1];
@@ -162,11 +190,26 @@ uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* data, uint16_t width, uint
         pu = u2;
         pv = v2;
 
-        matrixRGB(dst, y1, u1, v1);
-        matrixRGB(&dst[1], y2, u2, v2);
+        Pixel* pixel1 = dst++;
+        matrixRGB(pixel1, y1, u1, v1);
+        if constexpr(WIDTH == 360 || WIDTH == 384)
+        {
+            memcpy(dst++, pixel1, sizeof(Pixel));
+        }
+
+        Pixel* pixel2 = dst++;
+        matrixRGB(pixel2, y2, u2, v2);
+        if constexpr(WIDTH == 360 || WIDTH == 384)
+        {
+            memcpy(dst++, pixel2, sizeof(Pixel));
+        }
     }
 
-    return width;
+    return WIDTH;
 }
+template uint16_t decodeDYUVLineLUT<360>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<384>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<720>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<768>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
 
 } // namespace Video
