@@ -6,7 +6,9 @@ jobs:
   build-x86_64:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
       - name: Install wxWidgets
         run: brew install wxwidgets dylibbundler create-dmg
@@ -36,3 +38,8 @@ jobs:
         with:
           name: CeDImu-Installer-x86_64.dmg
           path: ./CeDImu-Installer.dmg
+
+      - name: Run tests
+        run: |
+             ls -R .
+             ./tests/tests

@@ -6,7 +6,9 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
       - name: Cache vcpkg
         id: cache-vcpkg
@@ -30,3 +32,6 @@ jobs:
         with:
           name: CeDImu-windows-x86_64
           path: ./build/Release/CeDImu.exe
+
+      - name: Run tests
+        run: ./build/tests/tests
