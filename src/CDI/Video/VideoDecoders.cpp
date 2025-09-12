@@ -148,7 +148,7 @@ uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, const uint32_t* CL
             {
                 count = data[index++];
                 if(count == 0)
-                    count = WIDTH - x;
+                    count = (WIDTH - x) >> 1; // This is count in pixel pair, so half the width.
             }
 
             Pixel* pixels = &dst[x];
@@ -171,7 +171,7 @@ uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, const uint32_t* CL
             const uint8_t format = data[index++];
             const uint8_t color = bits<0, 6>(format);
 
-            uint16_t count = 0; // number of memcpy to do.
+            uint16_t count = 1; // number of memcpy to do.
             if(bit<7>(format)) // run of single pixels
             {
                 count = data[index++];
@@ -210,6 +210,10 @@ template uint16_t decodeRunLengthLine<720, false>(Pixel* dst, const uint8_t* dat
 template uint16_t decodeRunLengthLine<768, false>(Pixel* dst, const uint8_t* data, const uint32_t* CLUTTable) noexcept;
 template uint16_t decodeRunLengthLine<720, true>(Pixel* dst, const uint8_t* data, const uint32_t* CLUTTable) noexcept;
 template uint16_t decodeRunLengthLine<768, true>(Pixel* dst, const uint8_t* data, const uint32_t* CLUTTable) noexcept;
+template<> uint16_t decodeRunLengthLine<360, true>(Pixel* dst, const uint8_t* data, const uint32_t* CLUTTable) noexcept
+    = delete("RL3 source width is never normal resolution");
+template<> uint16_t decodeRunLengthLine<384, true>(Pixel* dst, const uint8_t* data, const uint32_t* CLUTTable) noexcept
+    = delete("RL3 source width is never normal resolution");
 
 uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, uint16_t width, const uint32_t* CLUTTable, bool is4BPP) noexcept
 {

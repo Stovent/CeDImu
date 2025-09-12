@@ -14,7 +14,7 @@ message("libCeDImu enable RendererSIMD: " ${LIBCEDIMU_ENABLE_RENDERERSIMD})
 option(LIBCEDIMU_PROFILE_GNU "Add profile options for GNU compiler" OFF)
 message("libCeDImu profile GNU: " ${LIBCEDIMU_PROFILE_GNU})
 option(LIBCEDIMU_ENABLE_ASAN "Add address sanitizer options" OFF)
-message("libCeDImu sanitize: " ${LIBCEDIMU_PROFILE_GNU})
+message("libCeDImu sanitize: " ${LIBCEDIMU_ENABLE_ASAN})
 
 add_library(CeDImu ${LIBRARY_TYPE}
     CDI.cpp

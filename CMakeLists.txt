@@ -16,4 +16,11 @@ if(CEDIMU_BENCHMARKS)
     add_subdirectory(benchmarks)
 endif()
 
+option(CEDIMU_TESTS "Compile the tests" ON)
+
+add_subdirectory(externals)
 add_subdirectory(src)
+
+if(CEDIMU_TESTS)
+    add_subdirectory(tests)
+endif()
