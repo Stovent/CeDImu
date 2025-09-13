@@ -22,7 +22,6 @@ static_assert(CLUT[0xFF] == 0x00FF'FFFF);
 static constexpr size_t WIDTH = 768;
 using PixelArray = std::array<Video::Pixel, WIDTH>;
 
-static PixelArray DST{};
 
 static constexpr uint32_t makeColor(uint32_t color) noexcept
 {
@@ -40,6 +39,7 @@ TEST_CASE("RunLength 7", "[Video]")
             std::fill(array.begin(), array.end(), 0x000A'0A0A);
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<384, false>(DST.data(), SRC_RL7_1_PIXEL_384.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
@@ -53,6 +53,7 @@ TEST_CASE("RunLength 7", "[Video]")
             std::fill(array.begin(), array.end(), 0x0011'1111);
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<WIDTH, false>(DST.data(), SRC_RL7_1_PIXEL_768.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
@@ -88,6 +89,7 @@ TEST_CASE("RunLength 7", "[Video]")
             }
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<384, false>(DST.data(), SRC_RL7_28_PIXEL_384.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
@@ -120,6 +122,7 @@ TEST_CASE("RunLength 7", "[Video]")
             }
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<WIDTH, false>(DST.data(), SRC_RL7_39_PIXEL_768.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
@@ -145,6 +148,7 @@ TEST_CASE("RunLength 7", "[Video]")
             }
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<384, false>(DST.data(), SRC_RL7_384_PIXEL_384.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
@@ -168,6 +172,7 @@ TEST_CASE("RunLength 7", "[Video]")
             }
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<WIDTH, false>(DST.data(), SRC_RL7_768_PIXEL_768.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
@@ -188,6 +193,7 @@ TEST_CASE("RunLength 3", "[Video]")
             }
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<WIDTH, true>(DST.data(), SRC_RL3_1_PIXEL.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
@@ -224,6 +230,7 @@ TEST_CASE("RunLength 3", "[Video]")
             }
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<WIDTH, true>(DST.data(), SRC_RL3_28_PIXEL.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
@@ -250,8 +257,50 @@ TEST_CASE("RunLength 3", "[Video]")
             }
             return array;
         }();
+        PixelArray DST{};
 
         Video::decodeRunLengthLine<WIDTH, true>(DST.data(), SRC_RL3_768_PIXEL.data(), CLUT.data());
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
     }
+}
+
+TEST_CASE("RGB555", "[Video]")
+{
+    constexpr std::array<uint8_t, 384> LINEA = [] {
+        std::array<uint8_t, 384> array{};
+        for(size_t i = 0; i < array.size();)
+        {
+            const uint32_t color = 0x80 | (i << 2 & 0x7C) | (i >> 3 & 0x03);
+            array.at(i++) = color;
+        }
+        return array;
+    }();
+    constexpr std::array<uint8_t, 384> LINEB = [] {
+        std::array<uint8_t, 384> array{};
+        for(size_t i = 0; i < array.size();)
+        {
+            const uint8_t color = (i << 5) | (i & 0x1F);
+            array.at(i++) = color;
+        }
+        return array;
+    }();
+    constexpr PixelArray EXPECTED = [] {
+        PixelArray array{};
+        for(size_t i = 0; i < array.size(); i += 2)
+        {
+            const uint32_t color = makeColor(((i / 2) << 3) & 0xF8);
+            array.at(i) = color;
+            array.at(i + 1) = color;
+        }
+        return array;
+    }();
+    PixelArray DST{};
+
+    Video::decodeRGB555Line<384>(DST.data(), LINEA.data(), LINEB.data());
+    REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
+
+#if LIBCEDIMU_ENABLE_RENDERERSIMD
+    Video::decodeRGB555LineSIMD<384>(DST.data(), LINEA.data(), LINEB.data());
+    REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
+#endif
 }

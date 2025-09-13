@@ -121,16 +121,18 @@ uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* d
         const SIMDFixedU32 b = stdx::static_simd_cast<uint32_t>(db);
         const SIMDFixedU32 data = a << 8 | b;
 
-        SIMDFixedU32 result = (data & alphaMask) << 16;
-        result |= data << 9 & 0x00F8'0000;
-        result |= data << 6 & 0x0000'F800;
-        result |= data << 3 & 0x0000'00F8;
+        SIMDFixedU32 result32 = (data & alphaMask) << 16;
+        result32 |= data << 9 & 0x00F8'0000;
+        result32 |= data << 6 & 0x0000'F800;
+        result32 |= data << 3 & 0x0000'00F8;
 
         // Duplicate the pixels.
-        SIMDFixedU64 result64 = stdx::static_simd_cast<uint64_t>(result);
+        SIMDFixedU64 result64 = stdx::static_simd_cast<uint64_t>(result32);
         result64 |= result64 << 32;
 
-        result64.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
+        // This reinterpret_cast should be safe, as the overlaligned tag should make the write safe.
+        // Also casting to a uint64_t pointer should not affect endianness.
+        result64.copy_to(reinterpret_cast<uint64_t*>(dst->AsU32Pointer()), stdx::overaligned<alignof(Pixel::ARGB32)>);
     };
 
     return WIDTH;

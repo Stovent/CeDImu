@@ -228,7 +228,7 @@ uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, uint16_t width, co
         else
             return decodeRunLengthLine<768, false>(dst, data, CLUTTable);
     else
-        if(width == 720)
+        if(width == 360)
             return decodeRunLengthLine<360, false>(dst, data, CLUTTable);
         else
             return decodeRunLengthLine<384, false>(dst, data, CLUTTable);
