@@ -253,7 +253,7 @@ uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB
         rgb555 |= *dataB++;
 
         Pixel* pixel = dst++;
-        pixel->a = (rgb555 & 0x8000) ? 0xFF : 0;
+        pixel->a = (rgb555 & 0x8000) ? 0x80 : 0;
         pixel->r = rgb555 >> 7 & 0xF8;
         pixel->g = rgb555 >> 2 & 0xF8;
         pixel->b = rgb555 << 3 & 0xF8;

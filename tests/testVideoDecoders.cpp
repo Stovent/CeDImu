@@ -288,7 +288,7 @@ TEST_CASE("RGB555", "[Video]")
         PixelArray array{};
         for(size_t i = 0; i < array.size(); i += 2)
         {
-            const uint32_t color = makeColor(((i / 2) << 3) & 0xF8);
+            const uint32_t color = 0x8000'0000 | makeColor(((i / 2) << 3) & 0xF8);
             array.at(i) = color;
             array.at(i + 1) = color;
         }
