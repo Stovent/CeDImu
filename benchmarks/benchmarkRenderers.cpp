@@ -8,23 +8,24 @@
 
 static constexpr size_t WIDTH = 768;
 static constexpr size_t FRAMES = 10000;
-static constexpr Video::Renderer::DisplayFormat DISPLAY = Video::Renderer::DisplayFormat::PAL;
 
 static constexpr std::array<uint8_t, WIDTH> LINEA{};
 static constexpr std::array<uint8_t, WIDTH> LINEB{};
 
-template<typename RENDERER, Video::Renderer::Resolution RESOLUTION>
+static constexpr Video::Renderer::ImagePlane A = Video::Renderer::A;
+static constexpr Video::Renderer::ImagePlane B = Video::Renderer::B;
+
+template<typename RENDERER, Video::Renderer::BitsPerPixel BPS, Video::ImageCodingMethod CODINGA, Video::ImageCodingMethod CODINGB>
 static void benchmarkRenderer(std::string_view name)
-{
-    // Configure the renderer.
+{    // Configure the renderer.
     RENDERER renderer;
-    renderer.SetDisplayResolution(DISPLAY, RESOLUTION);
-    renderer.m_codingMethod[Video::Renderer::A] = Video::ImageCodingMethod::CLUT7;
-    renderer.m_codingMethod[Video::Renderer::B] = Video::ImageCodingMethod::CLUT8;
+    renderer.m_codingMethod[A] = CODINGA;
+    renderer.m_codingMethod[B] = CODINGB;
+    renderer.m_bps[A] = BPS;
+    renderer.m_bps[B] = BPS;
     renderer.m_mix = true;
 
-    // Height is set by the previous SetDisplayResolution
-    const size_t height = renderer.m_plane[Video::Renderer::A].m_height;
+    const size_t height = renderer.m_plane[A].m_height;
 
     // Benchmark
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
@@ -51,12 +52,19 @@ static void benchmarkRenderer(std::string_view name)
 
 int main()
 {
-    benchmarkRenderer<Video::RendererSoftware, Video::Renderer::Resolution::Normal>("Normal Soft");
-    benchmarkRenderer<Video::RendererSIMD, Video::Renderer::Resolution::Normal>("Normal SIMD");
+    constexpr Video::Renderer::BitsPerPixel normal8 = Video::Renderer::BitsPerPixel::Normal8;
+    constexpr Video::Renderer::BitsPerPixel double4 = Video::Renderer::BitsPerPixel::Double4;
+    constexpr Video::Renderer::BitsPerPixel high8 = Video::Renderer::BitsPerPixel::High8;
 
-    benchmarkRenderer<Video::RendererSoftware, Video::Renderer::Resolution::Double>("Double Soft");
-    benchmarkRenderer<Video::RendererSIMD, Video::Renderer::Resolution::Double>("Double SIMD");
+    benchmarkRenderer<Video::RendererSoftware, normal8, ICM(OFF), ICM(RGB555)>("Normal Soft RGB555");
+    benchmarkRenderer<Video::RendererSIMD, normal8, ICM(OFF), ICM(RGB555)>("Normal SIMD RGB555");
 
-    benchmarkRenderer<Video::RendererSoftware, Video::Renderer::Resolution::High>("High   Soft");
-    benchmarkRenderer<Video::RendererSIMD, Video::Renderer::Resolution::High>("High   SIMD");
+    benchmarkRenderer<Video::RendererSoftware, normal8, ICM(DYUV), ICM(DYUV)>("Normal Soft DYUV");
+    benchmarkRenderer<Video::RendererSIMD, normal8, ICM(DYUV), ICM(DYUV)>("Normal SIMD DYUV");
+
+    benchmarkRenderer<Video::RendererSoftware, double4, ICM(CLUT4), ICM(CLUT4)>("Double Soft CLUT4");
+    benchmarkRenderer<Video::RendererSIMD, double4, ICM(CLUT4), ICM(CLUT4)>("Double SIMD CLUT4");
+
+    benchmarkRenderer<Video::RendererSoftware, high8, ICM(CLUT8), ICM(CLUT7)>("High   Soft CLUT8/CLUT7");
+    benchmarkRenderer<Video::RendererSIMD, high8, ICM(CLUT8), ICM(CLUT7)>("High   SIMD CLUT8/CLUT7");
 }
