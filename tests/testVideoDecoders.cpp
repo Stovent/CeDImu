@@ -304,3 +304,134 @@ TEST_CASE("RGB555", "[Video]")
     REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.data()));
 #endif
 }
+
+TEST_CASE("CLUT4", "[Video]")
+{
+    constexpr std::array<uint8_t, 384> SRC = [] {
+        std::array<uint8_t, 384> array;
+        for(size_t i = 0; i < array.size(); ++i)
+        {
+            array.at(i) = (i << 4) | ((i + 1) & 0x0F);
+        }
+        return array;
+    }();
+    constexpr PixelArray EXPECTED = [] {
+        PixelArray array;
+        for(size_t i = 0; i < array.size();)
+        {
+            const size_t color1 = (i / 2) & 0x0F;
+            const size_t color2 = (i / 2) + 1;
+            array.at(i++) = makeColor(color1);
+            array.at(i++) = makeColor(color2 & 0x0F);
+        }
+        return array;
+    }();
+    PixelArray DST{};
+
+    Video::decodeCLUTLine<768>(DST.data(), SRC.data(), CLUT.data(), ICM(CLUT4));
+    REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
+}
+
+TEST_CASE("CLUT7", "[Video]")
+{
+    SECTION("Normal Resolution")
+    {
+        constexpr std::array<uint8_t, 384> SRC = [] {
+            std::array<uint8_t, 384> array;
+            for(size_t i = 0; i < array.size(); ++i)
+            {
+                array.at(i) = i;
+            }
+            return array;
+        }();
+        constexpr PixelArray EXPECTED = [] {
+            PixelArray array;
+            for(size_t i = 0; i < array.size(); ++i)
+            {
+                array.at(i) = makeColor((i / 2) & 0x7F);
+            }
+            return array;
+        }();
+        PixelArray DST{};
+
+        Video::decodeCLUTLine<384>(DST.data(), SRC.data(), CLUT.data(), ICM(CLUT7));
+        REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
+    }
+
+    SECTION("High Resolution")
+    {
+        constexpr std::array<uint8_t, 768> SRC = [] {
+            std::array<uint8_t, 768> array;
+            for(size_t i = 0; i < array.size(); ++i)
+            {
+                array.at(i) = i;
+            }
+            return array;
+        }();
+        constexpr PixelArray EXPECTED = [] {
+            PixelArray array;
+            for(size_t i = 0; i < array.size(); ++i)
+            {
+                array.at(i) = makeColor(i & 0x7F);
+            }
+            return array;
+        }();
+        PixelArray DST{};
+
+        Video::decodeCLUTLine<768>(DST.data(), SRC.data(), CLUT.data(), ICM(CLUT7));
+        REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
+    }
+}
+
+TEST_CASE("CLUT8", "[Video]")
+{
+    SECTION("Normal resolution")
+    {
+        constexpr std::array<uint8_t, 384> SRC = [] {
+            std::array<uint8_t, 384> array;
+            for(size_t i = 0; i < array.size(); ++i)
+            {
+                array.at(i) = i;
+            }
+            return array;
+        }();
+        constexpr PixelArray EXPECTED = [] {
+            PixelArray array;
+            for(size_t i = 0; i < array.size(); i += 2)
+            {
+                const size_t color = i / 2;
+                array.at(i) = makeColor(color);
+                array.at(i + 1) = makeColor(color);
+            }
+            return array;
+        }();
+        PixelArray DST{};
+
+        Video::decodeCLUTLine<384>(DST.data(), SRC.data(), CLUT.data(), ICM(CLUT8));
+        REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
+    }
+
+    SECTION("High resolution")
+    {
+        constexpr std::array<uint8_t, 768> SRC = [] {
+            std::array<uint8_t, 768> array;
+            for(size_t i = 0; i < array.size(); ++i)
+            {
+                array.at(i) = i;
+            }
+            return array;
+        }();
+        constexpr PixelArray EXPECTED = [] {
+            PixelArray array;
+            for(size_t i = 0; i < array.size(); ++i)
+            {
+                array.at(i) = makeColor(i);
+            }
+            return array;
+        }();
+        PixelArray DST{};
+
+        Video::decodeCLUTLine<768>(DST.data(), SRC.data(), CLUT.data(), ICM(CLUT8));
+        REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
+    }
+}
