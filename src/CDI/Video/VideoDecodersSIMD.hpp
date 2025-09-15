@@ -20,9 +20,6 @@ uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* d
 template<uint16_t WIDTH>
 uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
 
-template<uint16_t WIDTH>
-uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
-
 } // namespace Video
 
 #endif // CDI_COMMON_VIDEOSIMD_HPP

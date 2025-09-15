@@ -463,10 +463,10 @@ TEST_CASE("DYUV", "[Video]")
         Video::decodeDYUVLine<384>(DST.data(), SRC.data(), 0x0010'8080);
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
 
-#if LIBCEDIMU_ENABLE_RENDERERSIMD
         Video::decodeDYUVLineLUT<384>(DST.data(), SRC.data(), 0x0010'8080);
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
 
+#if LIBCEDIMU_ENABLE_RENDERERSIMD
         Video::decodeDYUVLineSIMD<384>(DST.data(), SRC.data(), 0x0010'8080);
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
 #endif
@@ -500,10 +500,10 @@ TEST_CASE("DYUV", "[Video]")
 //         Video::decodeDYUVLine<768>(DST.data(), DYUV_SRC.data(), 0x0010'8080);
 //         REQUIRE(std::equal(DST.cbegin(), DST.cend(), DYUV_EXPECTED.cbegin()));
 
-// #if LIBCEDIMU_ENABLE_RENDERERSIMD
 //         Video::decodeDYUVLineLUT<768>(DST.data(), DYUV_SRC.data(), 0x0010'8080);
 //         REQUIRE(std::equal(DST.cbegin(), DST.cend(), DYUV_EXPECTED.cbegin()));
 
+// #if LIBCEDIMU_ENABLE_RENDERERSIMD
 //         Video::decodeDYUVLineSIMD<768>(DST.data(), DYUV_SRC.data(), 0x0010'8080);
 //         REQUIRE(std::equal(DST.cbegin(), DST.cend(), DYUV_EXPECTED.cbegin()));
 // #endif

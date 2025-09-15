@@ -20,7 +20,9 @@ uint16_t decodeRunLengthLine(Pixel* dst, const uint8_t* data, uint16_t width, co
 template<uint16_t WIDTH>
 uint16_t decodeRGB555Line(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept;
 template<uint16_t WIDTH>
-uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
+uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template<uint16_t WIDTH>
+uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
 template<uint16_t WIDTH>
 uint16_t decodeCLUTLine(Pixel* dst, const uint8_t* data, const uint32_t* CLUTTable, ImageCodingMethod icm) noexcept;
 

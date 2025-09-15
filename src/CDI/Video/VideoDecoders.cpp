@@ -282,12 +282,12 @@ static constexpr void matrixRGB(Pixel* pixel, const int Y, const uint8_t U, cons
 /** \brief Decode a DYUV line to ARGB.
  * \tparam WIDTH The number of source pixels to decode.
  * \param dst Where the ARGB data will be written to.
- * \param data The source DYUV data.
+ * \param dyuv The source DYUV data.
  * \param initialDYUV The initial value to be used by the DYUV decoder.
- * \return The number of raw bytes read from \p data.
+ * \return The number of raw bytes read from \p dyuv.
  */
 template<uint16_t WIDTH>
-uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept
+uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept
 {
     uint8_t py = bits<16, 23>(initialDYUV);
     uint8_t pu = bits<8, 15>(initialDYUV);
@@ -295,8 +295,8 @@ uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) n
 
     for(uint16_t index = 0; index < WIDTH; index += 2)
     {
-        const uint8_t high = data[index];
-        const uint8_t low = data[index + 1];
+        const uint8_t high = dyuv[index];
+        const uint8_t low = dyuv[index + 1];
 
         // Green book V.4.4.2
         uint8_t u2 = bits<4, 7>(high);
@@ -337,6 +337,91 @@ template uint16_t decodeDYUVLine<360>(Pixel* dst, const uint8_t* data, uint32_t 
 template uint16_t decodeDYUVLine<384>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
 template uint16_t decodeDYUVLine<720>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
 template uint16_t decodeDYUVLine<768>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
+
+#define DYUV_PIXEL_INDEX(Y, U, V) (as<uint32_t>(Y) << 16 | as<uint32_t>(U) << 8 | V)
+
+static std::vector<Pixel> generateDYUVPixelLUT() noexcept
+{
+    std::vector<Pixel> array{};
+    array.resize(256 * 256 * 256);
+
+    for(int y = 0; y < 256; ++y)
+        for(int u = 0; u < 256; ++u)
+            for(int v = 0; v < 256; ++v)
+            {
+                Pixel pixel{0};
+                pixel.r = limu8(y + matrixVToR[v]);
+                pixel.g = limu8(y - (matrixUToG[u] + matrixVToG[v]));
+                pixel.b = limu8(y + matrixUToB[u]);
+                array[DYUV_PIXEL_INDEX(y, u, v)] = pixel;
+            }
+    return array;
+}
+
+/** \brief LUT to convert the YUV values to RGB. Use #DYUV_PIXEL_INDEX macro to index this array. */
+static const std::vector<Pixel> dyuvPixelLUT = generateDYUVPixelLUT();
+
+/** \brief Decode a DYUV line to ARGB using a LUT.
+ * \tparam WIDTH The number of source pixels to decode.
+ * \param dst Where the ARGB data will be written to.
+ * \param dyuv The source DYUV data.
+ * \param initialDYUV The initial value to be used by the DYUV decoder.
+ * \return The number of raw bytes read from \p dyuv.
+ *
+ * This is not a SIMD decoder because each pixel depends on the decoded value of the previous one.
+ * However this is another approach that uses a pixel LUT to remove as much calculations as possible.
+ */
+template<uint16_t WIDTH>
+uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept
+{
+    uint8_t py = bits<16, 23>(initialDYUV);
+    uint8_t pu = bits<8, 15>(initialDYUV);
+    uint8_t pv = initialDYUV;
+
+    for(uint16_t index = 0; index < WIDTH; index += 2)
+    {
+        const uint8_t high = dyuv[index];
+        const uint8_t low = dyuv[index + 1];
+
+        // Green book V.4.4.2
+        uint8_t u2 = bits<4, 7>(high);
+        uint8_t y1 = bits<0, 3>(high);
+        uint8_t v2 = bits<4, 7>(low);
+        uint8_t y2 = bits<0, 3>(low);
+
+        y1 = py + dequantizer[y1];
+        u2 = pu + dequantizer[u2];
+        v2 = pv + dequantizer[v2];
+        y2 = y1 + dequantizer[y2];
+        const uint8_t u1 = (as<uint16_t>(pu) + as<uint16_t>(u2)) >> 1;
+        const uint8_t v1 = (as<uint16_t>(pv) + as<uint16_t>(v2)) >> 1;
+
+        // Store previous.
+        py = y2;
+        pu = u2;
+        pv = v2;
+
+        Pixel* pixel1 = dst++;
+        *pixel1 = dyuvPixelLUT[DYUV_PIXEL_INDEX(y1, u1, v1)]; // Matrix RGB.
+        if constexpr(WIDTH == 360 || WIDTH == 384)
+        {
+            memcpy(dst++, pixel1, sizeof(Pixel));
+        }
+
+        Pixel* pixel2 = dst++;
+        *pixel2 = dyuvPixelLUT[DYUV_PIXEL_INDEX(y2, u2, v2)]; // Matrix RGB.
+        if constexpr(WIDTH == 360 || WIDTH == 384)
+        {
+            memcpy(dst++, pixel2, sizeof(Pixel));
+        }
+    }
+
+    return WIDTH;
+}
+template uint16_t decodeDYUVLineLUT<360>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<384>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<720>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<768>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
 
 /** \brief Decode a CLUT line to ARGB.
  * \tparam WIDTH The number of source pixels to decode.
