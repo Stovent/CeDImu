@@ -435,3 +435,77 @@ TEST_CASE("CLUT8", "[Video]")
         REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
     }
 }
+
+TEST_CASE("DYUV", "[Video]")
+{
+    SECTION("RGB increment by 1 | 384 bytes")
+    {
+        constexpr std::array<uint8_t, 384> SRC = [] {
+            std::array<uint8_t, 384> array{0xC};
+            for(size_t i = 1; i < array.size(); ++i)
+            {
+                array.at(i) = 1;
+            }
+            return array;
+        }();
+        constexpr PixelArray EXPECTED = [] {
+            PixelArray array {};
+            for(size_t i = 0; i < array.size(); i += 2)
+            {
+                const uint32_t color = makeColor(i / 2);
+                array.at(i) = color;
+                array.at(i + 1) = color;
+            }
+            return array;
+        }();
+        PixelArray DST{};
+
+        Video::decodeDYUVLine<384>(DST.data(), SRC.data(), 0x0010'8080);
+        REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
+
+#if LIBCEDIMU_ENABLE_RENDERERSIMD
+        Video::decodeDYUVLineLUT<384>(DST.data(), SRC.data(), 0x0010'8080);
+        REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
+
+        Video::decodeDYUVLineSIMD<384>(DST.data(), SRC.data(), 0x0010'8080);
+        REQUIRE(std::equal(DST.cbegin(), DST.cend(), EXPECTED.cbegin()));
+#endif
+    }
+
+//     SECTION("RGB incrementing by dequantizer | 384 pixels")
+//     {
+//         constexpr std::array<uint8_t, 384> SRC = [] {
+//             std::array<uint8_t, 384> array;
+//             for(size_t i = 0; i < array.size(); i += 2)
+//             {
+//                 const uint8_t u1 = i & 0x0F;
+//                 const uint8_t y1 = (i + 1) & 0x0F;
+//                 const uint8_t v1 = (i + 2) & 0x0F;
+//                 const uint8_t y2 = (i + 3) & 0x0F;
+//                 array.at(i) = u1 << 4 | y1;
+//                 array.at(i + 1) = v1 << 4 | y2;
+//             }
+//             return array;
+//         }();
+//         constexpr PixelArray EXPECTED = [] {
+//             PixelArray array {};
+//             for(size_t i = 0; i < array.size(); ++i)
+//             {
+//                 array.at(i) = makeColor(i);
+//             }
+//             return array;
+//         }();
+//         PixelArray DST{};
+
+//         Video::decodeDYUVLine<768>(DST.data(), DYUV_SRC.data(), 0x0010'8080);
+//         REQUIRE(std::equal(DST.cbegin(), DST.cend(), DYUV_EXPECTED.cbegin()));
+
+// #if LIBCEDIMU_ENABLE_RENDERERSIMD
+//         Video::decodeDYUVLineLUT<768>(DST.data(), DYUV_SRC.data(), 0x0010'8080);
+//         REQUIRE(std::equal(DST.cbegin(), DST.cend(), DYUV_EXPECTED.cbegin()));
+
+//         Video::decodeDYUVLineSIMD<768>(DST.data(), DYUV_SRC.data(), 0x0010'8080);
+//         REQUIRE(std::equal(DST.cbegin(), DST.cend(), DYUV_EXPECTED.cbegin()));
+// #endif
+//     }
+}

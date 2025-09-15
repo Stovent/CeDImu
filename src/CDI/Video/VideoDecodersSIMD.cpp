@@ -142,6 +142,115 @@ template uint16_t decodeRGB555LineSIMD<384>(Pixel* dst, const uint8_t* dataA, co
 template<> uint16_t decodeRGB555LineSIMD<720>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept = delete;
 template<> uint16_t decodeRGB555LineSIMD<768>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept = delete;
 
+using SIMDNativeI32 = stdx::native_simd<int32_t>;
+using SIMDFixedU64 = stdx::rebind_simd_t<uint64_t, SIMDNativeI32>;
+static inline constexpr size_t SIZE = SIMDNativeI32::size();
+static_assert(SIZE == SIMD_SIZE);
+static inline constexpr SIMDNativeI32 U8_MIN{0};
+static inline constexpr SIMDNativeI32 U8_MAX{255};
+
+/** \brief Decode a DYUV line to ARGB using SIMD.
+ * \tparam WIDTH The number of source pixels to decode.
+ * \param dst Where the ARGB data will be written to.
+ * \param dyuv The source DYUV data.
+ * \param initialDYUV The initial value to be used by the DYUV decoder.
+ * \return The number of raw bytes read from \p dyuv.
+ *
+ * Because each pixel depends on the previous one, the dequantization and UV interpolation must be done sequentially.
+ * However the RGB matrixing can be parallel.
+ */
+template<uint16_t WIDTH>
+uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept
+{
+    std::array<int32_t, WIDTH> y;
+    std::array<int32_t, WIDTH> u;
+    std::array<int32_t, WIDTH> v;
+
+    uint8_t py = bits<16, 23>(initialDYUV);
+    uint8_t pu = bits<8, 15>(initialDYUV);
+    uint8_t pv = initialDYUV;
+
+    for(uint16_t index = 0; index < WIDTH; index += 2)
+    {
+        const uint8_t high = dyuv[index];
+        const uint8_t low = dyuv[index + 1];
+
+        // Green book V.4.4.2
+        uint8_t u2 = bits<4, 7>(high);
+        uint8_t y1 = bits<0, 3>(high);
+        uint8_t v2 = bits<4, 7>(low);
+        uint8_t y2 = bits<0, 3>(low);
+
+        y1 = py + dequantizer[y1];
+        u2 = pu + dequantizer[u2];
+        v2 = pv + dequantizer[v2];
+        y2 = y1 + dequantizer[y2];
+        const uint8_t u1 = (as<uint16_t>(pu) + as<uint16_t>(u2)) >> 1;
+        const uint8_t v1 = (as<uint16_t>(pv) + as<uint16_t>(v2)) >> 1;
+
+        // Store previous.
+        py = y2;
+        pu = u2;
+        pv = v2;
+
+        y[index] = y1;
+        u[index] = u1;
+        v[index] = v1;
+        y[index + 1] = y2;
+        u[index + 1] = u2;
+        v[index + 1] = v2;
+    }
+
+    const int32_t* Y = y.data();
+    const int32_t* U = u.data();
+    const int32_t* V = v.data();
+
+    // TODO: make sure we do not write out of range.
+    for(uint16_t i = 0; i < WIDTH;
+        i += SIZE, Y += SIZE, U += SIZE, V += SIZE)
+    {
+        SIMDNativeI32 simdY{Y, stdx::element_aligned};
+        SIMDNativeI32 simdU{U, stdx::element_aligned};
+        SIMDNativeI32 simdV{V, stdx::element_aligned};
+
+        simdU -= 128;
+        simdV -= 128;
+
+        // SIMDNativeI32 simdR = ((simdV * 351) >> 8) + simdY;
+        SIMDNativeI32 simdR = ((simdV * 351) / 256) + simdY;
+        simdR = stdx::clamp(simdR, U8_MIN, U8_MAX);
+
+        // SIMDNativeI32 simdG = ((simdU * 86) + (simdV * 179) >> 8) + simdY;
+        SIMDNativeI32 simdG = ((simdU * 86) + (simdV * 179) / 256) + simdY;
+        simdG = stdx::clamp(simdG, U8_MIN, U8_MAX);
+
+        // SIMDNativeI32 simdB = ((simdU * 444) >> 8) + simdY;
+        SIMDNativeI32 simdB = ((simdU * 444) / 256) + simdY;
+        simdB = stdx::clamp(simdB, U8_MIN, U8_MAX);
+
+        const SIMDNativeI32 result32 = (simdR << 16) | (simdG << 8) | simdB;
+
+        if constexpr(WIDTH == 360 || WIDTH == 384)
+        {
+            SIMDFixedU64 result64 = stdx::static_simd_cast<uint64_t>(result32);
+            result64 |= result64 << 32;
+            result64.copy_to(reinterpret_cast<uint64_t*>(dst->AsU32Pointer()), stdx::element_aligned);
+            dst += SIZE * 2;
+        }
+        else
+        {
+            result32.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
+            dst += SIZE;
+        }
+    }
+
+    return WIDTH;
+}
+template uint16_t decodeDYUVLineSIMD<360>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineSIMD<384>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineSIMD<720>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineSIMD<768>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+
 /** \brief Matrixes the YUV values to RGB.
  * The LUT for green is not constexpr because it is a 16MB array which we can't reasonably generate at compile-time.
  */
@@ -163,7 +272,7 @@ static constexpr void matrixRGB(Pixel* pixel, const int Y, const uint8_t U, cons
  * However this is another approach that heavily uses LUTs to remove as much calculations as possible.
  */
 template<uint16_t WIDTH>
-uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept
+uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept
 {
     uint8_t py = bits<16, 23>(initialDYUV);
     uint8_t pu = bits<8, 15>(initialDYUV);
@@ -171,8 +280,8 @@ uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* data, uint32_t initialDYUV
 
     for(uint16_t index = 0; index < WIDTH; index += 2)
     {
-        const uint8_t high = data[index];
-        const uint8_t low = data[index + 1];
+        const uint8_t high = dyuv[index];
+        const uint8_t low = dyuv[index + 1];
 
         // Green book V.4.4.2
         uint8_t u2 = bits<4, 7>(high);
@@ -209,9 +318,9 @@ uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* data, uint32_t initialDYUV
 
     return WIDTH;
 }
-template uint16_t decodeDYUVLineLUT<360>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
-template uint16_t decodeDYUVLineLUT<384>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
-template uint16_t decodeDYUVLineLUT<720>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
-template uint16_t decodeDYUVLineLUT<768>(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<360>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<384>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<720>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+template uint16_t decodeDYUVLineLUT<768>(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
 
 } // namespace Video

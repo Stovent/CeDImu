@@ -110,6 +110,11 @@ uint16_t decodeBitmapLine(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB
             return decodeBitmapLine<720>(dst, dataA, dataB, CLUTTable, initialDYUV, icm);
         else
             return decodeBitmapLine<768>(dst, dataA, dataB, CLUTTable, initialDYUV, icm);
+    else if(width == 720 || width == 768)
+        if(width == 720)
+            return decodeBitmapLine<720>(dst, dataA, dataB, CLUTTable, initialDYUV, icm);
+        else
+            return decodeBitmapLine<768>(dst, dataA, dataB, CLUTTable, initialDYUV, icm);
     else
         if(width == 360)
             return decodeBitmapLine<360>(dst, dataA, dataB, CLUTTable, initialDYUV, icm);

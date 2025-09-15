@@ -18,7 +18,10 @@ template<uint16_t WIDTH>
 uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept;
 
 template<uint16_t WIDTH>
-uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* data, uint32_t initialDYUV) noexcept;
+uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
+
+template<uint16_t WIDTH>
+uint16_t decodeDYUVLineLUT(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept;
 
 } // namespace Video
 

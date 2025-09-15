@@ -6,7 +6,7 @@
 #include <print>
 #include <string_view>
 
-static constexpr size_t RGB555_WIDTH = 384;
+static constexpr size_t HALF_WIDTH = 384;
 static constexpr size_t WIDTH = 768;
 static constexpr size_t HEIGHT = 560;
 static constexpr size_t FRAMES = 20000;
@@ -118,11 +118,12 @@ static void benchmarkRunLength(std::string_view name)
 
 int main()
 {
-    benchmarkRGB555Line<Video::decodeRGB555Line<RGB555_WIDTH>>("RGB555 Soft");
-    benchmarkRGB555Line<Video::decodeRGB555LineSIMD<RGB555_WIDTH>>("RGB555 SIMD");
+    benchmarkRGB555Line<Video::decodeRGB555Line<HALF_WIDTH>>("RGB555 Soft");
+    benchmarkRGB555Line<Video::decodeRGB555LineSIMD<HALF_WIDTH>>("RGB555 SIMD");
 
     benchmarkDYUVLine<Video::decodeDYUVLine<WIDTH>>("DYUV Soft");
     benchmarkDYUVLine<Video::decodeDYUVLineLUT<WIDTH>>("DYUV  LUT");
+    benchmarkDYUVLine<Video::decodeDYUVLineSIMD<WIDTH>>("DYUV SIMD");
 
     benchmarkCLUTLine<Video::decodeCLUTLine<WIDTH>>("CLUT Soft");
 
