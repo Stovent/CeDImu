@@ -1,6 +1,8 @@
 #include "Audio.hpp"
 #include "utils.hpp"
 
+#include <bit>
+
 namespace Audio
 {
 

@@ -3,15 +3,15 @@
 
 #include <bit>
 #include <cstdint>
-#include <stdbit.h>
+// #include <stdbit.h>
 
-#if __STDC_VERSION_STDBIT_H__ < 202311L
-#error need __STDC_ENDIAN_NATIVE__ compiler support
-#endif
+// #if __STDC_VERSION_STDBIT_H__ < 202311L
+// #error need __STDC_ENDIAN_NATIVE__ compiler support
+// #endif
 
-#if __STDC_ENDIAN_NATIVE__ != __STDC_ENDIAN_LITTLE__ && __STDC_ENDIAN_NATIVE__ != __STDC_ENDIAN_BIG__
-#error requires a regular little-endian or big-endian machine
-#endif
+// #if __STDC_ENDIAN_NATIVE__ != __STDC_ENDIAN_LITTLE__ && __STDC_ENDIAN_NATIVE__ != __STDC_ENDIAN_BIG__
+// #error requires a regular little-endian or big-endian machine
+// #endif
 
 namespace Video
 {
@@ -20,22 +20,24 @@ namespace Video
  */
 struct alignas(uint32_t) Pixel
 {
+    static_assert(std::endian::native == std::endian::little);
+
     /** \brief Type alias to allow for raw manipulation. */
     using ARGB32 = uint32_t;
 
     constexpr Pixel() : Pixel(0) {}
 
-#if __STDC_ENDIAN_NATIVE__ == __STDC_ENDIAN_LITTLE__
+// #if __STDC_ENDIAN_NATIVE__ == __STDC_ENDIAN_LITTLE__
     constexpr Pixel(ARGB32 argb) : b(argb), g(argb >> 8), r(argb >> 16), a(argb >> 24) {}
     constexpr Pixel(uint8_t A, uint8_t R, uint8_t G, uint8_t B) : b{B}, g{G}, r{R}, a{A} {}
 
     uint8_t b, g, r, a;
-#else
-    constexpr Pixel(ARGB32 argb) : a(argb >> 24), r(argb >> 16), g(argb >> 8), b(argb) {}
-    constexpr Pixel(uint8_t A, uint8_t R, uint8_t G, uint8_t B) : a{A}, r{R}, g{G}, b{B} {}
+// #else
+//     constexpr Pixel(ARGB32 argb) : a(argb >> 24), r(argb >> 16), g(argb >> 8), b(argb) {}
+//     constexpr Pixel(uint8_t A, uint8_t R, uint8_t G, uint8_t B) : a{A}, r{R}, g{G}, b{B} {}
 
-    uint8_t a, r, g, b;
-#endif // __STDC_ENDIAN_NATIVE__
+//     uint8_t a, r, g, b;
+// #endif // __STDC_ENDIAN_NATIVE__
 
     constexpr ARGB32 AsU32() const noexcept { return static_cast<ARGB32>(*this); }
 

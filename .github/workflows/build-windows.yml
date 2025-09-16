@@ -34,4 +34,4 @@ jobs:
           path: ./build/Release/CeDImu.exe
 
       - name: Run tests
-        run: ./build/tests/tests
+        run: ./build/tests/Release/tests.exe

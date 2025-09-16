@@ -10,11 +10,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install wxWidgets
-        run: brew install wxwidgets dylibbundler create-dmg
+      - name: Install dependencies
+        run: brew install wxwidgets@3.2 dylibbundler create-dmg llvm
 
       - name: Generate Makefile
-        run: cmake . -DCMAKE_BUILD_TYPE=Release
+        run: CXX=$(brew --prefix llvm)/bin/clang++ cmake . -DCMAKE_BUILD_TYPE=Release -DCEDIMU_ENABLE_LTO=OFF
 
       - name: Build
         run: make -j$(sysctl -n hw.physicalcpu)
