@@ -82,7 +82,7 @@ template<uint16_t WIDTH>
 uint16_t decodeBitmapLine(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
 {
     if(icm == ImageCodingMethod::DYUV)
-        return decodeDYUVLine<WIDTH>(dst, dataB, initialDYUV);
+        return decodeDYUVLineLUT<WIDTH>(dst, dataB, initialDYUV);
 
     if(icm == ImageCodingMethod::RGB555)
     {
@@ -285,6 +285,8 @@ static constexpr void matrixRGB(Pixel* pixel, const int Y, const uint8_t U, cons
  * \param dyuv The source DYUV data.
  * \param initialDYUV The initial value to be used by the DYUV decoder.
  * \return The number of raw bytes read from \p dyuv.
+ *
+ * This implementation is kept for reference only and not used in actual code.
  */
 template<uint16_t WIDTH>
 uint16_t decodeDYUVLine(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept

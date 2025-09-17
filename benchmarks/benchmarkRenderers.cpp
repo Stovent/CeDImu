@@ -17,7 +17,7 @@ static constexpr Video::Renderer::ImagePlane B = Video::Renderer::B;
 
 template<typename RENDERER, Video::Renderer::BitsPerPixel BPS, Video::ImageCodingMethod CODINGA, Video::ImageCodingMethod CODINGB>
 static void benchmarkRenderer(std::string_view name)
-{    // Configure the renderer.
+{
     RENDERER renderer;
     renderer.m_codingMethod[A] = CODINGA;
     renderer.m_codingMethod[B] = CODINGB;
@@ -52,19 +52,25 @@ static void benchmarkRenderer(std::string_view name)
 
 int main()
 {
-    constexpr Video::Renderer::BitsPerPixel normal8 = Video::Renderer::BitsPerPixel::Normal8;
-    constexpr Video::Renderer::BitsPerPixel double4 = Video::Renderer::BitsPerPixel::Double4;
-    constexpr Video::Renderer::BitsPerPixel high8 = Video::Renderer::BitsPerPixel::High8;
+    constexpr Video::Renderer::BitsPerPixel NORMAL_8 = Video::Renderer::BitsPerPixel::Normal8;
+    constexpr Video::Renderer::BitsPerPixel DOUBLE_4 = Video::Renderer::BitsPerPixel::Double4;
+    // constexpr Video::Renderer::BitsPerPixel HIGH_8 = Video::Renderer::BitsPerPixel::High8;
 
-    benchmarkRenderer<Video::RendererSoftware, normal8, ICM(OFF), ICM(RGB555)>("Normal Soft RGB555");
-    benchmarkRenderer<Video::RendererSIMD, normal8, ICM(OFF), ICM(RGB555)>("Normal SIMD RGB555");
+    benchmarkRenderer<Video::RendererSoftware, NORMAL_8, ICM(OFF), ICM(RGB555)>("Normal Soft RGB555");
+    benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(OFF), ICM(RGB555)>("Normal SIMD RGB555");
 
-    benchmarkRenderer<Video::RendererSoftware, normal8, ICM(DYUV), ICM(DYUV)>("Normal Soft DYUV");
-    benchmarkRenderer<Video::RendererSIMD, normal8, ICM(DYUV), ICM(DYUV)>("Normal SIMD DYUV");
+    benchmarkRenderer<Video::RendererSoftware, NORMAL_8, ICM(DYUV), ICM(DYUV)>("Normal Soft DYUV");
+    benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(DYUV), ICM(DYUV)>("Normal SIMD DYUV");
 
-    benchmarkRenderer<Video::RendererSoftware, double4, ICM(CLUT4), ICM(CLUT4)>("Double Soft CLUT4");
-    benchmarkRenderer<Video::RendererSIMD, double4, ICM(CLUT4), ICM(CLUT4)>("Double SIMD CLUT4");
+    benchmarkRenderer<Video::RendererSoftware, DOUBLE_4, ICM(DYUV), ICM(DYUV)>("Double Soft DYUV");
+    benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(DYUV), ICM(DYUV)>("Double SIMD DYUV");
 
-    benchmarkRenderer<Video::RendererSoftware, high8, ICM(CLUT8), ICM(CLUT7)>("High   Soft CLUT8/CLUT7");
-    benchmarkRenderer<Video::RendererSIMD, high8, ICM(CLUT8), ICM(CLUT7)>("High   SIMD CLUT8/CLUT7");
+    benchmarkRenderer<Video::RendererSoftware, DOUBLE_4, ICM(CLUT4), ICM(CLUT4)>("Double Soft CLUT4");
+    benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(CLUT4), ICM(CLUT4)>("Double SIMD CLUT4");
+
+    benchmarkRenderer<Video::RendererSoftware, NORMAL_8, ICM(CLUT8), ICM(CLUT7)>("Normal Soft CLUT8/CLUT7");
+    benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(CLUT8), ICM(CLUT7)>("Normal SIMD CLUT8/CLUT7");
+
+    benchmarkRenderer<Video::RendererSoftware, DOUBLE_4, ICM(CLUT8), ICM(CLUT7)>("Double Soft CLUT8/CLUT7");
+    benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(CLUT8), ICM(CLUT7)>("Double SIMD CLUT8/CLUT7");
 }
