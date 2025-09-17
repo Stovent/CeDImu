@@ -1,8 +1,5 @@
 /** \file RendererSoftware.cpp
  * \brief RendererSoftware implementation file.
- *
- * TODO: The individual planes does not store transparency anymore like the previous renderer.
- * This should be restored.
  */
 
 #include "RendererSoftware.hpp"
@@ -25,15 +22,11 @@ std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, c
 {
     if(m_lineNumber == 0)
     {
-        m_360Pixels = m_use360Pixels;
-        if(m_360Pixels)
-        {
-            m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = 720;
-        }
-        else
-        {
-            m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = 768;
-        }
+        uint16_t width = getDisplayWidth(m_displayFormat);
+        uint16_t height = getDisplayHeight(m_displayFormat);
+
+        m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = width * 2;
+        m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = height;
     }
 
     ResetMatte();
@@ -107,29 +100,29 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
     {
     case ImageType::Normal:
         if(icm == ImageCodingMethod::CLUT4)
-            if(m_360Pixels)
+            if(Is360Pixels())
                 return decodeBitmapLine<720>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
             else
                 return decodeBitmapLine<768>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
         else
-            if(m_360Pixels)
+            if(Is360Pixels())
                 return decodeBitmapLine<360>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
             else
                 return decodeBitmapLine<384>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineA, lineMain, clut, m_dyuvInitialValue[PLANE], icm);
 
     case ImageType::RunLength:
         if(m_bps[PLANE] == BitsPerPixel::Double4) // RL3
-            if(m_360Pixels)
+            if(Is360Pixels())
                 return decodeRunLengthLine<720, true>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
             else
                 return decodeRunLengthLine<768, true>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
         else if(m_bps[PLANE] == BitsPerPixel::High8) // RL7 high
-            if(m_360Pixels)
+            if(Is360Pixels())
                 return decodeRunLengthLine<720, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
             else
                 return decodeRunLengthLine<768, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
         else
-            if(m_360Pixels)
+            if(Is360Pixels())
                 return decodeRunLengthLine<360, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);
             else
                 return decodeRunLengthLine<384, false>(m_plane[PLANE].GetLinePointer(m_lineNumber), lineMain, clut);

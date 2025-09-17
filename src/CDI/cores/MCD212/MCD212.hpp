@@ -166,6 +166,45 @@ private:
         return m_isPAL || !GetCF() ? 64000 : 63560;
     }
 
+    Video::Renderer::DisplayFormat GetDisplayFormat() const noexcept
+    {
+        using enum Video::Renderer::DisplayFormat;
+        if(!GetCF() && !GetST())
+            return NTSCMonitor; // 5.2.1
+
+        if(GetFD())
+            return NTSCTV;
+        else
+            return PAL;
+
+        // if(GetCF()) // 30MHz
+        // {
+        //     if(GetST())
+        //         return NTSCMonitor; // 5.2.1
+        //     else
+        //         return GetFD() ? NTSCTV : PAL;
+        // }
+        // else // 28MHz
+        // {
+        //     return NTSCMonitor; // 5.2.1
+        // }
+
+        // if(GetST())
+        // {
+        //     if(GetCF())
+        //         return NTSCMonitor; // 5.2.1
+        //     else
+        //         return GetFD() ? NTSCTV : PAL;
+        // }
+        // else
+        // {
+        //     if(!GetCF())
+        //         return NTSCMonitor; // 5.2.1
+        //     else
+        //         return GetFD() ? NTSCTV : PAL;
+        // }
+    }
+
     enum InternalRegistersMemoryMap
     {
         CSR2W = 0x00,

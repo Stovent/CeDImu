@@ -48,19 +48,12 @@ public:
         PIXEL_FULL_INTENSITY = 0xFF, /**< Pixel is full-intensity. */
     };
 
-    // enum class DisplayFormat
-    // {
-    //     NTSCMonitor, /**< 525 lines (360 x 240). */
-    //     NTSCTV, /**< 525 lines (384 x 240). */
-    //     PAL, /**< 625 lines (384 x 280). */
-    // };
-
-    // enum class Resolution
-    // {
-    //     Normal, /**< Same resolution as display format. */
-    //     Double, /**< Double horizontal resolution, normal vertical resolution. */
-    //     High, /**< Double horizontal and vertical resolution. */
-    // };
+    enum class DisplayFormat
+    {
+        NTSCMonitor, /**< 525 lines (360 x 240). */
+        NTSCTV, /**< 525 lines (384 x 240). */
+        PAL, /**< 625 lines (384 x 280). */
+    };
 
     // This enum exists to explicitely indicate that double resolution is 4 bits per pixels, and 8 for high res.
     enum class BitsPerPixel
@@ -87,22 +80,27 @@ public:
     Renderer(Renderer&&) = delete;
     Renderer& operator=(Renderer&&) = delete;
 
+    constexpr DisplayFormat GetDisplayFormat() const noexcept { return m_displayFormat; }
+    void SetDisplayFormat(DisplayFormat display) noexcept;
+    static bool isValidDisplayFormat(DisplayFormat display) noexcept;
+    static constexpr uint16_t getDisplayWidth(DisplayFormat display) noexcept
+    {
+        return display == DisplayFormat::NTSCMonitor ? 360 : 384;
+    }
+    static constexpr uint16_t getDisplayHeight(DisplayFormat display) noexcept
+    {
+        return display == DisplayFormat::PAL ? 280 : 240;
+    }
+    constexpr bool Is360Pixels() const noexcept
+    {
+        return m_screen.m_width == 720;
+    }
+
     virtual std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept = 0;
     virtual const Plane& RenderFrame() noexcept = 0;
 
     template<ImagePlane PLANE>
     bool ExecuteDCPInstruction(uint32_t instruction) noexcept;
-
-    bool m_use360Pixels; /**< Set by the video chip, stored at the start of the frame for its entirety. */
-
-//     void SetDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
-//     static bool isValidDisplayResolution(DisplayFormat display, Resolution resolution) noexcept;
-//     static std::pair<size_t, size_t> getPixelResolution(DisplayFormat display, Resolution resolution) noexcept;
-//
-//     void SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
-//     static bool isValidWidth(uint16_t width) noexcept;
-//     static bool isValidHeight(uint16_t height) noexcept;
-//     static bool isValidPixelResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept;
 
     void SetCursorEnabled(bool enabled) noexcept;
     void SetCursorResolution(bool doubleResolution) noexcept;
@@ -113,11 +111,12 @@ public:
     // TODO: organize and order the members correctly.
 
     // TODO: set those to always double resolution.
-    Plane m_screen{0, 280};
-    std::array<Plane, 2> m_plane{Plane{0, 280}, Plane{0, 280}};
+    Plane m_screen{};
+    std::array<Plane, 2> m_plane{Plane{}, Plane{}};
     Plane m_backdropPlane{1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT};
     Plane m_cursorPlane{Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_SIZE}; /**< The alpha is 0, 127 or 255. */
 
+    // TODO: remove this and let MCD212 handle it? would allow Interlaced mode easily.
     uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. */
 
     std::array<uint32_t, 2> m_dyuvInitialValue{};
@@ -223,7 +222,7 @@ public:
     };
 
 protected:
-    bool m_360Pixels; /**< true when a line has 360 pixels, false when the line has 384. */
+    DisplayFormat m_displayFormat{DisplayFormat::PAL}; /**< Used to select 360/384 width and 240/280 height. */
 
     /** \brief Returns the lowest 24-bits that contains the DCP command. */
     static constexpr uint32_t dcpExtractCommand(const uint32_t inst) { return inst & 0x00FF'FFFFu; }

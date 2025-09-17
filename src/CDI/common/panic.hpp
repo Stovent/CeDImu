@@ -28,6 +28,6 @@ template<typename... Args>
 constexpr void panic(PanicFormat<std::type_identity_t<Args>...> fmt, Args&&... args)
 {
     std::print(stderr, "{}:{} panic: ", fmt.m_src.function_name(), fmt.m_src.line());
-    std::println(stderr, fmt.m_fmt, args...);
+    std::println(stderr, fmt.m_fmt, std::forward<Args>(args)...);
     throw std::runtime_error("panic");
 }

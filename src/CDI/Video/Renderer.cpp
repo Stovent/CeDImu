@@ -5,98 +5,21 @@
 namespace Video
 {
 
-// /** \brief Configures the display format and resolution.
-//  * The input must only be a valid enum value.
-//  */
-// void Renderer::SetDisplayResolution(DisplayFormat display, Resolution resolution) noexcept
-// {
-//     if(!isValidDisplayResolution(display, resolution))
-//         panic("Invalid display resolution");
-//
-//     m_360Pixels = display == DisplayFormat::NTSCMonitor;
-//     const std::pair<size_t, size_t> sizes = getPixelResolution(display, resolution);
-//     SetPlanesResolutions(sizes.first, sizes.first, sizes.second);
-// }
-//
-// bool Renderer::isValidDisplayResolution(DisplayFormat display, Resolution resolution) noexcept
-// {
-//     return (display == DisplayFormat::NTSCMonitor || display == DisplayFormat::NTSCTV || display == DisplayFormat::PAL)
-//         && (resolution == Resolution::Normal || resolution == Resolution::Double || resolution == Resolution::High);
-// }
-//
-// /** \brief Returns the `<width, height>` in pixels of the given display resolution combination.
-//  * The input must only be a valid enum value.
-//  */
-// std::pair<size_t, size_t> Renderer::getPixelResolution(DisplayFormat display, Resolution resolution) noexcept
-// {
-//     size_t width = 0;
-//     size_t height = 0;
-//
-//     switch(display)
-//     {
-//     case DisplayFormat::NTSCMonitor:
-//         width = 360;
-//         height = 240;
-//         break;
-//
-//     case DisplayFormat::NTSCTV:
-//         width = 384;
-//         height = 240;
-//         break;
-//
-//     case DisplayFormat::PAL:
-//         width = 384;
-//         height = 280;
-//         break;
-//     }
-//
-//     switch(resolution)
-//     {
-//     case Resolution::Normal:
-//         break;
-//
-//     case Resolution::Double:
-//         width *= 2;
-//         break;
-//
-//     case Resolution::High:
-//         width *= 2;
-//         height *= 2;
-//         break;
-//     }
-//
-//     return std::make_pair(width, height);
-// }
-//
-// /** \brief Sets the planes resolutions.
-//  *
-//  * This method must only be called after a frame has been drawn and before the next frame starts being drawn.
-//  * If this is called mid-frame, no error checks are performed to make sure the resolution matches.
-//  */
-// void Renderer::SetPlanesResolutions(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
-// {
-//     if(!isValidPixelResolution(widthA, widthB, height))
-//         panic("Invalid resolution combination: {} {} {}", widthA, widthB, height);
-//
-//     m_plane[A].m_width = m_screen.m_width = widthA;
-//     m_plane[B].m_width = widthB;
-//     m_plane[A].m_height = m_plane[B].m_height = m_backdropPlane.m_height = m_screen.m_height = height;
-// }
-//
-// bool Renderer::isValidWidth(uint16_t width) noexcept
-// {
-//     return (width == 360 || width == 384 || width == 720 || width == 768);
-// }
-//
-// bool Renderer::isValidHeight(uint16_t height) noexcept
-// {
-//     return (height == 240 || height == 280 || height == 480 || height == 560);
-// }
-//
-// bool Renderer::isValidPixelResolution(uint16_t widthA, uint16_t widthB, uint16_t height) noexcept
-// {
-//     return isValidWidth(widthA) && isValidWidth(widthB) && isValidHeight(height);
-// }
+/** \brief Configures the display format.
+ * The input must only be a valid enum value.
+ */
+void Renderer::SetDisplayFormat(DisplayFormat display) noexcept
+{
+    if(!isValidDisplayFormat(display))
+        panic("Invalid display format {}", static_cast<int>(display));
+
+    m_displayFormat = display;
+}
+
+bool Renderer::isValidDisplayFormat(DisplayFormat display) noexcept
+{
+    return display == DisplayFormat::NTSCMonitor || display == DisplayFormat::NTSCTV || display == DisplayFormat::PAL;
+}
 
 /** \brief Enables or disables the cursor plane.
  * \param enabled true to enable, false to disable.

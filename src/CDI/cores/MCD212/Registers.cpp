@@ -84,6 +84,14 @@ std::vector<InternalRegister> MCD212::GetControlRegisters() const
     for(uint32_t i = 0; i < 256; i++)
         registers.emplace_back("CLUT Color " + std::to_string(i), i, m_renderer.m_clut[i], "");
 
+    registers.emplace_back("Display format",                    0, as<int>(m_renderer.GetDisplayFormat()), "");
+    registers.emplace_back("Image type Plane A",                0, as<int>(m_renderer.m_imageType[PlaneA]), "");
+    registers.emplace_back("Image type Plane B",                0, as<int>(m_renderer.m_imageType[PlaneB]), "");
+    registers.emplace_back("Pixel repeat factor Plane A",       0, as<int>(m_renderer.m_pixelRepeatFactor[PlaneA]), "");
+    registers.emplace_back("Pixel repeat factor Plane B",       0, as<int>(m_renderer.m_pixelRepeatFactor[PlaneB]), "");
+    registers.emplace_back("Bits per Pixel Plane A",            0, as<int>(m_renderer.m_bps[PlaneA]), "");
+    registers.emplace_back("Bits per Pixel Plane B",            0, as<int>(m_renderer.m_bps[PlaneB]), "");
+
     registers.emplace_back("Image Coding Method Plane A",       ImageCodingMethod          + 0x80, as<int>(m_renderer.m_codingMethod[PlaneA]), "");
     registers.emplace_back("Image Coding Method Plane B",       ImageCodingMethod          + 0x80, as<int>(m_renderer.m_codingMethod[PlaneB]), "");
     registers.emplace_back("External Video",                    ImageCodingMethod          + 0x80, m_renderer.m_externalVideo, "");
@@ -103,6 +111,7 @@ std::vector<InternalRegister> MCD212::GetControlRegisters() const
     registers.emplace_back("Cursor X Position",                 CursorPosition             + 0x80, m_renderer.m_cursorX, "");
     registers.emplace_back("Cursor Y Position",                 CursorPosition             + 0x80, m_renderer.m_cursorY, "");
     registers.emplace_back("Cursor Enabled",                    CursorControl              + 0x80, m_renderer.m_cursorEnabled, "");
+    registers.emplace_back("Cursor double resolution",          CursorControl              + 0x80, m_renderer.m_cursorDoubleResolution, "");
     registers.emplace_back("Cursor color",                      CursorControl              + 0x80, m_renderer.m_cursorColor, "");
 
     for(size_t i = 0; i < m_renderer.m_cursorPatterns.size(); i++)
