@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "VideoDecoders.hpp"
 
 #include "../common/panic.hpp"
 
@@ -19,6 +20,27 @@ void Renderer::SetDisplayFormat(DisplayFormat display) noexcept
 bool Renderer::isValidDisplayFormat(DisplayFormat display) noexcept
 {
     return display == DisplayFormat::NTSCMonitor || display == DisplayFormat::NTSCTV || display == DisplayFormat::PAL;
+}
+
+/** \brief To be called when the whole frame is drawn.
+ * \return The final screen.
+ *
+ * This function renders the cursor and pastes it on the screen.
+ * It also resets some members to prepare for the next frame.
+ */
+const Plane& Renderer::RenderFrame() noexcept
+{
+    // Should this be inside DrawLine() ?
+    if(m_cursorEnabled)
+    {
+        DrawCursor();
+        paste(m_screen.data(), m_screen.m_width, m_screen.m_height,
+              m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height,
+              m_cursorX, m_cursorY);
+    }
+
+    m_lineNumber = 0;
+    return m_screen;
 }
 
 /** \brief Enables or disables the cursor plane.
@@ -79,21 +101,6 @@ bool Renderer::isAllowedImageCodingCombination(ImageCodingMethod planeA, ImageCo
 
     // If I implement QHY, if(planeB == QHY && planeA != DYUV) return false;
     return true;
-}
-
-/** \brief Converts the 4-bits backdrop color to a Pixel.
- * \param color The 4 bit color code.
- * \returns The Pixel.
- */
-Pixel Renderer::backdropCursorColorToPixel(const uint8_t color) noexcept
-{
-    // Background plane has no transparency (Green book V.5.13).
-    Pixel argb = 0xFF'00'00'00; // Set transparency for cursor plane.
-    const uint8_t c = bit<3>(color) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
-    if(bit<2>(color)) argb.r = c; // Red.
-    if(bit<1>(color)) argb.g = c; // Green.
-    if(bit<0>(color)) argb.b = c; // Blue.
-    return argb;
 }
 
 /** \brief Handles the transparency of the current pixel for each plane.

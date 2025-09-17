@@ -51,27 +51,6 @@ std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, c
     return std::make_pair(bytesA, bytesB);
 }
 
-/** \brief To be called when the whole frame is drawn.
- * \return The final screen.
- *
- * This function renders the cursor and pastes it on the screen.
- * It also resets some members to prepare for the next frame.
- */
-const Plane& RendererSoftware::RenderFrame() noexcept
-{
-    // Should this be inside DrawLine() ?
-    if(m_cursorEnabled)
-    {
-        DrawCursor();
-        Video::paste(m_screen.data(), m_screen.m_width, m_screen.m_height,
-                     m_cursorPlane.data(), m_cursorPlane.m_width, m_cursorPlane.m_height,
-                     m_cursorX, m_cursorY);
-    }
-
-    m_lineNumber = 0;
-    return m_screen;
-}
-
 /** \brief Draws the line of the given plane.
  * \param lineMain Line that will be decoded.
  * \param lineA Line A data if RGB555.
@@ -133,12 +112,6 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
     }
 
     std::unreachable();
-}
-
-void RendererSoftware::DrawLineBackdrop() noexcept
-{
-    // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
-    *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToPixel(m_backdropColor);
 }
 
 void RendererSoftware::DrawCursor() noexcept

@@ -97,7 +97,13 @@ public:
     }
 
     virtual std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept = 0;
-    virtual const Plane& RenderFrame() noexcept = 0;
+    virtual void DrawCursor() noexcept = 0;
+    void DrawLineBackdrop() noexcept
+    {
+        // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
+        *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToPixel(m_backdropColor);
+    }
+    const Plane& RenderFrame() noexcept;
 
     template<ImagePlane PLANE>
     bool ExecuteDCPInstruction(uint32_t instruction) noexcept;
@@ -140,7 +146,7 @@ public:
 
     // Backdrop.
     uint8_t m_backdropColor : 4{}; /**< YRGB color code. */
-    static Pixel backdropCursorColorToPixel(uint8_t color) noexcept;
+    static constexpr Pixel backdropCursorColorToPixel(uint8_t color) noexcept;
 
     // Cursor.
     bool m_cursorEnabled{};
@@ -230,6 +236,21 @@ protected:
     /** \brief Masks the given color to the actually used bytes (V.5.7.2.2). */
     static constexpr uint32_t clutColorKey(const uint32_t color) { return color & 0x00FC'FCFCu; }
 };
+
+/** \brief Converts the 4-bits backdrop color to a Pixel.
+ * \param color The 4 bit color code.
+ * \returns The Pixel.
+ */
+constexpr Pixel Renderer::backdropCursorColorToPixel(const uint8_t color) noexcept
+{
+    // Background plane has no transparency (Green book V.5.13).
+    Pixel argb = 0xFF'00'00'00; // Set transparency for cursor plane.
+    const uint8_t c = bit<3>(color) ? Renderer::PIXEL_FULL_INTENSITY : Renderer::PIXEL_HALF_INTENSITY;
+    if(bit<2>(color)) argb.r = c; // Red.
+    if(bit<1>(color)) argb.g = c; // Green.
+    if(bit<0>(color)) argb.b = c; // Blue.
+    return argb;
+}
 
 /** \brief Called at the beginning of each line to reset the matte state.
  *
