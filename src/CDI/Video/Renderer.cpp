@@ -88,6 +88,21 @@ void Renderer::SetCursorPattern(const uint8_t line, const uint16_t pattern) noex
     m_cursorPatterns.at(line) = pattern;
 }
 
+/** \brief Configures cursor blinking.
+ * \param type false is on/off, true is on/complement.
+ * \param periodOn ON period (zero not allowed).
+ * \param periodOff OFF period (if zero, blink is disabled).
+ */
+void Renderer::SetCursorBlink(bool type, uint8_t periodOn, uint8_t periodOff) noexcept
+{
+    if(periodOn == 0 && periodOff != 0) // If ON is 0 AND blink is enabled (OFF not 0).
+        panic("Cursor blink ON period cannot be 0");
+
+    m_cursorBlinkType = type;
+    m_cursorBlinkOn = periodOn;
+    m_cursorBlinkOff = periodOff;
+}
+
 /** \brief Checks if the given ICM for both planes are valid according to Green Book V.4.4.8. */
 bool Renderer::isAllowedImageCodingCombination(ImageCodingMethod planeA, ImageCodingMethod planeB) noexcept
 {

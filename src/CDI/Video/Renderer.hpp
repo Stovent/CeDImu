@@ -21,11 +21,10 @@ static constexpr bool matteMF(const uint32_t matteCommand) noexcept
  * Every array member with 2 elements means its meant to be index based on the plane number \ref ImagePlane.
  *
  * TODO:
- * - Handle high resolution height.
  * - Should the renderer manage the line count and draw itself the final frame and the cursor when reached,
  *   or let it to the user of the renderer with a `Plane RenderFrame();` method ?
- * - Let all members public because the MCD212/VSD has access to them all ?
  * - V.25/V.26 Pixel repeat on pixel decoding, pixel hold on overlay.
+ * - Implement cursor blink.
  * - Should there be a reset method?
  *
  * TODO optimizations:
@@ -113,6 +112,7 @@ public:
     void SetCursorPosition(uint16_t x, uint16_t y) noexcept;
     void SetCursorColor(uint8_t argb) noexcept;
     void SetCursorPattern(uint8_t line, uint16_t pattern) noexcept;
+    void SetCursorBlink(bool type, uint8_t periodOn, uint8_t periodOff) noexcept;
 
     // TODO: organize and order the members correctly.
 
@@ -155,7 +155,9 @@ public:
     uint16_t m_cursorY{}; /**< Normal resolution. */
     uint8_t m_cursorColor : 4{}; /**< YRGB color code. */
     std::array<uint16_t, 16> m_cursorPatterns{};
-    // TODO: implement blink.
+    bool m_cursorBlinkType{}; /**< false is on/off, true is on/complement. */
+    uint8_t m_cursorBlinkOn : 3{}; /**< ON period (zero not allowed). */
+    uint8_t m_cursorBlinkOff : 3{}; /**< OFF period (if zero, blink is disabled). */
 
     // Image Contribution Factor.
     std::array<uint8_t, 2> m_icf{};

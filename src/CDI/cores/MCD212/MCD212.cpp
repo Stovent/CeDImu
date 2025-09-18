@@ -115,6 +115,7 @@ void MCD212::ExecuteICA1()
             m_renderer.SetCursorColor(bits<0, 3>(ica));
             m_renderer.SetCursorEnabled(bit<23>(ica));
             m_renderer.SetCursorResolution(bit<15>(ica));
+            m_renderer.SetCursorBlink(bit<22>(ica), bits<19, 21>(ica), bits<16, 18>(ica));
             break;
 
         case 0xCF:
@@ -181,6 +182,7 @@ void MCD212::ExecuteDCA1()
             m_renderer.SetCursorColor(bits<0, 3>(dca));
             m_renderer.SetCursorEnabled(bit<23>(dca));
             m_renderer.SetCursorResolution(bit<15>(dca));
+            m_renderer.SetCursorBlink(bit<22>(dca), bits<19, 21>(dca), bits<16, 18>(dca));
             break;
 
         case 0xCF:
