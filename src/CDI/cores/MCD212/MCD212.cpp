@@ -138,7 +138,7 @@ void MCD212::ExecuteDCA1()
         SetDCP1(addr + 4);
 
         if(m_cdi.m_callbacks.HasOnLogICADCA())
-            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, { m_totalFrameCount + 1, m_renderer.m_lineNumber, dca });
+            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, { m_totalFrameCount + 1, m_lineNumber, dca });
 
         switch(dca >> 28)
         {
@@ -255,7 +255,7 @@ void MCD212::ExecuteDCA2()
         SetDCP2(addr + 4);
 
         if(m_cdi.m_callbacks.HasOnLogICADCA())
-            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, { m_totalFrameCount + 1, m_renderer.m_lineNumber, dca });
+            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, { m_totalFrameCount + 1, m_lineNumber, dca });
 
         switch(dca >> 28)
         {

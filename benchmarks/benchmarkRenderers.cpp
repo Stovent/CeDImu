@@ -28,15 +28,17 @@ static void benchmarkRenderer(std::string_view name)
     renderer.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL);
     renderer.m_mix = true;
 
+    uint16_t lineNumber = 0;
+
     // Benchmark
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     for(size_t f = 0; f < FRAMES; ++f)
     {
         for(size_t y = 0; y < HEIGHT; ++y)
         {
-            renderer.DrawLine(LINEA.data(), LINEB.data());
+            renderer.DrawLine(LINEA.data(), LINEB.data(), lineNumber++);
         }
-        // renderer.m_lineNumber = 0;
+        lineNumber = 0;
         renderer.RenderFrame();
     }
     const std::chrono::high_resolution_clock::time_point finish = std::chrono::high_resolution_clock::now();

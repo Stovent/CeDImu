@@ -95,13 +95,7 @@ public:
         return m_screen.m_width == 720;
     }
 
-    virtual std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept = 0;
-    virtual void DrawCursor() noexcept = 0;
-    void DrawLineBackdrop() noexcept
-    {
-        // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
-        *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToPixel(m_backdropColor);
-    }
+    virtual std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB, uint16_t lineNumber) noexcept = 0;
     const Plane& RenderFrame() noexcept;
 
     template<ImagePlane PLANE>
@@ -121,9 +115,6 @@ public:
     std::array<Plane, 2> m_plane{Plane{}, Plane{}};
     Plane m_backdropPlane{1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT};
     Plane m_cursorPlane{Plane::CURSOR_WIDTH, Plane::CURSOR_HEIGHT, Plane::CURSOR_SIZE}; /**< The alpha is 0, 127 or 255. */
-
-    // TODO: remove this and let MCD212 handle it? would allow Interlaced mode easily.
-    uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. */
 
     std::array<uint32_t, 2> m_dyuvInitialValue{};
     bool m_planeOrder{}; /**< true for B in front of A, false for A in front of B. */
@@ -230,7 +221,15 @@ public:
     };
 
 protected:
+    uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. Handled by the caller. */
     DisplayFormat m_displayFormat{DisplayFormat::PAL}; /**< Used to select 360/384 width and 240/280 height. */
+
+    virtual void DrawCursor() noexcept = 0;
+    void DrawLineBackdrop() noexcept
+    {
+        // The pixels of a line are all the same, so backdrop plane only contains the color of each line.
+        *m_backdropPlane.GetLinePointer(m_lineNumber) = backdropCursorColorToPixel(m_backdropColor);
+    }
 
     /** \brief Returns the lowest 24-bits that contains the DCP command. */
     static constexpr uint32_t dcpExtractCommand(const uint32_t inst) { return inst & 0x00FF'FFFFu; }

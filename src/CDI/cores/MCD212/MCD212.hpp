@@ -69,6 +69,7 @@ private:
     uint8_t m_registerCSR2R{0};
 
     uint16_t m_verticalLines{0}; // starts at 0.
+    uint16_t m_lineNumber{0}; // starts at 0.
 
     void DrawVideoLine();
 

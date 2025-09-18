@@ -40,6 +40,4 @@ jobs:
           path: ./CeDImu-Installer.dmg
 
       - name: Run tests
-        run: |
-             ls -R .
-             ./tests/tests
+        run: ./tests/tests

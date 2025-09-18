@@ -18,8 +18,9 @@ namespace Video
  * \param lineB Line B data.
  * \return The number of bytes read from memory for each plane `<plane A, plane B>`.
  */
-std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept
+std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, const uint8_t* lineB, const uint16_t lineNumber) noexcept
 {
+    m_lineNumber = lineNumber;
     if(m_lineNumber == 0)
     {
         uint16_t width = getDisplayWidth(m_displayFormat);
@@ -47,7 +48,6 @@ std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, c
         else
             OverlayMix<false, false>();
 
-    m_lineNumber++;
     return std::make_pair(bytesA, bytesB);
 }
 

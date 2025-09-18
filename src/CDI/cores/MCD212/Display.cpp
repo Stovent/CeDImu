@@ -19,7 +19,7 @@ void MCD212::DrawVideoLine()
 
     SetDA();
 
-    if(m_renderer.m_lineNumber == 0)
+    if(m_lineNumber == 0)
         m_renderer.SetDisplayFormat(GetDisplayFormat());
 
     if(GetSM() && isEven(m_totalFrameCount))
@@ -32,7 +32,7 @@ void MCD212::DrawVideoLine()
         const uint32_t vsr1 = GetVSR1();
         const uint32_t vsr2 = GetVSR2();
 
-        const std::pair<uint16_t, uint16_t> bytes = m_renderer.DrawLine(&m_memory[vsr1], &m_memory[vsr2]);
+        const std::pair<uint16_t, uint16_t> bytes = m_renderer.DrawLine(&m_memory[vsr1], &m_memory[vsr2], m_lineNumber);
 
         SetVSR1(vsr1 + bytes.first);
         SetVSR2(vsr2 + bytes.second);
@@ -43,18 +43,16 @@ void MCD212::DrawVideoLine()
         if(GetIC2() && GetDC2())
             ExecuteDCA2();
     }
-    else
-        m_renderer.m_lineNumber++;
+
+    m_lineNumber++;
 
     if(m_verticalLines >= GetTotalVerticalLines())
     {
         UnsetDA();
         m_totalFrameCount++;
         m_verticalLines = 0;
+        m_lineNumber = 0;
 
         m_cdi.m_callbacks.OnFrameCompleted(m_renderer.RenderFrame());
-
-        if(!GetDE())
-            m_renderer.m_lineNumber = 0;
     }
 }

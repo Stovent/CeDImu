@@ -14,7 +14,7 @@ public:
     RendererSoftware() {}
     virtual ~RendererSoftware() noexcept {}
 
-    std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB) noexcept override;
+    std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB, uint16_t lineNumber) noexcept override;
     void DrawCursor() noexcept override;
 
     template<ImagePlane PLANE>

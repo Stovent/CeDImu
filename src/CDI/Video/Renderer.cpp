@@ -39,7 +39,6 @@ const Plane& Renderer::RenderFrame() noexcept
               m_cursorX, m_cursorY);
     }
 
-    m_lineNumber = 0;
     return m_screen;
 }
 
