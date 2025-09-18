@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-option(LIBCEDIMU_ENABLE_RENDERERSIMD "Enable the SIMD renderer, requires std::simd support" OFF)
+option(LIBCEDIMU_ENABLE_RENDERERSIMD "Enable the SIMD renderer, requires headers <simd> or <experimental/simd>" OFF)
 message("libCeDImu enable RendererSIMD: " ${LIBCEDIMU_ENABLE_RENDERERSIMD})
 option(LIBCEDIMU_PROFILE_GNU "Add profile options for GNU compiler" OFF)
 message("libCeDImu profile GNU: " ${LIBCEDIMU_PROFILE_GNU})
