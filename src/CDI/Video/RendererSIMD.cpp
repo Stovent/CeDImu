@@ -132,37 +132,25 @@ void RendererSIMD::DrawCursor() noexcept
 
     const Pixel color = backdropCursorColorToPixel(m_cursorColor);
 
-    Plane::iterator it = m_cursorPlane.begin();
-    for(size_t y = 0; y < m_cursorPlane.m_height; ++y)
-    {
-        for(int x = static_cast<int>(m_cursorPlane.m_width) - 1; x >= 0; --x)
-        {
-            const uint16_t mask = (1 << x);
-            if(m_cursorPatterns[y] & mask)
-                *it = color;
-            else
-                *it = BLACK_PIXEL;
-            ++it;
-        }
-    }
+    using SIMDCursorLine = stdx::fixed_size_simd<uint32_t, 16>;
+    using SIMDCursorLineMask = SIMDCursorLine::mask_type;
+    static constexpr SIMDCursorLine SHIFTER([] (uint32_t i) { return 15 - i; });
 
-    // TODO: try in SIMD.
-//     using FixedPixelSIMD = stdx::fixed_size_simd<uint32_t, 16>;
-//     int pattern = 0;
-//     for(PlaneSIMD::iterator it = m_cursorPlane.begin(); it < m_cursorPlane.end(); it += FixedPixelSIMD::size(), ++pattern)
-//     {
-//         FixedPixelSIMD pixel{&*it, stdx::element_aligned};
-//
-//         for(int x = m_cursorPlane.m_width - 1, pix = 0; --x >= 0; pix++)
-//         {
-//             const uint16_t mask = (1 << x);
-//             if(m_cursorPatterns[pattern] & mask)
-//                 pixel[pix] = color;
-//             else
-//                 pixel[pix] = black;
-//         }
-//         pixel.copy_to(&*it, stdx::element_aligned);
-//     }
+    int patternIndex = 0;
+    for(Plane::iterator dst = m_cursorPlane.begin(); dst < m_cursorPlane.end(); dst += SIMDCursorLine::size(), ++patternIndex)
+    {
+        // Convert pattern to a mask.
+        SIMDCursorLine patternSimd = m_cursorPatterns[patternIndex];
+        patternSimd >>= SHIFTER;
+        patternSimd &= 1;
+        const SIMDCursorLineMask patternMask = patternSimd == 1;
+
+        const SIMDCursorLine colorSimd{color.AsU32()};
+
+        SIMDCursorLine cursorPixels = BLACK_PIXEL.AsU32();
+        stdx::where(patternMask, cursorPixels) = colorSimd;
+        cursorPixels.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
+    }
 }
 
 /** \brief Overlays or mix all the planes to the final screen.

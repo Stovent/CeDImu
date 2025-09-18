@@ -7,7 +7,9 @@
 #include <string_view>
 
 static constexpr size_t WIDTH = 768;
+static constexpr size_t HEIGHT = 280;
 static constexpr size_t FRAMES = 10000;
+static constexpr size_t FRAMES_CURSOR = 10'000'000;
 
 static constexpr std::array<uint8_t, WIDTH> LINEA{};
 static constexpr std::array<uint8_t, WIDTH> LINEB{};
@@ -23,15 +25,14 @@ static void benchmarkRenderer(std::string_view name)
     renderer.m_codingMethod[B] = CODINGB;
     renderer.m_bps[A] = BPS;
     renderer.m_bps[B] = BPS;
+    renderer.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL);
     renderer.m_mix = true;
-
-    const size_t height = renderer.m_plane[A].m_height;
 
     // Benchmark
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     for(size_t f = 0; f < FRAMES; ++f)
     {
-        for(size_t y = 0; y < height; ++y)
+        for(size_t y = 0; y < HEIGHT; ++y)
         {
             renderer.DrawLine(LINEA.data(), LINEB.data());
         }
@@ -41,11 +42,35 @@ static void benchmarkRenderer(std::string_view name)
     const std::chrono::high_resolution_clock::time_point finish = std::chrono::high_resolution_clock::now();
     const std::chrono::nanoseconds delta = finish - start;
 
-    std::print("{} ", name);
-    std::println("{}  {}  {}/f  {}",
+    std::println("{} {}  {}  {}/f  {}",
+        name,
         delta,
         std::chrono::duration_cast<std::chrono::microseconds>(delta),
         std::chrono::duration_cast<std::chrono::microseconds>(delta / FRAMES),
+        std::chrono::duration_cast<std::chrono::milliseconds>(delta)
+    );
+}
+
+template<typename RENDERER>
+static void benchmarkRendererCursor(std::string_view name)
+{
+    RENDERER renderer;
+    renderer.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL);
+
+    // Benchmark
+    const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    for(size_t f = 0; f < FRAMES_CURSOR; ++f)
+    {
+        renderer.DrawCursor();
+    }
+    const std::chrono::high_resolution_clock::time_point finish = std::chrono::high_resolution_clock::now();
+    const std::chrono::nanoseconds delta = finish - start;
+
+    std::println("{} {}  {}  {}/f  {}",
+        name,
+        delta,
+        std::chrono::duration_cast<std::chrono::microseconds>(delta),
+        delta / FRAMES_CURSOR,
         std::chrono::duration_cast<std::chrono::milliseconds>(delta)
     );
 }
@@ -55,6 +80,9 @@ int main()
     constexpr Video::Renderer::BitsPerPixel NORMAL_8 = Video::Renderer::BitsPerPixel::Normal8;
     constexpr Video::Renderer::BitsPerPixel DOUBLE_4 = Video::Renderer::BitsPerPixel::Double4;
     // constexpr Video::Renderer::BitsPerPixel HIGH_8 = Video::Renderer::BitsPerPixel::High8;
+
+    benchmarkRendererCursor<Video::RendererSoftware>("Cursor Soft");
+    benchmarkRendererCursor<Video::RendererSIMD>("Cursor SIMD");
 
     benchmarkRenderer<Video::RendererSoftware, NORMAL_8, ICM(OFF), ICM(RGB555)>("Normal Soft RGB555");
     benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(OFF), ICM(RGB555)>("Normal SIMD RGB555");
