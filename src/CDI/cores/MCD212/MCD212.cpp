@@ -46,6 +46,7 @@ void MCD212::IncrementTime(const double ns)
     const size_t lineDisplayTime = GetLineDisplayTime();
     if(m_timeNs >= lineDisplayTime)
     {
+        m_renderer.IncrementCursorTime(m_timeNs);
         DrawVideoLine();
         m_timeNs -= lineDisplayTime;
     }

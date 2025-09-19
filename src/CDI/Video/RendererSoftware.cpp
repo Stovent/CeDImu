@@ -119,7 +119,14 @@ void RendererSoftware::DrawCursor() noexcept
     // Technically speaking the cursor is drawn when the drawing line number is the cursor's one (because video
     // is outputted continuously line by line).
     // But for here maybe we don't care.
-    const Pixel color = backdropCursorColorToPixel(m_cursorColor);
+    Pixel color = backdropCursorColorToPixel(m_cursorColor);
+    if(!m_cursorIsOn)
+    {
+        if(m_cursorBlinkType) // Complement.
+            color = color.Complement();
+        else
+            color = BLACK_PIXEL;
+    }
 
     Plane::iterator it = m_cursorPlane.begin();
     for(size_t y = 0; y < m_cursorPlane.m_height; ++y)

@@ -167,6 +167,11 @@ private:
         return m_isPAL || !GetCF() ? 64000 : 63560;
     }
 
+    bool Is60FPS() const noexcept
+    {
+        return GetFD();
+    }
+
     Video::Renderer::DisplayFormat GetDisplayFormat() const noexcept
     {
         using enum Video::Renderer::DisplayFormat;

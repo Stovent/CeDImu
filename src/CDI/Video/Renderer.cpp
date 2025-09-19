@@ -9,18 +9,41 @@ namespace Video
 /** \brief Configures the display format.
  * The input must only be a valid enum value.
  */
-void Renderer::SetDisplayFormat(const DisplayFormat display, const bool highResolution) noexcept
+void Renderer::SetDisplayFormat(const DisplayFormat display, const bool highResolution, bool fps60) noexcept
 {
     if(!isValidDisplayFormat(display))
         panic("Invalid display format {}", static_cast<int>(display));
 
     m_displayFormat = display;
     m_highResolution = highResolution;
+    m_60FPS = fps60;
 }
 
 bool Renderer::isValidDisplayFormat(const DisplayFormat display) noexcept
 {
     return display == DisplayFormat::NTSCMonitor || display == DisplayFormat::NTSCTV || display == DisplayFormat::PAL;
+}
+
+/** \brief Increments the internal time of the cursor blink.
+ * \param ns The time in nanosecond.
+ */
+void Renderer::IncrementCursorTime(const double ns) noexcept
+{
+    if(!m_cursorEnabled || m_cursorBlinkOff == 0)
+        return; // OFF == 0 means ON indefinitely.
+
+    double delta = m_60FPS ? DELTA_60FPS : DELTA_50FPS;
+    if(m_cursorIsOn)
+        delta *= m_cursorBlinkOn;
+    else
+        delta *= m_cursorBlinkOff;
+
+    m_cursorTime += ns;
+    if(m_cursorTime >= delta)
+    {
+        m_cursorTime -= delta;
+        m_cursorIsOn = !m_cursorIsOn;
+    }
 }
 
 /** \brief To be called when the whole frame is drawn.

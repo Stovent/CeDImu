@@ -130,12 +130,20 @@ void RendererSIMD::DrawCursor() noexcept
     // is outputted continuously line by line).
     // But for here maybe we don't care.
 
-    const Pixel color = backdropCursorColorToPixel(m_cursorColor);
+    Pixel color = backdropCursorColorToPixel(m_cursorColor);
+    if(!m_cursorIsOn)
+    {
+        if(m_cursorBlinkType) // Complement.
+            color = color.Complement();
+        else
+            color = BLACK_PIXEL;
+    }
 
     using SIMDCursorLine = stdx::fixed_size_simd<uint32_t, 16>;
     using SIMDCursorLineMask = SIMDCursorLine::mask_type;
     static constexpr SIMDCursorLine SHIFTER([] (uint32_t i) { return 15 - i; });
 
+    const SIMDCursorLine colorSimd{color.AsU32()};
     int patternIndex = 0;
     for(Plane::iterator dst = m_cursorPlane.begin(); dst < m_cursorPlane.end(); dst += SIMDCursorLine::size(), ++patternIndex)
     {
@@ -144,8 +152,6 @@ void RendererSIMD::DrawCursor() noexcept
         patternSimd >>= SHIFTER;
         patternSimd &= 1;
         const SIMDCursorLineMask patternMask = patternSimd == 1;
-
-        const SIMDCursorLine colorSimd{color.AsU32()};
 
         SIMDCursorLine cursorPixels = BLACK_PIXEL.AsU32();
         stdx::where(patternMask, cursorPixels) = colorSimd;

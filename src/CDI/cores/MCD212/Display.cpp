@@ -28,21 +28,21 @@ void MCD212::DrawVideoLine()
             if(m_lineNumber == 0)
             {
                 m_lineNumber = 1;
-                m_renderer.SetDisplayFormat(GetDisplayFormat(), true);
+                m_renderer.SetDisplayFormat(GetDisplayFormat(), true, Is60FPS());
             }
         }
         else // Odd frames, even lines.
         {
             SetPA();
             if(m_lineNumber == 0)
-                m_renderer.SetDisplayFormat(GetDisplayFormat(), true);
+                m_renderer.SetDisplayFormat(GetDisplayFormat(), true, Is60FPS());
         }
     }
     else // Non-interlaced, PA is always set.
     {
         SetPA();
         if(m_lineNumber == 0)
-            m_renderer.SetDisplayFormat(GetDisplayFormat(), false);
+            m_renderer.SetDisplayFormat(GetDisplayFormat(), false, Is60FPS());
     }
 
     if(GetDE())

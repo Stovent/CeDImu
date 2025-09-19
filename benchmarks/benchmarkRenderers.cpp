@@ -25,7 +25,7 @@ static void benchmarkRenderer(std::string_view name)
     renderer.m_codingMethod[B] = CODINGB;
     renderer.m_bps[A] = BPS;
     renderer.m_bps[B] = BPS;
-    renderer.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL);
+    renderer.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL, false);
     renderer.m_mix = true;
 
     uint16_t lineNumber = 0;
@@ -57,7 +57,7 @@ template<typename RENDERER>
 static void benchmarkRendererCursor(std::string_view name)
 {
     RENDERER renderer;
-    renderer.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL);
+    renderer.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL, false);
 
     // Benchmark
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();

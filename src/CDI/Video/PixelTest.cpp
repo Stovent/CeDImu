@@ -18,6 +18,7 @@ static consteval void testPixelStaticAssert()
     static_assert(p.a == 0x11);
     static_assert(p.r == 0x22);
     static_assert(p.g == 0x33);
+    static_assert(p.Complement() == 0x11DDCCBB);
     static_assert(p.b == 0x44);
 
     static_assert((p & 0xF0F0F0F0) == 0x10203040);

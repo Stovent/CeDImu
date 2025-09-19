@@ -21,10 +21,7 @@ static constexpr bool matteMF(const uint32_t matteCommand) noexcept
  * Every array member with 2 elements means its meant to be index based on the plane number \ref ImagePlane.
  *
  * TODO:
- * - Should the renderer manage the line count and draw itself the final frame and the cursor when reached,
- *   or let it to the user of the renderer with a `Plane RenderFrame();` method ?
  * - V.25/V.26 Pixel repeat on pixel decoding, pixel hold on overlay.
- * - Implement cursor blink.
  * - Should there be a reset method?
  *
  * TODO optimizations:
@@ -80,8 +77,9 @@ public:
     Renderer& operator=(Renderer&&) = delete;
 
     constexpr DisplayFormat GetDisplayFormat() const noexcept { return m_displayFormat; }
-    void SetDisplayFormat(DisplayFormat display, bool highResolution) noexcept;
+    void SetDisplayFormat(DisplayFormat display, bool highResolution, bool fps60) noexcept;
     static bool isValidDisplayFormat(DisplayFormat display) noexcept;
+
     static constexpr uint16_t getDisplayWidth(DisplayFormat display) noexcept
     {
         return display == DisplayFormat::NTSCMonitor ? 360 : 384;
@@ -103,6 +101,7 @@ public:
         return m_screen.m_width == 720;
     }
 
+    void IncrementCursorTime(double ns) noexcept;
     virtual std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB, uint16_t lineNumber) noexcept = 0;
     const Plane& RenderFrame() noexcept;
 
@@ -116,9 +115,6 @@ public:
     void SetCursorPattern(uint8_t line, uint16_t pattern) noexcept;
     void SetCursorBlink(bool type, uint8_t periodOn, uint8_t periodOff) noexcept;
 
-    // TODO: organize and order the members correctly.
-
-    // TODO: set those to always double resolution.
     Plane m_screen{};
     std::array<Plane, 2> m_plane{Plane{}, Plane{}};
     Plane m_backdropPlane{1, Plane::MAX_HEIGHT, Plane::MAX_HEIGHT};
@@ -155,7 +151,7 @@ public:
     uint8_t m_cursorColor : 4{}; /**< YRGB color code. */
     std::array<uint16_t, 16> m_cursorPatterns{};
     bool m_cursorBlinkType{}; /**< false is on/off, true is on/complement. */
-    uint8_t m_cursorBlinkOn : 3{}; /**< ON period (zero not allowed). */
+    uint8_t m_cursorBlinkOn : 3{1}; /**< ON period (zero not allowed). */
     uint8_t m_cursorBlinkOff : 3{}; /**< OFF period (if zero, blink is disabled). */
 
     // Image Contribution Factor.
@@ -229,9 +225,16 @@ public:
     };
 
 protected:
+    static constexpr double DELTA_50FPS = 240'000'000.; /**< GB VII.2.3.4.2 GC_Blnk. */
+    static constexpr double DELTA_60FPS = 200'000'000.; /**< GB VII.2.3.4.2 GC_Blnk. */
+
+    double m_cursorTime{0.0}; /**< Keeps track of the emulated time for cursor blink. */
+    bool m_cursorIsOn{true}; /**< Keeps the state of the cursor (ON or OFF/complement). true when ON. */
+
     uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. Handled by the caller. */
     DisplayFormat m_displayFormat{DisplayFormat::PAL}; /**< Used to select 360/384 width and 240/280 height. */
     bool m_highResolution{false}; /**< True for 480/560, false for 240/280 pixels height. */
+    bool m_60FPS{false}; /**< False for 50FPS, true for 60FPS. */
 
     virtual void DrawCursor() noexcept = 0;
     void DrawLineBackdrop() noexcept
