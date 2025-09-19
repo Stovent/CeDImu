@@ -9,10 +9,10 @@ void MCD212::DrawVideoLine()
         if(m_verticalLines == 1 && GetDE()) // TODO: how to do this on every vertical line?
         {
             if(GetIC1())
-                ExecuteICA1();
+                ExecuteICA<PlaneA>();
 
             if(GetIC2())
-                ExecuteICA2();
+                ExecuteICA<PlaneB>();
         }
         return;
     }
@@ -56,10 +56,10 @@ void MCD212::DrawVideoLine()
         SetVSR2(vsr2 + bytes.second);
 
         if(GetIC1() && GetDC1())
-            ExecuteDCA1();
+            ExecuteDCA<PlaneA>();
 
         if(GetIC2() && GetDC2())
-            ExecuteDCA2();
+            ExecuteDCA<PlaneB>();
     }
 
     if(GetSM())

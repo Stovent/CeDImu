@@ -75,10 +75,10 @@ private:
 
     // Control Area
     // TODO: template this against Video::Renderer::Plane ?
-    void ExecuteICA1();
-    void ExecuteDCA1();
-    void ExecuteICA2();
-    void ExecuteDCA2();
+    template<Video::Renderer::ImagePlane PLANE>
+    void ExecuteICA();
+    template<Video::Renderer::ImagePlane PLANE>
+    void ExecuteDCA();
 
     void ResetMemorySwap() noexcept;
     uint32_t GetControlInstruction(uint32_t addr);
@@ -177,33 +177,6 @@ private:
             return NTSCTV;
         else
             return PAL;
-
-        // if(GetCF()) // 30MHz
-        // {
-        //     if(GetST())
-        //         return NTSCMonitor; // 5.2.1
-        //     else
-        //         return GetFD() ? NTSCTV : PAL;
-        // }
-        // else // 28MHz
-        // {
-        //     return NTSCMonitor; // 5.2.1
-        // }
-
-        // if(GetST())
-        // {
-        //     if(GetCF())
-        //         return NTSCMonitor; // 5.2.1
-        //     else
-        //         return GetFD() ? NTSCTV : PAL;
-        // }
-        // else
-        // {
-        //     if(!GetCF())
-        //         return NTSCMonitor; // 5.2.1
-        //     else
-        //         return GetFD() ? NTSCTV : PAL;
-        // }
     }
 
     enum InternalRegistersMemoryMap

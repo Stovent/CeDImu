@@ -56,17 +56,25 @@ void MCD212::ResetMemorySwap() noexcept
     m_memorySwapCount = 0;
 }
 
-void MCD212::ExecuteICA1()
+template<Video::Renderer::ImagePlane PLANE>
+void MCD212::ExecuteICA()
 {
     const size_t cycles = GetHorizontalCycles() * GetVerticalRetraceLines();
     uint32_t addr = GetSM() && !GetPA() ? 0x404 : 0x400;
+    if constexpr(PLANE == PlaneB)
+        addr += 0x20'0000;
 
     for(size_t i = 0; i < cycles; i++)
     {
         const uint32_t ica = GetControlInstruction(addr);
 
         if(m_cdi.m_callbacks.HasOnLogICADCA())
-            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA1, { m_totalFrameCount + 1, 0, ica });
+        {
+            if constexpr(PLANE == PlaneA)
+                m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA1, {m_totalFrameCount + 1, 0, ica});
+            else
+                m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA2, {m_totalFrameCount + 1, 0, ica});
+        }
         addr += 4;
 
         switch(ica >> 28)
@@ -78,11 +86,17 @@ void MCD212::ExecuteICA1()
             break;
 
         case 2: // RELOAD DCP
-            SetDCP1(DCP_POINTER(ica));
+            if constexpr(PLANE == PlaneA)
+                SetDCP1(DCP_POINTER(ica));
+            else
+                SetDCP2(DCP_POINTER(ica));
             break;
 
         case 3: // RELOAD DCP AND STOP
-            SetDCP1(DCP_POINTER(ica));
+            if constexpr(PLANE == PlaneA)
+                SetDCP1(DCP_POINTER(ica));
+            else
+                SetDCP2(DCP_POINTER(ica));
             return;
 
         case 4: // RELOAD ICA
@@ -90,55 +104,93 @@ void MCD212::ExecuteICA1()
             break;
 
         case 5: // RELOAD VSR AND STOP
-            SetVSR1(ICA_VSR_POINTER(ica));
+            if constexpr(PLANE == PlaneA)
+                SetVSR1(ICA_VSR_POINTER(ica));
+            else
+                SetVSR2(ICA_VSR_POINTER(ica));
             return;
 
         case 6: // INTERRUPT
-            SetIT1();
-            if(!GetDI1())
-                m_cdi.m_cpu.INT1();
+            if constexpr(PLANE == PlaneA)
+            {
+                SetIT1();
+                if(!GetDI1())
+                    m_cdi.m_cpu.INT1();
+            }
+            else
+            {
+                SetIT2();
+                if(!GetDI2())
+                    m_cdi.m_cpu.INT1();
+            }
             break;
         }
 
-        const uint8_t code = ica >> 24;
-        switch(code)
+        if constexpr(PLANE == PlaneA)
         {
-        case 0x70:
+            const uint8_t code = ica >> 24;
+            switch(code)
+            {
+            case 0x70:
+                // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
+                break;
+
+            case 0xCD:
+                m_renderer.SetCursorPosition(bits<0, 9>(ica), bits<12, 21>(ica));
+                break;
+
+            case 0xCE:
+                m_renderer.SetCursorColor(bits<0, 3>(ica));
+                m_renderer.SetCursorEnabled(bit<23>(ica));
+                m_renderer.SetCursorResolution(bit<15>(ica));
+                m_renderer.SetCursorBlink(bit<22>(ica), bits<19, 21>(ica), bits<16, 18>(ica));
+                break;
+
+            case 0xCF:
+                m_renderer.SetCursorPattern(bits<16, 19>(ica), ica);
+                break;
+
+            default:
+                m_renderer.ExecuteDCPInstruction<PlaneA>(ica);
+                break;
+            }
+        }
+        else // Plane B.
+        {
             // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
-            break;
-
-        case 0xCD:
-            m_renderer.SetCursorPosition(bits<0, 9>(ica), bits<12, 21>(ica));
-            break;
-
-        case 0xCE:
-            m_renderer.SetCursorColor(bits<0, 3>(ica));
-            m_renderer.SetCursorEnabled(bit<23>(ica));
-            m_renderer.SetCursorResolution(bit<15>(ica));
-            m_renderer.SetCursorBlink(bit<22>(ica), bits<19, 21>(ica), bits<16, 18>(ica));
-            break;
-
-        case 0xCF:
-            m_renderer.SetCursorPattern(bits<16, 19>(ica), ica);
-            break;
-
-        default:
-            m_renderer.ExecuteDCPInstruction<PlaneA>(ica);
-            break;
+            if((ica & 0xFF00'0000) != 0x7000'0000)
+                m_renderer.ExecuteDCPInstruction<PlaneB>(ica);
         }
     }
 }
+template void MCD212::ExecuteICA<MCD212::PlaneA>();
+template void MCD212::ExecuteICA<MCD212::PlaneB>();
 
-void MCD212::ExecuteDCA1()
+template<Video::Renderer::ImagePlane PLANE>
+void MCD212::ExecuteDCA()
 {
     for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++) // Table 5.10
     {
-        const uint32_t addr = GetDCP1();
+        uint32_t addr;
+        if constexpr(PLANE == PlaneA)
+        {
+            addr = GetDCP1();
+            SetDCP1(addr + 4);
+        }
+        else
+        {
+            addr = GetDCP2();
+            SetDCP2(addr + 4);
+        }
         const uint32_t dca = GetControlInstruction(addr);
-        SetDCP1(addr + 4);
 
         if(m_cdi.m_callbacks.HasOnLogICADCA())
-            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, { m_totalFrameCount + 1, m_lineNumber, dca });
+        {
+            if constexpr(PLANE == PlaneA)
+                m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA1, {m_totalFrameCount + 1, m_lineNumber, dca});
+            else
+                m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, {m_totalFrameCount + 1, m_lineNumber, dca});
+        }
 
         switch(dca >> 28)
         {
@@ -149,148 +201,82 @@ void MCD212::ExecuteDCA1()
             break;
 
         case 2: // RELOAD DCP
-            SetDCP1(DCP_POINTER(dca));
+            if constexpr(PLANE == PlaneA)
+                SetDCP1(DCP_POINTER(dca));
+            else
+                SetDCP2(DCP_POINTER(dca));
             break;
 
         case 3: // RELOAD DCP AND STOP
-            SetDCP1(DCP_POINTER(dca));
+            if constexpr(PLANE == PlaneA)
+                SetDCP1(DCP_POINTER(dca));
+            else
+                SetDCP2(DCP_POINTER(dca));
             return;
 
         case 4: // RELOAD VSR
-            SetVSR1(ICA_VSR_POINTER(dca));
+            if constexpr(PLANE == PlaneA)
+                SetVSR1(ICA_VSR_POINTER(dca));
+            else
+                SetVSR2(ICA_VSR_POINTER(dca));
             break;
 
         case 5: // RELOAD VSR AND STOP
-            SetVSR1(ICA_VSR_POINTER(dca));
+            if constexpr(PLANE == PlaneA)
+                SetVSR1(ICA_VSR_POINTER(dca));
+            else
+                SetVSR2(ICA_VSR_POINTER(dca));
             return;
 
         case 6: // INTERRUPT
-            SetIT1();
-            if(!GetDI1())
-                m_cdi.m_cpu.INT1();
+            if constexpr(PLANE == PlaneA)
+            {
+                SetIT1();
+                if(!GetDI1())
+                    m_cdi.m_cpu.INT1();
+            }
+            else
+            {
+                SetIT2();
+                if(!GetDI2())
+                    m_cdi.m_cpu.INT1();
+            }
             break;
         }
 
-        const uint8_t code = dca >> 24;
-        switch(code)
+        if constexpr(PLANE == PlaneA)
         {
-        case 0xCD:
-            m_renderer.SetCursorPosition(bits<0, 9>(dca), bits<12, 21>(dca));
-            break;
+            const uint8_t code = dca >> 24;
+            switch(code)
+            {
+            case 0xCD:
+                m_renderer.SetCursorPosition(bits<0, 9>(dca), bits<12, 21>(dca));
+                break;
 
-        case 0xCE:
-            m_renderer.SetCursorColor(bits<0, 3>(dca));
-            m_renderer.SetCursorEnabled(bit<23>(dca));
-            m_renderer.SetCursorResolution(bit<15>(dca));
-            m_renderer.SetCursorBlink(bit<22>(dca), bits<19, 21>(dca), bits<16, 18>(dca));
-            break;
+            case 0xCE:
+                m_renderer.SetCursorColor(bits<0, 3>(dca));
+                m_renderer.SetCursorEnabled(bit<23>(dca));
+                m_renderer.SetCursorResolution(bit<15>(dca));
+                m_renderer.SetCursorBlink(bit<22>(dca), bits<19, 21>(dca), bits<16, 18>(dca));
+                break;
 
-        case 0xCF:
-            m_renderer.SetCursorPattern(bits<16, 19>(dca), dca);
-            break;
+            case 0xCF:
+                m_renderer.SetCursorPattern(bits<16, 19>(dca), dca);
+                break;
 
-        default:
-            m_renderer.ExecuteDCPInstruction<PlaneA>(dca);
-            break;
+            default:
+                m_renderer.ExecuteDCPInstruction<PlaneA>(dca);
+                break;
+            }
+        }
+        else // Plane B.
+        {
+            m_renderer.ExecuteDCPInstruction<PlaneB>(dca);
         }
     }
 }
-
-void MCD212::ExecuteICA2()
-{
-    const size_t cycles = GetHorizontalCycles() * GetVerticalRetraceLines();
-    uint32_t addr = GetSM() && !GetPA() ? 0x200404 : 0x200400;
-
-    for(size_t i = 0; i < cycles; i++)
-    {
-        const uint32_t ica = GetControlInstruction(addr);
-
-        if(m_cdi.m_callbacks.HasOnLogICADCA())
-            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::ICA2, { m_totalFrameCount + 1, 0, ica });
-        addr += 4;
-
-        switch(ica >> 28)
-        {
-        case 0: // STOP
-            return;
-
-        case 1: // NOP
-            break;
-
-        case 2: // RELOAD DCP
-            SetDCP2(DCP_POINTER(ica));
-            break;
-
-        case 3: // RELOAD DCP AND STOP
-            SetDCP2(DCP_POINTER(ica));
-            return;
-
-        case 4: // RELOAD ICA
-            addr = ICA_VSR_POINTER(ica);
-            break;
-
-        case 5: // RELOAD VSR AND STOP
-            SetVSR2(ICA_VSR_POINTER(ica));
-            return;
-
-        case 6: // INTERRUPT
-            SetIT2();
-            if(!GetDI2())
-                m_cdi.m_cpu.INT1();
-            break;
-        }
-
-        // This command is implemented in the SCC66470, but the driver still sends it to the MCD212, so just ignore it.
-        if(ica != 0x70000000)
-            m_renderer.ExecuteDCPInstruction<PlaneB>(ica);
-    }
-}
-
-void MCD212::ExecuteDCA2()
-{
-    for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++) // Table 5.10
-    {
-        const uint32_t addr = GetDCP2();
-        const uint32_t dca = GetControlInstruction(addr);
-        SetDCP2(addr + 4);
-
-        if(m_cdi.m_callbacks.HasOnLogICADCA())
-            m_cdi.m_callbacks.OnLogICADCA(Video::ControlArea::DCA2, { m_totalFrameCount + 1, m_lineNumber, dca });
-
-        switch(dca >> 28)
-        {
-        case 0: // STOP
-            return;
-
-        case 1: // NOP
-            break;
-
-        case 2: // RELOAD DCP
-            SetDCP2(DCP_POINTER(dca));
-            break;
-
-        case 3: // RELOAD DCP AND STOP
-            SetDCP2(DCP_POINTER(dca));
-            return;
-
-        case 4: // RELOAD VSR
-            SetVSR2(ICA_VSR_POINTER(dca));
-            break;
-
-        case 5: // RELOAD VSR AND STOP
-            SetVSR2(ICA_VSR_POINTER(dca));
-            return;
-
-        case 6: // INTERRUPT
-            SetIT2();
-            if(!GetDI2())
-                m_cdi.m_cpu.INT1();
-            break;
-        }
-
-        m_renderer.ExecuteDCPInstruction<PlaneB>(dca);
-    }
-}
+template void MCD212::ExecuteDCA<MCD212::PlaneA>();
+template void MCD212::ExecuteDCA<MCD212::PlaneB>();
 
 RAMBank MCD212::GetRAMBank1() const noexcept
 {
