@@ -24,7 +24,7 @@ std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, c
     if(m_lineNumber == 0)
     {
         uint16_t width = getDisplayWidth(m_displayFormat);
-        uint16_t height = getDisplayHeight(m_displayFormat);
+        uint16_t height = GetDisplayHeight();
 
         m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = width * 2;
         m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = height;
@@ -63,7 +63,7 @@ uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t*
 {
     if(m_codingMethod[PLANE] == ImageCodingMethod::OFF)
     {
-        std::fill_n(m_plane[PLANE].begin(), m_plane[PLANE].m_width, Pixel{0});
+        std::fill_n(m_plane[PLANE].GetLinePointer(m_lineNumber), m_plane[PLANE].m_width, Pixel{0});
         return 0;
     }
 

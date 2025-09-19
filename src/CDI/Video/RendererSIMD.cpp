@@ -34,7 +34,7 @@ std::pair<uint16_t, uint16_t> RendererSIMD::DrawLine(const uint8_t* lineA, const
     if(m_lineNumber == 0)
     {
         uint16_t width = getDisplayWidth(m_displayFormat);
-        uint16_t height = getDisplayHeight(m_displayFormat);
+        uint16_t height = GetDisplayHeight();
 
         m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = width * 2;
         m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = height;

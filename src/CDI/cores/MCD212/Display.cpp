@@ -19,13 +19,31 @@ void MCD212::DrawVideoLine()
 
     SetDA();
 
-    if(m_lineNumber == 0)
-        m_renderer.SetDisplayFormat(GetDisplayFormat());
-
-    if(GetSM() && isEven(m_totalFrameCount))
-        UnsetPA();
-    else
+    if(GetSM())
+    {
+        // Odd frames displays odd lines but my line number starts at 0 instead of 1, so odd frames displays even lines.
+        if(isEven(m_totalFrameCount))
+        {
+            UnsetPA();
+            if(m_lineNumber == 0)
+            {
+                m_lineNumber = 1;
+                m_renderer.SetDisplayFormat(GetDisplayFormat(), true);
+            }
+        }
+        else // Odd frames, even lines.
+        {
+            SetPA();
+            if(m_lineNumber == 0)
+                m_renderer.SetDisplayFormat(GetDisplayFormat(), true);
+        }
+    }
+    else // Non-interlaced, PA is always set.
+    {
         SetPA();
+        if(m_lineNumber == 0)
+            m_renderer.SetDisplayFormat(GetDisplayFormat(), false);
+    }
 
     if(GetDE())
     {
@@ -44,7 +62,10 @@ void MCD212::DrawVideoLine()
             ExecuteDCA2();
     }
 
-    m_lineNumber++;
+    if(GetSM())
+        m_lineNumber += 2;
+    else
+        m_lineNumber++;
 
     if(m_verticalLines >= GetTotalVerticalLines())
     {

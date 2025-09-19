@@ -9,15 +9,16 @@ namespace Video
 /** \brief Configures the display format.
  * The input must only be a valid enum value.
  */
-void Renderer::SetDisplayFormat(DisplayFormat display) noexcept
+void Renderer::SetDisplayFormat(const DisplayFormat display, const bool highResolution) noexcept
 {
     if(!isValidDisplayFormat(display))
         panic("Invalid display format {}", static_cast<int>(display));
 
     m_displayFormat = display;
+    m_highResolution = highResolution;
 }
 
-bool Renderer::isValidDisplayFormat(DisplayFormat display) noexcept
+bool Renderer::isValidDisplayFormat(const DisplayFormat display) noexcept
 {
     return display == DisplayFormat::NTSCMonitor || display == DisplayFormat::NTSCTV || display == DisplayFormat::PAL;
 }

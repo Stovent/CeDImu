@@ -80,16 +80,24 @@ public:
     Renderer& operator=(Renderer&&) = delete;
 
     constexpr DisplayFormat GetDisplayFormat() const noexcept { return m_displayFormat; }
-    void SetDisplayFormat(DisplayFormat display) noexcept;
+    void SetDisplayFormat(DisplayFormat display, bool highResolution) noexcept;
     static bool isValidDisplayFormat(DisplayFormat display) noexcept;
     static constexpr uint16_t getDisplayWidth(DisplayFormat display) noexcept
     {
         return display == DisplayFormat::NTSCMonitor ? 360 : 384;
     }
+
     static constexpr uint16_t getDisplayHeight(DisplayFormat display) noexcept
     {
         return display == DisplayFormat::PAL ? 280 : 240;
     }
+
+    constexpr uint16_t GetDisplayHeight() const noexcept
+    {
+        const uint16_t height = getDisplayHeight(m_displayFormat);
+        return m_highResolution ? height << 1 : height;
+    }
+
     constexpr bool Is360Pixels() const noexcept
     {
         return m_screen.m_width == 720;
@@ -223,6 +231,7 @@ public:
 protected:
     uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. Handled by the caller. */
     DisplayFormat m_displayFormat{DisplayFormat::PAL}; /**< Used to select 360/384 width and 240/280 height. */
+    bool m_highResolution{false}; /**< True for 480/560, false for 240/280 pixels height. */
 
     virtual void DrawCursor() noexcept = 0;
     void DrawLineBackdrop() noexcept
