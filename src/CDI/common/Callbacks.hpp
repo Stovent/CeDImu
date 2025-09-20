@@ -8,11 +8,11 @@
 #include <functional>
 #include <mutex>
 
-#ifdef ENABLE_LOG
+#ifdef LIBCEDIMU_ENABLE_LOG
 #define LOG(content) content
 #else
 #define LOG(content)
-#endif // ENABLE_LOG
+#endif // LIBCEDIMU_ENABLE_LOG
 
 struct LogInstruction
 {

@@ -43,9 +43,9 @@ add_subdirectory(HLE)
 add_subdirectory(OS9)
 add_subdirectory(Video)
 
-option(LIBCEDIMU_ENABLE_LOG "Allows the library to print some messages in the console and the use of OnLogMemoryAccess callback" OFF)
+option(LIBCEDIMU_ENABLE_LOG "Allows the library to print some messages in the console and the use of OnLogMemoryAccess callback" ON)
 if(LIBCEDIMU_ENABLE_LOG)
-    target_compile_definitions(CeDImu PUBLIC ENABLE_LOG)
+    target_compile_definitions(CeDImu PUBLIC LIBCEDIMU_ENABLE_LOG)
 endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # Common flags for GCC and Clang.
