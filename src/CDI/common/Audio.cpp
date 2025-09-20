@@ -1,6 +1,8 @@
 #include "Audio.hpp"
 #include "utils.hpp"
 
+#include <bit>
+
 namespace Audio
 {
 
@@ -176,6 +178,8 @@ static std::string getAudioLevel(const bool bps, const uint32_t fs)
  */
 void writeWAV(const std::string& basename, std::vector<int16_t>& left, std::vector<int16_t>& right, uint8_t channel, int record, uint8_t bps, uint8_t sf, uint8_t ms)
 {
+    static_assert(std::endian::native == std::endian::little, "Requires little-endian target");
+
     const uint16_t channelNumber = ms + 1;
     const uint32_t frequency = sf ? 18900 : 37800;
 

@@ -39,12 +39,12 @@ void Mono3::IncrementTime(const double ns)
 
 uint32_t Mono3::GetTotalFrameCount()
 {
-    return m_mcd212.totalFrameCount;
+    return m_mcd212.m_totalFrameCount;
 }
 
 const OS9::BIOS& Mono3::GetBIOS() const
 {
-    return m_mcd212.BIOS;
+    return m_mcd212.m_bios;
 }
 
 uint32_t Mono3::GetBIOSBaseAddress() const

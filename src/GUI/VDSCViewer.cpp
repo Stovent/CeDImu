@@ -2,7 +2,8 @@
 #include "MainFrame.hpp"
 #include "../CeDImu.hpp"
 #include "../CDI/common/utils.hpp"
-#include "../CDI/common/Video.hpp"
+#include "../CDI/Video/VideoCommon.hpp"
+#include "../export.hpp"
 
 #include <wx/button.h>
 #include <wx/filedlg.h>
@@ -444,6 +445,33 @@ void VDSCViewer::UpdateIcadca()
     m_ica2List->Refresh();
 }
 
+static void drawBitmap(wxImage& target, wxPanel* panel, const Video::Plane& plane, bool hasAlpha, bool scale)
+{
+    target.Create(plane.m_width, plane.m_height);
+    if(!target.IsOk())
+        return;
+
+    if(hasAlpha)
+    {
+        if(!target.HasAlpha())
+            target.InitAlpha();
+
+        splitARGB(plane.GetSpan(), target.GetAlpha(), target.GetData());
+    }
+    else
+        splitARGB(plane.GetSpan(), nullptr, target.GetData());
+    // TODO: how to have transparency data for this?
+
+    const wxSize size = panel->GetClientSize();
+    wxClientDC dc(panel);
+    dc.Clear();
+    if(scale)
+        dc.DrawBitmap(wxBitmap(target.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
+    else
+        dc.DrawBitmap(wxBitmap(target), 0, 0);
+
+}
+
 void VDSCViewer::UpdatePanels()
 {
     std::lock_guard<std::recursive_mutex> lock(m_cedimu.m_cdiMutex);
@@ -451,53 +479,16 @@ void VDSCViewer::UpdatePanels()
         return;
 
     std::lock_guard<std::mutex> lock2(m_imgMutex);
+
     const Video::Plane& planeA = m_cedimu.m_cdi->GetPlaneA();
-    m_imgPlaneA.Create(planeA.m_width, planeA.m_height);
-    if(m_imgPlaneA.IsOk())
-    {
-        if(!m_imgPlaneA.HasAlpha())
-            m_imgPlaneA.InitAlpha();
-        Video::splitARGB(planeA.data(), planeA.m_width * planeA.m_height * 4, m_imgPlaneA.GetAlpha(), m_imgPlaneA.GetData());
-        const wxSize size = m_planeAPanel->GetClientSize();
-        wxClientDC dc(m_planeAPanel);
-        dc.Clear();
-        dc.DrawBitmap(wxBitmap(m_imgPlaneA.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-    }
+    drawBitmap(m_imgPlaneA, m_planeAPanel, planeA, true, true);
 
     const Video::Plane& planeB = m_cedimu.m_cdi->GetPlaneB();
-    m_imgPlaneB.Create(planeB.m_width, planeB.m_height);
-    if(m_imgPlaneB.IsOk())
-    {
-        if(!m_imgPlaneB.HasAlpha())
-            m_imgPlaneB.InitAlpha();
-        Video::splitARGB(planeB.data(), planeB.m_width * planeB.m_height * 4, m_imgPlaneB.GetAlpha(), m_imgPlaneB.GetData());
-        const wxSize size = m_planeBPanel->GetClientSize();
-        wxClientDC dc(m_planeBPanel);
-        dc.Clear();
-        dc.DrawBitmap(wxBitmap(m_imgPlaneB.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-    }
+    drawBitmap(m_imgPlaneB, m_planeBPanel, planeB, true, true);
 
     const Video::Plane& cursor = m_cedimu.m_cdi->GetCursor();
-    m_imgCursor.Create(cursor.m_width, cursor.m_height);
-    if(m_imgCursor.IsOk())
-    {
-        if(!m_imgCursor.HasAlpha())
-            m_imgCursor.InitAlpha();
-        Video::splitARGB(cursor.data(), cursor.m_width * cursor.m_height * 4, m_imgCursor.GetAlpha(), m_imgCursor.GetData());
-        wxClientDC dc(m_cursorPanel);
-        dc.Clear();
-        dc.DrawBitmap(wxBitmap(m_imgCursor), 0, 0);
-    }
+    drawBitmap(m_imgCursor, m_cursorPanel, cursor, true, false);
 
     const Video::Plane& backgd = m_cedimu.m_cdi->GetBackground();
-    m_imgBackgd.Create(backgd.m_width, backgd.m_height);
-    if(m_imgBackgd.IsOk())
-    {
-        memcpy(m_imgBackgd.GetData(), backgd.data(), backgd.m_width * backgd.m_height * 3);
-
-        const wxSize size = m_backgdPanel->GetClientSize();
-        wxClientDC dc(m_backgdPanel);
-        dc.Clear();
-        dc.DrawBitmap(wxBitmap(m_imgBackgd.Scale(size.x, size.y, wxIMAGE_QUALITY_NEAREST)), 0, 0);
-    }
+    drawBitmap(m_imgBackgd, m_backgdPanel, backgd, true, true);
 }

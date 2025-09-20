@@ -1,0 +1,24 @@
+target_sources(CeDImu
+    PRIVATE
+        Pixel.hpp
+        PixelTest.cpp
+        Renderer.cpp
+        Renderer.hpp
+        RendererDCP.cpp
+        RendererSoftware.cpp
+        RendererSoftware.hpp
+        VideoCommon.hpp
+        VideoDecoders.cpp
+        VideoDecoders.hpp
+)
+
+if(LIBCEDIMU_ENABLE_RENDERERSIMD)
+    target_sources(CeDImu
+        PRIVATE
+            RendererSIMD.cpp
+            RendererSIMD.hpp
+            SIMD.hpp
+            VideoDecodersSIMD.cpp
+            VideoDecodersSIMD.hpp
+    )
+endif()

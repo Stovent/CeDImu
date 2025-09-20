@@ -78,19 +78,39 @@ Compatible means it is capable of playing discs.
 
 ## How to build
 
-You need a compiler that supports C++20 and wxWidgets 3.1.
+You need a compiler that supports C++23 and wxWidgets 3.2.
+
+When cloning the repo, make sure you clone the submodules too (`git clone --recurse-submodules https://github.com/Stovent/CeDImu`).
 
 ### Build macros
 
-`ENABLE_LOG`: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback (default: `OFF`).
+CeDImu (the frontend) and libCeDImu (the emulation core) accepts the following macros:
 
-The official build of CeDImu always enables it.
+`LIBCEDIMU_ENABLE_LOG`: if defined, allows the library to print some messages in the console and the use of OnLogMemoryAccess callback.
+
+`LIBCEDIMU_ENABLE_RENDERERSIMD`: if on, uses the hardware-accelerated SIMD renderer. Requires the C++ header `<experimental/simd>`.
 
 ### CMake
 
 #### CMake options
 
+The CMake options below controls how to build CeDImu and the build macros listed upper.
+
+`LIBCEDIMU_ENABLE_LOG`: see section `Build macros` (default: `ON`). The official build of CeDImu always enables it.
+
+`LIBCEDIMU_ENABLE_RENDERERSIMD`: builds and uses the SIMD renderer, see section `Build macros` (default: `OFF`).
+
+`LIBCEDIMU_PROFILE_GNU`: if true, adds profiling arguments to GCC (clang/MSVC not supported) (default: `OFF`).
+
+`LIBCEDIMU_ENABLE_ASAN`: if true, uses address sanitizer for GCC and clang (MSVC not yet supported) (default: `OFF`).
+
 `CEDIMU_BUILD_CDITOOL`: If ON, builds the little `cditool` program (Linux only, requires libcdio) (default: `OFF`).
+
+`CEDIMU_BENCHMARKS`: if ON, builds the benchmarks (default: `OFF`).
+
+`CEDIMU_TESTS`: If ON, builds the unit tests (requires Catch2 cloned) (default: `ON`).
+
+`CEDIMU_TESTS_ASAN`: If ON, builds the unit tests with address sanitizer options (default: `OFF`).
 
 `CEDIMU_ENABLE_LTO`: If ON, compiles the executable with link-time optimisations (default: `ON`).
 
@@ -118,7 +138,7 @@ First install cmake and wxWidgets-3.1 (or later).
 
 With apt the command is: `sudo apt install cmake libwxgtk3.2-dev`
 
-Install the dependency, then open a terminal in the root directory of the git and type:
+Install the dependency, then open a terminal in the root directory of the repo and type:
 
 ```sh
 cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -129,16 +149,18 @@ The executable will be in the `build` directory.
 
 #### macOS
 
-Package dependency: `wxwidgets` and `cmake` (e.g. if using brew run: `brew install wxwidgets cmake`). Also make sure to have Xcode or just it's Command Line Tools installed.
+Package dependency: `wxwidgets`, `cmake` and `llvm` (e.g. if using brew run: `brew install wxwidgets cmake llvm`). Also make sure to have Xcode or just it's Command Line Tools installed.
+
+LLVM clang is used to build because AppleClang lacks recent features.
 
 For keyboard input to work properly, enable 'Keyboard Navigation' in macOS. See this [support article](https://support.apple.com/en-us/HT204434#fullkeyboard).
 
-Open a terminal in the root directory of the git and type:
+Open a terminal in the root directory of the repo and type:
 
 ```sh
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
+CXX=$(brew --prefix llvm)/bin/clang++ cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j$(sysctl -n hw.physicalcpu)
 ```
 

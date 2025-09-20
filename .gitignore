@@ -4,12 +4,16 @@
 !.git-blame-ignore-revs
 !.gitattributes
 !.gitignore
+!.gitmodules
 !CMakeLists.txt
 !Doxyfile
 !MANUAL.md
 !README.md
 
 !/.github
+!/benchmarks
 !/cditool
+!/externals
 !/resources
 !/src
+!/tests

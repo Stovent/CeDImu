@@ -1,11 +1,12 @@
 #include "export.hpp"
 #include "CDI/common/utils.hpp"
-#include "CDI/common/Video.hpp"
+#include "Video/VideoDecoders.hpp"
 
 #include <wx/bitmap.h>
 
 #include <array>
 #include <filesystem>
+#include <vector>
 
 static constexpr Video::ImageCodingMethod codingLookUp[16] = {
     ICM(CLUT4), ICM(CLUT7), ICM(CLUT8), ICM(OFF),
@@ -13,6 +14,44 @@ static constexpr Video::ImageCodingMethod codingLookUp[16] = {
     ICM(OFF), ICM(OFF), ICM(OFF), ICM(OFF),
     ICM(OFF), ICM(OFF), ICM(OFF), ICM(OFF),
 };
+
+/** \brief Split pixels into different alpha and RGB channels for wxWidgets.
+ *
+ * \param pixels The input pixel data.
+ * \param alpha The destination alpha channel.
+ * \param rgb The destination RGB channel.
+ *
+ * A nullptr in a channel will not write to it.
+ */
+void splitARGB(std::span<const Video::Pixel> pixels, uint8_t* alpha, uint8_t* rgb)
+{
+    if(alpha != nullptr && rgb != nullptr)
+    {
+        for(const Video::Pixel& pixel : pixels)
+        {
+            *alpha++ = pixel.a;
+            *rgb++ = pixel.r;
+            *rgb++ = pixel.g;
+            *rgb++ = pixel.b;
+        }
+    }
+    else if(alpha != nullptr)
+    {
+        for(const Video::Pixel& pixel : pixels)
+        {
+            *alpha++ = pixel.a;
+        }
+    }
+    else if(rgb != nullptr)
+    {
+        for(const Video::Pixel& pixel : pixels)
+        {
+            *rgb++ = pixel.r;
+            *rgb++ = pixel.g;
+            *rgb++ = pixel.b;
+        }
+    }
+}
 
 /** \brief Tries to decode the video data of the sectors to a file.
  * \throw std::filesystem::filesystem_error if it cannot create directories.
@@ -98,27 +137,26 @@ void exportVideo(CDIDisc& disc, std::string exportDir)
         const std::string dir = path + std::string(fileDir);
         std::filesystem::create_directories(dir);
 
-        uint8_t pixels[768 * 560 * 4] = {0};
+        Video::Plane pixels{1, 1};
         uint8_t channel = 0;
         uint16_t y = 0;
         for(VideoInfo& v : video)
         {
             size_t index = 0;
-            const uint16_t width = v.resolution == 0 ? 384 : 768;
-            const uint16_t height = v.resolution == 3 ? 480 : 242;
+            pixels.m_width = v.resolution == 0 ? 384 : 768;
+            pixels.m_height = v.resolution == 3 ? 480 : 242;
 
             if(v.coding == 3 || v.coding == 4)
             {
                 while(index < v.data.size())
                 {
-                    index += Video::decodeRunLengthLine(&pixels[width * 4 * y], &v.data[index], width, CLUT.data(), v.coding & 0x3);
+                    index += Video::decodeRunLengthLine(pixels.GetLinePointer(y), &v.data[index], pixels.m_width, CLUT.data(), v.coding & 0x3);
                     y++;
-                    if(y >= height)
+                    if(y >= pixels.m_height)
                     {
-                        uint8_t* pix = new uint8_t[width * height * 3];
-                        Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-                        wxImage(width, height, pix, true).SaveFile(dir + file.name + "_" + std::to_string(channel) + "_" + std::to_string(v.record++) + ".bmp", wxBITMAP_TYPE_BMP);
-                        delete[] pix;
+                        std::vector<uint8_t> pix(pixels.m_width * pixels.m_height * 3);
+                        splitARGB(pixels.GetSpan(), nullptr, pix.data());
+                        wxImage(pixels.m_width, pixels.m_height, pix.data(), true).SaveFile(dir + file.name + "_" + std::to_string(channel) + "_" + std::to_string(v.record++) + ".bmp", wxBITMAP_TYPE_BMP);
                         y = 0;
                     }
                 }
@@ -127,14 +165,13 @@ void exportVideo(CDIDisc& disc, std::string exportDir)
             {
                 while(index < v.data.size())
                 {
-                    index += Video::decodeBitmapLine(&pixels[width * 4 * y], nullptr, &v.data[index], width, CLUT.data(), 0x00108080, codingLookUp[v.coding]);
+                    index += Video::decodeBitmapLine(pixels.GetLinePointer(y), nullptr, &v.data[index], pixels.m_width, CLUT.data(), 0x00108080, codingLookUp[v.coding]);
                     y++;
-                    if(y >= height)
+                    if(y >= pixels.m_height)
                     {
-                        uint8_t* pix = new uint8_t[width * height * 3];
-                        Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-                        wxImage(width, height, pix, true).SaveFile(dir + file.name + "_" + std::to_string(channel) + "_" + std::to_string(v.record++) + ".bmp", wxBITMAP_TYPE_BMP);
-                        delete[] pix;
+                        std::vector<uint8_t> pix(pixels.m_width * pixels.m_height * 3);
+                        splitARGB(pixels.GetSpan(), nullptr, pix.data());
+                        wxImage(pixels.m_width, pixels.m_height, pix.data(), true).SaveFile(dir + file.name + "_" + std::to_string(channel) + "_" + std::to_string(v.record++) + ".bmp", wxBITMAP_TYPE_BMP);
                         y = 0;
                     }
                 }
@@ -142,10 +179,9 @@ void exportVideo(CDIDisc& disc, std::string exportDir)
 
             if(y > 0)
             {
-                uint8_t* pix = new uint8_t[width * height * 4];
-                Video::splitARGB(pixels, width * height * 4, nullptr, pix);
-                wxImage(width, height, pix, true).SaveFile(dir + file.name + "_" + std::to_string(channel) + "_" + std::to_string(v.record++) + ".bmp", wxBITMAP_TYPE_BMP);
-                delete[] pix;
+                std::vector<uint8_t> pix(pixels.m_width * pixels.m_height * 3);
+                splitARGB(pixels.GetSpan(), nullptr, pix.data());
+                wxImage(pixels.m_width, pixels.m_height, pix.data(), true).SaveFile(dir + file.name + "_" + std::to_string(channel) + "_" + std::to_string(v.record++) + ".bmp", wxBITMAP_TYPE_BMP);
                 y = 0;
             }
 

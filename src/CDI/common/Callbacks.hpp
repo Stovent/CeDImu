@@ -1,18 +1,18 @@
 #ifndef CDI_COMMON_CALLBACKS_HPP
 #define CDI_COMMON_CALLBACKS_HPP
 
-#include "Video.hpp"
+#include "Video/VideoCommon.hpp"
 #include "../cores/SCC68070/SCC68070.hpp"
 #include "../OS9/SystemCalls.hpp"
 
 #include <functional>
 #include <mutex>
 
-#ifdef ENABLE_LOG
+#ifdef LIBCEDIMU_ENABLE_LOG
 #define LOG(content) content
 #else
 #define LOG(content)
-#endif // ENABLE_LOG
+#endif // LIBCEDIMU_ENABLE_LOG
 
 struct LogInstruction
 {

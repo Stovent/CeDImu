@@ -4,8 +4,7 @@ target_sources(CeDImu
         Audio.hpp
         Callbacks.cpp
         Callbacks.hpp
+        panic.hpp
         types.hpp
         utils.hpp
-        Video.cpp
-        Video.hpp
 )

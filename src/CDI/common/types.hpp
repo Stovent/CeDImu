@@ -30,6 +30,7 @@ enum class Boards
     Fail,
 };
 
+// TODO: move to CDI.hpp
 constexpr const char* BoardsToString(Boards b) noexcept
 {
     switch(b)
@@ -63,5 +64,15 @@ struct RAMBank
     std::span<const uint8_t> data;
     uint32_t base;
 };
+
+constexpr uint32_t operator""_KiB(const unsigned long long d) noexcept
+{
+    return d * 1024;
+}
+
+constexpr uint32_t operator""_MiB(const unsigned long long d) noexcept
+{
+    return d * 1024 * 1024;
+}
 
 #endif // CDI_COMMON_TYPES_HPP
