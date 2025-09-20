@@ -2,10 +2,6 @@
 #define CDI_VIDEO_RENDERERSIMD_HPP
 
 #include "Renderer.hpp"
-#include "SIMD.hpp"
-#include "VideoDecodersSIMD.hpp"
-
-#include <array>
 
 namespace Video
 {

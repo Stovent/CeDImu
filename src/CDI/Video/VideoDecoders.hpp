@@ -46,46 +46,6 @@ void paste(Pixel* dst, const uint16_t dstWidth, const uint16_t dstHeight, const 
 /** \brief Green book Figure V.18 */
 inline constexpr std::array<uint8_t, 16> dequantizer{0, 1, 4, 9, 16, 27, 44, 79, 128, 177, 212, 229, 240, 247, 252, 255};
 
-namespace
-{
-constexpr std::array<int, 256> generateVToR() noexcept
-{
-    std::array<int, 256> array{};
-    for(int i = 0; i < 256; i++)
-        array[i] = (351 * (i - 128)) / 256;
-    return array;
-}
-
-constexpr std::array<int, 256> generateVToG() noexcept
-{
-    std::array<int, 256> array{};
-    for(int i = 0; i < 256; i++)
-        array[i] = (179 * (i - 128)) / 256;
-    return array;
-}
-
-static constexpr std::array<int, 256> generateUToG() noexcept
-{
-    std::array<int, 256> array{};
-    for(int i = 0; i < 256; i++)
-        array[i] = (86 * (i - 128)) / 256;
-    return array;
-}
-
-static constexpr std::array<int, 256> generateUToB() noexcept
-{
-    std::array<int, 256> array{};
-    for(int i = 0; i < 256; i++)
-        array[i] = (444 * (i - 128)) / 256;
-    return array;
-}
-}
-
-inline constexpr std::array<int, 256> matrixVToR = generateVToR();
-inline constexpr std::array<int, 256> matrixVToG = generateVToG();
-inline constexpr std::array<int, 256> matrixUToG = generateUToG();
-inline constexpr std::array<int, 256> matrixUToB = generateUToB();
-
 } // namespace Video
 
 #endif // CDI_VIDEO_VIDEODECODERS_HPP

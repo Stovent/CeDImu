@@ -250,7 +250,7 @@ protected:
     static constexpr uint32_t clutColorKey(const uint32_t color) { return color & 0x00FC'FCFCu; }
 };
 
-/** \brief Converts the 4-bits backdrop color to a Pixel.
+/** \brief Converts the 4-bits backdrop/cursor color to a Pixel.
  * \param color The 4 bit color code.
  * \returns The Pixel.
  */

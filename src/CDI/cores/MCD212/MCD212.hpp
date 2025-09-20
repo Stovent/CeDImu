@@ -74,7 +74,6 @@ private:
     void DrawVideoLine();
 
     // Control Area
-    // TODO: template this against Video::Renderer::Plane ?
     template<Video::Renderer::ImagePlane PLANE>
     void ExecuteICA();
     template<Video::Renderer::ImagePlane PLANE>

@@ -34,6 +34,7 @@ template<uint16_t WIDTH>
 uint16_t decodeBitmapLineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB, const uint32_t* CLUTTable, uint32_t initialDYUV, ImageCodingMethod icm) noexcept
 {
     if(icm == ImageCodingMethod::DYUV)
+        // return decodeDYUVLineSIMD<WIDTH>(dst, dataB, initialDYUV);
         return decodeDYUVLineLUT<WIDTH>(dst, dataB, initialDYUV);
 
     if(icm == ImageCodingMethod::RGB555)

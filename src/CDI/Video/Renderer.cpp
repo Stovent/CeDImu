@@ -50,7 +50,6 @@ void Renderer::IncrementCursorTime(const double ns) noexcept
  * \return The final screen.
  *
  * This function renders the cursor and pastes it on the screen.
- * It also resets some members to prepare for the next frame.
  */
 const Plane& Renderer::RenderFrame() noexcept
 {
@@ -95,11 +94,11 @@ void Renderer::SetCursorPosition(const uint16_t x, const uint16_t y) noexcept
 }
 
 /** \brief Sets the cursor plane color.
- * \param color 4-bits color code (see backdrop colors).
+ * \param argb 4-bits color code (see backdrop colors).
  */
-void Renderer::SetCursorColor(const uint8_t color) noexcept
+void Renderer::SetCursorColor(const uint8_t argb) noexcept
 {
-    m_cursorColor = color & 0x0Fu;
+    m_cursorColor = argb & 0x0Fu;
 }
 
 /** \brief Sets the pattern of the given line of the cursor plane.
@@ -339,7 +338,7 @@ void Renderer::HandleMatteAndTransparencyLoop(const uint16_t lineNumber) noexcep
     Pixel* planeA = m_plane[A].GetLinePointer(lineNumber);
     Pixel* planeB = m_plane[B].GetLinePointer(lineNumber);
 
-    for(uint16_t i = 0; i < m_plane[A].m_width; ++i) // TODO: width[B].
+    for(uint16_t i = 0; i < m_plane[A].m_width; ++i) // Plane B has the same width.
     {
         HandleMatte<A>(i);
         HandleMatte<B>(i);

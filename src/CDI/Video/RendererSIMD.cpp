@@ -12,6 +12,7 @@
 
 #include "../common/panic.hpp"
 #include "../common/utils.hpp"
+#include "SIMD.hpp"
 #include "VideoDecoders.hpp"
 #include "VideoDecodersSIMD.hpp"
 
@@ -26,6 +27,7 @@ namespace Video
 /** \brief Draws the next line to draw.
  * \param lineA Line A data.
  * \param lineB Line B data.
+ * \param lineNumber The line number to draw (starting at 0).
  * \return The number of bytes read from memory for each plane `<plane A, plane B>`.
  */
 std::pair<uint16_t, uint16_t> RendererSIMD::DrawLine(const uint8_t* lineA, const uint8_t* lineB, const uint16_t lineNumber) noexcept

@@ -12,13 +12,35 @@ static constexpr size_t HEIGHT = 560;
 static constexpr size_t FRAMES = 20000;
 static constexpr size_t FRAMES_DYUV = 5000;
 
+static std::array<uint32_t, 256> CLUT{};
+static std::array<Video::Pixel, WIDTH> DST{};
 static constexpr std::array<uint8_t, WIDTH> SRCA{};
 static constexpr std::array<uint8_t, WIDTH> SRCB{};
 static constexpr std::array<uint8_t, 2> SRC_RL_1_PIXEL{0x80, 0};
-// static constexpr std::array<uint8_t, 2> SRC_RL_10_PIXEL{0x80, 0};
-// static constexpr std::array<uint8_t, 2> SRC_RL_768_PIXEL{0x80, 0};
-static std::array<Video::Pixel, WIDTH> DST{};
-static std::array<uint32_t, 256> CLUT{};
+static constexpr std::array<uint8_t, 384> SRC_RL7_384_PIXEL_384 = [] {
+    std::array<uint8_t, 384> array{};
+    for(size_t i = 0; i < array.size(); ++i)
+    {
+        array.at(i) = i & 0x7F;
+    }
+    return array;
+}();
+static constexpr std::array<uint8_t, 768> SRC_RL7_768_PIXEL_768 = [] {
+    std::array<uint8_t, 768> array{};
+    for(size_t i = 0; i < array.size(); ++i)
+    {
+        array.at(i) = i & 0x7F;
+    }
+    return array;
+}();
+static constexpr std::array<uint8_t, 384> SRC_RL3_768_PIXEL = [] {
+    std::array<uint8_t, 384> array{};
+    for(size_t i = 0; i < array.size(); ++i)
+    {
+        array.at(i) = 0x08 | (i << 4 & 0x70) | ((i + 1) & 0x07);
+    }
+    return array;
+}();
 
 template<uint16_t (*DECODE)(Video::Pixel*, const uint8_t*, const uint8_t*) noexcept>
 static void benchmarkRGB555Line(std::string_view name)
@@ -93,7 +115,7 @@ static void benchmarkCLUTLine(std::string_view name)
 }
 
 template<uint16_t (*DECODE)(Video::Pixel*, const uint8_t*, const uint32_t*) noexcept>
-static void benchmarkRunLength(std::string_view name)
+static void benchmarkRunLength(std::string_view name, const uint8_t* data)
 {
     // Benchmark
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
@@ -101,7 +123,7 @@ static void benchmarkRunLength(std::string_view name)
     {
         for(size_t y = 0; y < HEIGHT; ++y)
         {
-            DECODE(DST.data(), SRC_RL_1_PIXEL.data(), CLUT.data());
+            DECODE(DST.data(), data, CLUT.data());
         }
     }
     const std::chrono::high_resolution_clock::time_point finish = std::chrono::high_resolution_clock::now();
@@ -127,8 +149,10 @@ int main()
 
     benchmarkCLUTLine<Video::decodeCLUTLine<WIDTH>>("CLUT Soft");
 
-    // TODO: benchmark having only individual pixels.
-    benchmarkRunLength<Video::decodeRunLengthLine<360, false>>("RL7 normal");
-    benchmarkRunLength<Video::decodeRunLengthLine<720, false>>("RL7 high  ");
-    benchmarkRunLength<Video::decodeRunLengthLine<720, true>>("RL3 double");
+    benchmarkRunLength<Video::decodeRunLengthLine<360, false>>("RL7 normal   1 pixel ", SRC_RL_1_PIXEL.data());
+    benchmarkRunLength<Video::decodeRunLengthLine<360, false>>("RL7 normal 384 pixels", SRC_RL7_384_PIXEL_384.data());
+    benchmarkRunLength<Video::decodeRunLengthLine<720, false>>("RL7 high     1 pixel ", SRC_RL_1_PIXEL.data());
+    benchmarkRunLength<Video::decodeRunLengthLine<720, false>>("RL7 high   768 pixels", SRC_RL7_768_PIXEL_768.data());
+    benchmarkRunLength<Video::decodeRunLengthLine<720, true>>("RL3 double   1 pixel ", SRC_RL_1_PIXEL.data());
+    benchmarkRunLength<Video::decodeRunLengthLine<720, true>>("RL3 double 384 pixels", SRC_RL3_768_PIXEL.data());
 }

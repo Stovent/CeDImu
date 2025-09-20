@@ -63,6 +63,43 @@ private:
 namespace Video
 {
 
+static constexpr std::array<int, 256> generateVToR() noexcept
+{
+    std::array<int, 256> array{};
+    for(int i = 0; i < 256; i++)
+        array[i] = (351 * (i - 128)) / 256;
+    return array;
+}
+
+static constexpr std::array<int, 256> generateVToG() noexcept
+{
+    std::array<int, 256> array{};
+    for(int i = 0; i < 256; i++)
+        array[i] = (179 * (i - 128)) / 256;
+    return array;
+}
+
+static constexpr std::array<int, 256> generateUToG() noexcept
+{
+    std::array<int, 256> array{};
+    for(int i = 0; i < 256; i++)
+        array[i] = (86 * (i - 128)) / 256;
+    return array;
+}
+
+static constexpr std::array<int, 256> generateUToB() noexcept
+{
+    std::array<int, 256> array{};
+    for(int i = 0; i < 256; i++)
+        array[i] = (444 * (i - 128)) / 256;
+    return array;
+}
+
+static constexpr std::array<int, 256> matrixVToR = generateVToR();
+static constexpr std::array<int, 256> matrixVToG = generateVToG();
+static constexpr std::array<int, 256> matrixUToG = generateUToG();
+static constexpr std::array<int, 256> matrixUToB = generateUToB();
+
 /** \brief Decode a bitmap file line.
  * \tparam WIDTH The number of input pixels to decode.
  * \param dst Where the decoded line will be written to in ARGB.
