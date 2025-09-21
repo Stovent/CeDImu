@@ -104,6 +104,8 @@ The CMake options below controls how to build CeDImu and the build macros listed
 
 `LIBCEDIMU_ENABLE_ASAN`: if true, uses address sanitizer for GCC and clang (MSVC not yet supported) (default: `OFF`).
 
+`LIBCEDIMU_REBUILD_SOFTCDI`: If ON, will build the SoftCDI modules from sources (requires DOSBox). If OFF, will use the prebuilt module binaries (default: `OFF`).
+
 `CEDIMU_BUILD_CDITOOL`: If ON, builds the little `cditool` program (Linux only, requires libcdio) (default: `OFF`).
 
 `CEDIMU_BENCHMARKS`: if ON, builds the benchmarks (default: `OFF`).
@@ -113,8 +115,6 @@ The CMake options below controls how to build CeDImu and the build macros listed
 `CEDIMU_TESTS_ASAN`: If ON, builds the unit tests with address sanitizer options (default: `OFF`).
 
 `CEDIMU_ENABLE_LTO`: If ON, compiles the executable with link-time optimisations (default: `ON`).
-
-`LIBCEDIMU_REBUILD_SOFTCDI`: If ON, will build the SoftCDI modules from sources (requires DOSBox). If OFF, will use the prebuilt module binaries (default: `OFF`).
 
 #### Windows
 
