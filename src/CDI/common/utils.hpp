@@ -6,6 +6,7 @@
 #define CDI_COMMON_UTILS_HPP
 
 #include <algorithm>
+#include <bit>
 #include <concepts>
 #include <cstdint>
 #include <cstring>
