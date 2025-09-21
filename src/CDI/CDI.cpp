@@ -3,6 +3,8 @@
 #include "boards/Mono3SoftCDI/Mono3SoftCDI.hpp"
 #include "boards/SoftCDI/SoftCDI.hpp"
 
+#include <version>
+
 /** \brief Creates a new CD-i instance.
  * \param board The type of board to use.
  * \param useSoftCDI false to use the regular LLE emulator, true to use some SoftCDI modules.
@@ -176,11 +178,20 @@ std::span<const uint8_t> CDI::GetPointer(const uint32_t addr) const noexcept
 {
     const RAMBank ram1 = GetRAMBank1();
     if(addr >= ram1.base && addr < ram1.base + ram1.data.size())
+#if __cpp_lib_ranges_as_const >= 202207L
         return {ram1.data.cbegin() + (addr - ram1.base), ram1.data.cend()};
+#else
+        return {ram1.data.begin() + (addr - ram1.base), ram1.data.end()};
+#endif
+    // LLVM doesn't implement it yet.
 
     const RAMBank ram2 = GetRAMBank2();
     if(addr >= ram2.base && addr < ram2.base + ram2.data.size())
+#if __cpp_lib_ranges_as_const >= 202207L
         return {ram2.data.cbegin() + (addr - ram2.base), ram2.data.cend()};
+#else
+        return {ram2.data.begin() + (addr - ram2.base), ram2.data.end()};
+#endif
 
     const OS9::BIOS& bios = GetBIOS();
     const uint32_t base = GetBIOSBaseAddress();
