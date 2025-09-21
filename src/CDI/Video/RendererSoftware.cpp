@@ -28,13 +28,15 @@ std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, c
         uint16_t height = GetDisplayHeight();
 
         m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = width * 2;
-        m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = height;
+        m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = m_backdropPlane.m_height = height;
     }
 
     ResetMatte();
 
-    const uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
+    uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
     const uint16_t bytesB = DrawLinePlane<B>(lineB, lineA);
+    if(m_codingMethod[B] == ImageCodingMethod::RGB555)
+        bytesA = bytesB;
 
     DrawLineBackdrop();
 
@@ -202,17 +204,24 @@ void RendererSoftware::OverlayMix() noexcept
 
         if constexpr(MIX)
         {
-            if(fp.a == 0) // When mixing transparent pixels are black (V.5.9.1).
+            if(fp.a == 0 && bp.a == 0) // Front and back plane transparent: only show background.
             {
-                fp = BLACK_PIXEL;
+                *screen++ = backdrop;
             }
-
-            if(bp.a == 0)
+            else
             {
-                bp = BLACK_PIXEL;
-            }
+                if(fp.a == 0) // When mixing transparent pixels are black (V.5.9.1).
+                {
+                    fp = BLACK_PIXEL;
+                }
 
-            mix(*screen++, fp, bp);
+                if(bp.a == 0)
+                {
+                    bp = BLACK_PIXEL;
+                }
+
+                mix(*screen++, fp, bp);
+            }
         }
         else // Overlay.
         {

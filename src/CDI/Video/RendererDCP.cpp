@@ -117,85 +117,6 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         return false;
     }
 
-    if constexpr(PLANE == A) // Plane A-only instructions.
-    {
-        switch(code)
-        {
-        case SelectImageCodingMethod: // Select image coding methods.
-            m_clutSelectHigh = bit<22>(instruction);
-            m_matteNumber = bit<19>(instruction);
-            m_codingMethod[B] = decodeCodingMethod1(bits<8, 11>(instruction));
-            m_codingMethod[A] = decodeCodingMethod0(bits<0, 3>(instruction));
-            if(!isAllowedImageCodingCombination(m_codingMethod[A], m_codingMethod[B]))
-                std::println("Invalid image coding combination {} {}",
-                    static_cast<int>(m_codingMethod[A]), static_cast<int>(m_codingMethod[B]));
-            // TODO: what to do with external video enabled?
-            m_externalVideo = bit<18>(instruction);
-            return false;
-
-        case LoadTransparencyControl: // Load transparency control information.
-            m_mix = !bit<23>(instruction);
-            m_transparencyControl[B] = bits<8, 11>(instruction);
-            m_transparencyControl[A] = bits<0, 3>(instruction);
-            return false;
-
-        case LoadPlaneOrder: // Load plane order.
-            m_planeOrder = bit<0>(instruction);
-            return false;
-
-        case LoadTransparentColorA: // Load transparent color for plane A.
-            m_transparentColorRgb[A] = dcpExtractCommand(instruction);
-            return false;
-
-        case LoadMaskColorA: // Load mask color for plane A.
-            m_maskColorRgb[A] = dcpExtractCommand(instruction);
-            return false;
-
-        case LoadDYUVStartValueA: // Load DYUV start value for plane A.
-            m_dyuvInitialValue[A] = dcpExtractCommand(instruction);
-            return false;
-
-        case LoadBackdropColor: // Load backdrop color.
-            m_backdropColor = bits<0, 3>(instruction);
-            return false;
-
-        case LoadMosaicFactorA: // Load mosaic pixel hold factor for A.
-            m_holdEnabled[A] = bit<23>(instruction);
-            m_holdFactor[A] = instruction;
-            return false;
-
-        case LoadImageContributionFactorA: // Load image contribution factor for A.
-            m_icf[A] = bits<0, 5>(instruction);
-            return false;
-        }
-    }
-    else // Plane B-only instructions.
-    {
-        switch(code)
-        {
-        case LoadTransparentColorB: // Load transparent color for plane B.
-            m_transparentColorRgb[B] = dcpExtractCommand(instruction);
-            return false;
-
-        case LoadMaskColorB: // Load mask color for plane B.
-            m_maskColorRgb[B] = dcpExtractCommand(instruction);
-            return false;
-
-        case LoadDYUVStartValueB: // Load DYUV start value for plane B.
-            m_dyuvInitialValue[B] = dcpExtractCommand(instruction);
-            return false;
-
-        case LoadMosaicFactorB: // Load mosaic pixel hold factor for B.
-            m_holdEnabled[B] = bit<23>(instruction);
-            m_holdFactor[B] = instruction;
-            return false;
-
-        case LoadImageContributionFactorB: // Load image contribution factor for B.
-            m_icf[B] = bits<0, 5>(instruction);
-            return false;
-        }
-    }
-
     // Common instructions.
     switch(code)
     {
@@ -213,9 +134,99 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         m_bps[PLANE] = decodeBitsPerPixel(bits<8, 9>(instruction));
         break;
 
+    case SelectImageCodingMethod: // Select image coding methods.
+        if constexpr(PLANE == A)
+        {
+            m_clutSelectHigh = bit<22>(instruction);
+            m_matteNumber = bit<19>(instruction);
+            m_codingMethod[B] = decodeCodingMethod1(bits<8, 11>(instruction));
+            m_codingMethod[A] = decodeCodingMethod0(bits<0, 3>(instruction));
+            if(!isAllowedImageCodingCombination(m_codingMethod[A], m_codingMethod[B]))
+                std::println("Invalid image coding combination {} {}",
+                    static_cast<int>(m_codingMethod[A]), static_cast<int>(m_codingMethod[B]));
+            // TODO: what to do with external video enabled?
+            m_externalVideo = bit<18>(instruction);
+        }
+        return false;
+
+    case LoadTransparencyControl: // Load transparency control information.
+        if constexpr(PLANE == A)
+        {
+            m_mix = !bit<23>(instruction);
+            m_transparencyControl[B] = bits<8, 11>(instruction);
+            m_transparencyControl[A] = bits<0, 3>(instruction);
+        }
+        return false;
+
+    case LoadPlaneOrder: // Load plane order.
+        if constexpr(PLANE == A)
+            m_planeOrder = bit<0>(instruction);
+        return false;
+
     case SetCLUTBank: // Set CLUT bank.
         m_clutBank = bits<0, 1>(instruction);
         break;
+
+    case LoadTransparentColorA: // Load transparent color for plane A.
+        if constexpr(PLANE == A)
+            m_transparentColorRgb[A] = dcpExtractCommand(instruction);
+        return false;
+
+    case LoadTransparentColorB: // Load transparent color for plane B.
+        if constexpr(PLANE == B)
+            m_transparentColorRgb[B] = dcpExtractCommand(instruction);
+        return false;
+
+    case LoadMaskColorA: // Load mask color for plane A.
+        if constexpr(PLANE == A)
+            m_maskColorRgb[A] = dcpExtractCommand(instruction);
+        return false;
+
+    case LoadMaskColorB: // Load mask color for plane B.
+        if constexpr(PLANE == B)
+            m_maskColorRgb[B] = dcpExtractCommand(instruction);
+        return false;
+
+    case LoadDYUVStartValueA: // Load DYUV start value for plane A.
+        if constexpr(PLANE == A)
+            m_dyuvInitialValue[A] = dcpExtractCommand(instruction);
+        return false;
+
+    case LoadDYUVStartValueB: // Load DYUV start value for plane B.
+        if constexpr(PLANE == B)
+            m_dyuvInitialValue[B] = dcpExtractCommand(instruction);
+        return false;
+
+    case LoadBackdropColor: // Load backdrop color.
+        if constexpr(PLANE == A)
+            m_backdropColor = bits<0, 3>(instruction);
+        return false;
+
+    case LoadMosaicFactorA: // Load mosaic pixel hold factor for A.
+        if constexpr(PLANE == A)
+        {
+            m_holdEnabled[A] = bit<23>(instruction);
+            m_holdFactor[A] = instruction;
+        }
+        return false;
+
+    case LoadMosaicFactorB: // Load mosaic pixel hold factor for B.
+        if constexpr(PLANE == B)
+        {
+            m_holdEnabled[B] = bit<23>(instruction);
+            m_holdFactor[B] = instruction;
+        }
+        return false;
+
+    case LoadImageContributionFactorA: // Load image contribution factor for A.
+        if constexpr(PLANE == A)
+            m_icf[A] = bits<0, 5>(instruction);
+        return false;
+
+    case LoadImageContributionFactorB: // Load image contribution factor for B.
+        if constexpr(PLANE == B)
+            m_icf[B] = bits<0, 5>(instruction);
+        return false;
 
     default:
         std::println(stderr, "Unknow DCP instruction {:#X}", instruction);

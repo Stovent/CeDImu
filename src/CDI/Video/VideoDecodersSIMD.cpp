@@ -75,7 +75,7 @@ uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* d
     const uint8_t* endA = dataA + WIDTH;
 
     const SIMDFixedU32 alphaMask{0x8000};
-    for(; dataA < endA; dataA += SIMDNativeU8::size())
+    for(; dataA < endA; dataA += SIMDNativeU8::size(), dataB += SIMDNativeU8::size(), dst += SIMDNativeU8::size() * 2)
     {
         const SIMDNativeU8 da{dataA, stdx::element_aligned};
         const SIMDNativeU8 db{dataB, stdx::element_aligned};

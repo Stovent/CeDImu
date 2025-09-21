@@ -39,13 +39,15 @@ std::pair<uint16_t, uint16_t> RendererSIMD::DrawLine(const uint8_t* lineA, const
         uint16_t height = GetDisplayHeight();
 
         m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = width * 2;
-        m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = height;
+        m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = m_backdropPlane.m_height = height;
     }
 
     ResetMatte();
 
-    const uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
+    uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
     const uint16_t bytesB = DrawLinePlane<B>(lineB, lineA);
+    if(m_codingMethod[B] == ImageCodingMethod::RGB555)
+        bytesA = bytesB;
 
     DrawLineBackdrop();
 
@@ -196,7 +198,7 @@ static inline constexpr SIMDNativePixel ALPHA_MASKK{0xFF'00'00'00};
  * \tparam SIMD The SIMD type holding signed 32 bits integers.
  */
 template<typename SIMD>
-static constexpr void applyICFMixSIMDShift(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack) noexcept
+static constexpr void applyICFMixSIMDShift(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack, const uint32_t backdrop) noexcept
 {
     SIMD icfF{icfFront, stdx::element_aligned};
     SIMD icfB{icfBack, stdx::element_aligned};
@@ -267,6 +269,7 @@ static constexpr void applyICFMixSIMDShift(Pixel* screen, const Pixel* planeFron
     bfp = stdx::clamp(bfp, U8_MIN, U8_MAX);
 
     const SIMD result = (rfp << 16) | (gfp << 8) | bfp;
+    stdx::where(maskF && maskB, result) = backdrop;
 
     result.copy_to(screen->AsU32Pointer(), stdx::element_aligned);
 }
@@ -276,7 +279,7 @@ static constexpr void applyICFMixSIMDShift(Pixel* screen, const Pixel* planeFron
 /** \brief Applies ICF and mixes using SIMD (algorithm that casts the registers to access RGB components).
  * This can't be used with fixed-sized SIMD because fixed_sized_simd is not trivially copyable.
  */
-static constexpr void applyICFMixSIMDCast(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack) noexcept
+static constexpr void applyICFMixSIMDCast(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack, const uint32_t backdrop) noexcept
 {
     SIMDNativePixel icfF{icfFront, stdx::element_aligned};
     SIMDNativePixel icfB{icfBack, stdx::element_aligned};
@@ -322,13 +325,14 @@ static constexpr void applyICFMixSIMDCast(Pixel* screen, const Pixel* planeFront
     // rgbB16 >>= 6;
 
     rgbF16 += 16;
-    // rgbB16 += 16; Don't add 16 to back plane when applying ICF because the below mixing subtracts it.
+    // Don't add 16 to back plane when applying ICF because the below mixing subtracts it.
 
     rgbF16 += rgbB16;
 
     rgbF16 = stdx::clamp(rgbF16, U8_MINN, U8_MAXX);
 
-    const SIMDNativePixel result = std::bit_cast<SIMDNativePixel>(stdx::static_simd_cast<SIMDNativeU8>(rgbF16));
+    SIMDNativePixel result = std::bit_cast<SIMDNativePixel>(stdx::static_simd_cast<SIMDNativeU8>(rgbF16));
+    stdx::where(maskF && maskB, result) = backdrop;
 
     result.copy_to(screen->AsU32Pointer(), stdx::element_aligned);
 }
@@ -506,7 +510,7 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
         planeFront += SIMD_SIZE, planeBack += SIMD_SIZE, icfFront += SIMD_SIZE, icfBack += SIMD_SIZE, screen += SIMD_SIZE)
     {
         if constexpr(MIX) // Mixing.
-            applyICFMixSIMDCast(screen, planeFront, planeBack, icfFront, icfBack);
+            applyICFMixSIMDCast(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
             // applyICFMixSIMDShift<SIMDNativePixelSigned>(screen, planeFront, planeBack, icfFront, icfBack);
         else // Overlay.
             applyICFOverlaySIMDCast(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
@@ -517,7 +521,7 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
     {
         // Now the remaining width is less than a SIMD register.
         if constexpr(MIX)
-            applyICFMixSIMDShift<SIMDFixedPixelSigned<WIDTH_REMINDER>>(screen, planeFront, planeBack, icfFront, icfBack);
+            applyICFMixSIMDShift<SIMDFixedPixelSigned<WIDTH_REMINDER>>(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
         else
             applyICFOverlaySIMDShift<SIMDFixedPixelSigned<WIDTH_REMINDER>>(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
     }

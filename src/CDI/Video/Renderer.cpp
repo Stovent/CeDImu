@@ -30,7 +30,10 @@ bool Renderer::isValidDisplayFormat(const DisplayFormat display) noexcept
 void Renderer::IncrementCursorTime(const double ns) noexcept
 {
     if(!m_cursorEnabled || m_cursorBlinkOff == 0)
+    {
+        m_cursorIsOn = true; // Reset to true if blink is disabled during the off/complement pattern.
         return; // OFF == 0 means ON indefinitely.
+    }
 
     double delta = m_60FPS ? DELTA_60FPS : DELTA_50FPS;
     if(m_cursorIsOn)
@@ -133,10 +136,10 @@ bool Renderer::isAllowedImageCodingCombination(ImageCodingMethod planeA, ImageCo
     if(planeB == RGB555 && planeA != OFF)
         return false;
 
-    if((planeA == CLUT8 || planeA == CLUT77) && planeB != DYUV)
+    if((planeA == CLUT8 || planeA == CLUT77) && (planeB != DYUV && planeB != OFF))
         return false;
 
-    // If I implement QHY, if(planeB == QHY && planeA != DYUV) return false;
+    // If I implement QHY, if(planeB == QHY && (planeA != DYUV && planeA != OFF)) return false;
     return true;
 }
 

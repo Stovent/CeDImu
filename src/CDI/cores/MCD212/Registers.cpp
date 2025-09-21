@@ -113,6 +113,9 @@ std::vector<InternalRegister> MCD212::GetControlRegisters() const
     registers.emplace_back("Cursor Enabled",                    CursorControl              + 0x80, m_renderer.m_cursorEnabled, "");
     registers.emplace_back("Cursor double resolution",          CursorControl              + 0x80, m_renderer.m_cursorDoubleResolution, "");
     registers.emplace_back("Cursor color",                      CursorControl              + 0x80, m_renderer.m_cursorColor, "");
+    registers.emplace_back("Cursor blink type",                 CursorControl              + 0x80, m_renderer.m_cursorBlinkType, "");
+    registers.emplace_back("Cursor blink ON",                   CursorControl              + 0x80, m_renderer.m_cursorBlinkOn, "");
+    registers.emplace_back("Cursor blink OFF",                  CursorControl              + 0x80, m_renderer.m_cursorBlinkOff, "");
 
     for(size_t i = 0; i < m_renderer.m_cursorPatterns.size(); i++)
         registers.emplace_back("Cursor Pattern " + std::to_string(i), CursorPattern + 0x80, m_renderer.m_cursorPatterns[i], "");

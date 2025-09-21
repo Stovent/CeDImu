@@ -138,14 +138,20 @@ static void benchmarkRunLength(std::string_view name, const uint8_t* data)
     );
 }
 
+#if LIBCEDIMU_ENABLE_RENDERERSIMD
+#define IF_SIMD(code) code
+#else
+#define IF_SIMD(code)
+#endif
+
 int main()
 {
     benchmarkRGB555Line<Video::decodeRGB555Line<HALF_WIDTH>>("RGB555 Soft");
-    benchmarkRGB555Line<Video::decodeRGB555LineSIMD<HALF_WIDTH>>("RGB555 SIMD");
+    IF_SIMD(benchmarkRGB555Line<Video::decodeRGB555LineSIMD<HALF_WIDTH>>("RGB555 SIMD"));
 
     benchmarkDYUVLine<Video::decodeDYUVLine<HALF_WIDTH>>("DYUV Soft");
     benchmarkDYUVLine<Video::decodeDYUVLineLUT<HALF_WIDTH>>("DYUV  LUT");
-    benchmarkDYUVLine<Video::decodeDYUVLineSIMD<HALF_WIDTH>>("DYUV SIMD");
+    IF_SIMD(benchmarkDYUVLine<Video::decodeDYUVLineSIMD<HALF_WIDTH>>("DYUV SIMD"));
 
     benchmarkCLUTLine<Video::decodeCLUTLine<WIDTH>>("CLUT Soft");
 

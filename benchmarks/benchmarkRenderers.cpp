@@ -78,6 +78,12 @@ static void benchmarkRendererCursor(std::string_view name)
     );
 }
 
+#if LIBCEDIMU_ENABLE_RENDERERSIMD
+#define IF_SIMD(code) code
+#else
+#define IF_SIMD(code)
+#endif
+
 int main()
 {
     constexpr Video::Renderer::BitsPerPixel NORMAL_8 = Video::Renderer::BitsPerPixel::Normal8;
@@ -85,23 +91,23 @@ int main()
     // constexpr Video::Renderer::BitsPerPixel HIGH_8 = Video::Renderer::BitsPerPixel::High8;
 
     benchmarkRendererCursor<Video::RendererSoftware>("Cursor Soft");
-    benchmarkRendererCursor<Video::RendererSIMD>("Cursor SIMD");
+    IF_SIMD(benchmarkRendererCursor<Video::RendererSIMD>("Cursor SIMD"));
 
     benchmarkRenderer<Video::RendererSoftware, NORMAL_8, ICM(OFF), ICM(RGB555)>("Normal Soft RGB555");
-    benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(OFF), ICM(RGB555)>("Normal SIMD RGB555");
+    IF_SIMD((benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(OFF), ICM(RGB555)>("Normal SIMD RGB555")));
 
     benchmarkRenderer<Video::RendererSoftware, NORMAL_8, ICM(DYUV), ICM(DYUV)>("Normal Soft DYUV");
-    benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(DYUV), ICM(DYUV)>("Normal SIMD DYUV");
+    IF_SIMD((benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(DYUV), ICM(DYUV)>("Normal SIMD DYUV")));
 
     benchmarkRenderer<Video::RendererSoftware, DOUBLE_4, ICM(DYUV), ICM(DYUV)>("Double Soft DYUV");
-    benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(DYUV), ICM(DYUV)>("Double SIMD DYUV");
+    IF_SIMD((benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(DYUV), ICM(DYUV)>("Double SIMD DYUV")));
 
     benchmarkRenderer<Video::RendererSoftware, DOUBLE_4, ICM(CLUT4), ICM(CLUT4)>("Double Soft CLUT4");
-    benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(CLUT4), ICM(CLUT4)>("Double SIMD CLUT4");
+    IF_SIMD((benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(CLUT4), ICM(CLUT4)>("Double SIMD CLUT4")));
 
     benchmarkRenderer<Video::RendererSoftware, NORMAL_8, ICM(CLUT8), ICM(CLUT7)>("Normal Soft CLUT8/CLUT7");
-    benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(CLUT8), ICM(CLUT7)>("Normal SIMD CLUT8/CLUT7");
+    IF_SIMD((benchmarkRenderer<Video::RendererSIMD, NORMAL_8, ICM(CLUT8), ICM(CLUT7)>("Normal SIMD CLUT8/CLUT7")));
 
     benchmarkRenderer<Video::RendererSoftware, DOUBLE_4, ICM(CLUT8), ICM(CLUT7)>("Double Soft CLUT8/CLUT7");
-    benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(CLUT8), ICM(CLUT7)>("Double SIMD CLUT8/CLUT7");
+    IF_SIMD((benchmarkRenderer<Video::RendererSIMD, DOUBLE_4, ICM(CLUT8), ICM(CLUT7)>("Double SIMD CLUT8/CLUT7")));
 }
