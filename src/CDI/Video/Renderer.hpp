@@ -224,12 +224,24 @@ public:
         LoadImageContributionFactorB = 0xDC,
     };
 
-protected:
     static constexpr double DELTA_50FPS = 240'000'000.; /**< GB VII.2.3.4.2 GC_Blnk. */
     static constexpr double DELTA_60FPS = 200'000'000.; /**< GB VII.2.3.4.2 GC_Blnk. */
 
+protected:
     double m_cursorTime{0.0}; /**< Keeps track of the emulated time for cursor blink. */
     bool m_cursorIsOn{true}; /**< Keeps the state of the cursor (ON or OFF/complement). true when ON. */
+    constexpr Pixel GetCursorColor() const noexcept
+    {
+        Pixel color = backdropCursorColorToPixel(m_cursorColor);
+        if(m_cursorBlinkOff != 0 && !m_cursorIsOn)
+        {
+            if(m_cursorBlinkType) // Complement.
+                color = color.Complement();
+            else
+                color = BLACK_PIXEL;
+        }
+        return color;
+    }
 
     uint16_t m_lineNumber{}; /**< Current line being drawn, starts at 0. Handled by the caller. */
     DisplayFormat m_displayFormat{DisplayFormat::PAL}; /**< Used to select 360/384 width and 240/280 height. */

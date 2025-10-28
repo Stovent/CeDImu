@@ -35,8 +35,8 @@ std::pair<uint16_t, uint16_t> RendererSIMD::DrawLine(const uint8_t* lineA, const
     m_lineNumber = lineNumber;
     if(m_lineNumber == 0)
     {
-        uint16_t width = getDisplayWidth(m_displayFormat);
-        uint16_t height = GetDisplayHeight();
+        const uint16_t width = getDisplayWidth(m_displayFormat);
+        const uint16_t height = GetDisplayHeight();
 
         m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = width * 2;
         m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = m_backdropPlane.m_height = height;
@@ -131,17 +131,8 @@ uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lin
 void RendererSIMD::DrawCursor() noexcept
 {
     // Technically speaking the cursor is drawn when the drawing line number is the cursor's one (because video
-    // is outputted continuously line by line).
-    // But for here maybe we don't care.
-
-    Pixel color = backdropCursorColorToPixel(m_cursorColor);
-    if(!m_cursorIsOn)
-    {
-        if(m_cursorBlinkType) // Complement.
-            color = color.Complement();
-        else
-            color = BLACK_PIXEL;
-    }
+    // is outputted continuously line by line). But for here maybe we don't care.
+    const Pixel color = GetCursorColor();
 
     using SIMDCursorLine = stdx::fixed_size_simd<uint32_t, 16>;
     using SIMDCursorLineMask = SIMDCursorLine::mask_type;
@@ -505,8 +496,7 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
     }
 
     // Both planes always have the same width.
-    constexpr int simdSize = static_cast<int>(SIMD_SIZE);
-    for(int width = static_cast<int>(m_plane[A].m_width); width >= simdSize; width -= simdSize,
+    for(size_t width = m_plane[A].m_width; width >= SIMD_SIZE; width -= SIMD_SIZE,
         planeFront += SIMD_SIZE, planeBack += SIMD_SIZE, icfFront += SIMD_SIZE, icfBack += SIMD_SIZE, screen += SIMD_SIZE)
     {
         if constexpr(MIX) // Mixing.

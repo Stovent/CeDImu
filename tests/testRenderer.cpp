@@ -22,6 +22,43 @@ TEST_CASE("Cursor blink", "[Video]")
     Video::RendererSoftware rendererSoft;
     IF_SIMD(Video::RendererSIMD rendererSIMD)
 
+    SECTION("Control")
+    {
+        constexpr CursorLine EXPECTED_ON{
+            CYAN, BLACK, CYAN, BLACK, CYAN, BLACK, CYAN, BLACK,
+            BLACK, CYAN, BLACK, CYAN, BLACK, CYAN, BLACK, CYAN,
+        };
+        constexpr CursorLine EXPECTED_OFF{
+            BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+            BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
+        };
+
+        // No need to test SIMD, as the control code is in Renderer.
+        rendererSoft.SetCursorEnabled(true);
+        rendererSoft.SetCursorBlink(false, 1, 1);
+        rendererSoft.SetCursorPattern(0, 0xAA55);
+        rendererSoft.SetCursorColor(0b1011); // Cyan
+        rendererSoft.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL, false, false); // 50 FPS.
+
+        rendererSoft.RenderFrame();
+        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
+
+        // Advance time to just before the off period.
+        rendererSoft.IncrementCursorTime(Video::Renderer::DELTA_50FPS - 1.);
+        rendererSoft.RenderFrame();
+        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
+
+        // Advance time to exactly the delta time.
+        rendererSoft.IncrementCursorTime(1.);
+        rendererSoft.RenderFrame();
+        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_OFF.data()));
+
+        // Make sure the cursor is on when blink is deactivated on an off/complement period.
+        rendererSoft.SetCursorBlink(false, 1, 0); // Disable blink.
+        rendererSoft.RenderFrame();
+        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
+    }
+
     SECTION("ON/OFF")
     {
         rendererSoft.SetCursorEnabled(true);
@@ -45,9 +82,9 @@ TEST_CASE("Cursor blink", "[Video]")
         REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
         IF_SIMD(REQUIRE(std::equal(rendererSIMD.m_cursorPlane.begin(), rendererSIMD.m_cursorPlane.begin() + 16, EXPECTED_ON.data())))
 
-        rendererSoft.IncrementCursorTime(240'000'000.);
+        rendererSoft.IncrementCursorTime(Video::Renderer::DELTA_50FPS);
         rendererSoft.RenderFrame();
-        IF_SIMD(rendererSIMD.IncrementCursorTime(240'000'000.))
+        IF_SIMD(rendererSIMD.IncrementCursorTime(Video::Renderer::DELTA_50FPS))
         IF_SIMD(rendererSIMD.RenderFrame())
 
         constexpr CursorLine EXPECTED_OFF{
@@ -81,9 +118,9 @@ TEST_CASE("Cursor blink", "[Video]")
         REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
         IF_SIMD(REQUIRE(std::equal(rendererSIMD.m_cursorPlane.begin(), rendererSIMD.m_cursorPlane.begin() + 16, EXPECTED_ON.data())))
 
-        rendererSoft.IncrementCursorTime(240'000'000.);
+        rendererSoft.IncrementCursorTime(Video::Renderer::DELTA_50FPS);
         rendererSoft.RenderFrame();
-        IF_SIMD(rendererSIMD.IncrementCursorTime(240'000'000.))
+        IF_SIMD(rendererSIMD.IncrementCursorTime(Video::Renderer::DELTA_50FPS))
         IF_SIMD(rendererSIMD.RenderFrame())
 
         constexpr CursorLine EXPECTED_COMPLEMENT{

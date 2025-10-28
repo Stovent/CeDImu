@@ -30,10 +30,7 @@ bool Renderer::isValidDisplayFormat(const DisplayFormat display) noexcept
 void Renderer::IncrementCursorTime(const double ns) noexcept
 {
     if(!m_cursorEnabled || m_cursorBlinkOff == 0)
-    {
-        m_cursorIsOn = true; // Reset to true if blink is disabled during the off/complement pattern.
         return; // OFF == 0 means ON indefinitely.
-    }
 
     double delta = m_60FPS ? DELTA_60FPS : DELTA_50FPS;
     if(m_cursorIsOn)
