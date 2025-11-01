@@ -7,7 +7,7 @@
 namespace OS9
 {
 
-enum FileManagerType
+enum FileManagerType : uint8_t
 {
     DT_SCF  = 0,  // sequential character file type
     DT_RBF  = 1,  // random block file type
@@ -23,79 +23,43 @@ enum FileManagerType
     DT_GFM  = 11, // graphics file manager
 };
 
-enum SttFunction
+/** \brief Common service requests for GetStat and SetStat. */
+enum StatServiceRequest : uint16_t
 {
-    SS_Opt = 0x00, // read/write PD options
-    SS_Ready = 0x01, // check for device ready
+    SS_Opt = 0x00, // Read/write the options section of the path descriptor
     SS_Size = 0x02, // read/write file size
-    SS_Reset = 0x03, // device restore
-    SS_WTrk = 0x04, // device write track
-    SS_Pos = 0x05, // get file current position
-    SS_EOF = 0x06, // test for end of file
-    SS_Link = 0x07, // link to status routines
-    SS_ULink = 0x08, // unlink status routines
-    SS_Feed = 0x09, // destructive forward skip (form feed)
-    SS_Frz = 0x0a, // freeze DD_ information
-    SS_SPT = 0x0b, // set DD_TKS to given value
-    SS_SQD = 0x0c, // sequence down hard disk
-    SS_DCmd = 0x0d, // send direct command to device
-    SS_DevNm = 0x0e, // return device name
+//     SS_Link = 0x07, // link to status routines
+//     SS_ULink = 0x08, // unlink status routines
+//     SS_Frz = 0x0a, // freeze DD_ information
+//     SS_SPT = 0x0b, // set DD_TKS to given value
+//     SS_SQD = 0x0c, // sequence down hard disk
+//     SS_DCmd = 0x0d, // send direct command to device
     SS_FD = 0x0f, // return file descriptor
-    SS_Ticks = 0x10, // set lockout honor duration
-    SS_Lock = 0x11, // lock/release record
-    SS_DStat = 0x12, // return display status
-    SS_Joy = 0x13, // return joystick value
-    SS_BlkRd = 0x14, // block read
-    SS_BlkWr = 0x15, // block write
-    SS_Reten = 0x16, // retention cycle
-    SS_WFM = 0x17, // write file mark
-    SS_RFM = 0x18, // read past file mark
-    SS_ELog = 0x19, // read error log
-    SS_SSig = 0x1a, // send signal on data ready
-    SS_Relea = 0x1b, // release device
-    SS_Attr = 0x1c, // set file attributes
-    SS_Break = 0x1d, // send break out serial device
-    SS_RsBit = 0x1e, // reserve bitmap sector (for disk reorganization)
-    SS_RMS = 0x1f, // get/set Motorola RMS status
-    SS_FDInf = 0x20, // get FD info for specified FD sector
-    SS_ACRTC = 0x21, // get/set Hitachi ACRTC status
-    SS_IFC = 0x22, // serial input flow control
-    SS_OFC = 0x23, // serial output flow control
-    SS_EnRTS = 0x24, // enable RTS (modem control)
-    SS_DsRTS = 0x25, // disable RTS (modem control)
-    SS_DCOn = 0x26, // send signal DCD TRUE
-    SS_DCOff = 0x27, // send signal DCD FALSE
-    SS_Skip = 0x28, // skip block(s)
-    SS_Mode = 0x29, // set RBF access mode
-    SS_Open = 0x2a, // notification of new path opened
-    SS_Close = 0x2b, // notification of path being closed
+//     SS_DStat = 0x12, // return display status
+//     SS_Joy = 0x13, // return joystick value
+//     SS_BlkRd = 0x14, // block read
+//     SS_BlkWr = 0x15, // block write
+//     SS_Reten = 0x16, // retention cycle
+//     SS_ELog = 0x19, // read error log
+//     SS_Break = 0x1d, // send break out serial device
+//     SS_RsBit = 0x1e, // reserve bitmap sector (for disk reorganization)
+//     SS_RMS = 0x1f, // get/set Motorola RMS status
+//     SS_ACRTC = 0x21, // get/set Hitachi ACRTC status
+//     SS_IFC = 0x22, // serial input flow control
+//     SS_OFC = 0x23, // serial output flow control
+//     SS_Skip = 0x28, // skip block(s)
+//     SS_Mode = 0x29, // set RBF access mode
 
-    SS_Path = 0x2c, // CDFM return pathlist for open path
-    SS_Play = 0x2d, // CDFM play (CD-I) file
-    SS_HEADER = 0x2e, // CDFM return header of last sector read
-    SS_Raw = 0x2f, // CDFM read raw sectors
-    SS_Seek = 0x30, // CDFM issue physical seek command
-    SS_Abort = 0x31, // CDFM abort asynchronous operation in progress
-    SS_CDDA = 0x32, // CDFM play CD digital audio
-    SS_Pause = 0x33, // CDFM pause the disc driver
-    SS_Eject = 0x34, // CDFM open the drive door
-    SS_Mount = 0x35, // CDFM mount disc by disc number
-    SS_Stop = 0x36, // CDFM stop the disc drive
-    SS_Cont = 0x37, // CDFM start the disc after pause
-    SS_Disable = 0x38, // CDFM disable hardware controls
-    SS_Enable = 0x39, // CDFM enable hardware controls
-    SS_ReadToc = 0x3a, // CDFM read TOC (on red discs)
+//     SS_HEADER = 0x2e, // CDFM return header of last sector read
     SS_SM = 0x3b, // CDFM's soundmap control status code
     SS_SD = 0x3c, // CDFM's sound data manipulation status code
     SS_SC = 0x3d, // CDFM's sound control status code
 
-    SS_SEvent = 0x3E, // set event on data ready
-    SS_Sound = 0x3F, // produce audible sound
-    SS_DSize = 0x40, // get drive size (in sectors)
-    SS_Net = 0x41, // NFM wild card getstat/setstat, with subcode
-    SS_Rename = 0x42, // rename file
-    SS_Free = 0x43, // return free statistics
-    SS_VarSect = 0x44, // variable sector size supported query
+//     SS_SEvent = 0x3E, // set event on data ready
+//     SS_Sound = 0x3F, // produce audible sound
+//     SS_DSize = 0x40, // get drive size (in sectors)
+//     SS_Net = 0x41, // NFM wild card getstat/setstat, with subcode
+//     SS_Rename = 0x42, // rename file
 
     SS_UCM = 0x4C, // UCM reserved
     SS_DM = 0x51, // UCM's drawmap control status code
@@ -111,35 +75,274 @@ enum SttFunction
     SS_KB = 0x5B, // keyboard status code
     SS_SL = 0x5C, // MC68HC05 Slave commands
 
-    // sockets
-    SS_Bind = 0x6C, // bind a socket name
-    SS_Listen = 0x6D, // listen for connections
-    SS_Connect = 0x6E, // initiate a connection
-    SS_Resv = 0x6F, // socket characteristics specification
-    SS_Accept = 0x70, // accept socket connections
-    SS_Recv = 0x71, // receive data
-    SS_Send = 0x72, // send data
-    SS_GNam = 0x73, // get socket name
-    SS_SOpt = 0x74, // set socket option
-    SS_GOpt = 0x75, // get socket option
-    SS_Shut = 0x76, // shut down socket connection
-    SS_SendTo = 0x77, // send to address
-    SS_RecvFr = 0x78, // receive from address
-    SS_Install = 0x79, // install upper level protocol (ULP)
-
-    SS_PCmd = 0x7A, // protocol direct command
-
-    SS_SN = 0x8C, // DSM's screen functions
-    SS_AR = 0x8D, // DSM's action region functions
-    SS_MS = 0x8E, // DSM's message functions
-    SS_AC = 0x8F, // DSM's action cursor functions
-    SS_CDFD = 0x90, // CDFM return file descriptor information
-    SS_CCHAN = 0x91, // CDFM change channel request
-    SS_FG = 0x92,
-    SS_Sony = 0xA0,
+//     // sockets
+//     SS_Bind = 0x6C, // bind a socket name
+//     SS_Listen = 0x6D, // listen for connections
+//     SS_Connect = 0x6E, // initiate a connection
+//     SS_Resv = 0x6F, // socket characteristics specification
+//     SS_Accept = 0x70, // accept socket connections
+//     SS_Recv = 0x71, // receive data
+//     SS_Send = 0x72, // send data
+//     SS_GNam = 0x73, // get socket name
+//     SS_SOpt = 0x74, // set socket option
+//     SS_GOpt = 0x75, // get socket option
+//     SS_Shut = 0x76, // shut down socket connection
+//     SS_SendTo = 0x77, // send to address
+//     SS_RecvFr = 0x78, // receive from address
+//     SS_Install = 0x79, // install upper level protocol (ULP)
+//
+//     SS_PCmd = 0x7A, // protocol direct command
+//
+//     SS_SN = 0x8C, // DSM's screen functions
+//     SS_AR = 0x8D, // DSM's action region functions
+//     SS_MS = 0x8E, // DSM's message functions
+//     SS_AC = 0x8F, // DSM's action cursor functions
+//     SS_FG = 0x92,
+//     SS_Sony = 0xA0,
 };
 
-std::string sttFunctionToString(uint16_t stt);
+/** \brief GetStat service request codes. */
+enum GetStatServiceRequest : uint16_t
+{
+    SS_Ready = 0x01, // check for device ready
+    SS_Pos = 0x05, // get file current position
+    SS_EOF = 0x06, // test for end of file
+//     SS_Link = 0x07, // link to status routines
+//     SS_ULink = 0x08, // unlink status routines
+//     SS_Feed = 0x09, // destructive forward skip (form feed)
+//     SS_Frz = 0x0a, // freeze DD_ information
+//     SS_SPT = 0x0b, // set DD_TKS to given value
+//     SS_SQD = 0x0c, // sequence down hard disk
+//     SS_DCmd = 0x0d, // send direct command to device
+    SS_DevNm = 0x0e, // return device name
+//     SS_DStat = 0x12, // return display status
+//     SS_Joy = 0x13, // return joystick value
+//     SS_BlkRd = 0x14, // block read
+//     SS_BlkWr = 0x15, // block write
+//     SS_Reten = 0x16, // retention cycle
+//     SS_ELog = 0x19, // read error log
+//     SS_Break = 0x1d, // send break out serial device
+//     SS_RsBit = 0x1e, // reserve bitmap sector (for disk reorganization)
+//     SS_RMS = 0x1f, // get/set Motorola RMS status
+    SS_FDInf = 0x20, // get FD info for specified FD sector
+//     SS_ACRTC = 0x21, // get/set Hitachi ACRTC status
+//     SS_IFC = 0x22, // serial input flow control
+//     SS_OFC = 0x23, // serial output flow control
+//     SS_Mode = 0x29, // set RBF access mode
+
+    SS_Path = 0x2c, // CDFM return pathlist for open path
+
+    SS_Free = 0x43, // return free statistics
+    SS_VarSect = 0x44, // variable sector size supported query
+
+    SS_CDFD = 0x90, // CDFM return file descriptor information
+};
+
+/** \brief SetStat service request codes. */
+enum SetStatServiceRequest : uint16_t
+{
+    SS_Reset = 0x03, // device restore
+    SS_WTrk = 0x04, // device write track
+//     SS_Link = 0x07, // link to status routines
+//     SS_ULink = 0x08, // unlink status routines
+    SS_Feed = 0x09, // destructive forward skip (form feed)
+//     SS_Frz = 0x0a, // freeze DD_ information
+//     SS_SPT = 0x0b, // set DD_TKS to given value
+//     SS_SQD = 0x0c, // sequence down hard disk
+//     SS_DCmd = 0x0d, // send direct command to device
+    SS_Ticks = 0x10, // set lockout honor duration
+    SS_Lock = 0x11, // lock/release record
+//     SS_DStat = 0x12, // return display status
+//     SS_Joy = 0x13, // return joystick value
+//     SS_BlkRd = 0x14, // block read
+//     SS_BlkWr = 0x15, // block write
+//     SS_Reten = 0x16, // retention cycle
+    SS_WFM = 0x17, // write file mark
+    SS_RFM = 0x18, // read past file mark
+//     SS_ELog = 0x19, // read error log
+    SS_SSig = 0x1a, // send signal on data ready
+    SS_Relea = 0x1b, // release device
+    SS_Attr = 0x1c, // set file attributes
+//     SS_Break = 0x1d, // send break out serial device
+//     SS_RsBit = 0x1e, // reserve bitmap sector (for disk reorganization)
+//     SS_RMS = 0x1f, // get/set Motorola RMS status
+//     SS_ACRTC = 0x21, // get/set Hitachi ACRTC status
+//     SS_IFC = 0x22, // serial input flow control
+//     SS_OFC = 0x23, // serial output flow control
+    SS_EnRTS = 0x24, // enable RTS (modem control)
+    SS_DsRTS = 0x25, // disable RTS (modem control)
+    SS_DCOn = 0x26, // send signal DCD TRUE
+    SS_DCOff = 0x27, // send signal DCD FALSE
+    SS_Skip = 0x28, // skip block(s)
+//     SS_Mode = 0x29, // set RBF access mode
+    SS_Open = 0x2a, // notification of new path opened
+    SS_Close = 0x2b, // notification of path being closed
+
+    SS_Play = 0x2d, // CDFM play (CD-I) file
+    SS_Raw = 0x2f, // CDFM read raw sectors
+    SS_Seek = 0x30, // CDFM issue physical seek command
+    SS_Abort = 0x31, // CDFM abort asynchronous operation in progress
+    SS_CDDA = 0x32, // CDFM play CD digital audio
+    SS_Pause = 0x33, // CDFM pause the disc driver
+    SS_Eject = 0x34, // CDFM open the drive door
+    SS_Mount = 0x35, // CDFM mount disc by disc number
+    SS_Stop = 0x36, // CDFM stop the disc drive
+    SS_Cont = 0x37, // CDFM start the disc after pause
+    SS_Disable = 0x38, // CDFM disable hardware controls
+    SS_Enable = 0x39, // CDFM enable hardware controls
+    SS_ReadToc = 0x3a, // CDFM read TOC (on red discs)
+
+    SS_CCHAN = 0x91, // CDFM change channel request
+};
+
+std::string statServiceRequestToString(uint16_t stt);
+std::string getStatServiceRequestToString(uint16_t stt);
+std::string setStatServiceRequestToString(uint16_t stt);
+
+/** \brief Function codes of the sub service requests of GetStat. */
+enum SubGetStatServiceRequest : uint16_t
+{
+    SM_Info = 0x00, // Return Pointer to Soundmap Descriptor
+    SM_Stat = 0x01, // Return Soundmap Status
+
+    VIQ_TxtL = 0x00, // Calculate Length of Text
+    VIQ_CPos = 0x01, // Return Relative Character Positions
+    VIQ_JCPs = 0x02, // Return Character Positions for Justified text
+    VIQ_FDta = 0x03, // Return Font Data
+    VIQ_GDta = 0x04, // Return Glyph Data
+    // VIQ_RGInfo = 0x, // Return Pointer to Region Data Structure
+    VIQ_PntR = 0x05, // Test if Point in Region
+    VIQ_RLoc = 0x06, // Inquire Region Location
+    // VIQ_DMInfo = 0x, // Return Pointer to Drawmap Descriptor
+
+    PT_Coord = 0x00, // Obtain Pointer Coordinates
+
+    KB_Rdy = 0x00, // Check for Data Ready
+    KB_Read = 0x01, // Read Keyboard Event
+    KB_Stat = 0x05, // Determine Status of Keyboard
+    // KB_Avail = 0x, // Key(s) available for the application
+    // KB_NrAvail = 0x, // Number of keycodes available for the application
+};
+
+/** \brief Function codes of the sub service requests of SetStat. */
+enum SubSetStatServiceRequest : uint16_t
+{
+    SM_Creat = 0x00, // Create Soundmap
+    SM_Out = 0x01, // Output Soundmap
+    SM_Off = 0x02, // Turn Off Soundmap Output
+    SM_Cncl = 0x03, // Conceal Error in Soundmap
+    SM_Close = 0x04, // Close Soundmap
+
+    SD_MMix = 0x00, // Mix Monaural to Stereo
+    SD_SMix = 0x01, // Mix Stereo to Stereo
+    SD_Loop = 0x02, // Set Soundmap Loopback Points
+
+    SC_Atten = 0x00, // Set Attenuation
+
+    DM_Creat = 0x00, // Create Drawmap
+    DM_Org = 0x01, // Set Drawing Origin
+    DM_Copy = 0x02, // Copy Drawmap to DrawmapDM_Copy
+    DM_Exch = 0x03, // Exchange Data Between Drawmaps
+    DM_TCpy = 0x04, // Copy with Transparency Check
+    DM_TExc = 0x05, // Exchange with Transparency
+    DM_Write = 0x06, // Write Drawmap
+    DM_IrWr = 0x07, // Irregular Write
+    DM_Read = 0x08, // Read Drawmap
+    DM_WrPix = 0x09, // Write Pixel
+    DM_RdPix = 0x0A, // Read Pixel
+    DM_Cncl = 0x0B, // Conceal Error in Drawmap
+    DM_Close = 0x0C, // Close Drawmap
+    DM_DMDup = 0x0D, // Create Duplicate Drawmap Descriptor
+
+    GC_Pos = 0x00, // Position Graphics Cursor
+    GC_Show = 0x01, // Show Graphics Cursor
+    GC_Hide = 0x02, // Hide Graphics Cursor
+    GC_Ptn = 0x03, // Set Graphics Cursor Pattern
+    GC_Col = 0x04, // Set Graphics Cursor Color
+    GC_Blnk = 0x05, // Set Graphics Cursor Blink Rate and Type
+    GC_Org = 0x06, // Set Graphics Cursor Origin
+
+    RG_Creat = 0x00, // Create Region
+    RG_Isect = 0x01, // Region Intersection
+    RG_Union = 0x02, // Region Union
+    RG_Diff = 0x03, // Region Difference
+    RG_XOR = 0x04, // Region Exclusive Or
+    RG_Move = 0x05, // Move Region
+    RG_Del = 0x06, // Delete Region
+
+    DP_Ptn = 0x00, // Set Drawing Pattern
+    DP_PAln = 0x01, // Set Pattern Alignment
+    DP_SCMM = 0x02, // Set Character Code Mapping Method
+    DP_SCR = 0x03, // Set Color Register
+    DP_GFnt = 0x04, // Get Font
+    DP_AFnt = 0x05, // Activate Font
+    DP_DFnt = 0x06, // Deactivate Font
+    DP_RFnt = 0x07, // Release Font
+    DP_Clip = 0x08, // Set Clipping Region
+    DP_PnSz = 0x09, // Set Pen Size
+    DP_PStyl = 0x0A, // Set Pen Style
+    DP_TCol = 0x0B, // Set Transparent Color
+
+    DR_Dot = 0x00, // Draw a Dot
+    DR_Line = 0x01, // Draw a Line
+    DR_PLin = 0x02, // Draw a Polyline
+    DR_CArc = 0x03, // Draw a Circular Arc
+    DR_EArc = 0x04, // Draw an Elliptical Arc
+    DR_Rect = 0x05, // Draw a Rectangle
+    DR_ERect = 0x06, // Draw an Elliptical Corner Rectangle
+    DR_PGon = 0x07, // Draw a Polygon
+    DR_Circ = 0x08, // Draw a Circle
+    DR_CWdg = 0x09, // Draw a Circular Wedge
+    DR_Elps = 0x0A, // Draw an Ellipse
+    DR_EWdg = 0x0B, // Draw an Elliptical Wedge
+    DR_DRgn = 0x0C, // Draw a Region
+    DR_BFil = 0x0D, // Fill a Bounded Area with a Pattern
+    DR_FFil = 0x0E, // Flood Fill
+    DR_Copy = 0x0F, // Copy Data from Drawmap to Drawmap
+    DR_Text = 0x10, // Output Graphics Text
+    DR_JTxt = 0x11, // Output Justified Graphics Text
+
+    DC_CrFCT = 0x00, // Create Field Control Table
+    DC_RdFCT = 0x01, // Read Field Control Table
+    DC_WrFCT = 0x02, // Write Field Control Table
+    DC_RdFI = 0x03, // Read Field Control Table Instruction
+    DC_WrFI = 0x04, // Write Field Control Table Instruction
+    DC_DlFCT = 0x05, // Delete Field Control Table
+    DC_CrLCT = 0x06, // Create Line Control Table
+    DC_RdLCT = 0x07, // Read Line Control Table
+    DC_WrLCT = 0x08, // Write Line Control Table
+    DC_RdLI = 0x09, // Read Line Control Table Instruction
+    DC_WrLI = 0x0A, // Write Line Control Table Instruction
+    DC_DlLCT = 0x0B, // Delete Line Control Table
+    DC_FLnk = 0x0C, // Link LCT to FCT
+    DC_LLnk = 0x0D, // Link LCT to LCT
+    DC_Exec = 0x0E, // Execute Display Control Program
+    DC_Intl = 0x0F, // Set Display Interlace Mode
+    DC_NOP = 0x10, // Write No Operation Instructions to LCT
+    DC_SSig = 0x11, // Send Signal on Video Interrupt
+    DC_Relea = 0x12, // Release Signal on Video Interrupt
+    DC_SetCmp = 0x13, // Set Display Compatibility Mode
+    DC_PRdLCT = 0x1B, // Read Physical Line Control Table
+    DC_PWrLCT = 0x1C, // Write Physical Line Control Table
+    // DC_SetAR = 0x, // Set the Display Aspect Ratio
+
+    CO_COD = 0x00, // Set Character Output Drawmap
+    CO_SCMM = 0x01, // Set Character Mode Mapping Method
+    CO_AFnt = 0x02, // Activate Font
+    CO_DFnt = 0x03, // Deactivate Font
+
+    PT_SSig = 0x01, // Send Signal on Pointer Change
+    PT_Relea = 0x02, // Release Device
+    PT_Pos = 0x03, // Set Pointer Position
+    PT_Org = 0x04, // Set Pointer Origin
+
+    KB_Rel = 0x02, // Release device
+    KB_Repeat = 0x03, // Set Keyboard Latency and Repeat Times
+    KB_SSig = 0x04, // Send Signal on Keyboard data ready
+};
+
+std::string subGetStatServiceRequestToString(uint16_t stt, uint16_t substt);
+std::string subSetStatServiceRequestToString(uint16_t stt, uint16_t substt);
 
 } // namespace OS9
 

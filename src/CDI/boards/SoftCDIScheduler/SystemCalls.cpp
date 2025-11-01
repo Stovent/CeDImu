@@ -1,5 +1,6 @@
 #include "SoftCDIScheduler.hpp"
 #include "../../cores/SCC68070/SCC68070.hpp"
+#include "../../OS9/Stt.hpp"
 
 #include <print>
 
@@ -17,20 +18,20 @@ void SoftCDIScheduler::DispatchSystemCall(const uint16_t syscall) noexcept
         CDDrivePlay();
         break;
 
-    case CdDriveDmaSector:
-        CDDriveDmaSector();
+    case CdDriveCopySector:
+        CDDriveCopySector();
         break;
 
     case CdDriveGetSubheader:
         CDDriveGetSubheader();
         break;
 
-    case UCMGetStat:
-        std::println("Get stat");
+    case CdfmDeviceDriverGetStat:
+        CDFMDeviceDriverGetStat();
         break;
 
-    case UCMSetStat:
-        std::println("Set stat");
+    case CdfmDeviceDriverSetStat:
+        CDFMDeviceDriverSetStat();
         break;
 
     default:
@@ -61,7 +62,7 @@ void SoftCDIScheduler::CDDrivePlay() noexcept
 {
     std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
 
-    std::println("Play start:0x{:X} count:{} file:{} channel:0x{:08X}", regs[D0], regs[D1], regs[D2], regs[D3]);
+    // std::println("Play start:0x{:X} count:{} file:{} channel:0x{:08X}", regs[D0], regs[D1], regs[D2], regs[D3]);
     m_cdDrive.StartPlaying(regs[D0], regs[D1], regs[D2], regs[D3]);
 }
 
@@ -69,11 +70,11 @@ void SoftCDIScheduler::CDDrivePlay() noexcept
  * - a0: pointer to the destination buffer.
  * - d0.l: size of the destination buffer.
  */
-void SoftCDIScheduler::CDDriveDmaSector() noexcept
+void SoftCDIScheduler::CDDriveCopySector() noexcept
 {
     std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
 
-    std::println("DMA sector address:0x{:X} size:{}", regs[A0], regs[D0]);
+    // std::println("Copy sector address:0x{:X} size:{}", regs[A0], regs[D0]);
     m_cdDrive.CopyLastSectorToMemory(regs[A0], regs[D0]);
 }
 
@@ -81,6 +82,18 @@ void SoftCDIScheduler::CDDriveDmaSector() noexcept
 void SoftCDIScheduler::CDDriveGetSubheader() noexcept
 {
     const uint32_t subheader = m_cdDrive.GetLastSectorSubheader();
-    std::println("Get subheader 0x{:X}", subheader);
+    // std::println("Get subheader 0x{:X}", subheader);
     m_cpu.SetRegister(D0, subheader);
+}
+
+void SoftCDIScheduler::CDFMDeviceDriverGetStat() noexcept
+{
+    std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
+    std::println("CDFM Get stat {} {} {} {} {}", regs[D1], OS9::getStatServiceRequestToString(regs[D1]), regs[D2], regs[D3], regs[D4]);
+}
+
+void SoftCDIScheduler::CDFMDeviceDriverSetStat() noexcept
+{
+    std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
+    std::println("CDFM Set stat {} {} {} {} {}", regs[D1], OS9::setStatServiceRequestToString(regs[D1]), regs[D2], regs[D3], regs[D4]);
 }

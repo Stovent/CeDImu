@@ -25,11 +25,11 @@ EntryTable	dc.w	Init
 * (a6) address of the system global variable storage area
 Init
 * Register IRQ handler
-	move.b #CdfmDriver_Vector,d0	Vector number
-	move.b #CdfmDriver_Priority,d1	priority
+	move.b #CdDrive_Vector,d0	Vector number
+	move.b #CdDrive_Priority,d1	priority
 	lea Irq(pc),a0					IRQ service routine entry point
 *									device static storage is already in a2
-	movea.l #CdfmDriver_Port,a3		port address
+	movea.l #CdDrive_Port,a3		port address
 	os9 F$IRQ
 	bcc.s _Init_IRQ_NoError
 	moveq #0,d0
@@ -50,7 +50,7 @@ _Init_IRQ_NoError
 	clr.l V_APMask(a5)		Audio channel mask
 	clr.b V_PlayFlag(a5)	Play in progress flag
 	clr.b V_Paused(a5)		Drive paused flag
-	move.b #CdfmDriver_Priority,V_IRQlv(a5)		Hardware interrupt level
+	move.b #CdDrive_Priority,V_IRQlv(a5)		Hardware interrupt level
 	clr.b V_ROMFlag(a5)		CDROM disc flag
 	clr.l V_SoundMap(a5)	Pointer to current playing soundmap descriptor
 	clr.w V_ASigPrc(a5)		Process identifier for audio signal
@@ -69,16 +69,16 @@ Write
 	rts
 
 GetStat
-	softcdi Ucm_GetStat
+	softcdi CdfmDeviceDriver_GetStat
 	rts
 
 SetStat
-	softcdi Ucm_SetStat
+	softcdi CdfmDeviceDriver_SetStat
 	rts
 
 Term
 * Remove IRQ entry
-	move.b #CdfmDriver_Vector,d0		Vector number
+	move.b #CdDrive_Vector,d0		Vector number
 	movea.l #0,a0		delete IRQ service routine entry point
 *						device static storage is already in a2
 	os9 F$IRQ
@@ -201,7 +201,7 @@ _Irq_ProcessPCL
 * Copy from CD drive to memory
 	adda.l PCL_Cnt(a5),a0
 	move.l d4,d0				Buffer size is the size of the excepted sector
-	softcdi CdDrive_DmaSector
+	softcdi CdDrive_CopySector
 	move.b d6,PCL_Smode(a5)
 	move.b d7,PCL_Type(a5)
 * PCB_Rec is decremented below because I need its value there
