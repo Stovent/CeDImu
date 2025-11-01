@@ -281,8 +281,8 @@ std::string systemCallInputsToString(const SystemCallType call, const std::map<S
     case SystemCallType::I_Write:   snprintf(args, 256, "d0.w=%hu d1.l=%u a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
     case SystemCallType::I_ReadLn:  snprintf(args, 256, "d0.w=%hu d1.l=%u a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
     case SystemCallType::I_WritLn:  snprintf(args, 256, "d0.w=%hu d1.l=%u a0=0x%X", REG(D0), REG(D1), REG(A0)); break;
-    case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.w=%hu d1.w=%hu (%s) d2.w=%hu d3.l=%u a0=0x%X", REG(D0), REG(D1), sttFunctionToString(REG(D1)).c_str(), REG(D2), REG(D3), REG(A0)); break;
-    case SystemCallType::I_SetStt:  snprintf(args, 256, "d0.w=%hu d1.w=%hu (%s) d2.l=%u d3.w=%hu d4.l=%u a0=0x%X a1=0x%X", REG(D0), REG(D1), sttFunctionToString(REG(D1)).c_str(), REG(D2), REG(D3), REG(D4), REG(A0), REG(A1)); break;
+    case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.w=%hu d1.w=%hu (%s) d2.w=%hu d3.l=%u a0=0x%X", REG(D0), REG(D1), getStatServiceRequestToString(REG(D1)).c_str(), REG(D2), REG(D3), REG(A0)); break;
+    case SystemCallType::I_SetStt:  snprintf(args, 256, "d0.w=%hu d1.w=%hu (%s) d2.l=%u d3.w=%hu d4.l=%u a0=0x%X a1=0x%X", REG(D0), REG(D1), setStatServiceRequestToString(REG(D1)).c_str(), REG(D2), REG(D3), REG(D4), REG(A0), REG(A1)); break;
     case SystemCallType::I_Close:   snprintf(args, 256, "d0.w=%hu", REG(D0)); break;
     default: snprintf(args, 256, "Unknown system call %d", static_cast<int>(call));
     }
@@ -384,8 +384,8 @@ std::string systemCallOutputsToString(const SystemCallType call, const std::map<
     case SystemCallType::I_Write:   snprintf(args, 256, "d1.l=%u", REG(D1)); break;
     case SystemCallType::I_ReadLn:  snprintf(args, 256, "d1.l=%u", REG(D1)); break;
     case SystemCallType::I_WritLn:  snprintf(args, 256, "d1.l=%u", REG(D1)); break;
-    case SystemCallType::I_GetStt:  snprintf(args, 256, "d0.l=%u d1.l=%u d2.l=%u", REG(D0), REG(D1), REG(D2)); break;
-    case SystemCallType::I_SetStt:  snprintf(args, 256, "d0.l=%u d1.l=%u d2.l=%u", REG(D0), REG(D1), REG(D2)); break;
+    case SystemCallType::I_GetStt:  snprintf(args, 256, "a0=%X a1=%X d0.l=%u d1.l=%u d2.l=%u d3.l=%u d4.l=%u", REG(A0), REG(A1), REG(D0), REG(D1), REG(D2), REG(D3), REG(D4)); break;
+    case SystemCallType::I_SetStt:  snprintf(args, 256, "a0=%X a1=%X d0.l=%u d1.l=%u d2.l=%u d3.l=%u d4.l=%u", REG(A0), REG(A1), REG(D0), REG(D1), REG(D2), REG(D3), REG(D4)); break;
     case SystemCallType::I_Close:   return "";
     default: snprintf(args, 256, "Unknown system call %d", static_cast<int>(call));
     }
