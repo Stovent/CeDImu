@@ -188,7 +188,7 @@ public:
     std::array<bool, 2> m_matteFlags{};
     std::array<uint8_t, 2> m_nextMatte{};
     constexpr void ResetMatte() noexcept;
-    template<ImagePlane PLANE> constexpr void HandleMatte(uint16_t pos) noexcept;
+    template<ImagePlane PLANE> void HandleMatte(uint16_t pos) noexcept;
 
     void HandleMatteAndTransparency(uint16_t lineNumber) noexcept;
     template<TransparentIf TRANSPARENCY_A, bool FLAG_A>
@@ -260,6 +260,10 @@ protected:
 
     /** \brief Masks the given color to the actually used bytes (V.5.7.2.2). */
     static constexpr uint32_t clutColorKey(const uint32_t color) { return color & 0x00FC'FCFCu; }
+
+    static constexpr uint8_t matteOp(const uint32_t matteCommand) noexcept { return bits<20, 23>(matteCommand); }
+    static constexpr uint8_t matteICF(const uint32_t matteCommand) noexcept { return bits<10, 15>(matteCommand); }
+    static constexpr uint16_t matteXPosition(const uint32_t matteCommand) noexcept { return bits<0, 9>(matteCommand); }
 };
 
 /** \brief Converts the 4-bits backdrop/cursor color to a Pixel.

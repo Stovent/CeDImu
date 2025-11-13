@@ -21,6 +21,18 @@ public:
     uint16_t DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept;
     template<bool MIX, bool PLANE_ORDER> void OverlayMix() noexcept;
     template<bool MIX, bool PLANE_ORDER, size_t WIDTH_REMINDER> void HandleOverlayMixSIMD() noexcept;
+
+    void HandleTransparencyPlaneASIMD() noexcept;
+    void HandleTransparencyPlaneBSIMD() noexcept;
+    template<Renderer::ImagePlane PLANE, Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG>
+    void HandleTransparencyLoopSIMD() noexcept;
+
+    template<bool TWO_MATTES>
+    void HandleMatteSIMD() noexcept;
+    template<bool TWO_MATTES>
+    bool ExecuteMatteCommand(uint32_t command, bool mf) noexcept;
+
+    std::array<std::array<bool, Plane::MAX_WIDTH>, 2> m_matteFlagsLine{}; /**< Matte flags for the whole line. */
 };
 
 } // namespace Video

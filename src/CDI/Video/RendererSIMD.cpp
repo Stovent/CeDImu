@@ -161,7 +161,13 @@ void RendererSIMD::DrawCursor() noexcept
 template<bool MIX, bool PLANE_ORDER>
 void RendererSIMD::OverlayMix() noexcept
 {
-    HandleMatteAndTransparency(m_lineNumber);
+    if(m_matteNumber)
+        HandleMatteSIMD<true>();
+    else
+        HandleMatteSIMD<false>();
+
+    HandleTransparencyPlaneASIMD();
+    HandleTransparencyPlaneBSIMD();
 
     switch(m_plane[A].m_width)
     {
@@ -464,7 +470,7 @@ static constexpr void applyICFOverlaySIMDCast(Pixel* screen, const Pixel* planeF
     result.copy_to(screen->AsU32Pointer(), stdx::element_aligned);
 }
 
-/** \brief Dispatches the correct over or mix SIMD algorithm.
+/** \brief Dispatches the correct overlay or mix SIMD algorithm.
  * \tparam MIX true to use mixing, false to use overlay.
  * \tparam PLANE_ORDER true when plane B in front of plane A, false for A in front of B.
  * \tparam WIDTH_REMINDER The width in pixels of the line module the native SIMD Pixel size.
@@ -514,6 +520,363 @@ void RendererSIMD::HandleOverlayMixSIMD() noexcept
             applyICFMixSIMDShift<SIMDFixedPixelSigned<WIDTH_REMINDER>>(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
         else
             applyICFOverlaySIMDShift<SIMDFixedPixelSigned<WIDTH_REMINDER>>(screen, planeFront, planeBack, icfFront, icfBack, m_backdropPlane.GetLinePointer(m_lineNumber)->AsU32());
+    }
+}
+
+/** \brief Executes the given matte command.
+ * \tparam TWO_MATTES true for two mattes, false for one matte.
+ * \param command The command to execute.
+ * \param mf The matte flag to modifiy (used only when TWO_MATTES is true).
+ * \return true if upper registers are to be ignored (command 0).
+ */
+template<bool TWO_MATTES>
+bool RendererSIMD::ExecuteMatteCommand(const uint32_t command, bool mf) noexcept
+{
+    if constexpr(!TWO_MATTES)
+        mf = matteMF(command);
+
+    const uint8_t op = matteOp(command);
+    switch(op)
+    {
+    case 0b0000:
+        return true;
+
+    case 0b0100:
+        m_icf[A] = matteICF(command);
+        break;
+
+    case 0b0110:
+        m_icf[B] = matteICF(command);
+        break;
+
+    case 0b1000:
+        m_matteFlags[mf] = false;
+        break;
+
+    case 0b1001:
+        m_matteFlags[mf] = true;
+        break;
+
+    case 0b1100:
+        m_icf[A] = matteICF(command);
+        m_matteFlags[mf] = false;
+        break;
+
+    case 0b1101:
+        m_icf[A] = matteICF(command);
+        m_matteFlags[mf] = true;
+        break;
+
+    case 0b1110:
+        m_icf[B] = matteICF(command);
+        m_matteFlags[mf] = false;
+        break;
+
+    case 0b1111:
+        m_icf[B] = matteICF(command);
+        m_matteFlags[mf] = true;
+        break;
+    }
+
+    return false;
+}
+
+template<bool TWO_MATTES>
+void RendererSIMD::HandleMatteSIMD() noexcept
+{
+    // No need to reset m_matteFlagsLine to false.
+
+    size_t nextMatte = 0; // Used when 1 matte.
+
+    size_t nextMatte0 = 0; // Used when 2 mattes.
+    size_t nextMatte1 = MATTE_HALF;
+    size_t nextChange0 = matteXPosition(m_matteControl[nextMatte0]);
+    size_t nextChange1 = matteXPosition(m_matteControl[nextMatte1]);
+
+    for(size_t x = 0; x < m_screen.m_width;)
+    {
+        size_t nextChange = m_screen.m_width;
+
+        if constexpr(TWO_MATTES)
+        {
+            if(nextMatte0 < MATTE_HALF)
+            {
+                const uint32_t command0 = m_matteControl[nextMatte0];
+                const uint16_t xPos0 = matteXPosition(command0);
+
+                if(xPos0 == x) // [[unlikely]]
+                {
+                    const bool disregard = ExecuteMatteCommand<TWO_MATTES>(command0, false); // false for matte 0.
+
+                    ++nextMatte0;
+                    if(disregard || nextMatte0 >= MATTE_HALF)
+                        nextChange0 = m_screen.m_width;
+                    else
+                        nextChange0 = matteXPosition(m_matteControl[nextMatte0]);
+                }
+                // else
+                //     nextChange0 = xPos0;
+            }
+            else
+                nextChange0 = m_screen.m_width;
+
+            if(nextMatte1 < MATTE_NUM)
+            {
+                const uint32_t command1 = m_matteControl[nextMatte1];
+                const uint16_t xPos1 = matteXPosition(command1);
+
+                if(xPos1 == x) // [[unlikely]]
+                {
+                    const bool disregard = ExecuteMatteCommand<TWO_MATTES>(command1, true); // true for matte 1.
+
+                    ++nextMatte1;
+                    if(disregard || nextMatte1 >= MATTE_NUM)
+                        nextChange1 = m_screen.m_width;
+                    else
+                        nextChange1 = matteXPosition(m_matteControl[nextMatte1]);
+                }
+                // else
+                //     nextChange1 = xPos1;
+            }
+            else
+                nextChange1 = m_screen.m_width;
+
+            // Sometimes the next register has a lower position.
+            if(nextChange0 <= x)
+                nextChange0 = m_screen.m_width;
+            if(nextChange1 <= x)
+                nextChange1 = m_screen.m_width;
+            nextChange = std::min(nextChange0, nextChange1);
+        }
+        else
+        {
+            const uint32_t command = m_matteControl[nextMatte];
+            const uint16_t xPos = matteXPosition(command);
+
+            if(xPos == x) // [[unlikely]]
+            {
+                const bool disregard = ExecuteMatteCommand<TWO_MATTES>(command, false); // false is unused with one matte.
+
+                ++nextMatte;
+                if(!disregard && nextMatte < m_matteControl.size())
+                    nextChange = matteXPosition(m_matteControl[nextMatte]);
+            }
+            else
+                nextChange = xPos;
+        }
+
+        for(; x < nextChange; ++x)
+        {
+            m_icfLine[A][x] = m_icf[A];
+            m_icfLine[B][x] = m_icf[B];
+            m_matteFlagsLine[A][x] = m_matteFlags[A];
+            m_matteFlagsLine[B][x] = m_matteFlags[B];
+        }
+    }
+}
+
+/** \brief Dispatch transparency of plane A. */
+void RendererSIMD::HandleTransparencyPlaneASIMD() noexcept
+{
+    const bool booleanA = !bit<3>(m_transparencyControl[A]);
+    const uint8_t controlA = bits<0, 2>(m_transparencyControl[A]);
+
+    switch(static_cast<TransparentIf>(controlA))
+    {
+    case TransparentIf::AlwaysNever: // Always/Never.
+        if(booleanA)
+            HandleTransparencyLoopSIMD<A, TransparentIf::AlwaysNever, true>();
+        else
+            HandleTransparencyLoopSIMD<A, TransparentIf::AlwaysNever, false>();
+        break;
+
+    case TransparentIf::ColorKey: // Color Key.
+        if(booleanA)
+            HandleTransparencyLoopSIMD<A, TransparentIf::ColorKey, true>();
+        else
+            HandleTransparencyLoopSIMD<A, TransparentIf::ColorKey, false>();
+        break;
+
+    case TransparentIf::TransparencyBit: // Transparent Bit.
+        // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
+        // TODO: disable if not RGB555.
+        if(booleanA)
+            HandleTransparencyLoopSIMD<A, TransparentIf::TransparencyBit, true>();
+        else
+            HandleTransparencyLoopSIMD<A, TransparentIf::TransparencyBit, false>();
+        break;
+
+    case TransparentIf::MatteFlag0: // Matte Flag 0.
+        if(booleanA)
+            HandleTransparencyLoopSIMD<A, TransparentIf::MatteFlag0, true>();
+        else
+            HandleTransparencyLoopSIMD<A, TransparentIf::MatteFlag0, false>();
+        break;
+
+    case TransparentIf::MatteFlag1: // Matte Flag 1.
+        if(booleanA)
+            HandleTransparencyLoopSIMD<A, TransparentIf::MatteFlag1, true>();
+        else
+            HandleTransparencyLoopSIMD<A, TransparentIf::MatteFlag1, false>();
+        break;
+
+    case TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
+        if(booleanA)
+            HandleTransparencyLoopSIMD<A, TransparentIf::MatteFlag0OrColorKey, true>();
+        else
+            HandleTransparencyLoopSIMD<A, TransparentIf::MatteFlag0OrColorKey, false>();
+        break;
+
+    case TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
+        if(booleanA)
+            HandleTransparencyLoopSIMD<A, TransparentIf::MatteFlag1OrColorKey, true>();
+        else
+            HandleTransparencyLoopSIMD<A, TransparentIf::MatteFlag1OrColorKey, false>();
+        break;
+
+    default: // Reserved.
+        std::unreachable();
+        break;
+    }
+}
+
+/** \brief Dispatch transparency of plane B. */
+void RendererSIMD::HandleTransparencyPlaneBSIMD() noexcept
+{
+    const bool booleanB = !bit<3>(m_transparencyControl[B]);
+    const uint8_t controlB = bits<0, 2>(m_transparencyControl[B]);
+
+    switch(static_cast<TransparentIf>(controlB))
+    {
+    case TransparentIf::AlwaysNever: // Always/Never.
+        if(booleanB)
+            HandleTransparencyLoopSIMD<B, TransparentIf::AlwaysNever, true>();
+        else
+            HandleTransparencyLoopSIMD<B, TransparentIf::AlwaysNever, false>();
+        break;
+
+    case TransparentIf::ColorKey: // Color Key.
+        if(booleanB)
+            HandleTransparencyLoopSIMD<B, TransparentIf::ColorKey, true>();
+        else
+            HandleTransparencyLoopSIMD<B, TransparentIf::ColorKey, false>();
+        break;
+
+    case TransparentIf::TransparencyBit: // Transparent Bit.
+        // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
+        // TODO: disable if not RGB555.
+        if(booleanB)
+            HandleTransparencyLoopSIMD<B, TransparentIf::TransparencyBit, true>();
+        else
+            HandleTransparencyLoopSIMD<B, TransparentIf::TransparencyBit, false>();
+        break;
+
+    case TransparentIf::MatteFlag0: // Matte Flag 0.
+        if(booleanB)
+            HandleTransparencyLoopSIMD<B, TransparentIf::MatteFlag0, true>();
+        else
+            HandleTransparencyLoopSIMD<B, TransparentIf::MatteFlag0, false>();
+        break;
+
+    case TransparentIf::MatteFlag1: // Matte Flag 1.
+        if(booleanB)
+            HandleTransparencyLoopSIMD<B, TransparentIf::MatteFlag1, true>();
+        else
+            HandleTransparencyLoopSIMD<B, TransparentIf::MatteFlag1, false>();
+        break;
+
+    case TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
+        if(booleanB)
+            HandleTransparencyLoopSIMD<B, TransparentIf::MatteFlag0OrColorKey, true>();
+        else
+            HandleTransparencyLoopSIMD<B, TransparentIf::MatteFlag0OrColorKey, false>();
+        break;
+
+    case TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
+        if(booleanB)
+            HandleTransparencyLoopSIMD<B, TransparentIf::MatteFlag1OrColorKey, true>();
+        else
+            HandleTransparencyLoopSIMD<B, TransparentIf::MatteFlag1OrColorKey, false>();
+        break;
+
+    default: // Reserved.
+        std::unreachable();
+        break;
+    }
+}
+
+/** \brief Actually handles the transparency for a plane statically. */
+template<Renderer::ImagePlane PLANE, Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG>
+void RendererSIMD::HandleTransparencyLoopSIMD() noexcept
+{
+    constexpr SIMDNativePixelMask FLAG{BOOL_FLAG};
+    constexpr SIMDNativePixel SET_ALPHA{0xFF'00'00'00};
+    constexpr SIMDNativePixel CLEAR_ALPHA{0x00'FF'FF'FF};
+    constexpr SIMDNativePixel COLOR_KEY_MASK{0x00'FC'FC'FC};
+    const SIMDNativePixel colorMask{m_maskColorRgb[PLANE] & COLOR_KEY_MASK};
+    const SIMDNativePixel transparentColor{(m_transparentColorRgb[PLANE] & COLOR_KEY_MASK) | colorMask};
+
+    Pixel* plane = m_plane[PLANE].GetLinePointer(m_lineNumber);
+    for(uint16_t i = 0; i < m_plane[PLANE].m_width; i += SIMDNativePixel::size(), plane += SIMDNativePixel::size())
+    {
+        SIMDNativePixel pixel{plane, stdx::element_aligned};
+        pixel |= 0xFF'00'00'00; // Set to visible.
+
+        const SIMDNativePixelMask colorKey = ((pixel & COLOR_KEY_MASK) | colorMask) == transparentColor;
+
+        switch(TRANSPARENT)
+        {
+        case TransparentIf::AlwaysNever: // Always/Never.
+            stdx::where(FLAG, pixel) &= CLEAR_ALPHA;
+            break;
+
+        case TransparentIf::ColorKey: // Color Key.
+            stdx::where(colorKey == FLAG, pixel) &= CLEAR_ALPHA;
+            break;
+
+        case TransparentIf::TransparencyBit: // Transparent Bit.
+        {
+            // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
+            // TODO: disable if not RGB555.
+            const SIMDNativePixelMask mask = ((pixel & SET_ALPHA) != 0) == FLAG;
+            stdx::where(mask, pixel) &= CLEAR_ALPHA;
+            break;
+        }
+
+        case TransparentIf::MatteFlag0: // Matte Flag 0.
+        {
+            const SIMDNativePixelMask matte{m_matteFlagsLine[A].data() + i, stdx::element_aligned};
+            stdx::where(matte == FLAG, pixel) &= CLEAR_ALPHA;
+            break;
+        }
+
+        case TransparentIf::MatteFlag1: // Matte Flag 1.
+        {
+            const SIMDNativePixelMask matte{m_matteFlagsLine[B].data() + i, stdx::element_aligned};
+            stdx::where(matte == FLAG, pixel) &= CLEAR_ALPHA;
+            break;
+        }
+
+        case TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
+        {
+            const SIMDNativePixelMask matte{m_matteFlagsLine[A].data() + i, stdx::element_aligned};
+            stdx::where(matte == FLAG || colorKey == FLAG, pixel) &= CLEAR_ALPHA;
+            break;
+        }
+
+        case TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
+        {
+            const SIMDNativePixelMask matte{m_matteFlagsLine[B].data() + i, stdx::element_aligned};
+            stdx::where(matte == FLAG || colorKey == FLAG, pixel) &= CLEAR_ALPHA;
+            break;
+        }
+
+        default: // Reserved.
+            std::unreachable();
+            break;
+        }
+
+        pixel.copy_to(plane->AsU32Pointer(), stdx::element_aligned);
     }
 }
 

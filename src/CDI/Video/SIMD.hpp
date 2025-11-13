@@ -27,6 +27,7 @@ namespace Video
 
 namespace stdx = std::experimental;
 using SIMDNativePixel = stdx::native_simd<Pixel::ARGB32>;
+using SIMDNativePixelMask = SIMDNativePixel::mask_type;
 using SIMDNativePixelSigned = stdx::native_simd<std::make_signed_t<Pixel::ARGB32>>;
 template<size_t WIDTH>
 using SIMDFixedPixelSigned = stdx::fixed_size_simd<std::make_signed_t<Pixel::ARGB32>, WIDTH>;

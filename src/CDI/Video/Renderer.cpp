@@ -349,25 +349,11 @@ void Renderer::HandleMatteAndTransparencyLoop(const uint16_t lineNumber) noexcep
     }
 }
 
-static constexpr uint8_t matteOp(const uint32_t matteCommand) noexcept
-{
-    return bits<20, 23>(matteCommand);
-}
-
-static constexpr uint8_t matteICF(const uint32_t matteCommand) noexcept
-{
-    return bits<10, 15>(matteCommand);
-}
-
-static constexpr uint16_t matteXPosition(const uint32_t matteCommand) noexcept
-{
-    return bits<0, 9>(matteCommand);
-}
-
 /** \brief Handles the matte flags for the given plane at the given pixel position.
  * \param pos The current pixel position (in double resolution).
  */
-template<Renderer::ImagePlane PLANE> constexpr void Renderer::HandleMatte(uint16_t pos) noexcept
+template<Renderer::ImagePlane PLANE>
+void Renderer::HandleMatte(uint16_t pos) noexcept
 {
     if(!m_matteNumber) // One matte.
     {
