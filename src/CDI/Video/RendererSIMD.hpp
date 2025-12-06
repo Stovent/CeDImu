@@ -22,10 +22,14 @@ public:
     template<bool MIX, bool PLANE_ORDER> void OverlayMix() noexcept;
     template<bool MIX, bool PLANE_ORDER, size_t WIDTH_REMINDER> void HandleOverlayMixSIMD() noexcept;
 
+    template<size_t WIDTH_REM>
     void HandleTransparencyPlaneASIMD() noexcept;
+    template<size_t WIDTH_REM>
     void HandleTransparencyPlaneBSIMD() noexcept;
-    template<Renderer::ImagePlane PLANE, Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG>
+    template<size_t WIDTH_REM, ImagePlane PLANE, TransparentIf TRANSPARENT, bool BOOL_FLAG>
     void HandleTransparencyLoopSIMD() noexcept;
+    template<TransparentIf TRANSPARENT, bool BOOL_FLAG, typename SIMD>
+    void HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA, const bool* matteFlagsB, SIMD colorMask, SIMD transparentColor) noexcept;
 
     template<bool TWO_MATTES>
     void HandleMatteSIMD() noexcept;

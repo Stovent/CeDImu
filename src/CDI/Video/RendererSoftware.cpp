@@ -155,6 +155,7 @@ static constexpr void applyICF(Pixel& pixel, const int icf) noexcept
 /** \brief Apply mixing to the given color components after ICF (V.5.9.1). */
 static constexpr void mix(Pixel& dst, const Pixel a, const Pixel b) noexcept
 {
+    dst.a = Renderer::PIXEL_FULL_INTENSITY;
     dst.r = limu8(a.r + b.r - 16);
     dst.g = limu8(a.g + b.g - 16);
     dst.b = limu8(a.b + b.b - 16);
@@ -194,32 +195,32 @@ void RendererSoftware::OverlayMix() noexcept
             bp = b;
         }
 
+        // Plane transparency is either 0 or 255.
+        // Backdrop is always visible.
+        Pixel pixel;
         if constexpr(MIX)
         {
-            if(fp.a == 0 && bp.a == 0) // Front and back plane transparent: only show background.
+            // When mixing transparent pixels are black (V.5.9.1).
+            if(fp.a == 0 && bp.a == 0) // Front and back planes transparent: only show background.
             {
-                *screen++ = backdrop;
+                pixel = backdrop;
             }
-            else
+            else if(fp.a == 0) // Front plane transparent: only back plane.
             {
-                if(fp.a == 0) // When mixing transparent pixels are black (V.5.9.1).
-                {
-                    fp = BLACK_PIXEL;
-                }
-
-                if(bp.a == 0)
-                {
-                    bp = BLACK_PIXEL;
-                }
-
-                mix(*screen++, fp, bp);
+                pixel = bp;
+            }
+            else if(bp.a == 0) // Back plane transparent: only front plane.
+            {
+                pixel = fp;
+            }
+            else // Both planes visible: mix them.
+            {
+                mix(pixel, fp, bp);
             }
         }
         else // Overlay.
         {
-            Pixel pixel;
-            // Plane transparency is either 0 or 255.
-            if(fp.a == 0 && bp.a == 0) // Front and back plane transparent: only show background.
+            if(fp.a == 0 && bp.a == 0) // Front and back planes transparent: only show background.
             {
                 pixel = backdrop;
             }
@@ -231,8 +232,8 @@ void RendererSoftware::OverlayMix() noexcept
             {
                 pixel = fp;
             }
-            *screen++ = pixel;
         }
+        *screen++ = pixel; // Should always have the transparency component to 255.
     }
 }
 
