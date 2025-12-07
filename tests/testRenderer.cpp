@@ -190,7 +190,7 @@ static constexpr void configureTwoMattes(Video::Renderer& renderer) noexcept
     renderer.m_matteControl[7] = makeCommand(0b0110, false, 63, 8); // ICF B 63, ignored.
 }
 
-static constexpr void configureCLUT(Video::Renderer& renderer) noexcept
+static void configureCLUT(Video::Renderer& renderer) noexcept
 {
     renderer.m_backdropColor = 0b1001; // Blue.
     renderer.m_codingMethod[PLANEA] = ICM(CLUT7);
@@ -283,7 +283,7 @@ TEST_CASE("Matte", "[Video]")
             std::array<Video::Pixel, 768> array{
                 HIDDEN_RED, HIDDEN_RED, RED, RED,
             };
-            std::fill(array.data() + 4, array.end(), RED);
+            std::fill(array.begin() + 4, array.end(), RED);
             return array;
         }();
         constexpr std::array<Video::Pixel, 768> EXPECTED_B = [] () {

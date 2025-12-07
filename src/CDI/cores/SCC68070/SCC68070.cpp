@@ -358,37 +358,37 @@ void SCC68070::DumpCPURegisters()
 void SCC68070::SetS(const bool S)
 {
     SR &= 0b1101'1111'1111'1111;
-    SR |= S << 13;
+    SR |= static_cast<uint16_t>(S) << 13;
 }
 
 void SCC68070::SetX(const bool X)
 {
     SR &= 0b1111'1111'1110'1111;
-    SR |= X << 4;
+    SR |= static_cast<uint16_t>(X) << 4;
 }
 
 void SCC68070::SetN(const bool N)
 {
     SR &= 0b1111'1111'1111'0111;
-    SR |= N << 3;
+    SR |= static_cast<uint16_t>(N) << 3;
 }
 
 void SCC68070::SetZ(const bool Z)
 {
     SR &= 0b1111'1111'1111'1011;
-    SR |= Z << 2;
+    SR |= static_cast<uint16_t>(Z) << 2;
 }
 
 void SCC68070::SetV(const bool V)
 {
     SR &= 0b1111'1111'1111'1101;
-    SR |= V << 1;
+    SR |= static_cast<uint16_t>(V) << 1;
 }
 
 void SCC68070::SetC(const bool C)
 {
     SR &= 0b1111'1111'1111'1110;
-    SR |= C;
+    SR |= static_cast<uint16_t>(C);
 }
 
 void SCC68070::SetXC(const bool XC)

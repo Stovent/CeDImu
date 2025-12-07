@@ -2284,14 +2284,14 @@ uint16_t SCC68070::ROXm()
     {
         const uint16_t msb = data & 0x8000;
         data <<= 1;
-        data |= GetX();
+        data |= static_cast<uint16_t>(GetX());
         SetXC(msb);
     }
     else // Right
     {
         const uint16_t lsb = data & 1;
         data >>= 1;
-        data |= GetX() << 15;
+        data |= static_cast<uint16_t>(GetX()) << 15;
         SetXC(lsb);
     }
 
@@ -2338,7 +2338,7 @@ uint16_t SCC68070::ROXr()
         {
             const uint32_t msb = data & msbMask;
             data <<= 1;
-            data |= GetX();
+            data |= static_cast<uint32_t>(GetX());
             SetXC(msb);
         }
     }
@@ -2348,7 +2348,7 @@ uint16_t SCC68070::ROXr()
         {
             const uint32_t lsb = data & 1;
             data >>= 1;
-            data |= GetX() << msbShift;
+            data |= static_cast<uint32_t>(GetX()) << msbShift;
             SetXC(lsb);
         }
     }

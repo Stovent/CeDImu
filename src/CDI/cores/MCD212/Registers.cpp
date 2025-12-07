@@ -119,7 +119,7 @@ std::vector<InternalRegister> MCD212::GetControlRegisters() const
 
     for(size_t i = 0; i < m_renderer.m_cursorPatterns.size(); i++)
         registers.emplace_back("Cursor Pattern " + std::to_string(i), CursorPattern + 0x80, m_renderer.m_cursorPatterns[i], "");
-    for(size_t i = 0; i < m_renderer.m_matteControl.size(); i++)
+    for(uint32_t i = 0; i < m_renderer.m_matteControl.size(); i++)
         registers.emplace_back("Region Control " + std::to_string(i), RegionControl + 0x80 + i, m_renderer.m_matteControl[i], "");
 
     registers.emplace_back("Backdrop Color",                    BackdropColor              + 0x80, m_renderer.m_backdropColor, "");
