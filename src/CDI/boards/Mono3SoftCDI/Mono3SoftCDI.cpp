@@ -14,8 +14,8 @@ static OS9::BIOS makeMono3SoftCDIBIOS(OS9::BIOS mono3)
     if(!mono3.ReplaceModule(PT2))
         throw std::invalid_argument("can't replace PT2");
 
-    if(!mono3.ReplaceModule(SYSGO))
-        throw std::invalid_argument("can't replace SYSGO");
+    // if(!mono3.ReplaceModule(LAUNCHER))
+    //     throw std::invalid_argument("can't replace LAUNCHER");
 
     if(!mono3.ReplaceModule(VID))
         throw std::invalid_argument("can't replace VID");

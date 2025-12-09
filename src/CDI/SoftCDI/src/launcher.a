@@ -1,4 +1,4 @@
-	nam sysgo
+	nam launcher
 	use c:\DEFS\OSKDEFS.D
 	use "softcdi.d"
 	use "softcdi.m"
@@ -13,7 +13,7 @@ stdin		equ	0
 stdout		equ	1
 stderr		equ	2
 
-	psect sysgo,typelang,attrrevs,edition,stacksize,entrypt
+	psect launcher,typelang,attrrevs,edition,stacksize,entrypt
 
 Main
 	moveq #Write_,d0
