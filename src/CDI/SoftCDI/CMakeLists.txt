@@ -24,22 +24,22 @@ if(LIBCEDIMU_REBUILD_SOFTCDI)
 
     set(SOFTCDI_SOURCES
         src/ciapdriv.a
+        # src/launcher.a
         src/pt2.a
         src/softcdi.d
         src/softcdi.m
         # csd_450.a
         # nvdrv.a
-        src/sysgo.a
         src/vid.a
         # video.a
     )
 
     set(SOFTCDI_MODULES
         build/CIAPDRIV
+        # build/LAUNCHER
         build/PT2
         # build/CSD_450
         # build/NVDRV
-        build/SYSGO
         build/VID
         # build/VIDEO
     )

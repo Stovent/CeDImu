@@ -58,7 +58,7 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
 
     // Add custom mdules.
     bios.append_range(CIAPDRIV);
-    bios.append_range(SYSGO);
+    // bios.append_range(LAUNCHER);
 
     /*// Add dummy module.
     const OS9::ModuleHeader& dummy = mono3.GetModules().back();
