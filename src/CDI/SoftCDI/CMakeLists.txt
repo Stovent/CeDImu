@@ -23,18 +23,24 @@ if(LIBCEDIMU_REBUILD_SOFTCDI)
     message(STATUS "found R68 at ${R68}")
 
     set(SOFTCDI_SOURCES
-        ciapdriv.a
+        src/ciapdriv.a
+        src/pt2.a
+        src/softcdi.d
+        src/softcdi.m
         # csd_450.a
         # nvdrv.a
-        sysgo.a
+        src/sysgo.a
+        src/vid.a
         # video.a
     )
 
     set(SOFTCDI_MODULES
         build/CIAPDRIV
+        build/PT2
         # build/CSD_450
         # build/NVDRV
         build/SYSGO
+        build/VID
         # build/VIDEO
     )
 
@@ -50,7 +56,7 @@ if(LIBCEDIMU_REBUILD_SOFTCDI)
         -c "exit"
 
         DEPENDS ${SOFTCDI_SOURCES}
-        BYPRODUCTS ${SOFTCDI_MODULES} modules.hpp
+        BYPRODUCTS ${SOFTCDI_MODULES}
     )
     add_dependencies(SoftCDI GenerateSoftCDI)
 endif()

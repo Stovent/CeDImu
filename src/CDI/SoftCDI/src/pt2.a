@@ -1,0 +1,34 @@
+	nam pt2
+	use c:\DEFS\OSKDEFS.D
+	use "softcdi.d"
+	use "softcdi.m"
+
+typelang	equ	(Devic<<8)
+attrrevs	equ	((ReEnt)<<8)+$99
+edition		equ	0
+stacksize	equ	0
+
+	psect pt2,typelang,attrrevs,edition,stacksize,0
+
+	dc.l	Slave_Port		Port Address
+	dc.b	Slave_Vector	Trap Vector Number
+	dc.b	Slave_IRQLevel	IRQ Interrupt Level
+	dc.b	Slave_Priority	IRQ Polling Priority
+	dc.b	3		Device Mode Capabilities
+	dc.w	UCMFM	File Manager Name Offset
+	dc.w	PT2DRIV	Device Driver Name Offset
+	dc.w	DevCon	Device Configuration Offset
+	dz.b	8		Reserved
+	dc.w	$24		Initialization Table Size
+	dc.b	DT_UCM	Device Type
+* UCM Device descriptor Option
+	dz.b	$1B		Reserved
+	dc.b	FC_PNTR		Classes of functions of which device is capable
+	dz.b	1		Reserved
+	dc.w	0		Offset to second device name
+	dc.w	0		Offset to third device name
+	dz.w	1		Reserved
+
+UCMFM	dc.b	"ucm",0
+PT2DRIV	dc.b	"pt2driv",0
+DevCon	dc.w	$030B

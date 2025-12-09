@@ -1,7 +1,7 @@
 	nam ciapdriv
 	use c:\DEFS\OSKDEFS.D
-	use softcdi.d
-	use softcdi.m
+	use "softcdi.d"
+	use "softcdi.m"
 
 typelang	equ	(Drivr<<8)+Objct
 attrrevs	equ	((ReEnt+SupStat)<<8)+$99 Not reentrant
