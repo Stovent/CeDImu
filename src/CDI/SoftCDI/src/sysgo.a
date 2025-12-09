@@ -1,7 +1,7 @@
 	nam sysgo
 	use c:\DEFS\OSKDEFS.D
-	use softcdi.d
-	use softcdi.m
+	use "softcdi.d"
+	use "softcdi.m"
 
 typelang	equ	(Prgrm<<8)+Objct
 attrrevs	equ	(ReEnt<<8)+$99

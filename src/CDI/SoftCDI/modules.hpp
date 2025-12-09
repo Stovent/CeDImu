@@ -9,13 +9,19 @@ inline constexpr uint8_t CIAPDRIV_DATA[] = {
 };
 inline constexpr std::span<const uint8_t> CIAPDRIV{CIAPDRIV_DATA};
 
-// #include "../../SoftCDI/include/CSD_450.h"
-// #include "../../SoftCDI/include/NVDRV.h"
-// #include "../../SoftCDI/include/VIDEO.h"
+inline constexpr uint8_t PT2_DATA[] = {
+#embed "build/PT2"
+};
+inline constexpr std::span<const uint8_t> PT2{PT2_DATA};
 
 inline constexpr uint8_t SYSGO_DATA[] = {
 #embed "build/SYSGO"
 };
 inline constexpr std::span<const uint8_t> SYSGO{SYSGO_DATA};
+
+inline constexpr uint8_t VID_DATA[] = {
+#embed "build/VID"
+};
+inline constexpr std::span<const uint8_t> VID{VID_DATA};
 
 #endif // CDI_SOFTCDI_MODULES_HPP

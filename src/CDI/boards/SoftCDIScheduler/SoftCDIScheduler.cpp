@@ -1,5 +1,4 @@
 #include "SoftCDIScheduler.hpp"
-#include "../../SoftCDI/modules.hpp"
 
 #include <array>
 #include <cinttypes>
