@@ -86,14 +86,22 @@ void SoftCDIScheduler::CDDriveGetSubheader() noexcept
     m_cpu.SetRegister(D0, subheader);
 }
 
+/** \brief GB VII.3.1.5.4: D0 contains the function code. */
 void SoftCDIScheduler::CDFMDeviceDriverGetStat() noexcept
 {
     std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
-    std::println("CDFM Get stat {} {} {} {} {}", regs[D1], OS9::getStatServiceRequestToString(regs[D1]), regs[D2], regs[D3], regs[D4]);
+    std::println("CDFM Get stat {} {} {} {} {}",
+        OS9::getStatServiceRequestToString(regs[D0]),
+        OS9::subGetStatServiceRequestToString(regs[D0], regs[D1]),
+        regs[D2], regs[D3], regs[D4]);
 }
 
+/** \brief GB VII.3.1.5.4: D0 contains the function code. */
 void SoftCDIScheduler::CDFMDeviceDriverSetStat() noexcept
 {
     std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
-    std::println("CDFM Set stat {} {} {} {} {}", regs[D1], OS9::setStatServiceRequestToString(regs[D1]), regs[D2], regs[D3], regs[D4]);
+    std::println("CDFM Set stat {} {} {} {} {}",
+        OS9::setStatServiceRequestToString(regs[D0]),
+        OS9::subSetStatServiceRequestToString(regs[D0], regs[D1]),
+        regs[D2], regs[D3], regs[D4]);
 }
