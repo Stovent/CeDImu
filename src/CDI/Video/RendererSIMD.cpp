@@ -72,7 +72,7 @@ std::pair<uint16_t, uint16_t> RendererSIMD::DrawLine(const uint8_t* lineA, const
  *
  * lineA is only used when the decoding method is RGB555.
  */
-template<Renderer::ImagePlane PLANE>
+template<ImagePlane PLANE>
 uint16_t RendererSIMD::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept
 {
     if(m_codingMethod[PLANE] == ImageCodingMethod::OFF)
@@ -790,8 +790,11 @@ void RendererSIMD::HandleTransparencyPlaneBSIMD() noexcept
 
 static constexpr Pixel::ARGB32 COLOR_KEY_MASK = 0x00'FC'FC'FC;
 
+template<Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG, typename SIMD>
+constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA, const bool* matteFlagsB, SIMD colorMask, SIMD transparentColor) noexcept;
+
 /** \brief Actually handles the transparency for a plane statically. */
-template<size_t WIDTH_REM, Renderer::ImagePlane PLANE, Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG>
+template<size_t WIDTH_REM, ImagePlane PLANE, Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG>
 void RendererSIMD::HandleTransparencyLoopSIMD() noexcept
 {
     const SIMDNativePixel colorMask{m_maskColorRgb[PLANE] & COLOR_KEY_MASK};
@@ -817,10 +820,10 @@ void RendererSIMD::HandleTransparencyLoopSIMD() noexcept
         HandleTransparencySIMD<TRANSPARENT, BOOL_FLAG, SIMDFixedPixel<WIDTH_REM>>(plane, matteFlagsA, matteFlagsB, colorMaskFixed, transparentColorFixed);
     }
 }
-template void RendererSIMD::HandleTransparencyLoopSIMD<8, Renderer::A, Renderer::TransparentIf::AlwaysNever, false>() noexcept;
+template void RendererSIMD::HandleTransparencyLoopSIMD<8, A, Renderer::TransparentIf::AlwaysNever, false>() noexcept;
 
 template<Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG, typename SIMD>
-void RendererSIMD::HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA, const bool* matteFlagsB, SIMD colorMask, SIMD transparentColor) noexcept
+constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA, const bool* matteFlagsB, SIMD colorMask, SIMD transparentColor) noexcept
 {
     using MASK = SIMD::mask_type;
     constexpr MASK FLAG{BOOL_FLAG};
@@ -834,15 +837,15 @@ void RendererSIMD::HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA,
 
     switch(TRANSPARENT)
     {
-    case TransparentIf::AlwaysNever: // Always/Never.
+    case Renderer::TransparentIf::AlwaysNever: // Always/Never.
         stdx::where(FLAG, pixel) &= CLEAR_ALPHA;
         break;
 
-    case TransparentIf::ColorKey: // Color Key.
+    case Renderer::TransparentIf::ColorKey: // Color Key.
         stdx::where(colorKey == FLAG, pixel) &= CLEAR_ALPHA;
         break;
 
-    case TransparentIf::TransparencyBit: // Transparent Bit.
+    case Renderer::TransparentIf::TransparencyBit: // Transparent Bit.
     {
         // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
         // TODO: disable if not RGB555.
@@ -851,28 +854,28 @@ void RendererSIMD::HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA,
         break;
     }
 
-    case TransparentIf::MatteFlag0: // Matte Flag 0.
+    case Renderer::TransparentIf::MatteFlag0: // Matte Flag 0.
     {
         const MASK matte{matteFlagsA, stdx::element_aligned};
         stdx::where(matte == FLAG, pixel) &= CLEAR_ALPHA;
         break;
     }
 
-    case TransparentIf::MatteFlag1: // Matte Flag 1.
+    case Renderer::TransparentIf::MatteFlag1: // Matte Flag 1.
     {
         const MASK matte{matteFlagsB, stdx::element_aligned};
         stdx::where(matte == FLAG, pixel) &= CLEAR_ALPHA;
         break;
     }
 
-    case TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
+    case Renderer::TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
     {
         const MASK matte{matteFlagsA, stdx::element_aligned};
         stdx::where(matte == FLAG || colorKey == FLAG, pixel) &= CLEAR_ALPHA;
         break;
     }
 
-    case TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
+    case Renderer::TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
     {
         const MASK matte{matteFlagsB, stdx::element_aligned};
         stdx::where(matte == FLAG || colorKey == FLAG, pixel) &= CLEAR_ALPHA;

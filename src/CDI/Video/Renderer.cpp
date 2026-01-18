@@ -6,24 +6,6 @@
 namespace Video
 {
 
-/** \brief Configures the display format.
- * The input must only be a valid enum value.
- */
-void Renderer::SetDisplayFormat(const DisplayFormat display, const bool highResolution, bool fps60) noexcept
-{
-    if(!isValidDisplayFormat(display))
-        panic("Invalid display format {}", static_cast<int>(display));
-
-    m_displayFormat = display;
-    m_highResolution = highResolution;
-    m_60FPS = fps60;
-}
-
-bool Renderer::isValidDisplayFormat(const DisplayFormat display) noexcept
-{
-    return display == DisplayFormat::NTSCMonitor || display == DisplayFormat::NTSCTV || display == DisplayFormat::PAL;
-}
-
 /** \brief Increments the internal time of the cursor blink.
  * \param ns The time in nanosecond.
  */
@@ -65,81 +47,6 @@ const Plane& Renderer::RenderFrame() noexcept
     return m_screen;
 }
 
-/** \brief Enables or disables the cursor plane.
- * \param enabled true to enable, false to disable.
- */
-void Renderer::SetCursorEnabled(const bool enabled) noexcept
-{
-    m_cursorEnabled = enabled;
-}
-
-/** \brief Set the resolution of the cursor.
- * \param doubleResolution true for double/high resolution, false for normal resolution.
- */
-void Renderer::SetCursorResolution(const bool doubleResolution) noexcept
-{
-    if(doubleResolution)
-        panic("Unsupported cursor double resolution");
-    m_cursorDoubleResolution = doubleResolution;
-}
-
-/** \brief Sets the position of the cursor plane.
- * \param x X position (double resolution).
- * \param y Y position (normal resolution).
- */
-void Renderer::SetCursorPosition(const uint16_t x, const uint16_t y) noexcept
-{
-    m_cursorX = x;
-    m_cursorY = y;
-}
-
-/** \brief Sets the cursor plane color.
- * \param argb 4-bits color code (see backdrop colors).
- */
-void Renderer::SetCursorColor(const uint8_t argb) noexcept
-{
-    m_cursorColor = argb & 0x0Fu;
-}
-
-/** \brief Sets the pattern of the given line of the cursor plane.
- * \param line The line to set the pattern of (from 0 to 15).
- * \param pattern The pattern to set.
- */
-void Renderer::SetCursorPattern(const uint8_t line, const uint16_t pattern) noexcept
-{
-    m_cursorPatterns.at(line) = pattern;
-}
-
-/** \brief Configures cursor blinking.
- * \param type false is on/off, true is on/complement.
- * \param periodOn ON period (zero not allowed).
- * \param periodOff OFF period (if zero, blink is disabled).
- */
-void Renderer::SetCursorBlink(bool type, uint8_t periodOn, uint8_t periodOff) noexcept
-{
-    if(periodOn == 0 && periodOff != 0) // If ON is 0 AND blink is enabled (OFF not 0).
-        panic("Cursor blink ON period cannot be 0");
-
-    m_cursorBlinkType = type;
-    m_cursorBlinkOn = periodOn;
-    m_cursorBlinkOff = periodOff;
-}
-
-/** \brief Checks if the given ICM for both planes are valid according to Green Book V.4.4.8. */
-bool Renderer::isAllowedImageCodingCombination(ImageCodingMethod planeA, ImageCodingMethod planeB) noexcept
-{
-    using enum ImageCodingMethod;
-
-    if(planeB == RGB555 && planeA != OFF)
-        return false;
-
-    if((planeA == CLUT8 || planeA == CLUT77) && (planeB != DYUV && planeB != OFF))
-        return false;
-
-    // If I implement QHY, if(planeB == QHY && (planeA != DYUV && planeA != OFF)) return false;
-    return true;
-}
-
 /** \brief Handles the transparency of the current pixel for each plane.
  * \tparam PLANE The video plane to operate on.
  * \tparam TRANSPARENT The low 3-bits of the transparency instruction.
@@ -147,7 +54,7 @@ bool Renderer::isAllowedImageCodingCombination(ImageCodingMethod planeA, ImageCo
  * \param pixel The ARGB pixel.
  * TODO: do not compute colorKey if not CLUT.
  */
-template<Renderer::ImagePlane PLANE, Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG>
+template<ImagePlane PLANE, Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG>
 constexpr void Renderer::HandleTransparency(Pixel& pixel) noexcept
 {
     uint32_t color = static_cast<uint32_t>(pixel) & 0x00'FF'FF'FF;
@@ -352,7 +259,7 @@ void Renderer::HandleMatteAndTransparencyLoop(const uint16_t lineNumber) noexcep
 /** \brief Handles the matte flags for the given plane at the given pixel position.
  * \param pos The current pixel position (in double resolution).
  */
-template<Renderer::ImagePlane PLANE>
+template<ImagePlane PLANE>
 void Renderer::HandleMatte(uint16_t pos) noexcept
 {
     if(!m_matteNumber) // One matte.

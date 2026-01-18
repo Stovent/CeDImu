@@ -28,8 +28,6 @@ public:
     void HandleTransparencyPlaneBSIMD() noexcept;
     template<size_t WIDTH_REM, ImagePlane PLANE, TransparentIf TRANSPARENT, bool BOOL_FLAG>
     void HandleTransparencyLoopSIMD() noexcept;
-    template<TransparentIf TRANSPARENT, bool BOOL_FLAG, typename SIMD>
-    void HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA, const bool* matteFlagsB, SIMD colorMask, SIMD transparentColor) noexcept;
 
     template<bool TWO_MATTES>
     void HandleMatteSIMD() noexcept;

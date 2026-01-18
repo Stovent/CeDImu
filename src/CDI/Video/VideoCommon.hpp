@@ -11,17 +11,24 @@
 namespace Video
 {
 
+/** \brief An image plane. */
+enum ImagePlane : uint8_t
+{
+    A = 0,
+    B = 1,
+};
+
 #define ICM(method) Video::ImageCodingMethod::method
 
 enum class ImageCodingMethod
 {
     OFF,
+    RGB555, /**< Plane B only. */
+    DYUV,
     CLUT8, /**< Plane A only. */
     CLUT7,
     CLUT77, /**< Plane A only. */
     CLUT4,
-    DYUV,
-    RGB555, /**< Plane B only. */
 };
 
 enum class ControlArea

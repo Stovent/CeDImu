@@ -61,7 +61,7 @@ std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, c
  *
  * lineA is only used when the decoding method is RGB555.
  */
-template<Renderer::ImagePlane PLANE>
+template<ImagePlane PLANE>
 uint16_t RendererSoftware::DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept
 {
     if(m_codingMethod[PLANE] == ImageCodingMethod::OFF)

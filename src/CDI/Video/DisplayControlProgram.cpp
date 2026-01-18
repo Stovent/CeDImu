@@ -1,4 +1,5 @@
-#include "Renderer.hpp"
+#include "DisplayParameters.hpp"
+#include "VideoCommon.hpp"
 #include "../common/panic.hpp"
 #include "../common/utils.hpp"
 
@@ -6,6 +7,41 @@
 
 namespace Video
 {
+
+/** \brief V.4.5.1, figures V.43, V.44 and V.45. */
+enum ControlProgramInstruction : uint8_t
+{
+    NoOperation = 0x10,
+    LoadControlTableLineStartPointer = 0x20,
+    LoadDisplayLineStartPointer = 0x40,
+    SignalScanLine = 0x60,
+    LoadDisplayParameters = 0x78,
+    CLUTBank0  = 0x80,
+    CLUTBank63 = 0xBF,
+    SelectImageCodingMethod = 0xC0,
+    LoadTransparencyControl = 0xC1,
+    LoadPlaneOrder = 0xC2,
+    SetCLUTBank = 0xC3,
+    LoadTransparentColorA = 0xC4,
+    LoadTransparentColorB = 0xC6,
+    LoadMaskColorA = 0xC7,
+    LoadMaskColorB = 0xC9,
+    LoadDYUVStartValueA = 0xCA,
+    LoadDYUVStartValueB = 0xCB,
+    LoadMatteRegister0 = 0xD0,
+    LoadMatteRegister7 = 0xD7,
+    LoadBackdropColor = 0xD8,
+    LoadMosaicFactorA = 0xD9,
+    LoadMosaicFactorB = 0xDA,
+    LoadImageContributionFactorA = 0xDB,
+    LoadImageContributionFactorB = 0xDC,
+};
+
+/** \brief Returns the lowest 24-bits that contains the DCP command. */
+static constexpr uint32_t dcpExtractCommand(const uint32_t inst) noexcept
+{
+    return inst & 0x00FF'FFFFu;
+}
 
 /** \brief Figure V.48 */
 static constexpr ImageCodingMethod decodeCodingMethod0(const uint8_t method) noexcept
@@ -55,30 +91,31 @@ static constexpr ImageCodingMethod decodeCodingMethod1(const uint8_t method) noe
 }
 
 /** \brief Figure V.49. */
-static constexpr Renderer::ImageType decodeImageType(const uint8_t type) noexcept
+static constexpr DisplayParameters::ImageType decodeImageType(const uint8_t type) noexcept
 {
     if(type <= 1)
-        return Renderer::ImageType::Normal;
+        return DisplayParameters::ImageType::Normal;
+
     if(type == 2)
-        return Renderer::ImageType::RunLength;
+        return DisplayParameters::ImageType::RunLength;
 
     panic("Unsupported Mosaic image type");
-    return Renderer::ImageType::Mosaic;
+    return DisplayParameters::ImageType::Mosaic;
 }
 
 /** \brief Figure V.49. */
-static constexpr Renderer::BitsPerPixel decodeBitsPerPixel(const uint8_t bps) noexcept
+static constexpr DisplayParameters::BitsPerPixel decodeBitsPerPixel(const uint8_t bps) noexcept
 {
     switch(bps)
     {
     case 0:
-        return Renderer::BitsPerPixel::Normal8;
+        return DisplayParameters::BitsPerPixel::Normal8;
 
     case 1:
-        return Renderer::BitsPerPixel::Double4;
+        return DisplayParameters::BitsPerPixel::Double4;
 
     case 2:
-        return Renderer::BitsPerPixel::High8;
+        return DisplayParameters::BitsPerPixel::High8;
 
     default:
         panic("Invalid bits per pixel {}", bps);
@@ -94,8 +131,8 @@ static constexpr Renderer::BitsPerPixel decodeBitsPerPixel(const uint8_t bps) no
  * - 0x20 Load control table line start pointer
  * - 0x40 Load display line start pointer
  */
-template<Renderer::ImagePlane PLANE>
-bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
+template<ImagePlane PLANE>
+bool DisplayParameters::ExecuteDCPInstruction(const uint32_t instruction) noexcept
 {
     const uint8_t code = instruction >> 24;
 
@@ -117,7 +154,7 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
         return false;
     }
 
-    // Common instructions.
+    // On a plane-specific instruction executed on a different plane, do nothing.
     switch(code)
     {
     case NoOperation:
@@ -235,7 +272,7 @@ bool Renderer::ExecuteDCPInstruction(const uint32_t instruction) noexcept
     return false;
 }
 
-template bool Renderer::ExecuteDCPInstruction<Renderer::A>(uint32_t instruction) noexcept;
-template bool Renderer::ExecuteDCPInstruction<Renderer::B>(uint32_t instruction) noexcept;
+template bool DisplayParameters::ExecuteDCPInstruction<A>(uint32_t instruction) noexcept;
+template bool DisplayParameters::ExecuteDCPInstruction<B>(uint32_t instruction) noexcept;
 
 } // namespace Video

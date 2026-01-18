@@ -14,8 +14,8 @@ static constexpr size_t FRAMES_CURSOR = 10'000'000;
 static constexpr std::array<uint8_t, WIDTH> LINEA{};
 static constexpr std::array<uint8_t, WIDTH> LINEB{};
 
-static constexpr Video::Renderer::ImagePlane A = Video::Renderer::A;
-static constexpr Video::Renderer::ImagePlane B = Video::Renderer::B;
+static constexpr Video::ImagePlane A = Video::A;
+static constexpr Video::ImagePlane B = Video::B;
 
 template<typename RENDERER, Video::Renderer::BitsPerPixel BPS, Video::ImageCodingMethod CODINGA, Video::ImageCodingMethod CODINGB>
 static void benchmarkRenderer(std::string_view name)

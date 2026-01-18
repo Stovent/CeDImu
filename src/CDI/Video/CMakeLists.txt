@@ -1,10 +1,12 @@
 target_sources(CeDImu
     PRIVATE
+        DisplayControlProgram.cpp
+        DisplayParameters.cpp
+        DisplayParameters.hpp
         Pixel.hpp
         PixelTest.cpp
         Renderer.cpp
         Renderer.hpp
-        RendererDCP.cpp
         RendererSoftware.cpp
         RendererSoftware.hpp
         VideoCommon.hpp

@@ -57,7 +57,7 @@ void MCD212::ResetMemorySwap() noexcept
     m_memorySwapCount = 0;
 }
 
-template<Video::Renderer::ImagePlane PLANE>
+template<Video::ImagePlane PLANE>
 void MCD212::ExecuteICA()
 {
     const size_t cycles = GetHorizontalCycles() * GetVerticalRetraceLines();
@@ -167,7 +167,7 @@ void MCD212::ExecuteICA()
 template void MCD212::ExecuteICA<MCD212::PlaneA>();
 template void MCD212::ExecuteICA<MCD212::PlaneB>();
 
-template<Video::Renderer::ImagePlane PLANE>
+template<Video::ImagePlane PLANE>
 void MCD212::ExecuteDCA()
 {
     for(uint8_t i = 0; i < (GetCF() ? 16 : 8); i++) // Table 5.10

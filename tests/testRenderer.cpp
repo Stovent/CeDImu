@@ -23,8 +23,8 @@ inline constexpr Video::Pixel HIDDEN_GREEN{0x00'00'FF'00};
 inline constexpr Video::Pixel MAGENTA{0xFF'FF'00'FF};
 inline constexpr Video::Pixel BLUE{0xFF'00'00'FF};
 
-inline constexpr Video::Renderer::ImagePlane PLANEA = Video::Renderer::A;
-inline constexpr Video::Renderer::ImagePlane PLANEB = Video::Renderer::B;
+inline constexpr Video::ImagePlane PLANEA = Video::A;
+inline constexpr Video::ImagePlane PLANEB = Video::B;
 
 TEST_CASE("Cursor blink", "[Video]")
 {

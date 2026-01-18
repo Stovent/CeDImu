@@ -17,8 +17,8 @@ class CDI;
 class MCD212
 {
 public:
-    static constexpr Video::Renderer::ImagePlane PlaneA = Video::Renderer::A;
-    static constexpr Video::Renderer::ImagePlane PlaneB = Video::Renderer::B;
+    static constexpr Video::ImagePlane PlaneA = Video::A;
+    static constexpr Video::ImagePlane PlaneB = Video::B;
 
     OS9::BIOS m_bios;
     uint32_t m_totalFrameCount{0};
@@ -74,9 +74,9 @@ private:
     void DrawVideoLine();
 
     // Control Area
-    template<Video::Renderer::ImagePlane PLANE>
+    template<Video::ImagePlane PLANE>
     void ExecuteICA();
-    template<Video::Renderer::ImagePlane PLANE>
+    template<Video::ImagePlane PLANE>
     void ExecuteDCA();
 
     void ResetMemorySwap() noexcept;
