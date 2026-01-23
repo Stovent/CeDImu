@@ -14,12 +14,27 @@ public:
     RendererSoftware() {}
     virtual ~RendererSoftware() noexcept {}
 
-    std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB, uint16_t lineNumber) noexcept override;
-    void DrawCursor() noexcept override;
+    virtual std::pair<uint16_t, uint16_t> DrawLineImpl(const uint8_t* lineA, const uint8_t* lineB) noexcept override;
+    virtual void DrawCursor() noexcept override;
 
     template<ImagePlane PLANE>
     uint16_t DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept;
     template<bool MIX, bool PLANE_ORDER> void OverlayMix() noexcept;
+
+    void HandleMatteAndTransparency(uint16_t lineNumber) noexcept;
+    template<TransparentIf TRANSPARENCY_A, bool FLAG_A>
+    void HandleMatteAndTransparencyDispatchB(uint16_t lineNumber) noexcept;
+    template<TransparentIf TRANSPARENCY_A, bool FLAG_A, TransparentIf TRANSPARENCY_B, bool FLAG_B>
+    void HandleMatteAndTransparencyLoop(uint16_t lineNumber) noexcept;
+    template<ImagePlane PLANE, TransparentIf TRANSPARENT, bool BOOL_FLAG>
+    constexpr void HandleTransparency(Pixel& pixel) noexcept;
+
+    // Image Contribution Factor.
+    std::array<std::array<uint8_t, Plane::MAX_WIDTH>, 2> m_icfLine{}; /**< ICF for the whole line. */
+
+    // Matte (Region of the MCD212).
+    std::array<uint8_t, 2> m_nextMatte{};
+    template<ImagePlane PLANE> void HandleMatte(uint16_t pos) noexcept;
 };
 
 } // namespace Video

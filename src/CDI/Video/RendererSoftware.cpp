@@ -19,26 +19,12 @@ namespace Video
  * \param lineNumber The line number to draw (starting at 0).
  * \return The number of bytes read from memory for each plane `<plane A, plane B>`.
  */
-std::pair<uint16_t, uint16_t> RendererSoftware::DrawLine(const uint8_t* lineA, const uint8_t* lineB, const uint16_t lineNumber) noexcept
+std::pair<uint16_t, uint16_t> RendererSoftware::DrawLineImpl(const uint8_t* lineA, const uint8_t* lineB) noexcept
 {
-    m_lineNumber = lineNumber;
-    if(m_lineNumber == 0)
-    {
-        const uint16_t width = getDisplayWidth(m_displayFormat);
-        const uint16_t height = GetDisplayHeight();
-
-        m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = width * 2;
-        m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = m_backdropPlane.m_height = height;
-    }
-
-    ResetMatte();
-
     uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
     const uint16_t bytesB = DrawLinePlane<B>(lineB, lineA);
     if(m_codingMethod[B] == ImageCodingMethod::RGB555)
         bytesA = bytesB;
-
-    DrawLineBackdrop();
 
     if(m_mix)
         if(m_planeOrder)
@@ -234,6 +220,302 @@ void RendererSoftware::OverlayMix() noexcept
             }
         }
         *screen++ = pixel; // Should always have the transparency component to 255.
+    }
+}
+
+/** \brief Applies matte and transparency to the two video planes. */
+void RendererSoftware::HandleMatteAndTransparency(const uint16_t lineNumber) noexcept
+{
+    const bool booleanA = !bit<3>(m_transparencyControl[A]);
+    const uint8_t controlA = bits<0, 2>(m_transparencyControl[A]);
+
+    switch(static_cast<TransparentIf>(controlA))
+    {
+    case TransparentIf::AlwaysNever: // Always/Never.
+        if(booleanA)
+            HandleMatteAndTransparencyDispatchB<TransparentIf::AlwaysNever, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyDispatchB<TransparentIf::AlwaysNever, false>(lineNumber);
+        break;
+
+    case TransparentIf::ColorKey: // Color Key.
+        if(booleanA)
+            HandleMatteAndTransparencyDispatchB<TransparentIf::ColorKey, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyDispatchB<TransparentIf::ColorKey, false>(lineNumber);
+        break;
+
+    case TransparentIf::TransparencyBit: // Transparent Bit.
+        // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
+        // TODO: disable if not RGB555.
+        if(booleanA)
+            HandleMatteAndTransparencyDispatchB<TransparentIf::TransparencyBit, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyDispatchB<TransparentIf::TransparencyBit, false>(lineNumber);
+        break;
+
+    case TransparentIf::MatteFlag0: // Matte Flag 0.
+        if(booleanA)
+            HandleMatteAndTransparencyDispatchB<TransparentIf::MatteFlag0, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyDispatchB<TransparentIf::MatteFlag0, false>(lineNumber);
+        break;
+
+    case TransparentIf::MatteFlag1: // Matte Flag 1.
+        if(booleanA)
+            HandleMatteAndTransparencyDispatchB<TransparentIf::MatteFlag1, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyDispatchB<TransparentIf::MatteFlag1, false>(lineNumber);
+        break;
+
+    case TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
+        if(booleanA)
+            HandleMatteAndTransparencyDispatchB<TransparentIf::MatteFlag0OrColorKey, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyDispatchB<TransparentIf::MatteFlag0OrColorKey, false>(lineNumber);
+        break;
+
+    case TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
+        if(booleanA)
+            HandleMatteAndTransparencyDispatchB<TransparentIf::MatteFlag1OrColorKey, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyDispatchB<TransparentIf::MatteFlag1OrColorKey, false>(lineNumber);
+        break;
+
+    default: // Reserved.
+        std::unreachable();
+        break;
+    }
+}
+
+/** \brief Takes the template transparency control of A and mixes it with B's and handle them both. */
+template<Renderer::TransparentIf TRANSPARENCY_A, bool FLAG_A>
+void RendererSoftware::HandleMatteAndTransparencyDispatchB(const uint16_t lineNumber) noexcept
+{
+    const bool booleanB = !bit<3>(m_transparencyControl[B]);
+    const uint8_t controlB = bits<0, 2>(m_transparencyControl[B]);
+
+    switch(static_cast<TransparentIf>(controlB))
+    {
+    case TransparentIf::AlwaysNever: // Always/Never.
+        if(booleanB)
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::AlwaysNever, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::AlwaysNever, false>(lineNumber);
+        break;
+
+    case TransparentIf::ColorKey: // Color Key.
+        if(booleanB)
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::ColorKey, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::ColorKey, false>(lineNumber);
+        break;
+
+    case TransparentIf::TransparencyBit: // Transparent Bit.
+        // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
+        // TODO: disable if not RGB555.
+        if(booleanB)
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::TransparencyBit, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::TransparencyBit, false>(lineNumber);
+        break;
+
+    case TransparentIf::MatteFlag0: // Matte Flag 0.
+        if(booleanB)
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::MatteFlag0, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::MatteFlag0, false>(lineNumber);
+        break;
+
+    case TransparentIf::MatteFlag1: // Matte Flag 1.
+        if(booleanB)
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::MatteFlag1, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::MatteFlag1, false>(lineNumber);
+        break;
+
+    case TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
+        if(booleanB)
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::MatteFlag0OrColorKey, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::MatteFlag0OrColorKey, false>(lineNumber);
+        break;
+
+    case TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
+        if(booleanB)
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::MatteFlag1OrColorKey, true>(lineNumber);
+        else
+            HandleMatteAndTransparencyLoop<TRANSPARENCY_A, FLAG_A, TransparentIf::MatteFlag1OrColorKey, false>(lineNumber);
+        break;
+
+    default: // Reserved.
+        std::unreachable();
+        break;
+    }
+}
+
+/** \brief Actually handles matte and transparency for both planes statically. */
+template<Renderer::TransparentIf TRANSPARENCY_A, bool FLAG_A, Renderer::TransparentIf TRANSPARENCY_B, bool FLAG_B>
+void RendererSoftware::HandleMatteAndTransparencyLoop(const uint16_t lineNumber) noexcept
+{
+    if(!m_matteNumber) // One matte.
+    {
+        const bool matte = matteMF(m_matteControl[0]);
+        m_nextMatte[matte] = 0;
+        m_nextMatte[!matte] = m_matteControl.size();
+    }
+    else // Two mattes.
+    {
+        m_nextMatte[A] = 0;
+        m_nextMatte[B] = MATTE_HALF;
+    }
+
+    Pixel* planeA = m_plane[A].GetLinePointer(lineNumber);
+    Pixel* planeB = m_plane[B].GetLinePointer(lineNumber);
+
+    for(uint16_t i = 0; i < m_plane[A].m_width; ++i) // Plane B has the same width.
+    {
+        HandleMatte<A>(i);
+        HandleMatte<B>(i);
+        m_icfLine[A][i] = m_icf[A];
+        m_icfLine[B][i] = m_icf[B];
+        HandleTransparency<A, TRANSPARENCY_A, FLAG_A>(*planeA++);
+        HandleTransparency<B, TRANSPARENCY_B, FLAG_B>(*planeB++);
+    }
+}
+
+/** \brief Handles the transparency of the current pixel for each plane.
+ * \tparam PLANE The video plane to operate on.
+ * \tparam TRANSPARENT The low 3-bits of the transparency instruction.
+ * \tparam BOOL_FLAG True if bit 3 is 0, false if bit 3 is 1.
+ * \param pixel The ARGB pixel.
+ * TODO: do not compute colorKey if not CLUT.
+ */
+template<ImagePlane PLANE, Renderer::TransparentIf TRANSPARENT, bool BOOL_FLAG>
+constexpr void RendererSoftware::HandleTransparency(Pixel& pixel) noexcept
+{
+    uint32_t color = static_cast<uint32_t>(pixel) & 0x00'FF'FF'FF;
+    color = clutColorKey(color | m_maskColorRgb[PLANE]);
+    const bool colorKey = color == clutColorKey(m_transparentColorRgb[PLANE] | m_maskColorRgb[PLANE]);
+
+    pixel.a = PIXEL_FULL_INTENSITY;
+
+    switch(TRANSPARENT)
+    {
+    case TransparentIf::AlwaysNever: // Always/Never.
+        pixel.a = static_cast<uint8_t>(PIXEL_FULL_INTENSITY + BOOL_FLAG); // Branchless.
+        break;
+
+    case TransparentIf::ColorKey: // Color Key.
+        if(colorKey == BOOL_FLAG)
+            pixel.a = PIXEL_TRANSPARENT;
+        break;
+
+    case TransparentIf::TransparencyBit: // Transparent Bit.
+        // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
+        // TODO: disable if not RGB555.
+        if((pixel.a == PIXEL_FULL_INTENSITY) != BOOL_FLAG)
+            pixel.a = PIXEL_TRANSPARENT;
+        break;
+
+    case TransparentIf::MatteFlag0: // Matte Flag 0.
+        if(m_matteFlags[A] == BOOL_FLAG)
+            pixel.a = PIXEL_TRANSPARENT;
+        break;
+
+    case TransparentIf::MatteFlag1: // Matte Flag 1.
+        if(m_matteFlags[B] == BOOL_FLAG)
+            pixel.a = PIXEL_TRANSPARENT;
+        break;
+
+    case TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
+        if(m_matteFlags[A] == BOOL_FLAG || colorKey == BOOL_FLAG)
+            pixel.a = PIXEL_TRANSPARENT;
+        break;
+
+    case TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
+        if(m_matteFlags[B] == BOOL_FLAG || colorKey == BOOL_FLAG)
+            pixel.a = PIXEL_TRANSPARENT;
+        break;
+
+    default: // Reserved.
+        std::unreachable();
+        break;
+    }
+}
+
+/** \brief Handles the matte flags for the given plane at the given pixel position.
+ * \param pos The current pixel position (in double resolution).
+ */
+template<ImagePlane PLANE>
+void RendererSoftware::HandleMatte(uint16_t pos) noexcept
+{
+    if(!m_matteNumber) // One matte.
+    {
+        if(m_nextMatte[PLANE] >= m_matteControl.size())
+            return;
+    }
+    else // Two mattes.
+    {
+        if constexpr(PLANE == A)
+        {
+            if(m_nextMatte[A] >= MATTE_HALF)
+                return;
+        }
+        else
+            if(m_nextMatte[B] >= m_matteControl.size())
+                return;
+    }
+
+    const uint32_t command = m_matteControl[m_nextMatte[PLANE]];
+    if(matteXPosition(command) > pos)
+        return;
+
+    ++m_nextMatte[PLANE];
+
+    /* TODO: matte flag index changed should be based on its index. V.5.10.2 note 8 */
+    const uint8_t op = matteOp(command);
+    switch(op)
+    {
+    case 0b0000:
+        m_nextMatte[PLANE] = m_matteControl.size();
+        break;
+
+    case 0b0100:
+        m_icf[A] = matteICF(command);
+        break;
+
+    case 0b0110:
+        m_icf[B] = matteICF(command);
+        break;
+
+    case 0b1000:
+        m_matteFlags[PLANE] = false;
+        break;
+
+    case 0b1001:
+        m_matteFlags[PLANE] = true;
+        break;
+
+    case 0b1100:
+        m_icf[A] = matteICF(command);
+        m_matteFlags[PLANE] = false;
+        break;
+
+    case 0b1101:
+        m_icf[A] = matteICF(command);
+        m_matteFlags[PLANE] = true;
+        break;
+
+    case 0b1110:
+        m_icf[B] = matteICF(command);
+        m_matteFlags[PLANE] = false;
+        break;
+
+    case 0b1111:
+        m_icf[B] = matteICF(command);
+        m_matteFlags[PLANE] = true;
+        break;
     }
 }
 

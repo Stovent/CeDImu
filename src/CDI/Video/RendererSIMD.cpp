@@ -30,26 +30,12 @@ namespace Video
  * \param lineNumber The line number to draw (starting at 0).
  * \return The number of bytes read from memory for each plane `<plane A, plane B>`.
  */
-std::pair<uint16_t, uint16_t> RendererSIMD::DrawLine(const uint8_t* lineA, const uint8_t* lineB, const uint16_t lineNumber) noexcept
+std::pair<uint16_t, uint16_t> RendererSIMD::DrawLineImpl(const uint8_t* lineA, const uint8_t* lineB) noexcept
 {
-    m_lineNumber = lineNumber;
-    if(m_lineNumber == 0)
-    {
-        const uint16_t width = getDisplayWidth(m_displayFormat);
-        const uint16_t height = GetDisplayHeight();
-
-        m_screen.m_width = m_plane[A].m_width = m_plane[B].m_width = width * 2;
-        m_screen.m_height = m_plane[A].m_height = m_plane[B].m_height = m_backdropPlane.m_height = height;
-    }
-
-    ResetMatte();
-
     uint16_t bytesA = DrawLinePlane<A>(lineA, nullptr); // nullptr because plane A can't decode RGB555.
     const uint16_t bytesB = DrawLinePlane<B>(lineB, lineA);
     if(m_codingMethod[B] == ImageCodingMethod::RGB555)
         bytesA = bytesB;
-
-    DrawLineBackdrop();
 
     if(m_mix)
         if(m_planeOrder)

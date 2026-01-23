@@ -14,8 +14,8 @@ public:
     RendererSIMD() {}
     virtual ~RendererSIMD() noexcept {}
 
-    std::pair<uint16_t, uint16_t> DrawLine(const uint8_t* lineA, const uint8_t* lineB, uint16_t lineNumber) noexcept override;
-    void DrawCursor() noexcept override;
+    virtual std::pair<uint16_t, uint16_t> DrawLineImpl(const uint8_t* lineA, const uint8_t* lineB) noexcept override;
+    virtual void DrawCursor() noexcept override;
 
     template<ImagePlane PLANE>
     uint16_t DrawLinePlane(const uint8_t* lineMain, const uint8_t* lineA) noexcept;
@@ -33,6 +33,9 @@ public:
     void HandleMatteSIMD() noexcept;
     template<bool TWO_MATTES>
     bool ExecuteMatteCommand(uint32_t command, bool mf) noexcept;
+
+    // Image Contribution Factor.
+    std::array<std::array<uint8_t, Plane::MAX_WIDTH>, 2> m_icfLine{}; /**< ICF for the whole line. */
 
     std::array<std::array<bool, Plane::MAX_WIDTH>, 2> m_matteFlagsLine{}; /**< Matte flags for the whole line. */
 };
