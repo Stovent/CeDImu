@@ -19,6 +19,7 @@ struct BiosConfig
     Boards boardType;
     bool PAL;
     bool has32KbNvram;
+    bool littleEndianBios;
 };
 
 extern const BiosConfig defaultBiosConfig;

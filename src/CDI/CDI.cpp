@@ -3,12 +3,12 @@
 
 /** \brief Creates a new CD-i instance.
  * \param board The type of board to use.
- * \param systemBios System BIOS data.
+ * \param systemBios System BIOS data (in big endian format).
  * \param nvram The initial state of the NVRAM, or an empty span to use a clean NVRAM.
  * \param config The player configuration.
  * \param callbacks The user callbacks to use.
  * \param disc The disc to load (optional).
- * \return nullptr if it failed to initialize the new CDI.
+ * \return nullptr if the BIOS is not supported or if it failed to auto detect the CDI BIOS type.
  *
  * If \p board is Boards::AutoDetect, then the board type will be guessed from the BIOS data.
  * It may not be accurate so when possible, consider providing yourself the board type.

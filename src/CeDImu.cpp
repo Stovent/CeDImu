@@ -1,6 +1,7 @@
 #include "CeDImu.hpp"
 #include "GUI/MainFrame.hpp"
 #include "CDI/CDI.hpp"
+#include "CDI/common/utils.hpp"
 #include "CDI/OS9/SystemCalls.hpp"
 
 #include <wx/image.h>
@@ -59,6 +60,14 @@ int CeDImu::OnExit()
     return 0;
 }
 
+/** \brief Swaps each odd and even bytes in the given buffer. */
+static constexpr void swapWords(std::span<uint8_t> data) noexcept
+{
+    assert(isEven(data.size()));
+    for(size_t i = 0; i < data.size(); i += 2)
+        std::swap(data[i], data[i + 1]);
+}
+
 bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
 {
     {
@@ -80,6 +89,8 @@ bool CeDImu::InitCDI(const Config::BiosConfig& biosConfig)
 
     std::unique_ptr<uint8_t[]> bios = std::make_unique<uint8_t[]>(biosSize);
     biosFile.read(reinterpret_cast<char*>(bios.get()), biosSize);
+    if(biosConfig.littleEndianBios)
+        swapWords({bios.get(), biosSize});
 
     std::unique_ptr<uint8_t[]> nvramBuffer = nullptr;
     m_biosName = biosConfig.name;

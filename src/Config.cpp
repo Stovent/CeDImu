@@ -14,6 +14,7 @@ const BiosConfig defaultBiosConfig {
     .boardType = Boards::AutoDetect,
     .PAL = false,
     .has32KbNvram = false,
+    .littleEndianBios = false,
 };
 
 // Disc
@@ -91,6 +92,9 @@ bool loadConfig()
 
         if(!conf.Read("has32KbNvram", &val)) return false;
         entry.has32KbNvram = val;
+
+        if(!conf.Read("littleEndianBios", &val)) return false;
+        entry.littleEndianBios = val;
     }
 
     return true;
@@ -130,6 +134,7 @@ bool saveConfig()
         if(!conf.Write("boardType", static_cast<int>(entry.boardType))) return false;
         if(!conf.Write("PAL", entry.PAL)) return false;
         if(!conf.Write("has32KbNvram", entry.has32KbNvram)) return false;
+        if(!conf.Write("littleEndianBios", entry.littleEndianBios)) return false;
     }
 
     return conf.Flush(); // Technically it saves twice, here and in the dtor, but np I hope.

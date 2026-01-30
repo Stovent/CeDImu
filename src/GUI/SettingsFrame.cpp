@@ -137,12 +137,14 @@ SettingsFrame::SettingsFrame(MainFrame* parent)
         boardChoiceSizer->Add(m_boardChoice, wxSizerFlags(1).Expand());
         boardChoiceSizer->Add(boardChoiceText);
 
-        // PAL and NVRAM check boxes
+        // PAL, NVRAM and little endian check boxes
         m_palCheckBox = new wxCheckBox(biosConfigPage, wxID_ANY, "PAL");
         m_nvramCheckBox = new wxCheckBox(biosConfigPage, wxID_ANY, "32KB NVRAM");
+        m_littleEndianCheckBox = new wxCheckBox(biosConfigPage, wxID_ANY, "Little endian");
         wxBoxSizer* checkBoxSizer = new wxBoxSizer(wxHORIZONTAL);
         checkBoxSizer->Add(m_palCheckBox, wxSizerFlags(1).Border());
         checkBoxSizer->Add(m_nvramCheckBox, wxSizerFlags(1).Border());
+        checkBoxSizer->Add(m_littleEndianCheckBox, wxSizerFlags(1).Border());
 
         // Initial timestamp
         m_initialTime = new wxTextCtrl(biosConfigPage, wxID_ANY);
@@ -339,6 +341,7 @@ void SettingsFrame::LoadSelection()
     m_boardChoice->SetSelection(static_cast<int>(config.boardType));
     m_palCheckBox->SetValue(config.PAL);
     m_nvramCheckBox->SetValue(config.has32KbNvram);
+    m_littleEndianCheckBox->SetValue(config.littleEndianBios);
 }
 
 void SettingsFrame::SaveSelection()
@@ -354,6 +357,7 @@ void SettingsFrame::SaveSelection()
     config.boardType = static_cast<Boards>(m_boardChoice->GetSelection());
     config.PAL = m_palCheckBox->GetValue();
     config.has32KbNvram = m_nvramCheckBox->GetValue();
+    config.littleEndianBios = m_littleEndianCheckBox->GetValue();
 }
 
 void SettingsFrame::CheckControls()
@@ -367,4 +371,5 @@ void SettingsFrame::CheckControls()
     m_boardChoice->Enable(enable);
     m_palCheckBox->Enable(enable);
     m_nvramCheckBox->Enable(enable);
+    m_littleEndianCheckBox->Enable(enable);
 }
