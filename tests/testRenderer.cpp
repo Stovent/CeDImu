@@ -21,7 +21,7 @@ inline constexpr Video::Pixel GREEN{0xFF'00'FF'00};
 inline constexpr Video::Pixel HALF_GREEN{0xFF'09'85'09};
 inline constexpr Video::Pixel HIDDEN_GREEN{0x00'00'FF'00};
 inline constexpr Video::Pixel MAGENTA{0xFF'FF'00'FF};
-inline constexpr Video::Pixel BLUE{0xFF'00'00'FF};
+inline constexpr Video::Pixel BLUE{0xFF'00'00'FF}; // Background color.
 
 inline constexpr Video::ImagePlane PLANEA = Video::A;
 inline constexpr Video::ImagePlane PLANEB = Video::B;
@@ -156,7 +156,7 @@ static constexpr void configureOneMatte(Video::Renderer& renderer) noexcept
     renderer.m_matteNumber = false;
     renderer.m_icf[PLANEA] = 63;
     renderer.m_icf[PLANEB] = 63;
-    // starts with matte flag false.
+    // starts with matte flags false.
     renderer.m_matteControl[0] = makeCommand(0b0100, true, 63, 0); // ICF A 63.
     renderer.m_matteControl[1] = makeCommand(0b0110, true, 63, 1); // ICF B 63.
     renderer.m_matteControl[2] = makeCommand(0b0100, true, 31, 2); // ICF A 31.
@@ -177,7 +177,7 @@ static constexpr void configureTwoMattes(Video::Renderer& renderer) noexcept
     renderer.m_matteNumber = true;
     renderer.m_icf[PLANEA] = 63;
     renderer.m_icf[PLANEB] = 63;
-    // starts with matte flag false.
+    // starts with matte flags false.
     // mf bit must be ignored.
     renderer.m_matteControl[0] = makeCommand(0b1111, true, 31, 8); // Set matte flag 0, ICF B 31, plane B visible.
     renderer.m_matteControl[2] = makeCommand(0, true, 0, 3); // Ignore later commands.
@@ -200,6 +200,18 @@ static void configureCLUT(Video::Renderer& renderer) noexcept
     renderer.m_clut[128] = GREEN.AsU32();
 }
 
+static constexpr std::array<uint8_t, 384> INPUT_A = [] () {
+    std::array<uint8_t, 384> array{};
+    std::ranges::fill(array, 0); // CLUT 0
+    return array;
+}();
+
+static constexpr std::array<uint8_t, 384> INPUT_B = [] () {
+    std::array<uint8_t, 384> array{};
+    std::ranges::fill(array, 0); // CLUT 0 + 128
+    return array;
+}();
+
 TEST_CASE("Matte", "[Video]")
 {
     Video::RendererSoftware rendererSoft;
@@ -212,17 +224,6 @@ TEST_CASE("Matte", "[Video]")
 
         configureCLUT(rendererSoft);
         IF_SIMD(configureCLUT(rendererSIMD))
-
-        constexpr std::array<uint8_t, 384> INPUT_A = [] () {
-            std::array<uint8_t, 384> array{};
-            std::ranges::fill(array, 0); // CLUT 0
-            return array;
-        }();
-        constexpr std::array<uint8_t, 384> INPUT_B = [] () {
-            std::array<uint8_t, 384> array{};
-            std::ranges::fill(array, 0); // CLUT 0 + 128
-            return array;
-        }();
 
         rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
         IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
@@ -265,17 +266,6 @@ TEST_CASE("Matte", "[Video]")
         configureCLUT(rendererSoft);
         IF_SIMD(configureCLUT(rendererSIMD))
 
-        constexpr std::array<uint8_t, 384> INPUT_A = [] () {
-            std::array<uint8_t, 384> array{};
-            std::ranges::fill(array, 0); // CLUT 0
-            return array;
-        }();
-        constexpr std::array<uint8_t, 384> INPUT_B = [] () {
-            std::array<uint8_t, 384> array{};
-            std::ranges::fill(array, 0); // CLUT 0 + 128
-            return array;
-        }();
-
         rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
         IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
 
@@ -297,6 +287,135 @@ TEST_CASE("Matte", "[Video]")
                 BLUE, BLUE, RED, RED, HALF_RED, HALF_RED, HALF_RED, HALF_RED,
             };
             std::fill(array.begin() + 8, array.end(), HALF_GREEN);
+            return array;
+        }();
+
+        REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSoft.m_plane[PLANEA].GetLinePointer(0)));
+        IF_SIMD(REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSIMD.m_plane[PLANEA].GetLinePointer(0))))
+
+        REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSoft.m_plane[PLANEB].GetLinePointer(0)));
+        IF_SIMD(REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSIMD.m_plane[PLANEB].GetLinePointer(0))))
+
+        REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSoft.m_screen.GetLinePointer(0)));
+        IF_SIMD(REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSIMD.m_screen.GetLinePointer(0))))
+    }
+}
+
+static constexpr void configureOneMatteLower(Video::Renderer& renderer) noexcept
+{
+    renderer.m_transparencyControl[PLANEA] = 0b0100; // Matte flag 1 = true.
+    renderer.m_transparencyControl[PLANEB] = 0b1000; // Never.
+    renderer.m_mix = false;
+    renderer.m_planeOrder = false; // A in front of B.
+
+    renderer.m_matteNumber = false;
+    renderer.m_icf[PLANEA] = 63;
+    renderer.m_icf[PLANEB] = 63;
+    // starts with matte flags false.
+    renderer.m_matteControl[0] = makeCommand(0b0100, true, 63, 0); // ICF A 63.
+    renderer.m_matteControl[1] = makeCommand(0b0110, true, 63, 1); // ICF B 63.
+    renderer.m_matteControl[2] = makeCommand(0b0100, true, 31, 2); // ICF A 31.
+    renderer.m_matteControl[3] = makeCommand(0b1001, true, 0, 3); // Set matte flag 1, plane A hidden.
+    renderer.m_matteControl[4] = makeCommand(0b0110, true, 31, 4); // ICF B 31.
+    renderer.m_matteControl[5] = makeCommand(0b1000, true, 0, 5); // Reset matte flag 1, plane A visible.
+    renderer.m_matteControl[6] = makeCommand(0b1000, true, 0, 5); // Not above previous command, must not infinite loop.
+    renderer.m_matteControl[7] = makeCommand(0b0100, true, 0, 740); // ICF A 0, must be ignored.
+}
+
+static constexpr void configureTwoMattesLower(Video::Renderer& renderer) noexcept
+{
+    renderer.m_transparencyControl[PLANEA] = 0b1100; // Matte flag 1 = false.
+    renderer.m_transparencyControl[PLANEB] = 0b1011; // Matte flag 0 = false.
+    renderer.m_mix = false;
+    renderer.m_planeOrder = true; // B in front of A.
+
+    renderer.m_matteNumber = true;
+    renderer.m_icf[PLANEA] = 63;
+    renderer.m_icf[PLANEB] = 63;
+    // starts with matte flags false.
+    // mf bit must be ignored.
+    renderer.m_matteControl[0] = makeCommand(0b1111, true, 31, 1); // Set matte flag 0, ICF B 31, plane B visible.
+    renderer.m_matteControl[2] = makeCommand(0b1111, true, 0, 1); // Ignore later commands.
+    renderer.m_matteControl[3] = makeCommand(0b1000, true, 0, 2); // ICF B 0, must be ignored.
+    renderer.m_matteControl[3] = makeCommand(0, true, 63, 3); // ICF B 63, must be ignored.
+
+    renderer.m_matteControl[4] = makeCommand(0b1101, false, 63, 2); // Set matte flag 1, ICF A 63, plane A visible.
+    renderer.m_matteControl[5] = makeCommand(0b0100, false, 31, 4); // ICF A 31.
+    renderer.m_matteControl[6] = makeCommand(0b0100, false, 63, 4); // Ignored.
+    renderer.m_matteControl[7] = makeCommand(0b0110, false, 63, 8); // ICF B 63, ignored.
+}
+
+TEST_CASE("Matte lower position", "[Video]")
+{
+    // Tests the case where a next matte control register has a lower position than the next one.
+    Video::RendererSoftware rendererSoft;
+    IF_SIMD(Video::RendererSIMD rendererSIMD)
+
+    SECTION("One matte")
+    {
+        configureOneMatteLower(rendererSoft);
+        IF_SIMD(configureOneMatteLower(rendererSIMD))
+
+        configureCLUT(rendererSoft);
+        IF_SIMD(configureCLUT(rendererSIMD))
+
+        rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
+        IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
+
+        constexpr std::array<Video::Pixel, 768> EXPECTED_A = [] () {
+            std::array<Video::Pixel, 768> array{RED, RED, RED, HIDDEN_RED, HIDDEN_RED};
+            std::fill(array.begin() + 5, array.end(), RED);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_B = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, GREEN);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_SCREEN = [] () {
+            std::array<Video::Pixel, 768> array{
+                RED, RED, HALF_RED, GREEN, HALF_GREEN,
+            };
+            std::fill(array.begin() + 5, array.end(), HALF_RED);
+            return array;
+        }();
+
+        REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSoft.m_plane[PLANEA].GetLinePointer(0)));
+        IF_SIMD(REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSIMD.m_plane[PLANEA].GetLinePointer(0))))
+
+        REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSoft.m_plane[PLANEB].GetLinePointer(0)));
+        IF_SIMD(REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSIMD.m_plane[PLANEB].GetLinePointer(0))))
+
+        REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSoft.m_screen.GetLinePointer(0)));
+        IF_SIMD(REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSIMD.m_screen.GetLinePointer(0))))
+    }
+
+    SECTION("Two matte")
+    {
+        configureTwoMattesLower(rendererSoft);
+        IF_SIMD(configureTwoMattesLower(rendererSIMD))
+
+        configureCLUT(rendererSoft);
+        IF_SIMD(configureCLUT(rendererSIMD))
+
+        rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
+        IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
+
+        constexpr std::array<Video::Pixel, 768> EXPECTED_A = [] () {
+            std::array<Video::Pixel, 768> array{
+                HIDDEN_RED, HIDDEN_RED,
+            };
+            std::fill(array.begin() + 2, array.end(), RED);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_B = [] () {
+            std::array<Video::Pixel, 768> array{HIDDEN_GREEN};
+            std::fill(array.begin() + 1, array.end(), GREEN);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_SCREEN = [] () {
+            std::array<Video::Pixel, 768> array{BLUE};
+            std::fill(array.begin() + 1, array.end(), HALF_GREEN);
             return array;
         }();
 

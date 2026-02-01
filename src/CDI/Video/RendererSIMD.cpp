@@ -627,7 +627,11 @@ void RendererSIMD::HandleMatteSIMD() noexcept
                 if(disregard || nextMatte0 >= m_matteControl.size())
                     nextChange0 = m_screen.m_width;
                 else
+                {
                     nextChange0 = matteXPosition(m_matteControl[nextMatte0]);
+                    if(nextChange0 <= x) // Sometimes the next register has a lower position.
+                        nextChange0 = m_screen.m_width;
+                }
             }
             nextChange = nextChange0;
         }

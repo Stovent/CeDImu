@@ -468,7 +468,7 @@ void RendererSoftware::HandleMatte(uint16_t pos) noexcept
     }
 
     const uint32_t command = m_matteControl[m_nextMatte[PLANE]];
-    if(matteXPosition(command) > pos)
+    if(matteXPosition(command) != pos)
         return;
 
     ++m_nextMatte[PLANE];
