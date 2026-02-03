@@ -1,6 +1,5 @@
 #include "Pixel.hpp"
-
-#define ASSERT(cond) if(!(cond)) return false
+#include "../common/compileTest.hpp"
 
 namespace Video
 {

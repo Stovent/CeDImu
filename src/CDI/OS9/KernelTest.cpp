@@ -3,12 +3,11 @@
  */
 
 #include "Kernel.hpp"
+#include "../common/compileTest.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cstdint>
-
-#define ASSERT(cond) if(!(cond)) return false
 
 static constexpr std::array<uint8_t, 0x30> MODULE_HEADER{
     0x4A, 0xFC, 0x00, 0x01, 0x00, 0x00, 0x11, 0x9E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x94,

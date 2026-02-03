@@ -4,6 +4,7 @@ target_sources(CeDImu
         Audio.hpp
         Callbacks.cpp
         Callbacks.hpp
+        compileTest.hpp
         Function.hpp
         FunctionTest.cpp
         panic.hpp
