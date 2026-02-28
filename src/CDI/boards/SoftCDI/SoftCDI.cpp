@@ -85,7 +85,7 @@ SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig confi
     , m_bios(makeSoftcdiBiosFromMono3(bios))
     // , m_nvramMaxAddress(config.has32KBNVRAM ? 0x330000 : 0x324000)
 {
-    m_slave = std::make_unique<HLE::IKAT>(*this, config.PAL, 0x310000, PointingDevice::Class::Maneuvering);
+    m_slave = std::make_unique<HLE::IKAT>(*this, config.PAL, 0x310000);
     // if(config.has32KBNVRAM)
     //     m_timekeeper = std::make_unique<DS1216>(*this, nvram, config.initialTime);
     // else

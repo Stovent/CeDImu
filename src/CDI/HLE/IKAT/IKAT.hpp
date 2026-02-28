@@ -14,7 +14,7 @@ namespace HLE
 class IKAT : public ISlave
 {
 public:
-    IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Class deviceClass);
+    IKAT(CDI& idc, bool PAL, uint32_t busbase);
 
     IKAT(const IKAT&) = delete;
     IKAT& operator=(const IKAT&) = delete;

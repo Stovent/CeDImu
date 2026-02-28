@@ -12,6 +12,7 @@
 SoftCDIScheduler::SoftCDIScheduler(CDIDisc disc)
     : CDI("SoftCDIScheduler", DEFAULT_CDICONFIG, Callbacks())
     , m_cdDrive{*this, std::move(disc)}
+    , m_pointerInput{*this}
 {
     Reset(true);
 }
@@ -70,9 +71,13 @@ void SoftCDIScheduler::IncrementTime(double ns)
 
 void SoftCDIScheduler::LocalIncrementTime(double ns)
 {
-    std::optional<uint8_t> irq = m_cdDrive.IncrementTime(ns);
-    if(irq)
-        m_cpu.PushException({static_cast<SCC68070::ExceptionVector>(*irq)});
+    std::optional<uint8_t> cdDriveIrq = m_cdDrive.IncrementTime(ns);
+    if(cdDriveIrq)
+        m_cpu.PushException({static_cast<SCC68070::ExceptionVector>(*cdDriveIrq)});
+
+    std::optional<uint8_t> pointerIrq = m_pointerInput.IncrementTime(ns);
+    if(pointerIrq)
+        m_cpu.PushException({static_cast<SCC68070::ExceptionVector>(*pointerIrq)});
 }
 
 void SoftCDIScheduler::Reset(const bool resetCPU)
@@ -84,4 +89,5 @@ void SoftCDIScheduler::Reset(const bool resetCPU)
 void SoftCDIScheduler::LocalReset()
 {
     m_cdDrive.Reset();
+    m_pointerInput.Reset();
 }

@@ -15,8 +15,8 @@ namespace HLE
 #define DELAY_RSP(channel, rsp) { delayedRsp[channel] = &rsp; \
                                 delayedRspFrame[channel] = cdi.GetTotalFrameCount() + 2; }
 
-IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Class deviceClass)
-    : ISlave(idc, busbase, deviceClass)
+IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase)
+    : ISlave(idc, busbase)
     , registers{0}
     , delayedRsp{nullptr}
     , delayedRspFrame{0}
@@ -29,8 +29,11 @@ IKAT::IKAT(CDI& idc, bool PAL, uint32_t busbase, PointingDevice::Class deviceCla
 
 void IKAT::UpdatePointerState()
 {
+    std::array<uint8_t, 4> packet{};
+    const size_t size = pointingDevice.GetState(packet);
+
     channelOut[CHB].clear();
-    channelOut[CHB].insert(channelOut[CHB].begin(), pointingDevice.m_pointerMessage.begin(), pointingDevice.m_pointerMessage.end());
+    channelOut[CHB].insert(channelOut[CHB].begin(), packet.begin(), packet.begin() + size);
 
     UNSET_REMTY(CHB_SR)
     SET_INT(CHB)
@@ -38,7 +41,9 @@ void IKAT::UpdatePointerState()
 
 void IKAT::IncrementTime(const size_t ns)
 {
-    pointingDevice.IncrementTime(ns);
+    const bool irq = pointingDevice.IncrementTime(ns);
+    if(irq) // Got packet.
+        UpdatePointerState();
 
     for(int channel = CHA; channel <= CHD; channel++)
     {
