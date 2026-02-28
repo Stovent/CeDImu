@@ -36,8 +36,8 @@ add_library(CeDImu ${LIBRARY_TYPE}
     CDIFile.cpp
     CDIFile.hpp
     Export.cpp
-    PointingDevice.cpp
-    PointingDevice.hpp
+    Pointing.cpp
+    Pointing.hpp
 )
 target_include_directories(CeDImu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

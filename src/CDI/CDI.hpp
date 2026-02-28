@@ -16,6 +16,7 @@
 #include <thread>
 
 class CDDrive;
+class Pointer;
 
 /** \brief Base class for a CD-i player.
  */
@@ -27,7 +28,6 @@ public:
     Callbacks m_callbacks; /**< The user callbacks. */
 
     SCC68070 m_cpu; /**< The main CPU. */
-    std::unique_ptr<ISlave> m_slave{}; /**< The slave processor. */
     std::unique_ptr<IRTC> m_timekeeper{}; /**< The NVRAM chip. */
 
     static std::unique_ptr<CDI> NewCDI(Boards board, bool useSoftCDI, std::span<const uint8_t> systemBios, std::span<const uint8_t> nvram, CDIConfig config = DEFAULT_CDICONFIG, Callbacks callbacks = Callbacks(), CDIDisc disc = CDIDisc());
@@ -50,6 +50,15 @@ public:
     void Run(bool loop = true);
     void Stop(bool wait = true);
     bool IsRunning() const { return m_isRunning; }
+
+    // TODO: find a way to handle all input device types in a clean way.
+    virtual void SetUp(bool pressed) noexcept = 0;
+    virtual void SetRight(bool pressed) noexcept = 0;
+    virtual void SetDown(bool pressed) noexcept = 0;
+    virtual void SetLeft(bool pressed) noexcept = 0;
+    virtual void SetButton1(bool pressed) noexcept = 0;
+    virtual void SetButton2(bool pressed) noexcept = 0;
+    virtual void SetButton12(bool pressed) noexcept = 0;
 
     virtual uint8_t  PeekByte(uint32_t addr) const noexcept = 0;
     virtual uint16_t PeekWord(uint32_t addr) const noexcept = 0;
@@ -82,9 +91,11 @@ public:
 
 protected:
     friend CDDrive;
+    friend Pointer;
     friend SCC68070;
 
     CDIDisc m_disc; /**< CDI disc. */
+    std::unique_ptr<ISlave> m_slave{}; /**< The slave processor. */
 
     CDI(std::string_view boardName, CDIConfig config, Callbacks callbacks, CDIDisc disc = CDIDisc());
 

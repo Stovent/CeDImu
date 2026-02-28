@@ -151,31 +151,31 @@ void GamePanel::OnKeyDown(wxKeyEvent& event)
     int keyCode = event.GetKeyCode();
     if(keyCode == Config::keyUp)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetUp(true);
+        m_cedimu.m_cdi->SetUp(true);
     }
     else if(keyCode == Config::keyRight)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetRight(true);
+        m_cedimu.m_cdi->SetRight(true);
     }
     else if(keyCode == Config::keyDown)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetDown(true);
+        m_cedimu.m_cdi->SetDown(true);
     }
     else if(keyCode == Config::keyLeft)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetLeft(true);
+        m_cedimu.m_cdi->SetLeft(true);
     }
     else if(keyCode == Config::key1)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton1(true);
+        m_cedimu.m_cdi->SetButton1(true);
     }
     else if(keyCode == Config::key2)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton2(true);
+        m_cedimu.m_cdi->SetButton2(true);
     }
     else if(keyCode == Config::key12)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton12(true);
+        m_cedimu.m_cdi->SetButton12(true);
     }
     else
         event.Skip();
@@ -190,31 +190,31 @@ void GamePanel::OnKeyUp(wxKeyEvent& event)
     int keyCode = event.GetKeyCode();
     if(keyCode == Config::keyUp)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetUp(false);
+        m_cedimu.m_cdi->SetUp(false);
     }
     else if(keyCode == Config::keyRight)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetRight(false);
+        m_cedimu.m_cdi->SetRight(false);
     }
     else if(keyCode == Config::keyDown)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetDown(false);
+        m_cedimu.m_cdi->SetDown(false);
     }
     else if(keyCode == Config::keyLeft)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetLeft(false);
+        m_cedimu.m_cdi->SetLeft(false);
     }
     else if(keyCode == Config::key1)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton1(false);
+        m_cedimu.m_cdi->SetButton1(false);
     }
     else if(keyCode == Config::key2)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton2(false);
+        m_cedimu.m_cdi->SetButton2(false);
     }
     else if(keyCode == Config::key12)
     {
-        m_cedimu.m_cdi->m_slave->pointingDevice.SetButton12(false);
+        m_cedimu.m_cdi->SetButton12(false);
     }
     else
         event.Skip();

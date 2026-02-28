@@ -49,6 +49,7 @@ See `The OS-9 guru - chapter 6` and the [OS-9 Assembler/Linker](http://icdia.co.
 ## TODO
 
 - rename ciapdriv to something like cdfmdriv because I do not have a ciap, and replace the /cd dev desc
+- Should the CDDrive and Pointer cores go to the SoftCDI directory?
 
 ## Useful notes
 

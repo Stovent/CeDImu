@@ -19,6 +19,14 @@ public:
 
     virtual void Reset(bool resetCPU) override;
 
+    virtual void SetUp(const bool pressed) noexcept override { m_slave->pointingDevice.SetUp(pressed); }
+    virtual void SetRight(const bool pressed) noexcept override { m_slave->pointingDevice.SetRight(pressed); }
+    virtual void SetDown(const bool pressed) noexcept override { m_slave->pointingDevice.SetDown(pressed); }
+    virtual void SetLeft(const bool pressed) noexcept override { m_slave->pointingDevice.SetLeft(pressed); }
+    virtual void SetButton1(const bool pressed) noexcept override { m_slave->pointingDevice.SetButton1(pressed); }
+    virtual void SetButton2(const bool pressed) noexcept override { m_slave->pointingDevice.SetButton2(pressed); }
+    virtual void SetButton12(const bool pressed) noexcept override { m_slave->pointingDevice.SetButton12(pressed); }
+
     virtual uint8_t  PeekByte(uint32_t addr) const noexcept override;
     virtual uint16_t PeekWord(uint32_t addr) const noexcept override;
     virtual uint32_t PeekLong(uint32_t addr) const noexcept override;
