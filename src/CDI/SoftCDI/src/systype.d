@@ -15,8 +15,8 @@ CONFIG macro
 MainFram dc.b "Philips CD-I",0
 SysStart dc.b "launcher",0 name of initial module to execute
 SysParam equ 0
-
 SysDev equ 0 initial system disk pathlist
+
 ConsolNm dc.b "/t2",0 console terminal pathlist
 ClockNm dc.b "sgstom",0 clock module name
 Extens dc.b "OS9P2 csdinit",0
@@ -29,7 +29,7 @@ MemList MemType VIDEO1,128,B_USER,ProbeSize,PlaneABeg,PlaneAEnd,PlaneAVideo,0
 
 	dc.l 0									terminate list
 
-ProbeSize	equ $8000		Search every 1KB of memory
+ProbeSize	equ $400		Search every 1KB of memory
 PlaneABeg	equ $500
 PlaneAEnd	equ $80000
 PlaneAVideo	dc.b "Plane A Video",0

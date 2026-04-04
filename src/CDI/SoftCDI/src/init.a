@@ -60,6 +60,7 @@ ColdRetrys	set 0 number of retries for coldstart's "chd" before failing
 	dc.w	Paths		initial path table size
 	dc.w	SysParam	param string for first executable mod
 	dc.w	SysStart	first executable module name offset
+
 	dc.w	SysDev		system default device name offset
 	dc.w	ConsolNm	standard I/O pathlist name offset
 	dc.w	Extens		Customization module name offset
@@ -67,12 +68,14 @@ ColdRetrys	set 0 number of retries for coldstart's "chd" before failing
 	dc.w	Slice		number of ticks per time slice
 	dc.w	IP_ID		interprocessor identification
 	dc.l	Site		installation site code
+
 	dc.w	MainFram	installation name offset
 	dc.l	CPUTyp		specific 68000 family proc in use
 	dc.b	Level,Vers,Revis,Edit	OS-9 Level
 	dc.w	OS9Rev		OS-9 revision string offset
 	dc.w	SysPri		initial system priority
 	dc.w	MinPty		initial sys min executable priority
+
 	dc.w	MaxAge		maximum system natural age limit
 	dc.l	MDirSz		module directory size (unused)
 	dc.w	Events		initial event table size (no.r of entries)
@@ -81,6 +84,7 @@ ColdRetrys	set 0 number of retries for coldstart's "chd" before failing
 	dc.w	MemList		memory definitions
 	dc.w	StackSz/4	IRQ stack size (in longwords)
 	dc.w	ColdRetrys	coldstart's "chd" retry count
+
 	dc.w	0,0,0,0,0	reserved
 	dc.w	0,0,0,0,0	reserved
 

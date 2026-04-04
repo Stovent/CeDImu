@@ -5,6 +5,7 @@ SoftCDI patches a regular CDI BIOS with custom modules for programs, file manage
 The following modules are reimplemented:
 - ciapdriv
 - csd
+- init
 - launcher
 - pt2
 - pt2driv
@@ -16,6 +17,10 @@ This reimplements the CDFM device driver, see CDFM.md for implementation details
 ## csd
 
 csd as of the Green Book Appendix VII.2.
+
+## init
+
+The init module, based on default values from the OS-9 Technical Manual.
 
 ## launcher
 

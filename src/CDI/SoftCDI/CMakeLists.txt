@@ -26,7 +26,7 @@ if(LIBCEDIMU_REBUILD_SOFTCDI)
         src/ciapdriv.a
         src/csd.a
         src/init.a
-        # src/launcher.a
+        src/launcher.a
         src/pt2.a
         src/pt2driv.a
         src/softcdi.d
@@ -38,7 +38,7 @@ if(LIBCEDIMU_REBUILD_SOFTCDI)
         build/CIAPDRIV
         build/CSD
         build/INIT
-        # build/LAUNCHER
+        build/LAUNCHER
         build/PT2
         build/PT2DRIV
         build/VID

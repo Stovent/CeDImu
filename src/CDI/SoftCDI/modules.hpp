@@ -19,10 +19,10 @@ inline constexpr uint8_t INIT_DATA[] = {
 };
 inline constexpr std::span<const uint8_t> INIT{INIT_DATA};
 
-// inline constexpr uint8_t LAUNCHER_DATA[] = {
-// #embed "build/LAUNCHER"
-// };
-// inline constexpr std::span<const uint8_t> LAUNCHER{LAUNCHER_DATA};
+inline constexpr uint8_t LAUNCHER_DATA[] = {
+#embed "build/LAUNCHER"
+};
+inline constexpr std::span<const uint8_t> LAUNCHER{LAUNCHER_DATA};
 
 inline constexpr uint8_t PT2_DATA[] = {
 #embed "build/PT2"
