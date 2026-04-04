@@ -1,31 +1,38 @@
 # SoftCDI
 
-SoftCDI patches a regular CDI BIOS with custom modules for programs and file managers to intercept CDRTOS calls and reimplements the Green Book in software.
+SoftCDI patches a regular CDI BIOS with custom modules for programs, file managers and device drivers to intercept CDRTOS calls and reimplements the Green Book in software.
 
 The following modules are reimplemented:
-- csd
-- sysgo
-- nvdrv
-- video
+- ciapdriv
+- csd_450
+- launcher
+- pt2
+- pt2driv
 
-## csd
+## ciapdriv
+
+This reimplements the CDFM device driver, see CDFM.md for implementation details.
+
+## csd_450
 
 csd as of the Green Book Appendix VII.2.
 
-## sysgo
+## launcher
 
-The custom sysgo module does the following:
+The custom launcher module does the following:
 - Change the current data and execution directory to "/cd"
 - F$Load the disc main module
 - F$Chain to the module
 
-## nvdrv
+## pt2
 
-The NVRAM driver, allows to save the data on the host.
+Replacement of the pt2 device descriptor
 
-## video
+## pt2driv
 
-Reimplementation of the Green Book in software.
+Reimplementation of the UCM pointer device driver.
+TODO: the implementation is done and should be complete, but for an unknown reason, this driver with the Pointer core
+makes the kernel and the play process unstable, resulting in freezes.
 
 ## CMake toolchain
 
@@ -48,6 +55,7 @@ See `The OS-9 guru - chapter 6` and the [OS-9 Assembler/Linker](http://icdia.co.
 
 ## TODO
 
+- Investigate why pt2driv and Pointer make the kernel unstable
 - rename ciapdriv to something like cdfmdriv because I do not have a ciap, and replace the /cd dev desc
 - Should the CDDrive and Pointer cores go to the SoftCDI directory?
 

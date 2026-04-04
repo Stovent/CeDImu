@@ -6,36 +6,48 @@
 
 using enum SCC68070::Register;
 
-void SoftCDIScheduler::DispatchSystemCall(const uint16_t syscall) noexcept
+void SoftCDIScheduler::DispatchSystemCall(const SystemCall syscall) noexcept
 {
     switch(syscall)
     {
-    case SoftCDI_Debug:
+    case SystemCall::SoftCDI_Debug:
         SoftCDIDebug();
         break;
 
-    case CdDrivePlay:
+    case SystemCall::CdDrivePlay:
         CDDrivePlay();
         break;
 
-    case CdDriveCopySector:
+    case SystemCall::CdDriveCopySector:
         CDDriveCopySector();
         break;
 
-    case CdDriveGetSubheader:
+    case SystemCall::CdDriveGetSubheader:
         CDDriveGetSubheader();
         break;
 
-    case CdfmDeviceDriverGetStat:
+    case SystemCall::CdfmDeviceDriverGetStat:
         CDFMDeviceDriverGetStat();
         break;
 
-    case CdfmDeviceDriverSetStat:
+    case SystemCall::CdfmDeviceDriverSetStat:
         CDFMDeviceDriverSetStat();
         break;
 
+    case SystemCall::PointerDeviceDriverGetPacket:
+        PointerDeviceDriverGetPacket();
+        break;
+
+    case SystemCall::PointerDeviceDriverGetStat:
+        PointerDeviceDriverGetStat();
+        break;
+
+    case SystemCall::PointerDeviceDriverSetStat:
+        PointerDeviceDriverSetStat();
+        break;
+
     default:
-        std::println("Unknown system call 0x{:X}", syscall);
+        std::println("Unknown system call 0x{:X}", static_cast<uint16_t>(syscall));
     }
 
     /*
@@ -49,7 +61,7 @@ void SoftCDIScheduler::SoftCDIDebug() noexcept
 {
     [[maybe_unused]] std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
 
-    std::println("Debug");
+    std::println("Debug {} {} {} {}", regs[D0], regs[D1], regs[D2], regs[D3]);
 }
 
 /** \brief Handles Play routine of the CDFM device driver.
@@ -104,4 +116,33 @@ void SoftCDIScheduler::CDFMDeviceDriverSetStat() noexcept
         OS9::setStatServiceRequestToString(regs[D0]),
         OS9::subSetStatServiceRequestToString(regs[D0], regs[D1]),
         regs[D2], regs[D3], regs[D4]);
+}
+
+void SoftCDIScheduler::PointerDeviceDriverGetPacket() noexcept
+{
+    std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
+    const uint32_t a0 = regs[A0];
+    std::println("Pointer get packet 0x{:X}", a0);
+
+    m_pointerInput.GetPacket(a0);
+}
+
+void SoftCDIScheduler::PointerDeviceDriverGetStat() noexcept
+{
+    std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
+    std::println("Pointer Get stat {} {} {} {} {} {}",
+        regs[D0],
+        OS9::getStatServiceRequestToString(regs[D1]),
+        OS9::subGetStatServiceRequestToString(regs[D1], regs[D2]),
+        regs[D3], regs[D4], regs[D5]);
+}
+
+void SoftCDIScheduler::PointerDeviceDriverSetStat() noexcept
+{
+    std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
+    std::println("Pointer Set stat {} {} {} {} {} {}",
+        regs[D0],
+        OS9::setStatServiceRequestToString(regs[D1]),
+        OS9::subSetStatServiceRequestToString(regs[D1], regs[D2]),
+        regs[D3], regs[D4], regs[D5]);
 }

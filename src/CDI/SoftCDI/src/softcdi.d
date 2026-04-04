@@ -5,6 +5,9 @@ CdDrive_CopySector	equ	$102
 CdDrive_GetSubheader	equ	$103
 CdfmDeviceDriver_GetStat	equ	$104
 CdfmDeviceDriver_SetStat	equ	$105
+PointerDeviceDriver_GetPacket	equ $106
+PointerDeviceDriver_GetStat		equ $107
+PointerDeviceDriver_SetStat		equ $108
 
 * CDFM device driver useful data
 CdDrive_Port		equ	0
@@ -22,3 +25,8 @@ Slave_Port			equ	$310000
 Slave_Vector		equ 26
 Slave_IRQLevel		equ	2
 Slave_Priority		equ	1
+
+* SoftCDI Pointer device
+Pointer_Port		equ	0
+Pointer_Vector		equ	201
+Pointer_Priority	equ	32

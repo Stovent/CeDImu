@@ -9,6 +9,11 @@ inline constexpr uint8_t CIAPDRIV_DATA[] = {
 };
 inline constexpr std::span<const uint8_t> CIAPDRIV{CIAPDRIV_DATA};
 
+inline constexpr uint8_t CSD_450_DATA[] = {
+#embed "build/CSD_450"
+};
+inline constexpr std::span<const uint8_t> CSD_450{CSD_450_DATA};
+
 // inline constexpr uint8_t LAUNCHER_DATA[] = {
 // #embed "build/LAUNCHER"
 // };
@@ -18,6 +23,11 @@ inline constexpr uint8_t PT2_DATA[] = {
 #embed "build/PT2"
 };
 inline constexpr std::span<const uint8_t> PT2{PT2_DATA};
+
+inline constexpr uint8_t PT2DRIV_DATA[] = {
+#embed "build/PT2DRIV"
+};
+inline constexpr std::span<const uint8_t> PT2DRIV{PT2DRIV_DATA};
 
 inline constexpr uint8_t VID_DATA[] = {
 #embed "build/VID"

@@ -23,6 +23,24 @@ public:
     virtual CDIDisc& GetDisc() noexcept override;
 
 protected:
+    /** \brief SoftCDI system calls.
+     * TODO: organise this list.
+     */
+    enum class SystemCall : uint16_t
+    {
+        _Min = 0x100, /**< Minimal syscall index to not overlap with OS-9. */
+        SoftCDI_Debug = 0x100, /**< Not stable system call that does nothing, used for debug purposes. */
+        CdDrivePlay = 0x101,
+        CdDriveCopySector = 0x102,
+        CdDriveGetSubheader = 0x103,
+        CdfmDeviceDriverGetStat = 0x104,
+        CdfmDeviceDriverSetStat = 0x105,
+
+        PointerDeviceDriverGetPacket = 0x106,
+        PointerDeviceDriverGetStat = 0x107,
+        PointerDeviceDriverSetStat = 0x108,
+    };
+
     virtual void Scheduler(std::stop_token stopToken) override;
     /** \brief Increments the emulated time for the SoftCDI components and CDI's.
      * \warning This method calls `CDI::IncrementTime(ns);`.
@@ -40,7 +58,7 @@ protected:
     Pointer m_pointerInput;
 
     // System call handling.
-    void DispatchSystemCall(uint16_t syscall) noexcept;
+    void DispatchSystemCall(SystemCall syscall) noexcept;
 
     void SoftCDIDebug() noexcept;
     void CDDrivePlay() noexcept;
@@ -49,19 +67,9 @@ protected:
     void CDFMDeviceDriverGetStat() noexcept;
     void CDFMDeviceDriverSetStat() noexcept;
 
-    /** \brief SoftCDI system calls.
-     * TODO: organise this list.
-     */
-    enum SystemCalls : uint16_t
-    {
-        _Min = 0x100, /**< Minimal syscall index to not overlap with OS-9. */
-        SoftCDI_Debug = 0x100, /**< Not stable system call that does nothing, used for debug purposes. */
-        CdDrivePlay = 0x101,
-        CdDriveCopySector = 0x102,
-        CdDriveGetSubheader = 0x103,
-        CdfmDeviceDriverGetStat = 0x104,
-        CdfmDeviceDriverSetStat = 0x105,
-    };
+    void PointerDeviceDriverGetPacket() noexcept;
+    void PointerDeviceDriverGetStat() noexcept;
+    void PointerDeviceDriverSetStat() noexcept;
 };
 
 #endif // CDI_BOARDS_SOFTCDISCHEDULER_SOFTCDISCHEDULER_HPP

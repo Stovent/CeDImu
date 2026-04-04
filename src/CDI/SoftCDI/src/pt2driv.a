@@ -1,0 +1,290 @@
+	nam pt2driv
+	use c:\DEFS\OSKDEFS.D
+	use "softcdi.d"
+	use "softcdi.m"
+
+typelang	equ	(Drivr<<8)+Objct
+attrrevs	equ	((ReEnt+SupStat)<<8)+$99 Not reentrant
+edition		equ	0
+stacksize	equ	0
+
+	psect pt2driv,typelang,attrrevs,edition,stacksize,EntryTable
+
+EntryTable
+	dc.w	Init
+	dc.w	Read	Read only for keyboard driver
+	dc.w	Write	Write only for the Video driver
+	dc.w	GetStat
+	dc.w	SetStat
+	dc.w	Term
+	dc.w	0		Trap handler
+
+* (a1) = Device descriptor pointer
+* (a2) = Device static storage pointer
+* (a4) = Current process descriptor pointer
+* (a6) = System global data pointer
+Init
+	softcdi SoftCDI_Debug
+	move.b M$IRQLvl(a1),d0
+	asl.w #8,d0
+	bset #13,d0						Set the supervisor bit and the IRQ level
+	move.w d0,irqSr(a2)
+	move sr,-(sp)
+	move d0,sr
+* Register IRQ handler
+	move.b #Pointer_Vector,d0		Vector number
+	move.b #Pointer_Priority,d1		priority
+	lea Irq(pc),a0					IRQ service routine entry point
+*									device static storage is already in a2
+	movea.l #Pointer_Port,a3		port address
+	os9 F$IRQ
+	bcc.b _Init_IRQ_NoError
+	moveq #0,d0
+	os9 F$PErr
+
+_Init_IRQ_NoError
+* Initialize device static storage
+	lea Read(pc),a0
+	move.l a0,V_READ(a2)	Address of Read routine
+	lea Write(pc),a0
+	move.l a0,V_WRIT(a2)	Address of Write routine
+	lea SetStat(pc),a0
+	move.l a0,V_PSTA(a2)	Address of SetStat routine
+	lea GetStat(pc),a0
+	move.l a0,V_GSTA(a2)	Address of GetStat routine
+	clr.l V_EXTMOD(a2)		Address of subroutine extension module
+	clr.l V_EXTLNK(a2)		Link count of subroutine extension module
+
+* Init my own variables
+	clr.w irqProc(a2)
+	clr.w irqSignal(a2)
+
+	move.w #$8000,buttons(a2)	Init as pointer active, no buttons pressed
+	clr.b deltaX(a2)
+	clr.b deltaY(a2)
+
+	clr.w coordX(a2)
+	clr.w coordY(a2)
+	clr.w originX(a2) 	Default top-left corner is 0:0
+	clr.w originY(a2)
+
+	move (sp)+,sr
+	rts		Carry always cleared from clr.w
+
+* Read handler
+Read
+*	andi #$FE,ccr
+	move.w #E$BMode,d1
+	ori #1,CCR
+	rts
+
+* Write handler
+Write
+	move.w #E$BMode,d1
+	ori #1,CCR
+	rts
+
+* GetStat
+*
+* Input:
+* d0.w = System path number
+* + UCM parameters (d1, d2, ...) already in the registers
+* (a1) = Path descriptor pointer
+* (a2) = Device static storage pointer
+* (a4) = Current process descriptor pointer
+* (a5) = Pointer to user's register stack
+* (a6) = System global data storage pointer
+* Other registers are function code dependent
+GetStat
+	softcdi PointerDeviceDriver_GetStat		For debug purposes
+
+	cmp.w #SS_PT,d1
+	bne.s _GetStat_End_UnkSvc
+	cmp.w #PT_Coord,d2
+	bne.s _GetStat_End_UnkSvc
+
+	move sr,-(sp)			Save status register for multithreading safety
+	move irqSr(a2),sr
+* Take the current coordinates, add the delta and subtract the origin
+	move.l coordX(a2),d1	MUST BE CONSECUTIVE IN THE X:Y ORDER
+	move.l originX(a2),d2	MUST BE CONSECUTIVE IN THE X:Y ORDER
+	clr.l d0
+	move.b deltaY(a2),d0
+	bsr.b ComputeCoordinate
+
+	swap d0
+	move.b deltaX(a2),d0
+	swap d1
+	swap d2
+	bsr.b ComputeCoordinate
+	swap d1
+	move.l d1,coordX(a2)	Store the new coordinates (MUST BE CONSECUTIVE IN THE X:Y ORDER)
+
+	move.w buttons(a2),d0
+
+_GetStat_End
+	move (sp)+,sr			Restore multithreading
+	andi #$FE,ccr
+	rts
+
+_GetStat_End_UnkSvc
+	move.w #E$UnkSvc,d1
+	ori #1,ccr
+	rts
+
+* Adds the delta in d0.b to the coordinate in d1.w, then adjust from the origin in d2.w.
+* Returns the result in d1.w
+ComputeCoordinate
+	ext.w d0
+	add.w d0,d1
+
+	sub.w d2,d1
+	bcc.b _ComputeCoordinate_End
+	clr.w d1		If we are past the origin, set to 0
+
+_ComputeCoordinate_End
+	rts
+
+* SetStat
+*
+* Input:
+* d0.w = System path number
+* (a1) = Path descriptor pointer
+* (a2) = Device static storage pointer
+* (a4) = Current process descriptor pointer
+* (a5) = Pointer to user's register stack
+* (a6) = System global data storage pointer
+* Other registers are function code dependent
+*
+* Since PT_Org sets the origin as an offset from the default top-left corner (0:0), simply subtract it from the received
+* coordinates from the input (absolute inputs).
+SetStat
+	move.l R$d1(a5),d1
+	move.l R$d2(a5),d2
+	move.l R$d3(a5),d3
+	softcdi PointerDeviceDriver_SetStat		For debug purposes
+
+	cmp.w #SS_PT,d1
+	beq.s _SetStat_PT
+	cmp.w #SS_Close,d1
+	beq.s _SetStat_SS_Close
+
+* Unknow SetStat code
+	move.w #E$UnkSvc,d1
+	ori #1,ccr
+	rts
+
+_SetStat_SS_Close
+	move.w PD_CPR(a1),d1
+	cmp.w irqProc(a1),d1
+	bne.s _SetStat_End
+	clr.w irqProc(a1)
+	bra.b _SetStat_End
+
+_SetStat_PT
+	cmp.w #PT_SSig,d2
+	beq.s _SetStat_PT_SSig
+	cmp.w #PT_Relea,d2
+	beq.s _SetStat_PT_Relea
+	cmp.w #PT_Org,d2
+	beq.s _SetStat_PT_Org
+	cmp.w #PT_Pos,d2
+	beq.s _SetStat_PT_Pos
+
+_SetStat_UnkSvc
+	move.w #E$UnkSvc,d1
+	ori #1,ccr
+	rts
+
+_SetStat_PT_SSig
+	tst.w irqProc(a2)
+	bne.s _SetStat_End		If a signal is already set, don't overwrite it
+
+	move.w PD_CPR(a1),irqProc(a2)
+	move.w d3,irqSignal(a2)
+	bra.s _SetStat_End
+
+_SetStat_PT_Relea
+	clr.w irqProc(a2)
+	clr.w irqSignal(a2)
+	bra.s _SetStat_End
+
+_SetStat_PT_Org
+	move.l d3,originX(a2)		MUST BE CONSECUTIVE IN THE X:Y ORDER
+	bra.b _SetStat_End
+
+_SetStat_PT_Pos
+* Add origin offset to have absolute coordinates
+	add.w originY(a2),d3
+	swap d3
+	add.w originX(a2),d3
+	swap d3
+	move.l d3,coordX(a2)		MUST BE CONSECUTIVE IN THE X:Y ORDER
+*	bra.b _SetStat_End
+
+_SetStat_End
+	andi #$FE,ccr
+	rts
+
+* Termination handler
+Term
+* Remove IRQ entry
+	move.b #Pointer_Vector,d0		Vector number
+	movea.l #0,a0		delete IRQ service routine entry point
+*						device static storage is already in a2
+	os9 F$IRQ
+	bcc.s _Term_NoError
+	moveq #0,d0
+	os9 F$PErr
+
+_Term_NoError
+	rts
+
+* INPUT: (a2) = global static pointer
+* 	(a3) = port address
+* 	(a6) = system global data pointer
+* OUTPUT: None
+* ERROR OUTPUT: Carry bit set if the device did not cause the interrupt.
+* Note: IRQ service routines may destroy the following registers only: d0, d1, a0, a2, a3 and a6.
+* All other registers must be preserved.
+*
+* 1. Poll the device to determine the interrupt type. If the interrupt was not caused by the device, the driver must set
+* the carry bit to one and exit with an RTS as quickly as possible.
+* 2. Service device interrupts.
+* 3. When the IRQ service routine finishes servicing an interrupt it must clear the carry bit (i.e. set to zero) and
+* exit with an RTS instruction.
+Irq
+	lea buttons(a2),a0
+	softcdi PointerDeviceDriver_GetPacket
+
+	move.w irqProc(a2),d0
+	beq.b _Irq_NoSignal
+	clr.w irqProc(a2)			It looks like processes like Play calls SSig on each pointer signal.
+	move.w irqSignal(a2),d1
+	os9 F$Send
+	bcc.b _Irq_NoSignal
+	os9 F$PErr
+
+_Irq_NoSignal
+	andi #$FE,ccr		Clear carry bit -> the IRQ was for this driver.
+	rts
+
+	vsect
+			ds.b 194	Already used UCM device driver section
+irqSr		ds.w 1		Stores the status register to use in Stat routines to prevent multithread errors with IRQ handler
+irqProc		ds.w 1		Holds the process ID to send the signal to (0 for no signal registered)
+irqSignal	ds.w 1		For PT_SSig
+
+* Those three next variables needs to be next to each other for this code and PointerDeviceDriver_GetPacket
+buttons		ds.w 1		The state of the buttons as returned by the PT_Coord status
+deltaX		ds.b 1		Stores the last received maneuvering device input
+deltaY		ds.b 1		Stores the last received maneuvering device input
+
+coordX		ds.w 1		Pair of H:V High res coordinates of the pointer (MUST ALWAYS BE IN THIS ORDER AND A SINGLE LONG)
+coordY		ds.w 1		The current absolute coordinates before being adjusted with the position
+
+originX		ds.w 1		absolute X position of the origin (MUST ALSO BE NEXT TO originY)
+originY		ds.w 1		absolute Y position of the origin (high resolution)
+	ends
+
+	ends

@@ -314,7 +314,7 @@ private:
     constexpr uint8_t GetIPM() const noexcept { return bits<8, 10>(SR); }; // Interrupt Priority Mask
 
     // Exceptions
-    std::priority_queue<Exception> m_exceptions;
+    std::priority_queue<Exception> m_exceptions; // TODO: this does not prevent duplicates.
     void ClearExceptions();
 
     [[nodiscard]] size_t ProcessPendingExceptions();

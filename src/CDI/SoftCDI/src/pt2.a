@@ -17,7 +17,7 @@ stacksize	equ	0
 	dc.b	3		Device Mode Capabilities
 	dc.w	UCMFM	File Manager Name Offset
 	dc.w	PT2DRIV	Device Driver Name Offset
-	dc.w	DevCon	Device Configuration Offset
+	dc.w	0		Device Configuration Offset
 	dz.b	8		Reserved
 	dc.w	$24		Initialization Table Size
 	dc.b	DT_UCM	Device Type
@@ -31,4 +31,3 @@ stacksize	equ	0
 
 UCMFM	dc.b	"ucm",0
 PT2DRIV	dc.b	"pt2driv",0
-DevCon	dc.w	$030B

@@ -7,7 +7,7 @@
 
 class CDI;
 
-/** \brief Emulated pointer input chip that receives controller inputs and sends interrupts to the CPU. */
+/** \brief Software pointer input controller that receives pointer inputs and sends interrupts to the CPU. */
 class Pointer
 {
 public:

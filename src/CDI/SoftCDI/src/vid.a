@@ -22,7 +22,7 @@ stacksize	equ	0
 	dc.w	$24		Initialization Table Size
 	dc.b	DT_UCM	Device Type
 * UCM Device descriptor Option
-	dz.b	$1B		Reserved
+	dz.b	27		Reserved
 	dc.b	FC_VID	Classes of functions of which device is capable
 	dz.b	1		Reserved
 	dc.w	PT2Device	Offset to second device name

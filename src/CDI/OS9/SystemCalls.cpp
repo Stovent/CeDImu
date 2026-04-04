@@ -243,7 +243,7 @@ std::string systemCallInputsToString(const SystemCallType call, const std::map<S
     case SystemCallType::F_RetPD:   snprintf(args, 256, "a0=0x%X d0.w=%hd", REG(A0), REG(D0)); break;
     case SystemCallType::F_SSvc:    snprintf(args, 256, "a1=0x%X a3=0x%X", REG(A1), REG(A3)); break;
     case SystemCallType::F_IODel:   snprintf(args, 256, "a0=0x%X", REG(A0)); break;
-    case SystemCallType::F_GProcP:  snprintf(args, 256, "d0.w"); break;
+    case SystemCallType::F_GProcP:  snprintf(args, 256, "d0.w=%hd", REG(D0)); break;
     case SystemCallType::F_Move:    snprintf(args, 256, "a0=0x%X a2=0x%X d2.l=%d", REG(A0), REG(A2), REG(D2)); break;
     case SystemCallType::F_AllRAM:  return "xxx";
     case SystemCallType::F_Permit:  return "";
