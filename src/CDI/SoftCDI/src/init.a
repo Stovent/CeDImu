@@ -1,0 +1,93 @@
+	nam init
+	ttl init file
+	use c:/DEFS/OSKDEFS.D
+
+typelang	equ	(Systm<<8)
+attrrevs	equ	(ReEnt<<8)+0
+edition		equ	0
+
+	psect init,typelang,attrrevs,edition,0,0
+
+* This comes from the example init file in the OS-9 Technical Manual
+
+* Compat flag bit definitions
+SlowIRQ equ 1 save all regs during IRQ processing
+NoStop equ 1<<1 don't use 'stop' instruction
+NoGhost equ 1<<2 don't retain Sticky memory modules
+NoBurst equ 1<<3 don't enable 68030 cache burst mode
+ZapMem equ 1<<4 wipe out mem that is allocated/freed
+NoClock equ 1<<5 don't start sys clock during coldstart
+
+* Compat2 flag bit definitions
+ExtC_I equ 1<<0 ext instruction cache is coherent
+ExtC_D equ 1<<1 external data cache is coherent
+OnC_I equ 1<<2 on-chip inst cache is coherent
+OnC_D equ 1<<3 on-chip data cache is coherent
+DDIO equ 1<<7 don't disable data caching when in I/O
+
+	opt -l
+	use ./src/systype.d
+
+CPUTyp	set 68070 cpu type (68008/68000/68010/etc.)
+Level	set 1 OS-9 Level One
+Vers	set 2 Version 2.4
+Revis	set 4
+Edit	set 1 Edition
+IP_ID	set 0 interprocessor identification code
+Site	set 0 installation site code
+MDirSz	set 128 initial mod directory size (unused)
+PollSz	set 32 IRQ polling table size (fixed)
+DevCnt	set 32 device table size (fixed)
+Procs	set 64 initial process table size
+Paths	set 64 initial path table size
+Slice	set 2 ticks per time slice
+SysPri	set 128 initial system priority
+MinPty	set 0 initial sys min executable priority
+MaxAge	set 0 initial sys max natural age limit
+MaxMem	set 0 top of RAM (unused)
+Events	set 0 initial event table size (div by 8)
+Compat	set 0 version smoothing byte
+Compat2	set 0 version smoothing byte #2
+StackSz	set 1024 IRQ Stack Size in bytes (must be 1k <= StackSz < 256k)
+ColdRetrys	set 0 number of retries for coldstart's "chd" before failing
+
+* Actual module bytes
+
+	dc.l	MaxMem		(unused)
+	dc.w	PollSz		IRQ polling table
+	dc.w	DevCnt		device table size
+	dc.w	Procs		initial process table size
+	dc.w	Paths		initial path table size
+	dc.w	SysParam	param string for first executable mod
+	dc.w	SysStart	first executable module name offset
+	dc.w	SysDev		system default device name offset
+	dc.w	ConsolNm	standard I/O pathlist name offset
+	dc.w	Extens		Customization module name offset
+	dc.w	ClockNm		clock module name offset
+	dc.w	Slice		number of ticks per time slice
+	dc.w	IP_ID		interprocessor identification
+	dc.l	Site		installation site code
+	dc.w	MainFram	installation name offset
+	dc.l	CPUTyp		specific 68000 family proc in use
+	dc.b	Level,Vers,Revis,Edit	OS-9 Level
+	dc.w	OS9Rev		OS-9 revision string offset
+	dc.w	SysPri		initial system priority
+	dc.w	MinPty		initial sys min executable priority
+	dc.w	MaxAge		maximum system natural age limit
+	dc.l	MDirSz		module directory size (unused)
+	dc.w	Events		initial event table size (no.r of entries)
+	dc.b	Compat		version change smooth byte
+	dc.b	Compat2		version change smooth byte #2
+	dc.w	MemList		memory definitions
+	dc.w	StackSz/4	IRQ stack size (in longwords)
+	dc.w	ColdRetrys	coldstart's "chd" retry count
+	dc.w	0,0,0,0,0	reserved
+	dc.w	0,0,0,0,0	reserved
+
+* Configuration name strings
+OS9Rev dc.b "OS-9/68K V",Vers+'0',".",Revis+'0',0
+
+* The remaining names are defined in the "systype.d" macro
+	CONFIG
+
+	ends

@@ -14,6 +14,11 @@ inline constexpr uint8_t CSD_DATA[] = {
 };
 inline constexpr std::span<const uint8_t> CSD{CSD_DATA};
 
+inline constexpr uint8_t INIT_DATA[] = {
+#embed "build/INIT"
+};
+inline constexpr std::span<const uint8_t> INIT{INIT_DATA};
+
 // inline constexpr uint8_t LAUNCHER_DATA[] = {
 // #embed "build/LAUNCHER"
 // };
