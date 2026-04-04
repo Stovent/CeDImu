@@ -9,10 +9,10 @@ inline constexpr uint8_t CIAPDRIV_DATA[] = {
 };
 inline constexpr std::span<const uint8_t> CIAPDRIV{CIAPDRIV_DATA};
 
-inline constexpr uint8_t CSD_450_DATA[] = {
-#embed "build/CSD_450"
+inline constexpr uint8_t CSD_DATA[] = {
+#embed "build/CSD"
 };
-inline constexpr std::span<const uint8_t> CSD_450{CSD_450_DATA};
+inline constexpr std::span<const uint8_t> CSD{CSD_DATA};
 
 // inline constexpr uint8_t LAUNCHER_DATA[] = {
 // #embed "build/LAUNCHER"

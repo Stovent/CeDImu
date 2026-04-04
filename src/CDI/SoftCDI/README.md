@@ -4,7 +4,7 @@ SoftCDI patches a regular CDI BIOS with custom modules for programs, file manage
 
 The following modules are reimplemented:
 - ciapdriv
-- csd_450
+- csd
 - launcher
 - pt2
 - pt2driv
@@ -13,7 +13,7 @@ The following modules are reimplemented:
 
 This reimplements the CDFM device driver, see CDFM.md for implementation details.
 
-## csd_450
+## csd
 
 csd as of the Green Book Appendix VII.2.
 

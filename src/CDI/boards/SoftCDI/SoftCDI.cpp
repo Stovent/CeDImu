@@ -58,6 +58,9 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
 
     // Add custom mdules.
     bios.append_range(CIAPDRIV);
+    bios.append_range(CSD);
+    bios.append_range(PT2);
+    bios.append_range(PT2DRIV);
     // bios.append_range(LAUNCHER);
 
     /*// Add dummy module.
@@ -66,7 +69,7 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
         throw std::invalid_argument("Last Mono3 module must be dummy");
     bios.insert(bios.end(), mono3.CBegin() + dummy.begin, mono3.CBegin() + dummy.end);*/
 
-    if(bios.size() >= SoftCDI::BIOS_SIZE)
+    if(bios.size() > SoftCDI::BIOS_SIZE)
         throw std::length_error("SoftCDI BIOS must not exceed 0x08'0000 bytes");
 
     bios.resize(SoftCDI::BIOS_SIZE); // Mono3 boot code expects the BIOS size to be 0x8'0000 when searching ROMed module.
