@@ -84,9 +84,10 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
 SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig config, Callbacks callbacks, CDIDisc disc)
     : CDI("SoftCDI", config, std::move(callbacks))
     , SoftCDIScheduler{std::move(disc)}
-    , m_ram0(RAM_BANK_SIZE, 0)
-    , m_ram1(RAM_BANK_SIZE, 0)
-    , m_bios(makeSoftcdiBiosFromMono3(bios))
+    // , m_ram0(RAM_BANK_SIZE, 0)
+    // , m_ram1(RAM_BANK_SIZE, 0)
+    // , m_bios(makeSoftcdiBiosFromMono3(bios))
+    , m_mcd212{*this, makeSoftcdiBiosFromMono3(bios), config.PAL}
     // , m_nvramMaxAddress(config.has32KBNVRAM ? 0x330000 : 0x324000)
 {
     m_slave = std::make_unique<HLE::IKAT>(*this, config.PAL, 0x310000);
@@ -97,7 +98,7 @@ SoftCDI::SoftCDI(OS9::BIOS bios, std::span<const uint8_t> nvram, CDIConfig confi
     Reset(true);
 
     // Load the reset vector data.
-    memcpy(m_ram0.data(), &m_bios[0], 8);
+    // memcpy(m_ram0.data(), &m_bios[0], 8);
 }
 
 SoftCDI::~SoftCDI()
@@ -108,6 +109,7 @@ SoftCDI::~SoftCDI()
 void SoftCDI::IncrementTime(double ns)
 {
     SoftCDIScheduler::IncrementTime(ns);
+    m_mcd212.IncrementTime(ns);
 }
 
 void SoftCDI::Reset(const bool resetCPU)
@@ -122,12 +124,14 @@ uint32_t SoftCDI::GetBIOSBaseAddress() const
 
 uint32_t SoftCDI::GetTotalFrameCount()
 {
-    return 0;
+    // return 0;
+    return m_mcd212.m_totalFrameCount;
 }
 
 const OS9::BIOS& SoftCDI::GetBIOS() const
 {
-    return m_bios;
+    // return m_bios;
+    return m_mcd212.m_bios;
 }
 
 CDIDisc& SoftCDI::GetDisc() noexcept
@@ -152,12 +156,14 @@ uint32_t SoftCDI::GetRAMSize() const
 
 RAMBank SoftCDI::GetRAMBank1() const
 {
-    return {m_ram0, RAM0Begin};
+    // return {m_ram0, RAM0Begin};
+    return m_mcd212.GetRAMBank1();
 }
 
 RAMBank SoftCDI::GetRAMBank2() const
 {
-    return {m_ram1, RAM1Begin};
+    // return {m_ram1, RAM1Begin};
+    return m_mcd212.GetRAMBank2();
 }
 
 const Video::Plane& SoftCDI::GetScreen()

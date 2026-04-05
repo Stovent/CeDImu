@@ -2,6 +2,7 @@
 #define CDI_BOARDS_SOFTCDI_SOFTCDI_HPP
 
 #include "../SoftCDIScheduler/SoftCDIScheduler.hpp"
+#include "../../cores/MCD212/MCD212.hpp"
 
 #include <span>
 
@@ -60,9 +61,10 @@ private:
     virtual void Reset(const bool resetCPU) override;
 
     static constexpr size_t RAM_BANK_SIZE = 0x80000u; // 512KB
-    std::vector<uint8_t> m_ram0;
-    std::vector<uint8_t> m_ram1;
-    OS9::BIOS m_bios;
+    // std::vector<uint8_t> m_ram0;
+    // std::vector<uint8_t> m_ram1;
+    // OS9::BIOS m_bios;
+    MCD212 m_mcd212;
     // const uint32_t m_nvramMaxAddress;
 
     // Specifics to allow the BIOS to initialize.
@@ -75,13 +77,13 @@ private:
         RAM0End   = 0x08'0000,
         RAM1Begin = 0x20'0000,
         RAM1End   = 0x28'0000,
-        SlaveBegin = 0x31'0000,
+        SlaveBegin = 0x31'0000, // Needed because the boot code writes there.
         SlaveEnd   = 0x31'001E,
         TimekeeperBegin = 0x32'0000,
         TimekeeperEnd   = 0x32'4000,
         BIOSBegin = 0x40'0000,
         BIOSEnd   = BIOSBegin + BIOS_SIZE,
-        MCD212RegistersBegin = 0x4F'FFE0,
+        MCD212RegistersBegin = 0x4F'FFE0, // TODO: remove when no MCD212 driver needed.
         MCD212RegistersEnd   = 0x50'0000,
     };
     static_assert(BIOSEnd <= MCD212RegistersBegin, "BIOS too big");

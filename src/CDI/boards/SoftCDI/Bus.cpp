@@ -5,28 +5,190 @@
 
 uint8_t SoftCDI::PeekByte(const uint32_t addr) const noexcept
 {
-    if(addr < 0x080000)
+    if(addr < RAM0End || (addr >= RAM1Begin && addr < RAM1End) || (addr >= BIOSBegin && addr < MCD212RegistersEnd))
+    {
+        return m_mcd212.PeekByte(addr);
+    }
+
+    if(addr >= SlaveBegin && addr < SlaveEnd && !isEven(addr))
+    {
+        return m_slave->PeekByte((addr - SlaveBegin) >> 1);
+    }
+
+    if(addr >= TimekeeperBegin && addr < TimekeeperEnd && isEven(addr))
+    {
+        return m_timekeeper->PeekByte((addr - TimekeeperBegin) >> 1);
+    }
+
+    if(addr >= SCC68070::Peripheral::Base && addr < SCC68070::Peripheral::Last)
+    {
+        return m_cpu.PeekPeripheral(addr - SCC68070::Peripheral::Base);
+    }
+
+    std::terminate(); // TODO: is this the best way? or should I return 0 or an optional?
+}
+
+uint16_t SoftCDI::PeekWord(const uint32_t addr) const noexcept
+{
+    if(addr < RAM0End || (addr >= RAM1Begin && addr < RAM1End) || (addr >= BIOSBegin && addr < MCD212RegistersEnd))
+    {
+        return m_mcd212.PeekWord(addr);
+    }
+
+    if(addr >= SlaveBegin && addr < SlaveEnd)
+    {
+        return m_slave->PeekByte((addr - SlaveBegin) >> 1);
+    }
+
+    if(addr >= TimekeeperBegin && addr < TimekeeperEnd)
+    {
+        return as<uint16_t>(m_timekeeper->PeekByte((addr - TimekeeperBegin) >> 1)) << 8;
+    }
+
+    if(addr >= SCC68070::Peripheral::Base && addr < SCC68070::Peripheral::Last)
+    {
+        return m_cpu.PeekPeripheral(addr - SCC68070::Peripheral::Base);
+    }
+
+    std::terminate(); // TODO: is this the best way? or should I return 0 or an optional?
+}
+
+uint32_t SoftCDI::PeekLong(const uint32_t addr) const noexcept
+{
+    return as<uint32_t>(PeekWord(addr)) << 16 | PeekWord(addr + 2);
+}
+
+uint8_t SoftCDI::GetByte(const uint32_t addr, const BusFlags flags)
+{
+    if(addr < RAM0End || (addr >= RAM1Begin && addr < RAM1End) || (addr >= BIOSBegin && addr < MCD212RegistersEnd))
+    {
+        return m_mcd212.GetByte(addr, flags);
+    }
+
+    if(addr >= SlaveBegin && addr < SlaveEnd && !isEven(addr))
+    {
+        return m_slave->GetByte((addr - SlaveBegin) >> 1, flags);
+    }
+
+    if(addr >= TimekeeperBegin && addr < TimekeeperEnd && isEven(addr))
+    {
+        return m_timekeeper->GetByte((addr - TimekeeperBegin) >> 1, flags);
+    }
+
+    LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Byte", m_cpu.currentPC, addr, 0});)
+    throw SCC68070::Exception(SCC68070::BusError);
+}
+
+uint16_t SoftCDI::GetWord(const uint32_t addr, const BusFlags flags)
+{
+    if(addr < RAM0End || (addr >= RAM1Begin && addr < RAM1End) || (addr >= BIOSBegin && addr < MCD212RegistersEnd))
+    {
+        return m_mcd212.GetWord(addr, flags);
+    }
+
+    if(addr >= SlaveBegin && addr < SlaveEnd)
+    {
+        return m_slave->GetByte((addr - SlaveBegin) >> 1, flags);
+    }
+
+    if(addr >= TimekeeperBegin && addr < TimekeeperEnd)
+    {
+        return as<uint16_t>(m_timekeeper->GetByte((addr - TimekeeperBegin) >> 1, flags)) << 8;
+    }
+
+    LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Get", "Word", m_cpu.currentPC, addr, 0});)
+    throw SCC68070::Exception(SCC68070::BusError);
+}
+
+uint32_t SoftCDI::GetLong(const uint32_t addr, const BusFlags flags)
+{
+    return as<uint32_t>(GetWord(addr, flags)) << 16 | GetWord(addr + 2, flags);
+}
+
+void SoftCDI::SetByte(const uint32_t addr, const uint8_t data, const BusFlags flags)
+{
+    if(addr < RAM0End || (addr >= RAM1Begin && addr < RAM1End) || (addr >= MCD212RegistersBegin && addr < MCD212RegistersEnd))
+    {
+        m_mcd212.SetByte(addr, data, flags);
+        return;
+    }
+
+    if(addr >= SlaveBegin && addr < SlaveEnd && !isEven(addr))
+    {
+        m_slave->SetByte((addr - SlaveBegin) >> 1, data, flags);
+        return;
+    }
+
+    if(addr >= TimekeeperBegin && addr < TimekeeperEnd && isEven(addr))
+    {
+        m_timekeeper->SetByte((addr - TimekeeperBegin) >> 1, data, flags);
+        return;
+    }
+
+    LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Byte", m_cpu.currentPC, addr, data});)
+    throw SCC68070::Exception(SCC68070::BusError);
+}
+
+void SoftCDI::SetWord(const uint32_t addr, const uint16_t data, const BusFlags flags)
+{
+    if(addr < RAM0End || (addr >= RAM1Begin && addr < RAM1End) || (addr >= MCD212RegistersBegin && addr < MCD212RegistersEnd))
+    {
+        m_mcd212.SetWord(addr, data, flags);
+        return;
+    }
+
+    if(addr >= SlaveBegin && addr < SlaveEnd)
+    {
+        m_slave->SetByte((addr - SlaveBegin) >> 1, data, flags);
+        return;
+    }
+
+    if(addr >= TimekeeperBegin && addr < TimekeeperEnd)
+    {
+        m_timekeeper->SetByte((addr - TimekeeperBegin) >> 1, data >> 8, flags);
+        return;
+    }
+
+    LOG(if(flags.log && m_callbacks.HasOnLogMemoryAccess()) \
+            m_callbacks.OnLogMemoryAccess({MemoryAccessLocation::OutOfRange, "Set", "Word", m_cpu.currentPC, addr, data});)
+    throw SCC68070::Exception(SCC68070::BusError);
+}
+
+void SoftCDI::SetLong(const uint32_t addr, const uint32_t data, const BusFlags flags)
+{
+    SetWord(addr, data >> 16, flags);
+    SetWord(addr + 2, data, flags);
+}
+
+// The code to use when I won't need the MCD212 anymore
+#if 0
+uint8_t SoftCDI::PeekByte(const uint32_t addr) const noexcept
+{
+    if(addr < RAM0End)
     {
         return m_ram0[addr];
     }
 
-    if(addr >= 0x200000 && addr < 0x280000)
+    if(addr >= RAM1Begin && addr < RAM1End)
     {
-        return m_ram1[addr - 0x200000];
+        return m_ram1[addr - RAM1Begin];
     }
 
-    if(addr >= 0x400000 && addr < 0x4FFFE0)
+    if(addr >= BIOSBegin && addr < MCD212RegistersBegin)
     {
-        return m_bios[addr - 0x400000];
+        return m_bios[addr - BIOSBegin];
     }
 
     // These are below the BIOS for performance reasons, it is useless to check for them on every memory read before the bios.
-    if(addr >= 0x320000 && addr < 0x324000 && isEven(addr))
+    if(addr >= TimekeeperBegin && addr < 0x324000 && isEven(addr))
     {
-        return m_timekeeper->PeekByte((addr - 0x320000) >> 1);
+        return m_timekeeper->PeekByte((addr - TimekeeperBegin) >> 1);
     }
 
-    // if(addr >= 0x4FFFE0 && addr < 0x500000)
+    // if(addr >= MCD212RegistersBegin && addr < MCD212RegistersEnd)
     if(addr == 0x4FFFF1)
     {
         return m_csr1r;
@@ -42,19 +204,19 @@ uint8_t SoftCDI::PeekByte(const uint32_t addr) const noexcept
 
 uint16_t SoftCDI::PeekWord(const uint32_t addr) const noexcept
 {
-    if(addr < 0x080000)
+    if(addr < RAM0End)
     {
         return getArray16(m_ram0, addr);
     }
 
-    if(addr >= 0x200000 && addr < 0x280000)
+    if(addr >= RAM1Begin && addr < RAM1End)
     {
-        return getArray16(m_ram1, addr - 0x200000);
+        return getArray16(m_ram1, addr - RAM1Begin);
     }
 
-    if(addr >= 0x400000 && addr < 0x4FFFE0)
+    if(addr >= BIOSBegin && addr < MCD212RegistersBegin)
     {
-        return getArray16(m_bios, addr - 0x400000);
+        return getArray16(m_bios, addr - BIOSBegin);
     }
 
     if(addr >= SCC68070::Peripheral::Base && addr < SCC68070::Peripheral::Last)
@@ -237,3 +399,4 @@ void SoftCDI::SetLong(const uint32_t addr, const uint32_t data, const BusFlags f
     SetWord(addr, data >> 16, flags);
     SetWord(addr + 2, data, flags);
 }
+#endif // #if 0
