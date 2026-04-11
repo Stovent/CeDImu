@@ -29,23 +29,65 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
     {
         if(module.name == "cio" ||
            module.name == "cd" ||
-           module.name == "init" ||
+           module.name == "FONT8X8" ||
+        //    module.name == "pipeman" ||
+           module.name == "nrf" ||
+           module.name == "ucm" ||
+           module.name == "cdfm" || // 41AE74
+           module.name == "scf" || // File manager for t2
+           module.name == "math" ||
+        //    module.name == "copyright" ||
+        //    module.name == "init" ||
+        //    module.name == "sysgo" ||
            module.name == "t2" || // Serial port
            module.name == "u68070" || // device driver for t2
-           module.name == "scf" || // File manager for t2
            module.name == "sgstom" || // Clock module
            module.name == "tim070" || // timer device descriptor
            module.name == "tim070driv" || // timer device driver
-           module.name == "nvr" || // NVRAM descriptor
-           module.name == "nrf" || // NVRAM file manager
+           module.name == "nil" ||
+           module.name == "null" ||
+        //    module.name == "pipe" ||
            module.name == "nvdrv" || // NVRAM device driver
-           module.name == "csdinit" ||
-           module.name == "ucm" ||
-           module.name == "vid" ||
+           module.name == "nvr" || // NVRAM descriptor
            module.name == "video" ||
-           module.name == "pt2" ||
-           module.name == "csd_450" ||
-           module.name == "cdfm")
+           module.name == "vid" ||
+        //    module.name == "vd1" ||
+        //    module.name == "vdk" ||
+           module.name == "cd" ||
+           module.name == "ap" ||
+        //    module.name == "ciapdriv" ||
+        //    module.name == "ciap15_mc0" ||
+        //    module.name == "ciap15_mc1" ||
+        //    module.name == "ciap15_mc2" ||
+        //    module.name == "pt1driv" ||
+        //    module.name == "pt2driv" ||
+        //    module.name == "pt1" ||
+        //    module.name == "pt2" ||
+        //    module.name == "ptr" ||
+        //    module.name == "ckeydriv" ||
+        //    module.name == "ckey" ||
+        //    module.name == "pckdriv" ||
+        //    module.name == "pck" ||
+        //    module.name == "kb1driv" ||
+        //    module.name == "kb1" ||
+        //    module.name == "sldriv" ||
+        //    module.name == "slave" ||
+        //    module.name == "hobdriv" ||
+        //    module.name == "hobbes" ||
+        //    module.name == "cdivolset" ||
+        //    module.name == "csd_450" ||
+           module.name == "csdinit"
+        //    module.name == "config" ||
+        //    module.name == "launcher" ||
+        //    module.name == "sv" ||
+        //    module.name == "play" ||
+        //    module.name == "ps_bck" ||
+        //    module.name == "ps_data2" ||
+        //    module.name == "ps" ||
+        //    module.name == "ps_data" ||
+        //    module.name == "font1.ft" ||
+        //    module.name == "font3.ft" ||
+           ) // module.name == "cdgr")
         {
             bios.insert(bios.end(), mono3.CBegin() + module.begin, mono3.CBegin() + module.end);
         }
@@ -141,12 +183,14 @@ CDIDisc& SoftCDI::GetDisc() noexcept
 
 std::vector<InternalRegister> SoftCDI::GetVDSCInternalRegisters()
 {
-    return {};
+    // return {};
+    return m_mcd212.GetInternalRegisters();
 }
 
 std::vector<InternalRegister> SoftCDI::GetVDSCControlRegisters()
 {
-    return {};
+    // return {};
+    return m_mcd212.GetControlRegisters();
 }
 
 uint32_t SoftCDI::GetRAMSize() const
@@ -168,30 +212,35 @@ RAMBank SoftCDI::GetRAMBank2() const
 
 const Video::Plane& SoftCDI::GetScreen()
 {
-    static Video::Plane screen{3};
-    return screen;
+    // static Video::Plane screen{3};
+    // return screen;
+    return m_mcd212.GetScreen();
 }
 
 const Video::Plane& SoftCDI::GetPlaneA()
 {
-    static Video::Plane planeA{3};
-    return planeA;
+    // static Video::Plane planeA{3};
+    // return planeA;
+    return m_mcd212.GetPlaneA();
 }
 
 const Video::Plane& SoftCDI::GetPlaneB()
 {
-    static Video::Plane planeB{3};
-    return planeB;
+    // static Video::Plane planeB{3};
+    // return planeB;
+    return m_mcd212.GetPlaneB();
 }
 
 const Video::Plane& SoftCDI::GetBackground()
 {
-    static Video::Plane background{3};
-    return background;
+    // static Video::Plane background{3};
+    // return background;
+    return m_mcd212.GetBackground();
 }
 
 const Video::Plane& SoftCDI::GetCursor()
 {
-    static Video::Plane cursor{3};
-    return cursor;
+    // static Video::Plane cursor{3};
+    // return cursor;
+    return m_mcd212.GetCursor();
 }

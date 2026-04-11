@@ -121,8 +121,9 @@ GetStat
 	move.l d1,coordX(a2)	Store the new coordinates (MUST BE CONSECUTIVE IN THE X:Y ORDER)
 
 	move.w buttons(a2),d0
+	clr.b deltaX(a2)		Clear the last read delta because some programs perma reads the offset and thus moves multiple times per frame.
+	clr.b deltaY(a2)
 
-_GetStat_End
 	move (sp)+,sr			Restore multithreading
 	andi #$FE,ccr
 	rts
