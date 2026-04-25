@@ -4,20 +4,20 @@
 	use "softcdi.m"
 
 typelang	equ	(Drivr<<8)+Objct
-attrrevs	equ	((ReEnt+SupStat)<<8)+$99 Not reentrant
+attrrevs	equ	((ReEnt+SupStat)<<8)+$99
 edition		equ	0
 stacksize	equ	0
 
 	psect ciapdriv,typelang,attrrevs,edition,stacksize,EntryTable
 
 EntryTable	dc.w	Init
-		dc.w	Read
-		dc.w	Write
-		dc.w	GetStat
-		dc.w	SetStat
-		dc.w	Term
-		dc.w	0		Trap handler
-		dc.w	Play	CDFM specific (GB VII.3.1.5)
+			dc.w	Read
+			dc.w	Write
+			dc.w	GetStat
+			dc.w	SetStat
+			dc.w	Term
+			dc.w	0		Trap handler
+			dc.w	Play	CDFM specific (GB VII.3.1.5)
 
 * (a1) address of the device descriptor module
 * (a2) address of the driver’s static variable storage
@@ -34,8 +34,8 @@ Init
 	bcc.s _Init_IRQ_NoError
 	moveq #0,d0
 	os9 F$PErr
-_Init_IRQ_NoError
 
+_Init_IRQ_NoError
 * Initialize device static storage
 	clr.w V_LPRC(a2)		No last active process ID.
 	clr.w V_WAKE(a2)		No process ID to wake for now.
@@ -61,11 +61,15 @@ _Init_IRQ_NoError
 
 * This call is synchronous, meaning it must F$Sleep until the data has been read.
 Read
-	softcdi $102
+	softcdi SoftCDI_Debug
+	move.w #E$UnkSvc,d1
+	ori #1,CCR
 	rts
 
+* This subroutine is currently illegal on CD-I media.
 Write
-	softcdi $103
+	move.w #E$UnkSvc,d1
+	ori #1,CCR
 	rts
 
 * GetStat
@@ -134,22 +138,23 @@ Term_NoError
 * Play is asynchronous, meaning the data is being read after the system call has returned.
 * However for some reads, it should sleep (like reading the Disc Label).
 Play
-	move.w PD_PROCID(a1),d0
-	move.w d0,V_WAKE(a2)		Set the process ID to wake up
+	move.w PD_PROCID(a1),V_WAKE(a2)		Set the process ID to wake up
 
 	movea.l PD_PCBptr(a1),a3	Get play control block address
 
 	move.l PD_PSRT(a1),d0		Logical starting sector of Play selection
-	move.l PCB_Rec(a3),d1		Maximum number of records to play
+	move.l PCB_Rec(a3),d1		Maximum number of records to play (debug only)
+* TODO: remove PCB_Rec, kept for debugging purposes.
 	move.b PD_FNum(a1),d2		File number
-	move.l PCB_Chan(a3),d3		Channel selection mask
+*	move.l PCB_Chan(a3),d3		Channel selection mask
+	move.l PD_CNUM(a1),d3		Channel selection mask
 * TODO: Audio to audio processor channel selection mask
 	softcdi CdDrive_Play
 
 	rts
 
 * IRQ service routines conform to the following register conventions:
-* INPUT: (a2) = global static pointer
+* INPUT: (a2) = Device Static storage pointer
 * 	(a3) = port address
 * 	(a6) = system global data pointer (D_’s)
 * 	(a7) = system stack (in active proc’s descriptor)
@@ -158,11 +163,16 @@ Play
 * WARNING: Interrupt service routines may destroy the following registers: d0,
 * d1, a0, a2, a3, and/or a6. You must preserve all other registers used.
 *
-* The idea is after 1/75th of a second the virtual machine scheduler triggers an IRQ to my driver.
+* The idea is after 1/75th of a second the virtual machine scheduler triggers an IRQ to this driver.
 * The IRQ handler will send a signal to CDFM to tell it the sector has been read.
 * The basic logic of the handler is described in VII.3.1.5.8 The IRQ Service Request Subroutine.
 *
-* TODO: handle play termination
+* The main unkown is what do to in the case of an empty or message sector? Currently this driver does not copy them to
+* memory, but it still handles the PCB struct. This is necessary becomes some discs have their EOF or EOR bits on empty
+* sectors.
+*
+* TODO: handle PCB_Chan and PCB_AChan
+*
 * Play is terminated by any of the following conditions:
 * 1. EOF is encountered.
 * 2. PCB_Rec goes to zero.
@@ -178,66 +188,70 @@ Irq
 
 	softcdi CdDrive_GetSubheader
 	lsr.l #8,d0
-	move.b d0,d5		D5.b holds the channel number
+	move.b d0,d5		D5.l holds the channel number
 	lsr.l #8,d0
-	move.b d0,d6		D6.b holds the submode
+	move.b d0,d6		D6.l holds the submode
 	lsr.l #8,d0
-	move.b d0,d7		D7.b holds the coding information
+	move.b d0,d7		D7.l holds the coding information
 
 * Read the correct PCL from the correct data type and channel
 	lea DRVBEG(a2),a5			Get drive table address
 	movea.l V_PLAY(a5),a1		Get play path descriptor address
 	movea.l PD_PCBptr(a1),a4	Get play control block address
+	move.w d6,PCB_Stat(a4)		Reset PCB_Stat (I need PCB_Stat(a4) resetted to handle play is finished later)
 	btst #3,d6
 	bne.s _Irq_SubmodeData
 	btst #2,d6
 	bne.s _Irq_SubmodeAudio
-	movea.l PCB_Video(a4),a5	Get CIL pointer for video data
-	move.l #2324,d4				Size of sector data
-	bra.s _Irq_ProcessPCL
+	btst #1,d6
+	bne.s _Irq_SubmodeVideo
+	bra.b _Irq_UpdatePCB		Submode empty -> empty or message sector
 
 _Irq_SubmodeData
 	movea.l PCB_Data(a4),a5		Get CIL pointer for computer data
 	move.l #2048,d4				Size of sector data
-	bra.s _Irq_ProcessPCL
+	bra.s _Irq_GetPCL
 
 _Irq_SubmodeAudio
 	movea.l PCB_Audio(a4),a5	Get CIL pointer for audio data
 	move.l #2304,d4				Size of sector data
+	bra.s _Irq_GetPCL
 
-_Irq_ProcessPCL
+_Irq_SubmodeVideo
+	movea.l PCB_Video(a4),a5	Get CIL pointer for video data
+	move.l #2324,d4				Size of sector data
+
+_Irq_GetPCL
+	cmpa.l #0,a5			Check if CIL pointer is null
+	beq.b _Irq_UpdatePCB
 * Check if PCL is valid
 	lsl #2,d5				channel number as offset in 4-bytes steps
-	lea 0(a5,d5.w),a6		Get the CIL in A6
+	lea 0(a5,d5.w),a6		Need the CIL in A6
 	movea.l (a6),a5			Get Play Control List
 	cmpa.l #0,a5
-	beq.s _Irq_return
+	beq.s _Irq_UpdatePCB
 
-* Check if PCL buffer is null
-	movea.l PCL_Buf(a5),a0
-	cmpa.l #0,a0
-	beq.s _Irq_return			Data buffer nullptr
-	btst #0,PCL_Ctrl(a5)		Buffer full flag?
-	bne.s _Irq_return			TODO: terminate the play and return an overrun error
+* Update PCL
+	bsr.w UpdatePCL
+	bcc.b _Irq_UpdatePCB
+	ori.w #$100,PCB_Stat(a4)	Set play is finished if overrun
+* TODO: handle overrun
 
-	bsr.s IsPCL_BufFull
-	bcs.s _Irq_return
+_Irq_UpdatePCB
+* Check if the play is terminated
+	bsr.b DecrementPCB_Rec
+	bhi.s _Irq_CheckEOF			Is the play terminated?
+	ori.w #$100,PCB_Stat(a4)	Set play is finished if PCBRec reaches or was 0
+_Irq_CheckEOF
+	btst #7,d6					EOF
+	beq.b _Irq_CheckPlayIsFinished
+	ori.w #$100,PCB_Stat(a4)	Set play is finished if End of File
+_Irq_CheckPlayIsFinished
+	btst.b #0,PCB_Stat(a4)		Is the Play finished?
+	beq.b _Irq_CheckSendSignal
 
-* Copy from CD drive to memory
-	adda.l PCL_Cnt(a5),a0
-	move.l d4,d0				Buffer size is the size of the excepted sector
-	softcdi CdDrive_CopySector
-	move.b d6,PCL_Smode(a5)
-	move.b d7,PCL_Type(a5)
-* PCB_Rec is decremented below because I need its value there
-	bsr.s IncrementPCL_Buf
-
-* Handle if the play is terminated
-	move.w d6,PCB_Stat(a4)		Reset PCB_Stat, the low byte is the submode
-	subq.l #1,PCB_Rec(a4)
-	bne.s _Irq_NotTerminated	Is the play terminated?
-	ori #$100,PCB_Stat(a4)		Play is finished
-
+_Irq_PlayIsFinished
+	softcdi CdDrive_Stop
 * Move to the next Play path descriptor
 	movea.l PD_NxtPD(a1),a0
 	cmp.l PD_LstPD(a1),a0
@@ -248,55 +262,110 @@ _Irq_NextPlay
 	move.l a0,V_PLAY(a5)
 	clr.l PD_PCBptr(a1)
 
-* PCL signal is sent first from IncrementPCL_Buf, then the PCB signal.
-	move.w PCB_Sig(a4),d1		Get signal to send
-	beq.s _Irq_NoSignal
-	move.w PD_PROCID(a1),d0		Get process ID to wake
-	os9 F$Send					Wake up file manager
+_Irq_CheckSendSignal
+* Do we have to send PCB_Sig?
+* PCL signal is sent first from UpdatePCL, then the PCB signal.
+	btst #0,PCB_Stat(a4)		Check high byte for play is finished
+	bne.b _Irq_SendPCBSignal
+	btst #0,d6			EOR
+	bne.b _Irq_SendPCBSignal
+	btst #4,d6			Trigger
+	bne.b _Irq_SendPCBSignal
+	bra.b _Irq_Return
 
-_Irq_NoSignal
-_Irq_NotTerminated
-_Irq_return
+_Irq_SendPCBSignal
+	bsr.b SendPCBSignal
+
+_Irq_Return
 	movem.l (sp)+,d2-d7/a1/a4/a5
 	andi #$FE,ccr		Clear carry bit -> the IRQ was for this driver.
 	rts
 
-* Checks if PCL_Buf is not empty. Modifies d0,d1.
-* Returns the carry flag set when the buffer is full.
-* a5: PCL
-* d4.l: size of sector data (VII-50 footnote 9)
-IsPCL_BufFull
-* TODO: check the buffer full bit instead?
-	move.l PCL_Cnt(a5),d0
-	move.l PCL_BufSz(a5),d1
-	mulu.w d4,d1		Convert BufSz to byte size
-	cmp.l d1,d0			Sets the carry if BufSz is bigger than Cnt (meaning buffer not full)
-* If they are the same, carry is not set, but the buffer is still full.
-	eori #1,ccr			Invert the result for error
+* Sends the PCB signal
+SendPCBSignal
+	move.w PCB_Sig(a4),d1		Get signal to send
+	move.w PD_PROCID(a1),d0		Get process ID to wake
+*	bra.b SendSignal			Wake up file manager
+
+* Sends the signal to the given process ID if the signal code is not 0
+* d0.w: process ID
+* d1.w: signal code
+SendSignal
+	tst.w d1
+	beq.b _SendSignal_NoSignal
+	os9 F$Send
+_SendSignal_NoSignal
 	rts
 
-* Handles the increment of the PCL, handle the overflow case.
-* a1: path descriptor
+* Decrements by 1 the PCB_Rec field
+* Returns the carry bit or the zero bit set when the play is terminated
+* d6.l submode
+* a4: PCB
+*
+* II.4.5.3 The use of the EOR bit is only mandatory for real-time records.
+DecrementPCB_Rec
+	btst #6,d6			Is the sector a real-time sector
+	beq.b _DecrementPCB_Rec_Decrement
+	btst #0,d6			Is it the end of record for real-time?
+	bne.b _DecrementPCB_Rec_Decrement
+	andi #0,ccr			Clear all CCR flags
+	rts
+
+_DecrementPCB_Rec_Decrement
+	subq.l #1,PCB_Rec(a4)
+	rts
+
+* Handles the update of the PCL
+* Returns the carry bit set when the play has to be terminated
+* d4.l: Size of the sector
+* d6.l: submode byte
+* d7.l: coding information
+* a1: Path descriptor
 * a5: PCL
-* d4.l: size of sector data (VII-50 footnote 9)
-IncrementPCL_Buf
-	add.l d4,PCL_Cnt(a5)
-	bsr.s IsPCL_BufFull
-	bcc.s _IncrementPCL_Buf_return
-	ori.b #1,PCL_Ctrl(a5)		Set buffer full flag
-
-	move.w PCL_Sig(a5),d1		Get signal to send
-	beq.s _IncrementPCL_Buf_NoSignal
-	move.w PD_PROCID(a1),d0		Get process ID to wake
-	os9 F$Send
-_IncrementPCL_Buf_NoSignal
-
-	movea PCL_Nxt(a5),a0
+* a6: Address of CIL entry for this PCL
+UpdatePCL
+	move.l d2,-(sp)
+* Check if buffer null or already full
+	movea.l PCL_Buf(a5),a0
 	cmpa.l #0,a0
-	beq.s _IncrementPCL_Buf_return
-	move.l a0,(a6)			Copy next PCL entry to CIL
+	beq.b _UpdatePCL_Return
+	btst.b #0,PCL_Ctrl(a5)		Test for buffer full
+	bne.b _UpdatePCL_Overrun
 
-_IncrementPCL_Buf_return
+* Store PCL_SMode and PCL_Type
+	move.b d6,PCL_Smode(a5)
+	move.b d7,PCL_Type(a5)
+
+* Transfert data
+	move.l PCL_Cnt(a5),d2
+	adda.l d2,a0
+	move.l d4,d0				Buffer size is the size of the expected sector
+	softcdi CdDrive_CopySector
+	add.l d4,d2
+	move.l d2,PCL_Cnt(a5)
+
+* Check buffer full
+	move.l PCL_BufSz(a5),d0
+	mulu.w d4,d0		Convert BufSz to byte size
+	cmp.l d2,d0			Is PCL_BufSz higher than PCL_Cnt?
+	bhi.b _UpdatePCL_NotFull
+
+* Handle buffer full
+	bset.b #0,PCL_Ctrl(a5)		Set buffer full
+	move.l PCL_Nxt(a5),(a6)		Set CIL to the next PCL entry
+	move.w PD_PROCID(a1),d0
+	move.w PCL_Sig(a5),d1
+	bsr.b SendSignal
+
+_UpdatePCL_NotFull
+_UpdatePCL_Return
+	move.l (sp)+,d2
+	andi #$FE,ccr		Clear carry -> no overrun
+	rts
+
+_UpdatePCL_Overrun
+	move.l (sp)+,d2
+	ori #1,ccr		Set carry -> overrun occured
 	rts
 
 	vsect

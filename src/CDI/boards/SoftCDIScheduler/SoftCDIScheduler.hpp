@@ -24,21 +24,22 @@ public:
 
 protected:
     /** \brief SoftCDI system calls.
-     * TODO: organise this list.
+     * Must match softcdi.d
      */
     enum class SystemCall : uint16_t
     {
         _Min = 0x100, /**< Minimal syscall index to not overlap with OS-9. */
         SoftCDI_Debug = 0x100, /**< Not stable system call that does nothing, used for debug purposes. */
         CdDrivePlay = 0x101,
-        CdDriveCopySector = 0x102,
-        CdDriveGetSubheader = 0x103,
-        CdfmDeviceDriverGetStat = 0x104,
-        CdfmDeviceDriverSetStat = 0x105,
+        CdDriveStop = 0x102,
+        CdDriveCopySector = 0x103,
+        CdDriveGetSubheader = 0x104,
+        CdfmDeviceDriverGetStat = 0x105,
+        CdfmDeviceDriverSetStat = 0x106,
 
-        PointerDeviceDriverGetPacket = 0x106,
-        PointerDeviceDriverGetStat = 0x107,
-        PointerDeviceDriverSetStat = 0x108,
+        PointerDeviceDriverGetPacket = 0x111,
+        PointerDeviceDriverGetStat = 0x112,
+        PointerDeviceDriverSetStat = 0x113,
     };
 
     virtual void Scheduler(std::stop_token stopToken) override;
@@ -62,6 +63,7 @@ protected:
 
     void SoftCDIDebug() noexcept;
     void CDDrivePlay() noexcept;
+    void CDDriveStop() noexcept;
     void CDDriveCopySector() noexcept;
     void CDDriveGetSubheader() noexcept;
     void CDFMDeviceDriverGetStat() noexcept;

@@ -4,7 +4,7 @@
 	use "softcdi.m"
 
 typelang	equ	(Drivr<<8)+Objct
-attrrevs	equ	((ReEnt+SupStat)<<8)+$99 Not reentrant
+attrrevs	equ	((ReEnt+SupStat)<<8)+$99
 edition		equ	0
 stacksize	equ	0
 

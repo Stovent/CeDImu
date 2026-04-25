@@ -18,6 +18,10 @@ void SoftCDIScheduler::DispatchSystemCall(const SystemCall syscall) noexcept
         CDDrivePlay();
         break;
 
+    case SystemCall::CdDriveStop:
+        CDDriveStop();
+        break;
+
     case SystemCall::CdDriveCopySector:
         CDDriveCopySector();
         break;
@@ -49,11 +53,6 @@ void SoftCDIScheduler::DispatchSystemCall(const SystemCall syscall) noexcept
     default:
         std::println("Unknown system call 0x{:X}", static_cast<uint16_t>(syscall));
     }
-
-    /*
-    CDFM 410CBE
-    ciapdriv 42518C
-    */
 }
 
 /** \brief Used to print debug info in SoftCDI. */
@@ -66,7 +65,7 @@ void SoftCDIScheduler::SoftCDIDebug() noexcept
 
 /** \brief Handles Play routine of the CDFM device driver.
  * - d0.l: Logical starting sector of Play selection.
- * - d1.l: Maximum number of records to play.
+ * - d1.l: Maximum number of records to play (for debug only).
  * - d2.b: file number.
  * - d3.l: channel mask.
  */
@@ -74,8 +73,16 @@ void SoftCDIScheduler::CDDrivePlay() noexcept
 {
     std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
 
-    // std::println("Play start:0x{:X} count:{} file:{} channel:0x{:08X}", regs[D0], regs[D1], regs[D2], regs[D3]);
-    m_cdDrive.StartPlaying(regs[D0], regs[D1], regs[D2], regs[D3]);
+    // std::println("Play start:0x{:X} records:{} file:{} channel:0x{:08X}", regs[D0], regs[D1], static_cast<uint8_t>(regs[D2]), regs[D3]);
+    m_cdDrive.StartPlaying(regs[D0], regs[D2], regs[D3]);
+}
+
+/** \brief Handles stopping the disc.
+ */
+void SoftCDIScheduler::CDDriveStop() noexcept
+{
+    // std::println("Stop");
+    m_cdDrive.StopPlaying();
 }
 
 /** \brief Handles the copy of the last read sector to memory.
@@ -122,19 +129,19 @@ void SoftCDIScheduler::PointerDeviceDriverGetPacket() noexcept
 {
     std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
     const uint32_t a0 = regs[A0];
-    std::println("Pointer get packet 0x{:X}", a0);
+    // std::println("Pointer get packet 0x{:X}", a0);
 
     m_pointerInput.GetPacket(a0);
 }
 
 void SoftCDIScheduler::PointerDeviceDriverGetStat() noexcept
 {
-    std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
-    std::println("Pointer Get stat {} {} {} {} {} {}",
-        regs[D0],
-        OS9::getStatServiceRequestToString(regs[D1]),
-        OS9::subGetStatServiceRequestToString(regs[D1], regs[D2]),
-        regs[D3], regs[D4], regs[D5]);
+    // std::map<SCC68070::Register, uint32_t> regs = m_cpu.GetCPURegisters();
+    // std::println("Pointer Get stat {} {} {} {} {} {}",
+    //     regs[D0],
+    //     OS9::getStatServiceRequestToString(regs[D1]),
+    //     OS9::subGetStatServiceRequestToString(regs[D1], regs[D2]),
+    //     regs[D3], regs[D4], regs[D5]);
 }
 
 void SoftCDIScheduler::PointerDeviceDriverSetStat() noexcept

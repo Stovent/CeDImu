@@ -100,10 +100,18 @@ size_t SCC68070::ProcessPendingExceptions()
         const Exception ex = m_exceptions.top();
         m_exceptions.pop();
 
+        /* How SCC68070 interrupts are supposed to work:
+        Interrupts are requested by activating either INT1N, INT2N, IN2N, IN4N, IN5N or NMIN pins. Those indicates the
+        IRQ level of the vector.
+        If INT1N or INT2N, the vector number triggered is one of the on-chip autovector.
+        Otherwise if the AVN pin is active, the other external autovector are used.
+        Otherwise the vector number is given on pins D0-D7.
+        */
         if((ex.vector >= Level1ExternalInterruptAutovector && ex.vector <= Level7ExternalInterruptAutovector) ||
-            (ex.vector >= Level1OnChipInterruptAutovector && ex.vector <= Level7OnChipInterruptAutovector))
+            (ex.vector >= Level1OnChipInterruptAutovector && ex.vector <= Level7OnChipInterruptAutovector) ||
+            ex.vector >= UserInterrupt)
         {
-            const uint8_t level = ex.vector & 0x7;
+            const uint8_t level = ex.vector & 0x7; // TODO: IRQ level is not based on vector number for User Interrupts
             if(level != 7 && level <= GetIPM())
             {
                 unprocessedExceptions.push(ex);

@@ -1,17 +1,19 @@
-* SoftCDI system calls values (taken from SoftCDI.hpp)
+* SoftCDI system calls values (must mastch SoftCDIScheduler.hpp)
 SoftCDI_Debug	equ	$100
 CdDrive_Play	equ	$101
-CdDrive_CopySector	equ	$102
-CdDrive_GetSubheader	equ	$103
-CdfmDeviceDriver_GetStat	equ	$104
-CdfmDeviceDriver_SetStat	equ	$105
-PointerDeviceDriver_GetPacket	equ $106
-PointerDeviceDriver_GetStat		equ $107
-PointerDeviceDriver_SetStat		equ $108
+CdDrive_Stop	equ	$102
+CdDrive_CopySector	equ	$103
+CdDrive_GetSubheader	equ	$104
+CdfmDeviceDriver_GetStat	equ	$105
+CdfmDeviceDriver_SetStat	equ	$106
+
+PointerDeviceDriver_GetPacket	equ $111
+PointerDeviceDriver_GetStat		equ $112
+PointerDeviceDriver_SetStat		equ $113
 
 * CDFM device driver useful data
 CdDrive_Port		equ	0
-CdDrive_Vector		equ	200
+CdDrive_Vector		equ	204
 CdDrive_Priority	equ	32
 
 * MCD212 IRQ
