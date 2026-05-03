@@ -89,6 +89,7 @@ protected:
 
     virtual std::pair<uint16_t, uint16_t> DrawLineImpl(const uint8_t* lineA, const uint8_t* lineB) noexcept = 0;
     virtual void DrawCursor() noexcept = 0;
+    virtual void RenderFrameImpl() noexcept {};
     void DrawLineBackdrop() noexcept
     {
         // The pixels of a line are all the same, so backdrop plane only contains the color of each line.

@@ -39,10 +39,12 @@ enum class ControlArea
     DCA2,
 };
 
-/** \brief ARGB plane that uses uint32_t to store each pixel. */
-class Plane : public std::vector<Pixel>
+/** \brief Data structure that ease frame manipulation. */
+template<typename T>
+class BasicPlane : public std::vector<T>
 {
 public:
+    using Type = T;
     static constexpr size_t MAX_WIDTH     = 768;
     static constexpr size_t MAX_HEIGHT    = 560;
     static constexpr size_t CURSOR_WIDTH  = 16;
@@ -54,21 +56,28 @@ public:
     size_t m_width; /**< Width of the plane. */
     size_t m_height; /**< Height of the plane. */
 
-    constexpr explicit Plane(const uint16_t w = 0, const uint16_t h = 0, const size_t size = MAX_SIZE)
-        : std::vector<Pixel>(size, 0), m_width(w), m_height(h)
+    constexpr explicit BasicPlane(const uint16_t w = 0, const uint16_t h = 0, const size_t capacity = MAX_SIZE)
+        : std::vector<Type>(capacity, 0), m_width(w), m_height(h)
     {}
 
     /** \brief Returns a const pointer to the beginning of the given line (starting at 0). */
-    constexpr const Pixel* GetLinePointer(const size_t line) const noexcept { return data() + line * m_width; }
+    constexpr const Type* GetLinePointer(const size_t line) const noexcept { return this->data() + line * m_width; }
     /** \brief Returns a pointer to the beginning of the given line (starting at 0). */
-    constexpr Pixel* GetLinePointer(const size_t line) noexcept { return data() + line * m_width; }
+    constexpr Type* GetLinePointer(const size_t line) noexcept { return this->data() + line * m_width; }
 
     /** \brief Returns the number of pixels used by the plane. */
-    constexpr size_t PixelCount() const noexcept { return m_width * m_height; }
+    constexpr size_t Count() const noexcept { return m_width * m_height; }
 
     /** \brief Returns a span of the actual pixels used for this resolution. */
-    constexpr std::span<const Pixel> GetSpan() const noexcept { return {data(), PixelCount()}; }
+    constexpr std::span<const Type> GetSpan() const noexcept { return {this->data(), this->Count()}; }
 };
+
+/** \brief ARGB plane that uses uint32_t to store each pixel. */
+using Plane = BasicPlane<Pixel>;
+/** \brief Stores metadata about the plane such as ICF or matte flags. */
+using PlaneU8 = BasicPlane<uint8_t>;
+/** \brief Stores metadata about the plane. */
+using PlaneU32 = BasicPlane<uint32_t>;
 
 } // namespace Video
 

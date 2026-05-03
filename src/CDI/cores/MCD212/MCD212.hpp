@@ -5,10 +5,13 @@ class CDI;
 #include "common/utils.hpp"
 #include "common/types.hpp"
 #include "OS9/BIOS.hpp"
-#ifdef LIBCEDIMU_ENABLE_RENDERERSIMD
+#include "Video/RendererSoftware.hpp"
+#if LIBCEDIMU_ENABLE_RENDERERSIMD
 #include "Video/RendererSIMD.hpp"
 #endif
-#include "Video/RendererSoftware.hpp"
+#if LIBCEDIMU_ENABLE_RENDERERWGPU
+#include "Video/RendererWGPU.hpp"
+#endif
 
 #include <array>
 #include <span>
@@ -56,8 +59,10 @@ private:
     uint8_t m_memorySwapCount{0};
     double m_timeNs{0.0}; // time counter in nano seconds.
 
-#ifdef LIBCEDIMU_ENABLE_RENDERERSIMD
+#if LIBCEDIMU_ENABLE_RENDERERSIMD
     Video::RendererSIMD m_renderer{};
+#elif LIBCEDIMU_ENABLE_RENDERERWGPU
+    Video::RendererWGPU m_renderer{};
 #else
     Video::RendererSoftware m_renderer{};
 #endif

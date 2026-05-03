@@ -414,7 +414,7 @@ constexpr void RendererSoftware::HandleTransparency(Pixel& pixel) noexcept
     case TransparentIf::TransparencyBit: // Transparent Bit.
         // TODO: currently decodeRGB555 make the pixel visible if the bit is set.
         // TODO: disable if not RGB555.
-        if((pixel.a == PIXEL_FULL_INTENSITY) != BOOL_FLAG)
+        if((pixel.a != 0) != BOOL_FLAG)
             pixel.a = PIXEL_TRANSPARENT;
         break;
 

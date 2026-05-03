@@ -24,3 +24,7 @@ add_subdirectory(src)
 if(CEDIMU_TESTS)
     add_subdirectory(tests)
 endif()
+
+if(LIBCEDIMU_ENABLE_RENDERERWGPU)
+    add_subdirectory(renderer-wgpu)
+endif()

@@ -24,3 +24,11 @@ if(LIBCEDIMU_ENABLE_RENDERERSIMD)
             VideoDecodersSIMD.hpp
     )
 endif()
+
+if(LIBCEDIMU_ENABLE_RENDERERWGPU)
+    target_sources(CeDImu
+        PRIVATE
+            RendererWGPU.cpp
+            RendererWGPU.hpp
+    )
+endif()

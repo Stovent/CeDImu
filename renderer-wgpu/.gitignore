@@ -1,0 +1,7 @@
+/*
+
+!src/
+!.gitignore
+!Cargo.toml
+!cbindgen.toml
+!CMakeLists.txt

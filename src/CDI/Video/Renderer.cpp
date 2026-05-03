@@ -54,6 +54,11 @@ std::pair<uint16_t, uint16_t> Renderer::DrawLine(const uint8_t* lineA, const uin
  */
 const Plane& Renderer::RenderFrame() noexcept
 {
+    if(m_screen.m_width == 0) [[unlikely]] // Possible when the MCD212 DE bit is false.
+        return m_screen; // TODO: who should do this check?
+
+    RenderFrameImpl();
+
     // Should this be inside DrawLine() ?
     if(m_cursorEnabled)
     {

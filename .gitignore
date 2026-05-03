@@ -14,6 +14,7 @@
 !/benchmarks
 !/cditool
 !/externals
+!/renderer-wgpu
 !/resources
 !/src
 !/tests
