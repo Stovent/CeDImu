@@ -13,6 +13,7 @@ message("CeDImu tests sanitize: " ${CEDIMU_TESTS_ASAN})
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # Common flags for GCC and Clang.
     target_compile_options(tests PRIVATE -Wall -Wextra -pedantic)
+    target_link_options(tests PRIVATE -static -static-libgcc -static-libstdc++)
 
     if(CEDIMU_TESTS_ASAN)
         target_compile_options(tests PRIVATE -fsanitize=address)

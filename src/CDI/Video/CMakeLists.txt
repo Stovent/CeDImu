@@ -17,6 +17,8 @@ target_sources(CeDImu
 if(LIBCEDIMU_ENABLE_RENDERERSIMD)
     target_sources(CeDImu
         PRIVATE
+            # RendererSIMDexp.cpp
+            # RendererSIMDstd.cpp
             RendererSIMD.cpp
             RendererSIMD.hpp
             SIMD.hpp

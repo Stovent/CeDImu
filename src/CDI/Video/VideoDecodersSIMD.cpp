@@ -68,6 +68,38 @@ template uint16_t decodeBitmapLineSIMD<768>(Pixel* dst, const uint8_t* dataA, co
 template<uint16_t WIDTH>
 uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept
 {
+#if __has_include(<simd>)
+    using SIMDFixedU64 = std::simd::rebind_t<uint64_t, SIMDNativePixel>;
+
+    const SIMDNativePixel alphaMask{0x8000u};
+    size_t width = WIDTH;
+    while(width > 0)
+    {
+        const uint16_t count = std::min(SIMDNativePixelSize, width);
+
+        const SIMDNativePixel da = std::simd::partial_load<SIMDNativePixel>(dataA, count, std::simd::flag_overaligned<1>);
+        const SIMDNativePixel db = std::simd::partial_load<SIMDNativePixel>(dataB, count, std::simd::flag_aligned);
+        const SIMDNativePixel data = da << 8 | db;
+
+        SIMDNativePixel result32 = (data & alphaMask) << 16;
+        result32 |= data << 9 & 0x00F8'0000u;
+        result32 |= data << 6 & 0x0000'F800u;
+        result32 |= data << 3 & 0x0000'00F8u;
+
+        // Duplicate the pixels.
+        SIMDFixedU64 result64 = result32;
+        result64 |= result64 << 32;
+
+        // This reinterpret_cast should be safe, as the overlaligned tag should make the write safe.
+        // Also casting to a uint64_t pointer should not affect endianness.
+        std::simd::partial_store(result64, reinterpret_cast<uint64_t*>(dst->AsU32Pointer()), count, std::simd::flag_overaligned<alignof(Pixel::ARGB32)>);
+
+        width -= count;
+        dataA += SIMDNativePixelSize;
+        dataB += SIMDNativePixelSize;
+        dst += SIMDNativePixelSize * 2;
+    };
+#else
     // TODO: ensure we do not index out of bound.
     using SIMDFixedU32 = stdx::rebind_simd_t<uint32_t, SIMDNativeU8>;
     using SIMDFixedU64 = stdx::rebind_simd_t<uint64_t, SIMDFixedU32>;
@@ -97,6 +129,7 @@ uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* d
         // Also casting to a uint64_t pointer should not affect endianness.
         result64.copy_to(reinterpret_cast<uint64_t*>(dst->AsU32Pointer()), stdx::overaligned<alignof(Pixel::ARGB32)>);
     };
+#endif
 
     return WIDTH;
 }
@@ -105,8 +138,13 @@ template uint16_t decodeRGB555LineSIMD<384>(Pixel* dst, const uint8_t* dataA, co
 template<> uint16_t decodeRGB555LineSIMD<720>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept = delete;
 template<> uint16_t decodeRGB555LineSIMD<768>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept = delete;
 
+#if __has_include(<simd>)
+using SIMDNativeI32 = std::simd::vec<int32_t>;
+using SIMDFixedI64 = std::simd::rebind_t<int64_t, SIMDNativeI32>;
+#else
 using SIMDNativeI32 = stdx::native_simd<int32_t>;
 using SIMDFixedU64 = stdx::rebind_simd_t<uint64_t, SIMDNativeI32>;
+#endif
 static inline constexpr size_t SIZE = SIMDNativeI32::size();
 static_assert(SIZE == SIMD_SIZE);
 static inline constexpr SIMDNativeI32 U8_MIN{0};
@@ -125,9 +163,15 @@ static inline constexpr SIMDNativeI32 U8_MAX{255};
 template<uint16_t WIDTH>
 uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept
 {
-    std::array<int32_t, WIDTH> y;
-    std::array<int32_t, WIDTH> u;
-    std::array<int32_t, WIDTH> v;
+#if __has_include(<simd>)
+    using STORE_YUV = uint8_t;
+#else
+    using STORE_YUV = int32_t;
+#endif
+
+    std::array<STORE_YUV, WIDTH> y;
+    std::array<STORE_YUV, WIDTH> u;
+    std::array<STORE_YUV, WIDTH> v;
 
     uint8_t py = bits<16, 23>(initialDYUV);
     uint8_t pu = bits<8, 15>(initialDYUV);
@@ -164,45 +208,66 @@ uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYU
         v[index + 1] = v2;
     }
 
-    const int32_t* Y = y.data();
-    const int32_t* U = u.data();
-    const int32_t* V = v.data();
+    const STORE_YUV* Y = y.data();
+    const STORE_YUV* U = u.data();
+    const STORE_YUV* V = v.data();
 
     // TODO: make sure we do not write out of range.
     for(uint16_t i = 0; i < WIDTH;
         i += SIZE, Y += SIZE, U += SIZE, V += SIZE)
     {
+#if __has_include(<simd>)
+        SIMDNativeI32 simdY = std::simd::unchecked_load<SIMDNativeI32>(Y, SIZE, std::simd::flag_aligned);
+        SIMDNativeI32 simdU = std::simd::unchecked_load<SIMDNativeI32>(U, SIZE, std::simd::flag_aligned);
+        SIMDNativeI32 simdV = std::simd::unchecked_load<SIMDNativeI32>(V, SIZE, std::simd::flag_aligned);
+#else
         SIMDNativeI32 simdY{Y, stdx::element_aligned};
         SIMDNativeI32 simdU{U, stdx::element_aligned};
         SIMDNativeI32 simdV{V, stdx::element_aligned};
+#endif
 
         simdU -= 128;
         simdV -= 128;
 
         // SIMDNativeI32 simdR = ((simdV * 351) >> 8) + simdY;
         SIMDNativeI32 simdR = ((simdV * 351) / 256) + simdY;
-        simdR = stdx::clamp(simdR, U8_MIN, U8_MAX);
-
-        // SIMDNativeI32 simdG = ((simdU * 86) + (simdV * 179) >> 8) + simdY;
-        SIMDNativeI32 simdG = ((simdU * 86) + (simdV * 179) / 256) + simdY;
-        simdG = stdx::clamp(simdG, U8_MIN, U8_MAX);
-
+        // SIMDNativeI32 simdG = (((simdU * 86) + (simdV * 179)) >> 8) + simdY;
+        SIMDNativeI32 simdG = (((simdU * 86) + (simdV * 179)) / 256) + simdY;
         // SIMDNativeI32 simdB = ((simdU * 444) >> 8) + simdY;
         SIMDNativeI32 simdB = ((simdU * 444) / 256) + simdY;
+
+#if __has_include(<simd>)
+        simdR = std::simd::clamp(simdR, U8_MIN, U8_MAX);
+        simdG = std::simd::clamp(simdG, U8_MIN, U8_MAX);
+        simdB = std::simd::clamp(simdB, U8_MIN, U8_MAX);
+#else
+        simdR = stdx::clamp(simdR, U8_MIN, U8_MAX);
+        simdG = stdx::clamp(simdG, U8_MIN, U8_MAX);
         simdB = stdx::clamp(simdB, U8_MIN, U8_MAX);
+#endif
 
         const SIMDNativeI32 result32 = (simdR << 16) | (simdG << 8) | simdB;
 
         if constexpr(WIDTH == 360 || WIDTH == 384)
         {
+#if __has_include(<simd>)
+            SIMDFixedI64 result64 = result32;
+            result64 |= result64 << 32;
+            std::simd::unchecked_store(result64, reinterpret_cast<int64_t*>(dst->AsU32Pointer()), SIZE, std::simd::flag_overaligned<alignof(uint32_t)>);
+#else
             SIMDFixedU64 result64 = stdx::static_simd_cast<uint64_t>(result32);
             result64 |= result64 << 32;
             result64.copy_to(reinterpret_cast<uint64_t*>(dst->AsU32Pointer()), stdx::element_aligned);
+#endif
             dst += SIZE * 2;
         }
         else
         {
+#if __has_include(<simd>)
+            std::simd::unchecked_store(result32, reinterpret_cast<int32_t*>(dst->AsU32Pointer()), SIZE, std::simd::flag_aligned);
+#else
             result32.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
+#endif
             dst += SIZE;
         }
     }

@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_range_equals.hpp>
 
 #include <Video/RendererSoftware.hpp>
 #if LIBCEDIMU_ENABLE_RENDERERSIMD
@@ -10,14 +11,22 @@
 
 #include <algorithm>
 #include <array>
+#include <format>
+
+#define SPAN_PLANEA(renderer) (std::span{(renderer).m_plane[PLANEA].GetLinePointer(0), (renderer).m_plane[PLANEA].m_width})
+#define SPAN_PLANEB(renderer) (std::span{(renderer).m_plane[PLANEB].GetLinePointer(0), (renderer).m_plane[PLANEB].m_width})
+#define SPAN_SCREEN(renderer) (std::span{(renderer).m_screen.GetLinePointer(0), (renderer).m_screen.m_width})
+#define SPAN_CURSOR(renderer) (std::span{(renderer).m_cursorPlane.begin(), 16})
 
 using CursorLine = std::array<Video::Pixel, 16>;
 inline constexpr Video::Pixel BLACK = Video::Renderer::BLACK_PIXEL;
 inline constexpr Video::Pixel RED{0xFF'FF'00'00};
+inline constexpr Video::Pixel MIXED_RED{0xFF'EF'00'00};
 inline constexpr Video::Pixel HALF_RED{0xFF'85'09'09};
 inline constexpr Video::Pixel HIDDEN_RED{0x00'FF'00'00};
 inline constexpr Video::Pixel CYAN{0xFF'00'FF'FF};
 inline constexpr Video::Pixel GREEN{0xFF'00'FF'00};
+inline constexpr Video::Pixel MIXED_GREEN{0xFF'00'EF'00};
 inline constexpr Video::Pixel HALF_GREEN{0xFF'09'85'09};
 inline constexpr Video::Pixel HIDDEN_GREEN{0x00'00'FF'00};
 inline constexpr Video::Pixel MAGENTA{0xFF'FF'00'FF};
@@ -25,6 +34,18 @@ inline constexpr Video::Pixel BLUE{0xFF'00'00'FF}; // Background color.
 
 inline constexpr Video::ImagePlane PLANEA = Video::A;
 inline constexpr Video::ImagePlane PLANEB = Video::B;
+
+namespace Catch
+{
+    template<>
+    struct StringMaker<Video::Pixel>
+    {
+        static std::string convert(const Video::Pixel& pixel)
+        {
+            return std::format("{{{} {} {} {}}}", pixel.a, pixel.r, pixel.g, pixel.b);
+        }
+    };
+}
 
 TEST_CASE("Cursor blink", "[Video]")
 {
@@ -50,22 +71,22 @@ TEST_CASE("Cursor blink", "[Video]")
         rendererSoft.SetDisplayFormat(Video::Renderer::DisplayFormat::PAL, false, false); // 50 FPS.
 
         rendererSoft.RenderFrame();
-        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
+        REQUIRE_THAT(SPAN_CURSOR(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_ON));
 
         // Advance time to just before the off period.
         rendererSoft.IncrementCursorTime(Video::Renderer::DELTA_50FPS - 1.);
         rendererSoft.RenderFrame();
-        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
+        REQUIRE_THAT(SPAN_CURSOR(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_ON));
 
         // Advance time to exactly the delta time.
         rendererSoft.IncrementCursorTime(1.);
         rendererSoft.RenderFrame();
-        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_OFF.data()));
+        REQUIRE_THAT(SPAN_CURSOR(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_OFF));
 
         // Make sure the cursor is on when blink is deactivated on an off/complement period.
         rendererSoft.SetCursorBlink(false, 1, 0); // Disable blink.
         rendererSoft.RenderFrame();
-        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
+        REQUIRE_THAT(SPAN_CURSOR(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_ON));
     }
 
     SECTION("ON/OFF")
@@ -88,8 +109,8 @@ TEST_CASE("Cursor blink", "[Video]")
             CYAN, BLACK, CYAN, BLACK, CYAN, BLACK, CYAN, BLACK,
             BLACK, CYAN, BLACK, CYAN, BLACK, CYAN, BLACK, CYAN,
         };
-        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
-        IF_SIMD(REQUIRE(std::equal(rendererSIMD.m_cursorPlane.begin(), rendererSIMD.m_cursorPlane.begin() + 16, EXPECTED_ON.data())))
+        REQUIRE_THAT(SPAN_CURSOR(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_ON));
+        IF_SIMD(REQUIRE_THAT(SPAN_CURSOR(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_ON)))
 
         rendererSoft.IncrementCursorTime(Video::Renderer::DELTA_50FPS);
         rendererSoft.RenderFrame();
@@ -100,8 +121,8 @@ TEST_CASE("Cursor blink", "[Video]")
             BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
             BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK,
         };
-        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_OFF.data()));
-        IF_SIMD(REQUIRE(std::equal(rendererSIMD.m_cursorPlane.begin(), rendererSIMD.m_cursorPlane.begin() + 16, EXPECTED_OFF.data())))
+        REQUIRE_THAT(SPAN_CURSOR(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_OFF));
+        IF_SIMD(REQUIRE_THAT(SPAN_CURSOR(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_OFF)))
     }
 
     SECTION("ON/Complement")
@@ -124,8 +145,8 @@ TEST_CASE("Cursor blink", "[Video]")
             GREEN, BLACK, GREEN, BLACK, GREEN, BLACK, GREEN, BLACK,
             BLACK, GREEN, BLACK, GREEN, BLACK, GREEN, BLACK, GREEN,
         };
-        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_ON.data()));
-        IF_SIMD(REQUIRE(std::equal(rendererSIMD.m_cursorPlane.begin(), rendererSIMD.m_cursorPlane.begin() + 16, EXPECTED_ON.data())))
+        REQUIRE_THAT(SPAN_CURSOR(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_ON));
+        IF_SIMD(REQUIRE_THAT(SPAN_CURSOR(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_ON)))
 
         rendererSoft.IncrementCursorTime(Video::Renderer::DELTA_50FPS);
         rendererSoft.RenderFrame();
@@ -136,8 +157,8 @@ TEST_CASE("Cursor blink", "[Video]")
             MAGENTA, BLACK, MAGENTA, BLACK, MAGENTA, BLACK, MAGENTA, BLACK,
             BLACK, MAGENTA, BLACK, MAGENTA, BLACK, MAGENTA, BLACK, MAGENTA,
         };
-        REQUIRE(std::equal(rendererSoft.m_cursorPlane.begin(), rendererSoft.m_cursorPlane.begin() + 16, EXPECTED_COMPLEMENT.data()));
-        IF_SIMD(REQUIRE(std::equal(rendererSIMD.m_cursorPlane.begin(), rendererSIMD.m_cursorPlane.begin() + 16, EXPECTED_COMPLEMENT.data())))
+        REQUIRE_THAT(SPAN_CURSOR(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_COMPLEMENT));
+        IF_SIMD(REQUIRE_THAT(SPAN_CURSOR(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_COMPLEMENT)))
     }
 }
 
@@ -208,7 +229,7 @@ static constexpr std::array<uint8_t, 384> INPUT_A = [] () {
 
 static constexpr std::array<uint8_t, 384> INPUT_B = [] () {
     std::array<uint8_t, 384> array{};
-    std::ranges::fill(array, 0); // CLUT 0 + 128
+    std::ranges::fill(array, 0); // CLUT 128
     return array;
 }();
 
@@ -217,13 +238,13 @@ TEST_CASE("Matte", "[Video]")
     Video::RendererSoftware rendererSoft;
     IF_SIMD(Video::RendererSIMD rendererSIMD)
 
+    configureCLUT(rendererSoft);
+    IF_SIMD(configureCLUT(rendererSIMD))
+
     SECTION("One matte")
     {
         configureOneMatte(rendererSoft);
         IF_SIMD(configureOneMatte(rendererSIMD))
-
-        configureCLUT(rendererSoft);
-        IF_SIMD(configureCLUT(rendererSIMD))
 
         rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
         IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
@@ -248,23 +269,20 @@ TEST_CASE("Matte", "[Video]")
             return array;
         }();
 
-        REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSoft.m_plane[PLANEA].GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSIMD.m_plane[PLANEA].GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_PLANEA(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_A));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEA(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_A)))
 
-        REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSoft.m_plane[PLANEB].GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSIMD.m_plane[PLANEB].GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_PLANEB(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_B));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEB(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_B)))
 
-        REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSoft.m_screen.GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSIMD.m_screen.GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_SCREEN(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_SCREEN));
+        IF_SIMD(REQUIRE_THAT(SPAN_SCREEN(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_SCREEN)))
     }
 
     SECTION("Two matte")
     {
         configureTwoMattes(rendererSoft);
         IF_SIMD(configureTwoMattes(rendererSIMD))
-
-        configureCLUT(rendererSoft);
-        IF_SIMD(configureCLUT(rendererSIMD))
 
         rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
         IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
@@ -290,14 +308,14 @@ TEST_CASE("Matte", "[Video]")
             return array;
         }();
 
-        REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSoft.m_plane[PLANEA].GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSIMD.m_plane[PLANEA].GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_PLANEA(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_A));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEA(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_A)))
 
-        REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSoft.m_plane[PLANEB].GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSIMD.m_plane[PLANEB].GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_PLANEB(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_B));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEB(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_B)))
 
-        REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSoft.m_screen.GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSIMD.m_screen.GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_SCREEN(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_SCREEN));
+        IF_SIMD(REQUIRE_THAT(SPAN_SCREEN(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_SCREEN)))
     }
 }
 
@@ -351,13 +369,13 @@ TEST_CASE("Matte lower position", "[Video]")
     Video::RendererSoftware rendererSoft;
     IF_SIMD(Video::RendererSIMD rendererSIMD)
 
+    configureCLUT(rendererSoft);
+    IF_SIMD(configureCLUT(rendererSIMD))
+
     SECTION("One matte")
     {
         configureOneMatteLower(rendererSoft);
         IF_SIMD(configureOneMatteLower(rendererSIMD))
-
-        configureCLUT(rendererSoft);
-        IF_SIMD(configureCLUT(rendererSIMD))
 
         rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
         IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
@@ -380,23 +398,20 @@ TEST_CASE("Matte lower position", "[Video]")
             return array;
         }();
 
-        REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSoft.m_plane[PLANEA].GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSIMD.m_plane[PLANEA].GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_PLANEA(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_A));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEA(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_A)))
 
-        REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSoft.m_plane[PLANEB].GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSIMD.m_plane[PLANEB].GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_PLANEB(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_B));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEB(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_B)))
 
-        REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSoft.m_screen.GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSIMD.m_screen.GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_SCREEN(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_SCREEN));
+        IF_SIMD(REQUIRE_THAT(SPAN_SCREEN(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_SCREEN)))
     }
 
     SECTION("Two matte")
     {
         configureTwoMattesLower(rendererSoft);
         IF_SIMD(configureTwoMattesLower(rendererSIMD))
-
-        configureCLUT(rendererSoft);
-        IF_SIMD(configureCLUT(rendererSIMD))
 
         rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
         IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
@@ -419,14 +434,14 @@ TEST_CASE("Matte lower position", "[Video]")
             return array;
         }();
 
-        REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSoft.m_plane[PLANEA].GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_A.cbegin(), EXPECTED_A.cend(), rendererSIMD.m_plane[PLANEA].GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_PLANEA(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_A));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEA(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_A)))
 
-        REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSoft.m_plane[PLANEB].GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_B.cbegin(), EXPECTED_B.cend(), rendererSIMD.m_plane[PLANEB].GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_PLANEB(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_B));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEB(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_B)))
 
-        REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSoft.m_screen.GetLinePointer(0)));
-        IF_SIMD(REQUIRE(std::equal(EXPECTED_SCREEN.cbegin(), EXPECTED_SCREEN.cend(), rendererSIMD.m_screen.GetLinePointer(0))))
+        REQUIRE_THAT(SPAN_SCREEN(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_SCREEN));
+        IF_SIMD(REQUIRE_THAT(SPAN_SCREEN(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_SCREEN)))
     }
 }
 
@@ -552,5 +567,169 @@ TEST_CASE("Decoding length", "[Video]")
         std::pair<uint16_t, uint16_t> resSIMD = rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
         REQUIRE(resSIMD == std::make_pair(INPUT_A.size(), INPUT_B.size()));
 #endif
+    }
+}
+
+static void configureMixing(Video::Renderer& renderer)
+{
+    renderer.m_mix = true;
+    renderer.m_planeOrder = false; // A in front of B.
+
+    renderer.m_icf[PLANEA] = 63;
+    renderer.m_icf[PLANEB] = 63;
+    // starts with matte flags false.
+    renderer.m_matteNumber = false; // 1 matte.
+    renderer.m_matteControl[0] = makeCommand(0, false, 0, 0); // No matte.
+}
+
+TEST_CASE("Mixing", "[Video]")
+{
+    Video::RendererSoftware rendererSoft;
+    IF_SIMD(Video::RendererSIMD rendererSIMD)
+
+    configureCLUT(rendererSoft);
+    IF_SIMD(configureCLUT(rendererSIMD));
+
+    configureMixing(rendererSoft);
+    IF_SIMD(configureMixing(rendererSIMD));
+
+    SECTION("Background")
+    {
+        rendererSoft.m_transparencyControl[PLANEA] = 0b0000; // Always.
+        rendererSoft.m_transparencyControl[PLANEB] = 0b0000; // Always.
+
+        IF_SIMD(rendererSIMD.m_transparencyControl[PLANEA] = 0b0000) // Always.
+        IF_SIMD(rendererSIMD.m_transparencyControl[PLANEB] = 0b0000) // Always.
+
+        rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
+        IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
+
+        constexpr std::array<Video::Pixel, 768> EXPECTED_A = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, HIDDEN_RED);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_B = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, HIDDEN_GREEN);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_SCREEN = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, BLUE);
+            return array;
+        }();
+
+        REQUIRE_THAT(SPAN_PLANEA(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_A));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEA(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_A)))
+
+        REQUIRE_THAT(SPAN_PLANEB(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_B));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEB(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_B)))
+
+        REQUIRE_THAT(SPAN_SCREEN(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_SCREEN));
+        IF_SIMD(REQUIRE_THAT(SPAN_SCREEN(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_SCREEN)))
+    }
+
+    SECTION("Back plane")
+    {
+        rendererSoft.m_transparencyControl[PLANEA] = 0b0000; // Always.
+        rendererSoft.m_transparencyControl[PLANEB] = 0b1000; // Never.
+
+        IF_SIMD(rendererSIMD.m_transparencyControl[PLANEA] = 0b0000) // Always.
+        IF_SIMD(rendererSIMD.m_transparencyControl[PLANEB] = 0b1000) // Never.
+
+        rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
+        IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
+
+        constexpr std::array<Video::Pixel, 768> EXPECTED_A = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, HIDDEN_RED);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_B = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, GREEN);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_SCREEN = EXPECTED_B;
+
+        REQUIRE_THAT(SPAN_PLANEA(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_A));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEA(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_A)))
+
+        REQUIRE_THAT(SPAN_PLANEB(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_B));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEB(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_B)))
+
+        REQUIRE_THAT(SPAN_SCREEN(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_SCREEN));
+        IF_SIMD(REQUIRE_THAT(SPAN_SCREEN(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_SCREEN)))
+    }
+
+    SECTION("Front plane")
+    {
+        rendererSoft.m_transparencyControl[PLANEA] = 0b1000; // Never.
+        rendererSoft.m_transparencyControl[PLANEB] = 0b0000; // Always.
+
+        IF_SIMD(rendererSIMD.m_transparencyControl[PLANEA] = 0b1000) // Never.
+        IF_SIMD(rendererSIMD.m_transparencyControl[PLANEB] = 0b0000) // Always.
+
+        rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
+        IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
+
+        constexpr std::array<Video::Pixel, 768> EXPECTED_A = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, RED);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_B = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, HIDDEN_GREEN);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_SCREEN = EXPECTED_A;
+
+        REQUIRE_THAT(SPAN_PLANEA(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_A));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEA(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_A)))
+
+        REQUIRE_THAT(SPAN_PLANEB(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_B));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEB(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_B)))
+
+        REQUIRE_THAT(SPAN_SCREEN(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_SCREEN));
+        IF_SIMD(REQUIRE_THAT(SPAN_SCREEN(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_SCREEN)))
+    }
+
+    SECTION("Mixed planes")
+    {
+        rendererSoft.m_transparencyControl[PLANEA] = 0b1000; // Never.
+        rendererSoft.m_transparencyControl[PLANEB] = 0b1000; // Never.
+
+        IF_SIMD(rendererSIMD.m_transparencyControl[PLANEA] = 0b1000) // Never.
+        IF_SIMD(rendererSIMD.m_transparencyControl[PLANEB] = 0b1000) // Never.
+
+        rendererSoft.DrawLine(INPUT_A.data(), INPUT_B.data(), 0);
+        IF_SIMD(rendererSIMD.DrawLine(INPUT_A.data(), INPUT_B.data(), 0))
+
+        constexpr std::array<Video::Pixel, 768> EXPECTED_A = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, RED);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_B = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, GREEN);
+            return array;
+        }();
+        constexpr std::array<Video::Pixel, 768> EXPECTED_SCREEN = [] () {
+            std::array<Video::Pixel, 768> array;
+            std::ranges::fill(array, MIXED_RED | MIXED_GREEN);
+            return array;
+        }();
+
+        REQUIRE_THAT(SPAN_PLANEA(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_A));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEA(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_A)))
+
+        REQUIRE_THAT(SPAN_PLANEB(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_B));
+        IF_SIMD(REQUIRE_THAT(SPAN_PLANEB(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_B)))
+
+        REQUIRE_THAT(SPAN_SCREEN(rendererSoft), Catch::Matchers::RangeEquals(EXPECTED_SCREEN));
+        IF_SIMD(REQUIRE_THAT(SPAN_SCREEN(rendererSIMD), Catch::Matchers::RangeEquals(EXPECTED_SCREEN)))
     }
 }
