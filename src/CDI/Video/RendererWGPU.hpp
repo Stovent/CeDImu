@@ -21,6 +21,7 @@ namespace Video
  * - on each line, decode the two planes and send them to the GPU but return before the transfert is complete (async).
  * - once all lines are transfered, dispatch compute AND async read back, while running the CPU again.
  * - Maybe combine all at once? send data + compute + read back as a single async dispatch while the emulation continues?
+ * - Threaded version, where the GPU runs in a thread with something to wake it up, and transfert the data to the GPU.
  */
 class RendererWGPU final : public Renderer
 {

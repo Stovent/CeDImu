@@ -95,7 +95,6 @@ pub struct WgpuRendererContext {
     pub adapter: Adapter,
     device: Device,
     queue: Queue,
-    bind_group: BindGroup,
 
     screen_buffer: Buffer,
     plane_a_buffer: Buffer,
@@ -112,7 +111,7 @@ pub struct WgpuRendererContext {
     matte_commands_buffer: Buffer,
     matte_number_buffer: Buffer,
     width_buffer: Buffer,
-    size_buffer: Buffer,
+    // size_buffer: Buffer,
     initial_icf_a_buffer: Buffer,
     initial_icf_b_buffer: Buffer,
 
@@ -120,16 +119,20 @@ pub struct WgpuRendererContext {
     transfer_a_buffer: Buffer,
     transfer_b_buffer: Buffer,
 
+    matte_transparency_bind_group: BindGroup,
     matte_pipeline: ComputePipeline,
     transparency_pipeline: ComputePipeline,
+
+    overlay_mix_bind_group: BindGroup,
     overlay_front_a_pipeline: ComputePipeline,
     overlay_front_b_pipeline: ComputePipeline,
     mix_front_a_pipeline: ComputePipeline,
     mix_front_b_pipeline: ComputePipeline,
 }
 
-/// The shader itself.
-static CDI_SHADER: &str = include_str!("cdi.wgsl");
+// static CDI_SHADER: &str = include_str!("cdi.wgsl");
+static MATTE_TRANSPARENCY_SHADER: &str = include_str!("matte_transparency.wgsl");
+static OVERLAY_MIX_SHADER: &str = include_str!("overlay_mix.wgsl");
 /// The workgroup size, must match the value in the shader.
 const WORKGROUP_SIZE: u32 = 64;
 pub const MAX_HEIGHT: u64 = 560;
@@ -269,12 +272,12 @@ impl WgpuRendererContext {
             mapped_at_creation: false,
         });
 
-        let size_buffer = device.create_buffer(&BufferDescriptor {
-            label: Some("Size buffer"),
-            size: SIZEOF_PIXEL, // Hopefully they have the same size on CPU and GPU.
-            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
+        // let size_buffer = device.create_buffer(&BufferDescriptor {
+        //     label: Some("Size buffer"),
+        //     size: SIZEOF_PIXEL, // Hopefully they have the same size on CPU and GPU.
+        //     usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        //     mapped_at_creation: false,
+        // });
 
         let initial_icf_a_buffer = device.create_buffer(&BufferDescriptor {
             label: Some("Initial ICF A buffer"),
@@ -318,19 +321,19 @@ impl WgpuRendererContext {
             mapped_at_creation: false,
         });
 
-        let last_icf_a_buffer = device.create_buffer(&BufferDescriptor {
-            label: Some("Last ICF A buffer"),
-            size: MAX_FRAME_SIZE_BYTE,
-            usage: BufferUsages::STORAGE | BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
-
-        let last_icf_b_buffer = device.create_buffer(&BufferDescriptor {
-            label: Some("Last ICF B buffer"),
-            size: MAX_FRAME_SIZE_BYTE,
-            usage: BufferUsages::STORAGE | BufferUsages::COPY_DST,
-            mapped_at_creation: false,
-        });
+//         let last_icf_a_buffer = device.create_buffer(&BufferDescriptor {
+//             label: Some("Last ICF A buffer"),
+//             size: MAX_FRAME_SIZE_BYTE,
+//             usage: BufferUsages::STORAGE | BufferUsages::COPY_DST,
+//             mapped_at_creation: false,
+//         });
+//
+//         let last_icf_b_buffer = device.create_buffer(&BufferDescriptor {
+//             label: Some("Last ICF B buffer"),
+//             size: MAX_FRAME_SIZE_BYTE,
+//             usage: BufferUsages::STORAGE | BufferUsages::COPY_DST,
+//             mapped_at_creation: false,
+//         });
 
         let transfer_screen_buffer: Buffer = device.create_buffer(&BufferDescriptor {
             label: Some("Transfer screen buffer"),
@@ -353,12 +356,14 @@ impl WgpuRendererContext {
             mapped_at_creation: false,
         });
 
-        // Create our bind group layout
-        let bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("BindGroupLayout"),
+        // Matte transparency
+
+        // Create the matte and transparency bind group layout
+        let matte_transparency_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("Matte transparency bind group layout"),
             entries: &[
                 BindGroupLayoutEntry {
-                    binding: 0, // Screen
+                    binding: 0, // Plane A
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -370,7 +375,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 1, // Plane A
+                    binding: 1, // Plane B
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -382,19 +387,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 2, // Plane B
-                    visibility: ShaderStages::COMPUTE,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Storage {
-                            read_only: false,
-                        },
-                        has_dynamic_offset: false,
-                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
-                    },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 3, // Background
+                    binding: 2, // Transparency A
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -406,7 +399,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 4, // Transparency A
+                    binding: 3, // Transparency B
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -418,7 +411,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 5, // Transparency B
+                    binding: 4, // Mask color A
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -430,7 +423,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 6, // Mask color A
+                    binding: 5, // Mask color B
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -442,7 +435,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 7, // Mask color B
+                    binding: 6, // Transparent color A
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -454,7 +447,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 8, // Transparent color A
+                    binding: 7, // Transparent color B
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -466,7 +459,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 9, // Transparent color B
+                    binding: 8, // Matte commands
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -478,7 +471,7 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 10, // Matte commands
+                    binding: 9, // Matte number
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -490,7 +483,19 @@ impl WgpuRendererContext {
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 11, // Matte number
+                    binding: 10, // Initial ICF A
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Storage {
+                            read_only: true,
+                        },
+                        has_dynamic_offset: false,
+                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
+                    },
+                    count: None,
+                },
+                BindGroupLayoutEntry {
+                    binding: 11, // Initial ICF B
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
@@ -511,40 +516,16 @@ impl WgpuRendererContext {
                     },
                     count: None,
                 },
-                BindGroupLayoutEntry {
-                    binding: 13, // Size
-                    visibility: ShaderStages::COMPUTE,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Uniform,
-                        has_dynamic_offset: false,
-                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
-                    },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 14, // Initial ICF A
-                    visibility: ShaderStages::COMPUTE,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Storage {
-                            read_only: true,
-                        },
-                        has_dynamic_offset: false,
-                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
-                    },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 15, // Initial ICF B
-                    visibility: ShaderStages::COMPUTE,
-                    ty: BindingType::Buffer {
-                        ty: BufferBindingType::Storage {
-                            read_only: true,
-                        },
-                        has_dynamic_offset: false,
-                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
-                    },
-                    count: None,
-                },
+                // BindGroupLayoutEntry {
+                //     binding: 13, // Size
+                //     visibility: ShaderStages::COMPUTE,
+                //     ty: BindingType::Buffer {
+                //         ty: BufferBindingType::Uniform,
+                //         has_dynamic_offset: false,
+                //         min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
+                //     },
+                //     count: None,
+                // },
                 BindGroupLayoutEntry {
                     binding: 20, // Matte flag 0
                     visibility: ShaderStages::COMPUTE,
@@ -593,27 +574,316 @@ impl WgpuRendererContext {
                     },
                     count: None,
                 },
+                // BindGroupLayoutEntry {
+                //     binding: 24, // Last ICF A
+                //     visibility: ShaderStages::COMPUTE,
+                //     ty: BindingType::Buffer {
+                //         ty: BufferBindingType::Storage {
+                //             read_only: false,
+                //         },
+                //         has_dynamic_offset: false,
+                //         min_binding_size: None,
+                //     },
+                //     count: None,
+                // },
+                // BindGroupLayoutEntry {
+                //     binding: 25, // Last ICF B
+                //     visibility: ShaderStages::COMPUTE,
+                //     ty: BindingType::Buffer {
+                //         ty: BufferBindingType::Storage {
+                //             read_only: false,
+                //         },
+                //         has_dynamic_offset: false,
+                //         min_binding_size: None,
+                //     },
+                //     count: None,
+                // },
+            ],
+        });
+
+        // Create the bind group
+        let matte_transparency_bind_group = device.create_bind_group(&BindGroupDescriptor {
+            label: Some("Matte transparency bind group"),
+            layout: &matte_transparency_bind_group_layout,
+            entries: &[
+                BindGroupEntry {
+                    binding: 0, // Plane A
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &plane_a_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 1, // Plane B
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &plane_b_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 2, // Transparency A
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &transparency_a_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 3, // Transparency B
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &transparency_b_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 4, // Mask color A
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &mask_color_a_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 5, // Mask color B
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &mask_color_b_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 6, // Transparent color A
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &transparent_color_a_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 7, // Transparent color B
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &transparent_color_b_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 8, // Matte commands
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &matte_commands_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 9, // Matte number
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &matte_number_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 10, // Initial ICF A
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &initial_icf_a_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 11, // Initial ICF B
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &initial_icf_b_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 12, // Width
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &width_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                // BindGroupEntry {
+                //     binding: 13, // Size
+                //     resource: BindingResource::Buffer(BufferBinding {
+                //         buffer: &size_buffer,
+                //         offset: 0,
+                //         size: None,
+                //     }),
+                // },
+                BindGroupEntry {
+                    binding: 20, // Matte flag 0
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &matte_flag_0_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 21, // Matte flag 1
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &matte_flag_1_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 22, // ICF A
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &icf_a_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                BindGroupEntry {
+                    binding: 23, // ICF B
+                    resource: BindingResource::Buffer(BufferBinding {
+                        buffer: &icf_b_buffer,
+                        offset: 0,
+                        size: None,
+                    }),
+                },
+                // BindGroupEntry {
+                //     binding: 24, // Last ICF A
+                //     resource: BindingResource::Buffer(BufferBinding {
+                //         buffer: &last_icf_a_buffer,
+                //         offset: 0,
+                //         size: None,
+                //     }),
+                // },
+                // BindGroupEntry {
+                //     binding: 25, // Last ICF B
+                //     resource: BindingResource::Buffer(BufferBinding {
+                //         buffer: &last_icf_b_buffer,
+                //         offset: 0,
+                //         size: None,
+                //     }),
+                // },
+            ],
+        });
+
+        let matte_transparency_pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
+            label: Some("Matte transparency pipeline layout"),
+            bind_group_layouts: &[&matte_transparency_bind_group_layout],
+            immediate_size: 0,
+        });
+
+        let matte_transparency_shader_module = device.create_shader_module(ShaderModuleDescriptor {
+            label: Some("Matte transparency shader"),
+            source: ShaderSource::Wgsl(std::borrow::Cow::Borrowed(MATTE_TRANSPARENCY_SHADER)),
+        });
+
+        // Create the pipelines
+        let matte_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
+            label: Some("Matte pipeline"),
+            layout: Some(&matte_transparency_pipeline_layout),
+            module: &matte_transparency_shader_module,
+            entry_point: Some("matte"),
+            compilation_options: SHADER_COMPILATION_OPTIONS.clone(),
+            cache: None,
+        });
+
+        let transparency_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
+            label: Some("Transparency pipeline"),
+            layout: Some(&matte_transparency_pipeline_layout),
+            module: &matte_transparency_shader_module,
+            entry_point: Some("transparency"),
+            compilation_options: SHADER_COMPILATION_OPTIONS.clone(),
+            cache: None,
+        });
+
+        // Overlay/Mixing
+
+        // Create the overlay/mix bind group layout
+        let overlay_mix_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+            label: Some("Overlay/Mix bind group layout"),
+            entries: &[
                 BindGroupLayoutEntry {
-                    binding: 24, // Last ICF A
+                    binding: 0, // Screen
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
                             read_only: false,
                         },
                         has_dynamic_offset: false,
-                        min_binding_size: None,
+                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
                     },
                     count: None,
                 },
                 BindGroupLayoutEntry {
-                    binding: 25, // Last ICF B
+                    binding: 1, // Plane A
                     visibility: ShaderStages::COMPUTE,
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Storage {
-                            read_only: false,
+                            read_only: true,
                         },
                         has_dynamic_offset: false,
-                        min_binding_size: None,
+                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
+                    },
+                    count: None,
+                },
+                BindGroupLayoutEntry {
+                    binding: 2, // Plane B
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Storage {
+                            read_only: true,
+                        },
+                        has_dynamic_offset: false,
+                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
+                    },
+                    count: None,
+                },
+                BindGroupLayoutEntry {
+                    binding: 3, // Background
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Storage {
+                            read_only: true,
+                        },
+                        has_dynamic_offset: false,
+                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
+                    },
+                    count: None,
+                },
+                BindGroupLayoutEntry {
+                    binding: 4, // ICF A
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Storage {
+                            read_only: true,
+                        },
+                        has_dynamic_offset: false,
+                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
+                    },
+                    count: None,
+                },
+                BindGroupLayoutEntry {
+                    binding: 5, // ICF B
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Storage {
+                            read_only: true,
+                        },
+                        has_dynamic_offset: false,
+                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
+                    },
+                    count: None,
+                },
+                BindGroupLayoutEntry {
+                    binding: 6, // Width
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: Some(NonZeroU64::new(SIZEOF_PIXEL).unwrap()),
                     },
                     count: None,
                 },
@@ -621,9 +891,9 @@ impl WgpuRendererContext {
         });
 
         // Create the bind group
-        let bind_group = device.create_bind_group(&BindGroupDescriptor {
-            label: Some("BindGroup"),
-            layout: &bind_group_layout,
+        let overlay_mix_bind_group = device.create_bind_group(&BindGroupDescriptor {
+            label: Some("Overlay/Mix bind group"),
+            layout: &overlay_mix_bind_group_layout,
             entries: &[
                 BindGroupEntry {
                     binding: 0, // Screen
@@ -658,119 +928,7 @@ impl WgpuRendererContext {
                     }),
                 },
                 BindGroupEntry {
-                    binding: 4, // Transparency A
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &transparency_a_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 5, // Transparency B
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &transparency_b_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 6, // Mask color A
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &mask_color_a_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 7, // Mask color B
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &mask_color_b_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 8, // Transparent color A
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &transparent_color_a_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 9, // Transparent color B
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &transparent_color_b_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 10, // Matte commands
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &matte_commands_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 11, // Matte number
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &matte_number_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 12, // Width
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &width_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 13, // Size
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &size_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 14, // Initial ICF A
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &initial_icf_a_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 15, // Initial ICF B
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &initial_icf_b_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 20, // Matte flag 0
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &matte_flag_0_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 21, // Matte flag 1
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &matte_flag_1_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 22, // ICF A
+                    binding: 4, // ICF A
                     resource: BindingResource::Buffer(BufferBinding {
                         buffer: &icf_a_buffer,
                         offset: 0,
@@ -778,7 +936,7 @@ impl WgpuRendererContext {
                     }),
                 },
                 BindGroupEntry {
-                    binding: 23, // ICF B
+                    binding: 5, // ICF B
                     resource: BindingResource::Buffer(BufferBinding {
                         buffer: &icf_b_buffer,
                         offset: 0,
@@ -786,17 +944,9 @@ impl WgpuRendererContext {
                     }),
                 },
                 BindGroupEntry {
-                    binding: 24, // Last ICF A
+                    binding: 6, // Width
                     resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &last_icf_a_buffer,
-                        offset: 0,
-                        size: None,
-                    }),
-                },
-                BindGroupEntry {
-                    binding: 25, // Last ICF B
-                    resource: BindingResource::Buffer(BufferBinding {
-                        buffer: &last_icf_b_buffer,
+                        buffer: &width_buffer,
                         offset: 0,
                         size: None,
                     }),
@@ -804,42 +954,23 @@ impl WgpuRendererContext {
             ],
         });
 
-        // Create the pipeline layout
-        let pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
-            label: Some("PipelineLayout"),
-            bind_group_layouts: &[&bind_group_layout],
+        // Create the overlay/mix pipeline layout
+        let overlay_mix_pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
+            label: Some("Overlay/Mix pipeline layout"),
+            bind_group_layouts: &[&overlay_mix_bind_group_layout],
             immediate_size: 0,
         });
 
-        // Create the shader module
-        let shader_module = device.create_shader_module(ShaderModuleDescriptor {
-            label: Some("CD-I shader"),
-            source: ShaderSource::Wgsl(std::borrow::Cow::Borrowed(CDI_SHADER)),
-        });
-
-        // Create the pipelines
-        let matte_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
-            label: Some("Matte pipeline"),
-            layout: Some(&pipeline_layout),
-            module: &shader_module,
-            entry_point: Some("matte"),
-            compilation_options: SHADER_COMPILATION_OPTIONS.clone(),
-            cache: None,
-        });
-
-        let transparency_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
-            label: Some("Transparency pipeline"),
-            layout: Some(&pipeline_layout),
-            module: &shader_module,
-            entry_point: Some("transparency"),
-            compilation_options: SHADER_COMPILATION_OPTIONS.clone(),
-            cache: None,
+        // Create the overlay/mixing module
+        let overlay_mix_shader_module = device.create_shader_module(ShaderModuleDescriptor {
+            label: Some("Overlay/Mix shader"),
+            source: ShaderSource::Wgsl(std::borrow::Cow::Borrowed(OVERLAY_MIX_SHADER)),
         });
 
         let overlay_front_a_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
             label: Some("Overlay front A pipeline"),
-            layout: Some(&pipeline_layout),
-            module: &shader_module,
+            layout: Some(&overlay_mix_pipeline_layout),
+            module: &overlay_mix_shader_module,
             entry_point: Some("overlay_front_a"),
             compilation_options: SHADER_COMPILATION_OPTIONS.clone(),
             cache: None,
@@ -847,8 +978,8 @@ impl WgpuRendererContext {
 
         let overlay_front_b_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
             label: Some("Overlay front B pipeline"),
-            layout: Some(&pipeline_layout),
-            module: &shader_module,
+            layout: Some(&overlay_mix_pipeline_layout),
+            module: &overlay_mix_shader_module,
             entry_point: Some("overlay_front_b"),
             compilation_options: SHADER_COMPILATION_OPTIONS.clone(),
             cache: None,
@@ -856,8 +987,8 @@ impl WgpuRendererContext {
 
         let mix_front_a_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
             label: Some("Mix front A pipeline"),
-            layout: Some(&pipeline_layout),
-            module: &shader_module,
+            layout: Some(&overlay_mix_pipeline_layout),
+            module: &overlay_mix_shader_module,
             entry_point: Some("mix_front_a"),
             compilation_options: SHADER_COMPILATION_OPTIONS.clone(),
             cache: None,
@@ -865,8 +996,8 @@ impl WgpuRendererContext {
 
         let mix_front_b_pipeline = device.create_compute_pipeline(&ComputePipelineDescriptor {
             label: Some("Mix front B pipeline"),
-            layout: Some(&pipeline_layout),
-            module: &shader_module,
+            layout: Some(&overlay_mix_pipeline_layout),
+            module: &overlay_mix_shader_module,
             entry_point: Some("mix_front_b"),
             compilation_options: SHADER_COMPILATION_OPTIONS.clone(),
             cache: None,
@@ -876,7 +1007,6 @@ impl WgpuRendererContext {
             adapter,
             device,
             queue,
-            bind_group,
 
             screen_buffer,
             plane_a_buffer,
@@ -893,7 +1023,7 @@ impl WgpuRendererContext {
             matte_commands_buffer,
             matte_number_buffer,
             width_buffer,
-            size_buffer,
+            // size_buffer,
             initial_icf_a_buffer,
             initial_icf_b_buffer,
 
@@ -901,8 +1031,11 @@ impl WgpuRendererContext {
             transfer_a_buffer,
             transfer_b_buffer,
 
+            matte_transparency_bind_group,
             matte_pipeline,
             transparency_pipeline,
+
+            overlay_mix_bind_group,
             overlay_front_a_pipeline,
             overlay_front_b_pipeline,
             mix_front_a_pipeline,
@@ -913,7 +1046,6 @@ impl WgpuRendererContext {
     /// Renders a frame and waits until the result is copied to the screen.
     ///
     /// Note that this function does not check if the frame size matches the buffer sizes.
-    #[allow(clippy::too_many_arguments)]
     pub fn render(&self, frame: &WgpuRendererFrame, buffers: &mut WgpuRendererBuffers) {
         #[cfg(feature = "renderdoc")]
         let mut renderdoc = {
@@ -945,7 +1077,7 @@ impl WgpuRendererContext {
         self.queue.write_buffer(&self.matte_number_buffer, 0, &buffers.matte_number);
 
         self.queue.write_buffer(&self.width_buffer, 0, &frame.width.to_le_bytes());
-        self.queue.write_buffer(&self.size_buffer, 0, &frame.size().to_le_bytes());
+        // self.queue.write_buffer(&self.size_buffer, 0, &frame.size().to_le_bytes());
         self.queue.write_buffer(&self.initial_icf_a_buffer, 0, &buffers.initial_icf_a);
         self.queue.write_buffer(&self.initial_icf_b_buffer, 0, &buffers.initial_icf_b);
         self.queue.submit([]); // Start copying the buffers before anything else to gain time.
@@ -955,10 +1087,10 @@ impl WgpuRendererContext {
 
         // Create the command encoder
         let mut command_encoder = self.device.create_command_encoder(&CommandEncoderDescriptor {
-            label: Some("CommandEncoder"),
+            label: Some("Command encoder"),
         });
 
-        // Wrap in a block so the compute pass is dropped and we can access the command encoder again
+        // Wrap in a block so the compute pass is dropped and we can access the command encoder again.
         // Matte compute pass
         {
             let mut compute_pass = command_encoder.begin_compute_pass(&ComputePassDescriptor {
@@ -967,7 +1099,7 @@ impl WgpuRendererContext {
             });
 
             compute_pass.set_pipeline(&self.matte_pipeline);
-            compute_pass.set_bind_group(0, Some(&self.bind_group), &[]);
+            compute_pass.set_bind_group(0, Some(&self.matte_transparency_bind_group), &[]);
 
             // Finally dispath the workgroups
             compute_pass.dispatch_workgroups(workgroup_count, 1, 1);
@@ -981,13 +1113,13 @@ impl WgpuRendererContext {
             });
 
             compute_pass.set_pipeline(&self.transparency_pipeline);
-            compute_pass.set_bind_group(0, Some(&self.bind_group), &[]);
+            compute_pass.set_bind_group(0, Some(&self.matte_transparency_bind_group), &[]);
 
             // Finally dispath the workgroups
             compute_pass.dispatch_workgroups(workgroup_count, 1, 1);
         }
 
-        // Overlay/mixing compute pass
+        // Overlay/mix compute pass
         {
             let mut compute_pass = command_encoder.begin_compute_pass(&ComputePassDescriptor {
                 label: Some("Overlay/Mix compute pass"),
@@ -1007,7 +1139,7 @@ impl WgpuRendererContext {
                     compute_pass.set_pipeline(&self.overlay_front_a_pipeline);
                 }
             }
-            compute_pass.set_bind_group(0, Some(&self.bind_group), &[]);
+            compute_pass.set_bind_group(0, Some(&self.overlay_mix_bind_group), &[]);
 
             // Finally dispath the workgroups
             compute_pass.dispatch_workgroups(workgroup_count, 1, 1);

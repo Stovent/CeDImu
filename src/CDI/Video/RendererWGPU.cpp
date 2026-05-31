@@ -6,11 +6,10 @@
  * When the frame is complete, send everything to the GPU and actually generate the frame.
  *
  * TODO: experiment sending each line data asynchrosously.
- * TODO: is it possible to handle matte on the gpu? Maybe the CPU can only send the ones that will be used.
  * TODO: for run length: decode it on the GPU anyway, with only the thread 0 of the line doing it?
  *
- * For now because run-length cannot be done on the GPU, the first plane decoding is done on the CPU along with matte,
- * then transparency and overlay/mixing is done on the GPU.
+ * For now because run-length cannot be done on the GPU, the first plane decoding is done on the CPU,
+ * then matte/transparency and overlay/mixing is done on the GPU.
  */
 
 #include "RendererWGPU.hpp"
