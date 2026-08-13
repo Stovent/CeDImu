@@ -68,17 +68,18 @@ template uint16_t decodeBitmapLineSIMD<768>(Pixel* dst, const uint8_t* dataA, co
 template<uint16_t WIDTH>
 uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept
 {
-#if __has_include(<simd>)
+#if LIBCEDIMU_RENDERERSIMD_STD
     using SIMDFixedU64 = std::simd::rebind_t<uint64_t, SIMDNativePixel>;
 
     const SIMDNativePixel alphaMask{0x8000u};
     size_t width = WIDTH;
+    // TODO: can we optimize with simd bit operations?
     while(width > 0)
     {
         const uint16_t count = std::min(SIMDNativePixelSize, width);
 
-        const SIMDNativePixel da = std::simd::partial_load<SIMDNativePixel>(dataA, count, std::simd::flag_overaligned<1>);
-        const SIMDNativePixel db = std::simd::partial_load<SIMDNativePixel>(dataB, count, std::simd::flag_aligned);
+        const SIMDNativePixel da = std::simd::partial_load<SIMDNativePixel>(dataA, count);
+        const SIMDNativePixel db = std::simd::partial_load<SIMDNativePixel>(dataB, count);
         const SIMDNativePixel data = da << 8 | db;
 
         SIMDNativePixel result32 = (data & alphaMask) << 16;
@@ -133,12 +134,12 @@ uint16_t decodeRGB555LineSIMD(Pixel* dst, const uint8_t* dataA, const uint8_t* d
 
     return WIDTH;
 }
-template uint16_t decodeRGB555LineSIMD<320>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept;
+template uint16_t decodeRGB555LineSIMD<360>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept;
 template uint16_t decodeRGB555LineSIMD<384>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept;
 template<> uint16_t decodeRGB555LineSIMD<720>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept = delete;
 template<> uint16_t decodeRGB555LineSIMD<768>(Pixel* dst, const uint8_t* dataA, const uint8_t* dataB) noexcept = delete;
 
-#if __has_include(<simd>)
+#if LIBCEDIMU_RENDERERSIMD_STD
 using SIMDNativeI32 = std::simd::vec<int32_t>;
 using SIMDFixedI64 = std::simd::rebind_t<int64_t, SIMDNativeI32>;
 #else
@@ -163,7 +164,7 @@ static inline constexpr SIMDNativeI32 U8_MAX{255};
 template<uint16_t WIDTH>
 uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYUV) noexcept
 {
-#if __has_include(<simd>)
+#if LIBCEDIMU_RENDERERSIMD_STD
     using STORE_YUV = uint8_t;
 #else
     using STORE_YUV = int32_t;
@@ -216,10 +217,10 @@ uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYU
     for(uint16_t i = 0; i < WIDTH;
         i += SIZE, Y += SIZE, U += SIZE, V += SIZE)
     {
-#if __has_include(<simd>)
-        SIMDNativeI32 simdY = std::simd::unchecked_load<SIMDNativeI32>(Y, SIZE, std::simd::flag_aligned);
-        SIMDNativeI32 simdU = std::simd::unchecked_load<SIMDNativeI32>(U, SIZE, std::simd::flag_aligned);
-        SIMDNativeI32 simdV = std::simd::unchecked_load<SIMDNativeI32>(V, SIZE, std::simd::flag_aligned);
+#if LIBCEDIMU_RENDERERSIMD_STD
+        SIMDNativeI32 simdY = std::simd::unchecked_load<SIMDNativeI32>(Y, SIZE);
+        SIMDNativeI32 simdU = std::simd::unchecked_load<SIMDNativeI32>(U, SIZE);
+        SIMDNativeI32 simdV = std::simd::unchecked_load<SIMDNativeI32>(V, SIZE);
 #else
         SIMDNativeI32 simdY{Y, stdx::element_aligned};
         SIMDNativeI32 simdU{U, stdx::element_aligned};
@@ -236,7 +237,7 @@ uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYU
         // SIMDNativeI32 simdB = ((simdU * 444) >> 8) + simdY;
         SIMDNativeI32 simdB = ((simdU * 444) / 256) + simdY;
 
-#if __has_include(<simd>)
+#if LIBCEDIMU_RENDERERSIMD_STD
         simdR = std::simd::clamp(simdR, U8_MIN, U8_MAX);
         simdG = std::simd::clamp(simdG, U8_MIN, U8_MAX);
         simdB = std::simd::clamp(simdB, U8_MIN, U8_MAX);
@@ -250,7 +251,7 @@ uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYU
 
         if constexpr(WIDTH == 360 || WIDTH == 384)
         {
-#if __has_include(<simd>)
+#if LIBCEDIMU_RENDERERSIMD_STD
             SIMDFixedI64 result64 = result32;
             result64 |= result64 << 32;
             std::simd::unchecked_store(result64, reinterpret_cast<int64_t*>(dst->AsU32Pointer()), SIZE, std::simd::flag_overaligned<alignof(uint32_t)>);
@@ -263,8 +264,8 @@ uint16_t decodeDYUVLineSIMD(Pixel* dst, const uint8_t* dyuv, uint32_t initialDYU
         }
         else
         {
-#if __has_include(<simd>)
-            std::simd::unchecked_store(result32, reinterpret_cast<int32_t*>(dst->AsU32Pointer()), SIZE, std::simd::flag_aligned);
+#if LIBCEDIMU_RENDERERSIMD_STD
+            std::simd::unchecked_store(result32, reinterpret_cast<int32_t*>(dst->AsU32Pointer()), SIZE);
 #else
             result32.copy_to(dst->AsU32Pointer(), stdx::element_aligned);
 #endif

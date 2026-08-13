@@ -38,6 +38,8 @@ public:
     std::array<std::array<uint8_t, Plane::MAX_WIDTH>, 2> m_icfLine{}; /**< ICF for the whole line. */
 
     std::array<std::array<bool, Plane::MAX_WIDTH>, 2> m_matteFlagsLine{}; /**< Matte flags for the whole line. */
+
+    static constexpr Pixel::ARGB32 COLOR_KEY_MASK = 0x00'FC'FC'FC;
 };
 
 } // namespace Video

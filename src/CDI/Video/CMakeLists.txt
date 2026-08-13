@@ -17,12 +17,16 @@ target_sources(CeDImu
 if(LIBCEDIMU_ENABLE_RENDERERSIMD)
     target_sources(CeDImu
         PRIVATE
-            # RendererSIMDexp.cpp
-            # RendererSIMDstd.cpp
-            RendererSIMD.cpp
+            # RendererSIMD.cpp
             RendererSIMD.hpp
             SIMD.hpp
             VideoDecodersSIMD.cpp
             VideoDecodersSIMD.hpp
     )
+
+    if(LIBCEDIMU_RENDERERSIMD_STD)
+        target_sources(CeDImu PRIVATE RendererSIMDstd.cpp)
+    else()
+        target_sources(CeDImu PRIVATE RendererSIMDexp.cpp)
+    endif()
 endif()

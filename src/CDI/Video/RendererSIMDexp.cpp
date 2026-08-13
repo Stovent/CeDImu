@@ -8,6 +8,12 @@
  * uses the intermediate representation for the computation, and OverlaySIMDCast reuses the mask from ICF computation.
  */
 
+// Usage and implementation of HandleTransparencyLoopSIMD are in separate places, avoids manual template instantiation.
+#include "RendererSIMD.cpp"
+
+namespace Video
+{
+
 void RendererSIMD::DrawCursor() noexcept
 {
     // Technically speaking the cursor is drawn when the drawing line number is the cursor's one (because video
@@ -417,7 +423,7 @@ constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA, con
     SIMD pixel{plane, stdx::element_aligned};
     pixel |= 0xFF'00'00'00; // Set to visible.
 
-    const MASK colorKey = ((pixel & SIMD{COLOR_KEY_MASK}) | colorMask) == transparentColor;
+    const MASK colorKey = ((pixel & SIMD{RendererSIMD::COLOR_KEY_MASK}) | colorMask) == transparentColor;
 
     switch(TRANSPARENT)
     {
@@ -473,3 +479,5 @@ constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlagsA, con
 
     pixel.copy_to(plane->AsU32Pointer(), stdx::element_aligned);
 }
+
+} // namespace Video

@@ -90,6 +90,8 @@ CeDImu (the frontend) and libCeDImu (the emulation core) accepts the following m
 
 `LIBCEDIMU_ENABLE_RENDERERSIMD`: if on, uses the hardware-accelerated SIMD renderer. Requires the C++ header `<experimental/simd>`.
 
+`LIBCEDIMU_RENDERERSIMD_STD`: if on, uses std::simd (C++26), if off, uses std::experimental::simd. Requires LIBCEDIMU_ENABLE_RENDERERSIMD to be ON.
+
 ### CMake
 
 #### CMake options

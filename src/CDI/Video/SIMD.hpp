@@ -7,18 +7,16 @@
 
 #include "Pixel.hpp"
 
-#if __has_include(<simd>)
+#if LIBCEDIMU_RENDERERSIMD_STD
 #   include <simd>
-#elif __has_include(<experimental/simd>)
-#   include <experimental/simd>
 #else
-#    error Missing <simd> or <experimental/simd> headers
+#   include <experimental/simd>
 #endif
 
 namespace Video
 {
 
-#if __has_include(<simd>)
+#if LIBCEDIMU_RENDERERSIMD_STD
 using SIMDNativePixel = std::simd::vec<Pixel::ARGB32>;
 inline constexpr size_t SIMDNativePixelSize = SIMDNativePixel::size();
 using SIMDNativePixelMask = SIMDNativePixel::mask_type;
@@ -30,7 +28,7 @@ using SIMDFixedPixelSigned = std::simd::vec<std::make_signed_t<Pixel::ARGB32>, W
 using SIMDNativeU8 = std::simd::vec<uint8_t>;
 using SIMDFixedS16 = std::simd::vec<int16_t, SIMDNativeU8::size()>;
 
-#elif __has_include(<experimental/simd>)
+#else
 namespace stdx = std::experimental;
 using SIMDNativePixel = stdx::native_simd<Pixel::ARGB32>;
 using SIMDNativePixelMask = SIMDNativePixel::mask_type;
@@ -42,8 +40,6 @@ using SIMDFixedPixelSigned = stdx::fixed_size_simd<std::make_signed_t<Pixel::ARG
 using SIMDNativeU8 = stdx::native_simd<uint8_t>;
 using SIMDFixedS16 = stdx::rebind_simd_t<int16_t, SIMDNativeU8>;
 
-#else
-#   error Missing <simd> or <experimental/simd> headers
 #endif
 
 inline constexpr size_t SIMD_SIZE = SIMDNativePixel::size();

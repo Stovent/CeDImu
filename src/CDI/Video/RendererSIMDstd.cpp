@@ -8,11 +8,17 @@
  * uses the intermediate representation for the computation, and OverlaySIMDCast reuses the mask from ICF computation.
  */
 
+// Usage and implementation of HandleTransparencyLoopSIMD are in separate places, avoids manual template instantiation.
+#include "RendererSIMD.cpp"
+
+namespace Video
+{
+
 using SIMDCursorLine = std::simd::vec<uint32_t, 16>;
 using SIMDCursorLineMask = SIMDCursorLine::mask_type;
 static constexpr size_t SIMDCursorLineSize = SIMDCursorLine::size();
 
-static constexpr std::array<uint32_t, 16> PATTERN_MASK{
+alignas(std::simd::alignment_v<SIMDCursorLine>) static constexpr std::array<uint32_t, 16> PATTERN_MASK{
     0x8000, 0x4000, 0x2000, 0x1000, 0x800, 0x400, 0x200, 0x100,
     0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1,
 };
@@ -26,16 +32,17 @@ void RendererSIMD::DrawCursor() noexcept
     const SIMDCursorLine colorSimd{color.AsU32()};
     const SIMDCursorLine blackSimd{BLACK_PIXEL.AsU32()};
 
-    auto dst = m_cursorPlane.begin();
+    auto dst = m_cursorPlane.data();
     for(const uint16_t pattern : m_cursorPatterns)
     {
+        // TODO: benchmark with std::bit_reverse, or find how to do it in std::simd.
         // Is there a way to very efficiently use the pattern variable directly and reverse its bits?
         // const SIMDCursorLineMask patternMask{pattern}; // Can std::simd swap all the elements efficiently?
         const SIMDCursorLine patternSimd{pattern};
         const SIMDCursorLineMask patternMask = (patternSimd & PATTERN_MASK_SIMD) != 0u;
 
         const SIMDCursorLine cursorPixels = std::simd::select(patternMask, colorSimd, blackSimd);
-        std::simd::unchecked_store(cursorPixels, dst->AsU32Pointer(), SIMDCursorLineSize, std::simd::flag_aligned);
+        std::simd::unchecked_store(cursorPixels, dst->AsU32Pointer(), SIMDCursorLineSize);
 
         dst += SIMDCursorLineSize;
     }
@@ -53,15 +60,15 @@ inline constexpr SIMDFixedS16 SIXTYTHREE{static_cast<int16_t>(63)};
 template<bool MIX>
 static constexpr void applyICFOverlayMixSIMDCast(Pixel* screen, const Pixel* planeFront, const Pixel* planeBack, const uint8_t* icfFront, const uint8_t* icfBack, const uint32_t backdrop) noexcept
 {
-    SIMDNativePixel planeF = std::simd::unchecked_load(planeFront->AsU32Pointer(), SIMDNativePixelSize, std::simd::flag_aligned);
-    SIMDNativePixel planeB = std::simd::unchecked_load(planeBack->AsU32Pointer(), SIMDNativePixelSize, std::simd::flag_aligned);
+    SIMDNativePixel planeF = std::simd::unchecked_load(planeFront->AsU32Pointer(), SIMDNativePixelSize);
+    SIMDNativePixel planeB = std::simd::unchecked_load(planeBack->AsU32Pointer(), SIMDNativePixelSize);
 
     const SIMDNativePixelMask transparentF = (planeF & ALPHA_MASK) == 0u;
     const SIMDNativePixelMask transparentB = (planeB & ALPHA_MASK) == 0u;
     // Transparent pixels are overwritten by visible pixels in the end so no need to adjust ICF and black level.
 
-    SIMDNativePixel icfF = std::simd::unchecked_load<SIMDNativePixel>(icfFront, SIMDNativePixelSize, std::simd::flag_aligned);
-    SIMDNativePixel icfB = std::simd::unchecked_load<SIMDNativePixel>(icfBack, SIMDNativePixelSize, std::simd::flag_aligned);
+    SIMDNativePixel icfF = std::simd::unchecked_load<SIMDNativePixel>(icfFront, SIMDNativePixelSize);
+    SIMDNativePixel icfB = std::simd::unchecked_load<SIMDNativePixel>(icfBack, SIMDNativePixelSize);
 
     if constexpr(MIX)
     {
@@ -124,7 +131,7 @@ static constexpr void applyICFOverlayMixSIMDCast(Pixel* screen, const Pixel* pla
     }
     result |= ALPHA_MASK; // Screen is always visible.
 
-    std::simd::unchecked_store(result, screen->AsU32Pointer(), SIMDNativePixelSize, std::simd::flag_aligned);
+    std::simd::unchecked_store(result, screen->AsU32Pointer(), SIMDNativePixelSize);
 }
 
 /** \brief Dispatches the correct overlay or mix SIMD algorithm.
@@ -214,11 +221,11 @@ static constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlag
     constexpr SIMD SET_ALPHA{0xFF'00'00'00u};
     constexpr SIMD CLEAR_ALPHA{0x00'FF'FF'FFu};
 
-    SIMD pixel = std::simd::unchecked_load(plane->AsU32Pointer(), SIMDNativePixelSize, std::simd::flag_aligned);
+    SIMD pixel = std::simd::unchecked_load(plane->AsU32Pointer(), SIMDNativePixelSize);
     pixel |= 0xFF'00'00'00; // Set to visible.
     const SIMD invisible = pixel & 0x00'FF'FF'FFu;
 
-    const MASK colorKey = ((pixel & SIMD{COLOR_KEY_MASK}) | colorMask) == transparentColor;
+    const MASK colorKey = ((pixel & SIMD{RendererSIMD::COLOR_KEY_MASK}) | colorMask) == transparentColor;
 
     switch(TRANSPARENT)
     {
@@ -241,9 +248,9 @@ static constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlag
 
     case Renderer::TransparentIf::MatteFlag0: // Matte Flag 0.
     {
-        // const SIMD matteVec = std::simd::unchecked_load<SIMD>(matteFlagsA, SIMDNativePixelSize, std::simd::flag_aligned);
+        // const SIMD matteVec = std::simd::unchecked_load<SIMD>(matteFlagsA, SIMDNativePixelSize);
         // Ugly cast but it appears bool is not value preserving when converting to integers.
-        const SIMD matteVec = std::simd::unchecked_load<SIMD>(reinterpret_cast<const uint8_t*>(matteFlagsA), SIMDNativePixelSize, std::simd::flag_aligned);
+        const SIMD matteVec = std::simd::unchecked_load<SIMD>(reinterpret_cast<const uint8_t*>(matteFlagsA), SIMDNativePixelSize);
         const MASK matte = matteVec != 0u;
         pixel = std::simd::select(matte == FLAG, invisible, pixel);
         break;
@@ -251,7 +258,7 @@ static constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlag
 
     case Renderer::TransparentIf::MatteFlag1: // Matte Flag 1.
     {
-        const SIMD matteVec = std::simd::unchecked_load<SIMD>(reinterpret_cast<const uint8_t*>(matteFlagsB), SIMDNativePixelSize, std::simd::flag_aligned);
+        const SIMD matteVec = std::simd::unchecked_load<SIMD>(reinterpret_cast<const uint8_t*>(matteFlagsB), SIMDNativePixelSize);
         const MASK matte = matteVec != 0u;
         pixel = std::simd::select(matte == FLAG, invisible, pixel);
         break;
@@ -259,7 +266,7 @@ static constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlag
 
     case Renderer::TransparentIf::MatteFlag0OrColorKey: // Matte Flag 0 or Color Key.
     {
-        const SIMD matteVec = std::simd::unchecked_load<SIMD>(reinterpret_cast<const uint8_t*>(matteFlagsA), SIMDNativePixelSize, std::simd::flag_aligned);
+        const SIMD matteVec = std::simd::unchecked_load<SIMD>(reinterpret_cast<const uint8_t*>(matteFlagsA), SIMDNativePixelSize);
         const MASK matte = matteVec != 0u;
         pixel = std::simd::select(matte == FLAG || colorKey == FLAG, invisible, pixel);
         break;
@@ -267,7 +274,7 @@ static constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlag
 
     case Renderer::TransparentIf::MatteFlag1OrColorKey: // Matte Flag 1 or Color Key.
     {
-        const SIMD matteVec = std::simd::unchecked_load<SIMD>(reinterpret_cast<const uint8_t*>(matteFlagsB), SIMDNativePixelSize, std::simd::flag_aligned);
+        const SIMD matteVec = std::simd::unchecked_load<SIMD>(reinterpret_cast<const uint8_t*>(matteFlagsB), SIMDNativePixelSize);
         const MASK matte = matteVec != 0u;
         pixel = std::simd::select(matte == FLAG || colorKey == FLAG, invisible, pixel);
         break;
@@ -278,5 +285,7 @@ static constexpr void HandleTransparencySIMD(Pixel* plane, const bool* matteFlag
         break;
     }
 
-    std::simd::unchecked_store(pixel, plane->AsU32Pointer(), SIMDNativePixelSize, std::simd::flag_aligned);
+    std::simd::unchecked_store(pixel, plane->AsU32Pointer(), SIMDNativePixelSize);
 }
+
+} // namespace Video

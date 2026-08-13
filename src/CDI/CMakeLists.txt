@@ -11,6 +11,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 option(LIBCEDIMU_ENABLE_RENDERERSIMD "Enable the SIMD renderer, requires headers <simd> or <experimental/simd>" OFF)
 message("libCeDImu enable RendererSIMD: " ${LIBCEDIMU_ENABLE_RENDERERSIMD})
+option(LIBCEDIMU_RENDERERSIMD_STD "ON to use std::simd, OFF to use std::experimental::simd" OFF) # off by default until std::simd becomes more available and is not slower than exp.
+message("libCeDImu RendererSIMD std: " ${LIBCEDIMU_RENDERERSIMD_STD})
 option(LIBCEDIMU_PROFILE_GNU "Add profile options for GNU compiler" OFF)
 message("libCeDImu profile GNU: " ${LIBCEDIMU_PROFILE_GNU})
 option(LIBCEDIMU_ENABLE_ASAN "Add address sanitizer options" OFF)
@@ -34,6 +36,10 @@ target_include_directories(CeDImu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(LIBCEDIMU_ENABLE_RENDERERSIMD)
     target_compile_definitions(CeDImu PUBLIC LIBCEDIMU_ENABLE_RENDERERSIMD)
+endif()
+
+if(LIBCEDIMU_RENDERERSIMD_STD)
+    target_compile_definitions(CeDImu PUBLIC LIBCEDIMU_RENDERERSIMD_STD)
 endif()
 
 add_subdirectory(boards)

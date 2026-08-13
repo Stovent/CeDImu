@@ -412,12 +412,4 @@ void RendererSIMD::HandleTransparencyPlaneBSIMD() noexcept
     }
 }
 
-static constexpr Pixel::ARGB32 COLOR_KEY_MASK = 0x00'FC'FC'FC;
-
-#if __has_include(<simd>)
-#include "RendererSIMDstd.cpp"
-#else
-#include "RendererSIMDexp.cpp"
-#endif
-
 } // namespace Video
