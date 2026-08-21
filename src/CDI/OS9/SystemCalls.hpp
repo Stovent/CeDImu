@@ -1,7 +1,11 @@
 #ifndef CDI_OS9_SYSTEMCALLS_HPP
 #define CDI_OS9_SYSTEMCALLS_HPP
 
-#include "../cores/SCC68070/SCC68070.hpp"
+#if LIBCEDIMU_USE_M68000
+    #include "cores/SCC68070-m68000/SCC68070-m68000.hpp"
+#else
+    #include "../cores/SCC68070/SCC68070.hpp"
+#endif
 
 namespace OS9
 {

@@ -1,3 +1,6 @@
 [submodule "externals/Catch2"]
 	path = externals/Catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "externals/m68000"]
+	path = externals/m68000
+	url = https://github.com/Stovent/m68000.git

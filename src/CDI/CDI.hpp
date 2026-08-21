@@ -6,7 +6,11 @@
 #include "common/Callbacks.hpp"
 #include "cores/IRTC.hpp"
 #include "cores/ISlave.hpp"
-#include "cores/SCC68070/SCC68070.hpp"
+#if LIBCEDIMU_USE_M68000
+    #include "cores/SCC68070-m68000/SCC68070-m68000.hpp"
+#else
+    #include "cores/SCC68070/SCC68070.hpp"
+#endif // LIBCEDIMU_USE_M68000
 #include "OS9/BIOS.hpp"
 
 #include <memory>

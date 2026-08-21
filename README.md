@@ -90,6 +90,8 @@ CeDImu (the frontend) and libCeDImu (the emulation core) accepts the following m
 
 `LIBCEDIMU_ENABLE_RENDERERSIMD`: if on, uses the hardware-accelerated SIMD renderer. Requires the C++ header `<experimental/simd>`.
 
+`LIBCEDIMU_USE_M68000`: if on, will use the m68000 Rust crate as the CPU emulator (requires a stable Rust toolchain).
+
 ### CMake
 
 #### CMake options
@@ -99,6 +101,8 @@ The CMake options below controls how to build CeDImu and the build macros listed
 `LIBCEDIMU_ENABLE_LOG`: see section `Build macros` (default: `ON`). The official build of CeDImu always enables it.
 
 `LIBCEDIMU_ENABLE_RENDERERSIMD`: builds and uses the SIMD renderer, see section `Build macros` (default: `OFF`).
+
+`LIBCEDIMU_USE_M68000`: see section `Build macros` (default: `OFF`).
 
 `LIBCEDIMU_PROFILE_GNU`: if true, adds profiling arguments to GCC (clang/MSVC not supported) (default: `OFF`).
 

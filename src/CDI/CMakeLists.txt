@@ -9,6 +9,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+option(LIBCEDIMU_USE_M68000 "Use m68000 backend" OFF)
+message("libCeDImu use m68000: " ${LIBCEDIMU_USE_M68000})
 option(LIBCEDIMU_ENABLE_RENDERERSIMD "Enable the SIMD renderer, requires headers <simd> or <experimental/simd>" OFF)
 message("libCeDImu enable RendererSIMD: " ${LIBCEDIMU_ENABLE_RENDERERSIMD})
 option(LIBCEDIMU_PROFILE_GNU "Add profile options for GNU compiler" OFF)
@@ -46,6 +48,11 @@ add_subdirectory(Video)
 option(LIBCEDIMU_ENABLE_LOG "Allows the library to print some messages in the console and the use of OnLogMemoryAccess callback" ON)
 if(LIBCEDIMU_ENABLE_LOG)
     target_compile_definitions(CeDImu PUBLIC LIBCEDIMU_ENABLE_LOG)
+endif()
+
+if(LIBCEDIMU_USE_M68000)
+    target_compile_definitions(CeDImu PUBLIC LIBCEDIMU_USE_M68000)
+    target_link_libraries(CeDImu PUBLIC m68000 m68000_ffi)
 endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # Common flags for GCC and Clang.

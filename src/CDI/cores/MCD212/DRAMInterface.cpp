@@ -1,5 +1,9 @@
 #include "MCD212.hpp"
-#include "../SCC68070/SCC68070.hpp"
+#if LIBCEDIMU_USE_M68000
+    #include "../SCC68070-m68000/SCC68070-m68000.hpp"
+#else
+    #include "../SCC68070/SCC68070.hpp"
+#endif
 #include "../../CDI.hpp"
 #include "../../common/Callbacks.hpp"
 #include "../../common/utils.hpp"
