@@ -177,7 +177,7 @@ public:
      */
     [[nodiscard]] uint8_t PeekPeripheral(uint32_t addr) const noexcept;
 
-    void SetRegister(Register reg, uint32_t value);
+    void SetRegister(Register reg, uint32_t value) noexcept;
     [[nodiscard]] std::map<Register, uint32_t> GetCPURegisters() const;
     [[nodiscard]] std::vector<InternalRegister> GetInternalRegisters() const;
 

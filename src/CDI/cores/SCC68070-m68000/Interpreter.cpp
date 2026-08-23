@@ -60,14 +60,53 @@ static std::string exceptionVectorToString(const m68000_vector_t vector)
     }
 }
 
-void SCC68070::Interpreter()
+/** \brief Exectutes a single instruction.
+ * \param stopCycles The number of cycles to run if the CPU is stopped.
+ * \return The number of CPU cycle executed and what happened in the interpreter.
+ * \throw SCC68070::Exception when an exception occured during exception processing.
+ *
+ * \note See SingleStepException for more details.
+ * If an exception occured, this method pushes it to the CPU for processing and also returns it.
+ * When the CPU is stopped, \p stopCycles is used to advance the internal timer.
+ */
+SCC68070::InterpreterResult SCC68070::SingleStep(const size_t stopCycles)
 {
-    m_isRunning = true;
-    std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<double, std::nano>> start = std::chrono::steady_clock::now();
+    InterpreterResult res = SingleStepException(stopCycles);
 
-    do
+    if(std::holds_alternative<Exception>(res.second))
+        PushException(std::get<Exception>(res.second));
+
+    return res;
+}
+
+/** \brief Executes a single instruction without processing exceptions if any.
+ * \param stopCycles The number of cycles to run if the CPU is stopped.
+ * \return The cycle count and what happened in the interpreter.
+ * \throw SCC68070::Exception when an exception occured during exception processing.
+ *
+ * \note If an exception occurs, it is returned by this method and will not be processed.
+ *  The caller has to explicitly call `SCC68070::PushException` to process it, or use `SCC68070::SingleStep`.
+ *
+ * The possible returned exceptions are TRAPs, Bus errors and Address errors.
+ *
+ * When the CPU is stopped, \p stopCycles is used to advance the internal timer.
+ * It is also added to the time necessary to process exceptions, then returned.
+ */
+SCC68070::InterpreterResult SCC68070::SingleStepException(const size_t stopCycles)
+{
+    size_t executionCycles = 0;
+    InterpreterEvent event{Normal{}};
+
+    currentPC = m_regs->pc;
+
+    if(!m_breakpointed && std::find(m_breakpoints.cbegin(), m_breakpoints.cend(), currentPC) != m_breakpoints.cend())
     {
-        currentPC = m_regs->pc;
+        m_breakpointed = true;
+        event = Breakpoint{currentPC};
+    }
+    else
+    {
+        m_breakpointed = false;
 
         m68000_exception_result_t result;
         if(m_cdi.m_callbacks.HasOnLogDisassembler())
@@ -87,7 +126,10 @@ void SCC68070::Interpreter()
             result = m68000_scc68070_interpreter_exception(m_m68000.get(), &m_memory);
         }
 
-        const size_t executionCycles = result.cycles != 0 ? result.cycles : 25; // 0 means CPU is stopped;
+        // TODO: this is wrong. we detect stopped state one instruction too late.
+        if(result.cycles == 0) [[unlikely]]
+            event = Stopped{};
+        executionCycles = result.cycles != 0 ? result.cycles : stopCycles; // 0 means CPU is stopped;
         const m68000_vector_t ex = static_cast<m68000_vector_t>(result.exception);
 
         if(ex)
@@ -97,25 +139,18 @@ void SCC68070::Interpreter()
                 const uint32_t returnAddress = ex == Trap0Instruction || ex == Trap13Instruction || ex == Trap15Instruction ? m_regs->pc + 2 : m_regs->pc;
                 const uint16_t data = ex == Trap0Instruction ? OS9::SystemCallType(m68000_scc68070_peek_next_word(m_m68000.get(), &m_memory).data) : -1;
                 const OS9::SystemCallType syscallType = OS9::SystemCallType(data);
-                const std::string inputs = ex == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->m_cdi.GetPointer(addr); }) : "";
+                const std::string inputs = ex == Trap0Instruction ? OS9::systemCallInputsToString(syscallType, GetCPURegisters(), [this] (const uint32_t addr) -> const uint8_t* { return this->m_cdi.GetPointer(addr).data(); }) : "";
                 const OS9::SystemCall syscall = {syscallType, m_cdi.GetBIOS().GetModuleNameAt(currentPC - m_cdi.GetBIOSBaseAddress()), inputs, ""};
                 m_cdi.m_callbacks.OnLogException({result.exception, returnAddress, exceptionVectorToString(ex), syscall});
             }
-            m68000_scc68070_exception(m_m68000.get(), ex);
+            event = Exception{ex, PeekNextWord()};
         }
+    }
 
-        totalCycleCount += executionCycles;
+    totalCycleCount += executionCycles;
 
-        const double ns = executionCycles * m_cycleDelay;
-        IncrementTimer(ns);
-        m_cdi.IncrementTime(ns);
+    const double ns = executionCycles * cycleDelay;
+    IncrementTimer(ns);
 
-        if(find(breakpoints.begin(), breakpoints.end(), currentPC) != breakpoints.end())
-            m_loop = false;
-
-        start += std::chrono::duration<double, std::nano>(executionCycles * m_speedDelay);
-        std::this_thread::sleep_until(start);
-    } while(m_loop);
-
-    m_isRunning = false;
+    return std::make_pair(executionCycles, event);
 }

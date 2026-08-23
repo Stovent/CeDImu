@@ -15,6 +15,7 @@ extern "C"
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <string>
@@ -74,6 +75,8 @@ public:
         SR,
     };
 
+    using ExceptionVector = m68000_vector_t;
+
     struct Exception
     {
         m68000_vector_t vector;
@@ -104,32 +107,57 @@ public:
         }
     };
 
+    /** \brief Variant that the CPU interpreter method ran normally without any event. */
+    struct Normal {};
+
+    /** \brief Variant that the CPU interpreter method executed a STOP instruction. */
+    struct Stopped {};
+
+    /** \brief Variant that a breakpoint was reached. */
+    struct Breakpoint
+    {
+        uint32_t address; /**< The adress of the instruction that caused the breakpoint. */
+    };
+
+    /** \brief Indicate what happened during SingleStep methods.
+     * The first alternative allows for safe default construction.
+     */
+    using InterpreterEvent = std::variant<Normal, Stopped, Exception, Breakpoint>;
+    /** \brief Holds the number of cycles actually executed and the things that happened in the interpreter. */
+    using InterpreterResult = std::pair<size_t, InterpreterEvent>;
+
     uint32_t currentPC;
     uint64_t totalCycleCount;
-
-    std::vector<uint32_t> breakpoints;
+    const double cycleDelay; // Time between two clock cycles in nanoseconds
 
     SCC68070(CDI& idc, uint32_t clockFrequency);
     ~SCC68070();
 
-    bool IsRunning() const;
-    void SetEmulationSpeed(double speed);
+    SCC68070(const SCC68070&) = delete;
+    SCC68070(SCC68070&&) = delete;
 
-    void Run(bool loop = true);
-    void Stop(bool wait = true);
+    [[nodiscard]] InterpreterResult SingleStep(size_t stopCycles);
+    [[nodiscard]] InterpreterResult SingleStepException(size_t stopCycles);
     void Reset();
+    void PushException(const Exception& ex);
+    uint16_t GetNextWord(BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint16_t PeekNextWord() const noexcept;
 
     void INT1();
     void INT2();
     void IN2();
     void SendUARTIn(uint8_t byte);
 
+    void AddBreakpoint(uint32_t address);
+    void RemoveBreakpoint(uint32_t address);
+    void ClearBreakpoints() noexcept;
+
     /** \brief Returns the byte at the given peripheral address.
      * \param addr The address in peripheral memory (so between 0 and Peripheral::Last).
      */
     uint8_t PeekPeripheral(uint32_t addr) const noexcept;
 
-    // void SetRegister(Register reg, uint32_t value);
+    void SetRegister(Register reg, uint32_t value) noexcept;
     std::map<Register, uint32_t> GetCPURegisters() const;
     std::vector<InternalRegister> GetInternalRegisters() const;
 
@@ -220,40 +248,42 @@ private:
     friend void resetInstruction(void* user_data);
 
     CDI& m_cdi;
-    std::thread m_executionThread;
 
     std::mutex m_uartInMutex;
     std::deque<uint8_t> m_uartIn;
 
-    std::atomic_bool m_loop;
-    std::atomic_bool m_isRunning;
-
     std::unique_ptr<m68000_scc68070_t, M68000Deleter> m_m68000;
     m68000_callbacks_t m_memory;
-    const m68000_registers_t* m_regs;
+    m68000_registers_t* m_regs;
 
     // void DumpCPURegisters();
 
-    const double m_cycleDelay; // Time between two clock cycles in nanoseconds
-    double m_speedDelay; // used for emulation speed.
     const double m_timerDelay;
     double m_timerCounter; // Counts the nanosconds when incrementing the timer.
+
+    std::vector<uint32_t> m_breakpoints{};
+    bool m_breakpointed{false}; /**< set to true when reaching a breakpointed instruction. */
 
     // Internal
     void ResetInternal();
     std::array<uint8_t, Peripheral::Size> m_peripherals;
 
+    constexpr void SetTXReady() noexcept { m_peripherals[USR] |= 0x04; }
+    constexpr void SetRXReady() noexcept { m_peripherals[USR] |= 0x01; }
+    constexpr void UnsetTXReady() noexcept { m_peripherals[USR] &= ~0x04; }
+    constexpr void UnsetRXReady() noexcept { m_peripherals[USR] &= ~0x01; }
+
     // Direct Memory Access
-    uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL);
-    uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
-    uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint8_t  GetByte(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint16_t GetWord(uint32_t addr, BusFlags flags = BUS_NORMAL);
+    [[nodiscard]] uint32_t GetLong(uint32_t addr, BusFlags flags = BUS_NORMAL);
 
     void SetByte(uint32_t addr, uint8_t  data, BusFlags flags = BUS_NORMAL);
     void SetWord(uint32_t addr, uint16_t data, BusFlags flags = BUS_NORMAL);
     void SetLong(uint32_t addr, uint32_t data, BusFlags flags = BUS_NORMAL);
 
     // Peripherals
-    uint8_t GetPeripheral(uint32_t addr, BusFlags flags);
+    [[nodiscard]] uint8_t GetPeripheral(uint32_t addr, BusFlags flags);
     void SetPeripheral(uint32_t addr, uint8_t data, BusFlags flags);
     void IncrementTimer(double ns);
 
@@ -291,10 +321,5 @@ constexpr const char* CPURegisterToString(const SCC68070::Register reg)
     default: return "Unknown";
     }
 }
-
-#define   SET_TX_READY() m_peripherals[USR] |= 0x04;
-#define   SET_RX_READY() m_peripherals[USR] |= 0x01;
-#define UNSET_TX_READY() m_peripherals[USR] &= ~0x04;
-#define UNSET_RX_READY() m_peripherals[USR] &= ~0x01;
 
 #endif // CDI_CORES_SCC68070_M68000_SCC68070_M68000_HPP

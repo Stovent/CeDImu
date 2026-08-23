@@ -6,6 +6,25 @@
 #include <cstring>
 #include <iterator>
 
+static constexpr m68000_status_register_t unpackSR(const uint16_t sr) noexcept
+{
+    return {
+        .t = bit<15>(sr),
+        .s = bit<13>(sr),
+        .interrupt_mask = static_cast<uint8_t>(bits<8, 10>(sr)),
+        .x = bit<4>(sr),
+        .n = bit<3>(sr),
+        .z = bit<2>(sr),
+        .v = bit<1>(sr),
+        .c = bit<0>(sr),
+    };
+}
+
+static constexpr uint16_t packSR(const m68000_status_register_t& sr) noexcept
+{
+    return (sr.t << 15) | (sr.s << 13) | (sr.interrupt_mask << 8) | (sr.x << 4) | (sr.n << 3) | (sr.z << 2) | (sr.v << 1) | sr.c;
+}
+
 m68000_memory_result_t getByte(uint32_t addr, void* user_data)
 {
     SCC68070* self = static_cast<SCC68070*>(user_data);
@@ -121,13 +140,10 @@ void resetInstruction(void* user_data)
 SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
     : currentPC(0)
     , totalCycleCount(0)
-    , breakpoints{}
+    , cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
     , m_cdi(idc)
-    , m_executionThread()
     , m_uartInMutex()
     , m_uartIn{}
-    , m_loop(false)
-    , m_isRunning(false)
     , m_m68000{m68000_scc68070_new()}
     , m_memory{
         .get_byte = getByte,
@@ -139,11 +155,11 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
         .reset_instruction = resetInstruction,
         .user_data = this,
     }
-    , m_regs(m68000_scc68070_registers(m_m68000.get()))
-    , m_cycleDelay((1.0L / clockFrequency) * 1'000'000'000)
-    , m_speedDelay(m_cycleDelay)
-    , m_timerDelay(m_cycleDelay * 96)
+    , m_regs(const_cast<m68000_registers_t*>(m68000_scc68070_registers(m_m68000.get()))) // TODO: change it in m68000 api. safe because the allocated core is not const.
+    , m_timerDelay(cycleDelay * 96)
     , m_timerCounter(0)
+    , m_breakpoints{}
+    , m_breakpointed{}
     , m_peripherals{0}
 {
     if(m_m68000 == nullptr)
@@ -154,69 +170,6 @@ SCC68070::SCC68070(CDI& idc, const uint32_t clockFrequency)
  */
 SCC68070::~SCC68070()
 {
-    Stop(true);
-}
-
-/** \brief Check if the CPU is running.
- *
- * \return true if it is running, false otherwise.
- */
-bool SCC68070::IsRunning() const
-{
-    return m_isRunning;
-}
-
-/** \brief Set the CPU emulated speed.
- *
- * \param speed The speed multiplier based on the clock frequency used in the constructor.
- *
- * This method only changes the emulation speed, not the clock frequency.
- * A multiplier of 2 will make the CPU runs twice as fast, the GPU to run at twice the framerate,
- * the timekeeper to increment twice as fast, etc.
- */
-void SCC68070::SetEmulationSpeed(const double speed)
-{
-    m_speedDelay = m_cycleDelay / speed;
-}
-
-/** \brief Start emulation.
- *
- * \param loop If true, will run indefinitely as a thread. If false, will execute a single instruction.
- *
- * If loop = true, executes indefinitely in a thread (non-blocking).
- * If loop = false, executes a single instruction and returns when it is executed (blocking).
- */
-void SCC68070::Run(const bool loop)
-{
-    if(!m_isRunning)
-    {
-        if(m_executionThread.joinable())
-            m_executionThread.join();
-
-        m_loop = loop;
-        if(loop)
-            m_executionThread = std::thread(&SCC68070::Interpreter, this);
-        else
-            Interpreter();
-    }
-}
-
-/** \brief Stop emulation.
- *
- * \param wait If true, will wait for the thread to join. If false, detach the thread while it stops.
- *
- * If this is invoked during a callback, false must be sent to prevent any dead lock.
- */
-void SCC68070::Stop(const bool wait)
-{
-    m_loop = false;
-    if(m_executionThread.joinable())
-    {
-        if(wait)
-            m_executionThread.join();
-        else
-            m_executionThread.detach();
-    }
 }
 
 /** \brief Resets the CPU (as if the RESET and HALT pins are driven LOW).
@@ -230,7 +183,33 @@ void SCC68070::Reset()
 void SCC68070::ResetInternal()
 {
     std::fill(m_peripherals.begin(), m_peripherals.end(), 0);
-    SET_TX_READY()
+    SetTXReady();
+}
+
+/** \brief Requests the CPU to process the given exception.
+ * \param ex The exception to process.
+ */
+void SCC68070::PushException(const Exception& ex)
+{
+    m68000_scc68070_exception(m_m68000.get(), ex.vector);
+}
+
+/** \brief Returns the word at the current Program Counter and advances PC by 2.
+ * \return The value at PC
+ * \warning This method modifies the CPU state. See \sa SCC68070#PeekNextWord.
+ */
+uint16_t SCC68070::GetNextWord(BusFlags)
+{
+    const m68000_memory_result_t res = m68000_scc68070_get_next_word(m_m68000.get(), &m_memory);
+    return res.data;
+}
+
+/** \brief Returns the word at the current Program Counter but does not trigger side effects (TODO).
+ * \return The word at PC.
+ */
+uint16_t SCC68070::PeekNextWord() const noexcept
+{
+    return m_cdi.PeekWord(m_regs->pc);
 }
 
 /** \brief Trigger interrupt with LIR1 level.
@@ -267,44 +246,61 @@ void SCC68070::SendUARTIn(const uint8_t byte)
     m_uartIn.push_back(byte);
 }
 
-// /** \brief Set the value of a CPU register.
-//  *
-//  * \param reg The register to set.
-//  * \param value The value to set the register to.
-//  */
-// void SCC68070::SetRegister(Register reg, const uint32_t value)
-// {
-//     switch(reg)
-//     {
-//     case Register::D0: D[0] = value; break;
-//     case Register::D1: D[1] = value; break;
-//     case Register::D2: D[2] = value; break;
-//     case Register::D3: D[3] = value; break;
-//     case Register::D4: D[4] = value; break;
-//     case Register::D5: D[5] = value; break;
-//     case Register::D6: D[6] = value; break;
-//     case Register::D7: D[7] = value; break;
-//
-//     case Register::A0: A(0) = value; break;
-//     case Register::A1: A(1) = value; break;
-//     case Register::A2: A(2) = value; break;
-//     case Register::A3: A(3) = value; break;
-//     case Register::A4: A(4) = value; break;
-//     case Register::A5: A(5) = value; break;
-//     case Register::A6: A(6) = value; break;
-//     case Register::A7: A(7) = value; break;
-//
-//     case Register::USP: USP = A(7); break;
-//     case Register::SSP: SSP = A(7); break; // TODO: this is wrong.
-//
-//     case Register::PC: PC = value; break;
-//     case Register::SR: SR = value; break;
-//     }
-// }
-
-static constexpr uint16_t packSR(const m68000_status_register_t& sr) noexcept
+void SCC68070::AddBreakpoint(const uint32_t address)
 {
-    return (sr.t << 15) | (sr.s << 13) | (sr.interrupt_mask << 8) | (sr.x << 4) | (sr.n << 3) | (sr.z << 2) | (sr.v << 1) | sr.c;
+    m_breakpoints.emplace_back(address);
+}
+
+void SCC68070::RemoveBreakpoint(const uint32_t address)
+{
+    auto it = std::find(m_breakpoints.begin(), m_breakpoints.end(), address);
+    if(it != m_breakpoints.end())
+        m_breakpoints.erase(it);
+}
+
+void SCC68070::ClearBreakpoints() noexcept
+{
+    m_breakpoints.clear();
+}
+
+/** \brief Set the value of a CPU register.
+ *
+ * \param reg The register to set.
+ * \param value The value to set the register to.
+ */
+void SCC68070::SetRegister(Register reg, const uint32_t value) noexcept
+{
+    switch(reg)
+    {
+    case Register::D0: m_regs->d[0] = value; break;
+    case Register::D1: m_regs->d[1] = value; break;
+    case Register::D2: m_regs->d[2] = value; break;
+    case Register::D3: m_regs->d[3] = value; break;
+    case Register::D4: m_regs->d[4] = value; break;
+    case Register::D5: m_regs->d[5] = value; break;
+    case Register::D6: m_regs->d[6] = value; break;
+    case Register::D7: m_regs->d[7] = value; break;
+
+    case Register::A0: m_regs->a[0] = value; break;
+    case Register::A1: m_regs->a[1] = value; break;
+    case Register::A2: m_regs->a[2] = value; break;
+    case Register::A3: m_regs->a[3] = value; break;
+    case Register::A4: m_regs->a[4] = value; break;
+    case Register::A5: m_regs->a[5] = value; break;
+    case Register::A6: m_regs->a[6] = value; break;
+    case Register::A7:
+        if(m_regs->sr.s)
+            m_regs->ssp = value;
+        else
+            m_regs->usp = value;
+        break;
+
+    case Register::USP: m_regs->usp = value; break;
+    case Register::SSP: m_regs->ssp = value; break;
+
+    case Register::PC: m_regs->pc = value; break;
+    case Register::SR: m_regs->sr = unpackSR(value); break;
+    }
 }
 
 /** \brief Get the CPU registers.

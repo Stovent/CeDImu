@@ -148,7 +148,7 @@ void SCC68070::ClearBreakpoints() noexcept
  * \param reg The register to set.
  * \param value The value to set the register to.
  */
-void SCC68070::SetRegister(Register reg, const uint32_t value)
+void SCC68070::SetRegister(Register reg, const uint32_t value) noexcept
 {
     switch(reg)
     {
@@ -168,10 +168,15 @@ void SCC68070::SetRegister(Register reg, const uint32_t value)
     case Register::A4: A(4) = value; break;
     case Register::A5: A(5) = value; break;
     case Register::A6: A(6) = value; break;
-    case Register::A7: A(7) = value; break;
+    case Register::A7:
+        if(GetS())
+            SSP = value;
+        else
+            USP = value;
+        break;
 
-    case Register::USP: USP = A(7); break;
-    case Register::SSP: SSP = A(7); break; // TODO: this is wrong.
+    case Register::USP: USP = value; break;
+    case Register::SSP: SSP = value; break;
 
     case Register::PC: PC = value; break;
     case Register::SR: SR = value; break;
