@@ -18,3 +18,6 @@ corrosion_experimental_cbindgen(
     TARGET renderer_wgpu
     HEADER_NAME RendererWGPU_ffi.hpp
 )
+if(APPLE)
+    target_link_options(renderer_wgpu INTERFACE -framework Metal)
+endif()
