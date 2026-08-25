@@ -40,7 +40,9 @@ GamePanel::GamePanel(MainFrame* parent, CeDImu& cedimu)
         if(this->m_screen.Create(plane.m_width, plane.m_height))
         {
             splitARGB(plane.GetSpan(), nullptr, this->m_screen.GetData());
-            this->Refresh();
+            wxGetApp().CallAfter([this] {
+                this->Refresh();
+            });
         }
     });
 }

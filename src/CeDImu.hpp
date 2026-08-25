@@ -55,4 +55,6 @@ public:
     void SetOnLogRTE(const std::function<void(uint32_t, uint16_t)>& callback);
 };
 
+DECLARE_APP(CeDImu)
+
 #endif // CEDIMU_HPP
