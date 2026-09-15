@@ -77,7 +77,7 @@ void CDDrive::StopPlaying() noexcept
  */
 void CDDrive::CopyLastSectorToMemory(uint32_t addr, const uint32_t size) const noexcept
 {
-    if(size < m_lastSector.data.size())
+    if(size < m_lastSector.data.size() && size != 2304) // 2304 is the size of an audio sector, some programs uses that.
         std::println("Warning: buffer size is {} < {}", size, m_lastSector.data.size());
 
     for(size_t i = 0; i < size && i < m_lastSector.data.size(); ++i)

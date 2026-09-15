@@ -33,7 +33,7 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
         //    module.name == "pipeman" ||
            module.name == "nrf" ||
            module.name == "ucm" ||
-           module.name == "cdfm" || // 41AE74
+        //    module.name == "cdfm" || // 41AE74
            module.name == "scf" || // File manager for t2
            module.name == "math" ||
         //    module.name == "copyright" ||
@@ -99,6 +99,7 @@ static OS9::BIOS makeSoftcdiBiosFromMono3(const OS9::BIOS& mono3)
     }
 
     // Add custom mdules.
+    bios.append_range(CDFM);
     bios.append_range(CIAPDRIV);
     bios.append_range(CSD);
     bios.append_range(INIT);

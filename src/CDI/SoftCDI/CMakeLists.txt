@@ -23,6 +23,7 @@ if(LIBCEDIMU_REBUILD_SOFTCDI)
     message(STATUS "found R68 at ${R68}")
 
     set(SOFTCDI_SOURCES
+        src/cdfm.a
         src/ciapdriv.a
         src/csd.a
         src/init.a
@@ -35,6 +36,7 @@ if(LIBCEDIMU_REBUILD_SOFTCDI)
     )
 
     set(SOFTCDI_MODULES
+        build/CDFM
         build/CIAPDRIV
         build/CSD
         build/INIT

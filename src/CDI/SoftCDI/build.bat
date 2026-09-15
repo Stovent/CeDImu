@@ -1,7 +1,7 @@
 @echo off
-
 REM TODO: make it a loop.
 
+call compile cdfm
 call compile ciapdriv
 call compile csd
 call compile init

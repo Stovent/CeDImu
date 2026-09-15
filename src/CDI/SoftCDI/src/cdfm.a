@@ -1,0 +1,398 @@
+	nam cdfm
+	use c:\DEFS\OSKDEFS.D
+	use "softcdi.d"
+	use "softcdi.m"
+
+* cdfm handles the CD drive to read the disc sectors, but is also the audio controller to play sound.
+
+typelang	equ	(FlMgr<<8)+Objct
+attrrevs	equ	((ReEnt+SupStat)<<8)+$99
+edition		equ	0
+stacksize	equ	0
+
+	psect cdfm,typelang,attrrevs,edition,stacksize,EntryTable
+
+* Those entries are relative to the entry table and not the start of the module
+EntryTable	dc.w	Create-EntryTable
+			dc.w	Open-EntryTable
+			dc.w	MakDir-EntryTable
+			dc.w	ChgDir-EntryTable
+			dc.w	Delete-EntryTable
+			dc.w	Seek-EntryTable
+			dc.w	Read-EntryTable
+			dc.w	Write-EntryTable
+			dc.w	ReadLine-EntryTable
+			dc.w	WriteLine-EntryTable
+			dc.w	GetStat-EntryTable
+			dc.w	SetStat-EntryTable
+			dc.w	Close-EntryTable
+
+* Invalid routines as the disc is immutable.
+ReturnE$BMode
+Create
+MakDir
+Delete
+Write
+WriteLine
+	move.w #E$BMode,d1
+	ori #1,CCR
+	rts
+
+* Allocates memory, init the path descriptor and the device static storage.
+* A1: path desc
+* A2: pointer to device static storage
+* A6: System Globals
+InitPathDescriptor
+	clr.l PD_ErrNo(a1)
+	move.l a6,PD_SysGlob(a1)
+	move.l a2,-(sp)		* Save a2
+
+	move.l #SectorDataSize,d0
+	os9 F$SRqMem
+	bcs.w _InitPathDescriptor_AllocError
+	move.l a2,PD_BUF(a1)
+
+	move.l #PCBCLAllocSize,d0
+	os9 F$SRqMem
+	bcs.s _InitPathDescriptor_AllocError
+	move.l a2,PD_PCB(a1)
+	adda.l #PCB_Size,a2
+	move.l a2,PD_PCL(a1)
+	movea.l a2,a0
+	adda.l #PCL_Size,a2
+	move.l a2,PD_PCLArr(a1)
+
+	move.w #PCLArr_Size,d0	* Copy PCL to CIL array
+	lsr.w #2,d0		* Divice by sizeof pointer
+	subq.l #1,d0
+_InitPathDescriptor_CopyCIL
+	move.l a0,(a2)+
+	dbf d0,_InitPathDescriptor_CopyCIL
+
+	movea.l (sp)+,a2	* Restore a2
+
+	clr.w PD_BIn(a1)
+	clr.l PD_Cp(a1)
+	clr.l PD_FP(a1)
+	clr.w PD_INTLV(a1)
+	clr.l PD_Siz(a1)
+	clr.l PD_FDAddr(a1)
+	clr.l PD_NxtPD(a1)
+	clr.l PD_LstPD(a1)
+	clr.l PD_PSRT(a1)
+	move.w PD_CPR(a1),PD_PROCID(a1)
+	clr.l PD_PCBptr(a1)
+	clr.w PD_DIRCT(a1)
+
+	clr.l d0
+	move.b PD_DNum(a1),d0	* PD_DNum starts at 0.
+	mulu.w #CDRVMEM,d0
+	addi.w #DRVBEG,d0
+	add.l a2,d0
+	move.l d0,PD_DTPtr(a1)
+
+	clr.b PD_FNum(a1)
+	clr.b PD_CDFlags(a1)
+
+* TODO: init the device static storage.
+	rts
+
+_InitPathDescriptor_AllocError
+	bsr.w FreePathDescriptor
+	ori #1,CCR
+	rts
+
+* Common to all routines.
+* All routines can destroy d0-d7, a0-a4 and ccr.
+* (a1) Pointer to Path Descriptor.
+* (a4) Pointer to current Process Descriptor.
+* (a5) Pointer to User’s Register Stack;
+*      User registers pass/receive parameters as shown in the system call description section.
+* (a6) Pointer to system Global Data area.
+*
+* PD_PD, PD_MOD, PD_CNT, PD_DEV, PD_CPR, PD_RGS, PD_USER, PD_PATHS are maintained by the kernel.
+* PD_BUF, PD_ErrNo, PD_SysGlob are maintened be the file manager.
+* PD_PATHS is a linked list of path descriptors.
+* PD_LProc is a word.
+*
+* There is no need to store the actual number of bytes allocated because alloc and free rounds them to the same number.
+* PD_FP is the file start sector number, and PD_Cp is the offset from PD_FP to read from.
+
+* This call is used to get all necessary information and set up all necessary data structures to be able to access a
+* particular file or the Audio processor. If successful, a path number is returned which is used in subsequent I/O calls
+* to identify the open file or device.
+* Input: d0.b = Access mode
+*	(a0) = Pointer to path name
+* Output: d0.w = Path number
+*	(a0) = Pointer to updated path name
+* Error Output: cc = Carry bit set to one
+*	d1.w = Error code
+* Possible Errors: E$PthFul, E$BPNam, E$FNA, E$PNNF, E$Share, E$BNam, E$BTyp, E$DevBsy, F$PrsNam, F$SRqMem, E$BMode
+Open
+	tst.b PD_CDFC(a1)		* Check if drive is CD (not audio)
+	bne.w ReturnE$BMode		* TODO: handle it
+
+*	move.l PD_USER(a1),d0
+*	softcdi SoftCDI_Debug
+
+	movea.l PD_DEV(a1),a2	* Load device static storage pointer.
+	movea.l V$STAT(a2),a2
+	bsr.w InitPathDescriptor
+	bcs.b _Open_ReturnError
+
+* Check if path is relative.
+	move.l R$a0(a5),a0
+	cmpi.b #'/',(a0)
+	bne.b _Open_RelativePath
+	move.l a1,-(sp) 	* F$PrsNam overwrites a1
+	os9 F$PrsNam
+	move.l (sp)+,a1
+	cmp.b #'@',d0
+	beq.b _Open_Raw
+* TODO: implement regular path opening.
+	os9 F$Exit
+	rts
+
+_Open_RelativePath
+* TODO
+	os9 F$Exit
+
+_Open_Raw
+* In raw mode, the file is the entire disc.
+* Only super user can access raw mode.
+	tst.l PD_USER(a1)
+	bne.b _Open_Return_E$FNA
+	move.b #1,PD_Raw(a1)
+* PD_Cp and PD_FP is already at 0.
+*	bra.s _Open_UpdatePathlistThenReturn
+
+* We don't use F$PrsNam because it returns an error when the pathlists starts with a @.
+_Open_UpdatePathlistThenReturn
+	move.l R$a0(a5),a0
+_Open_UpdatePathlistThenReturn_Loop
+	tst.b (a0)+
+	bne.b _Open_UpdatePathlistThenReturn_Loop
+	subq.l #1,a0	* The updated pathlist ends on the null terminator.
+	move.l a0,R$a0(a5)
+	rts		* tst.b clears the carry
+
+_Open_Return_E$FNA
+	move.w #E$FNA,d1
+	ori #1,ccr
+
+_Open_ReturnError
+	rts
+
+ChgDir
+	rts
+
+* This function causes the file position pointer to be set to the new value. This does not cause a physical seek of the
+* head on the player. The seek command uses a sector size of 2048 bytes to compute the new file position.
+* Input: d0.w = Path number
+*	d1.l = New file pointer byte position
+* Output: None
+* Error Output: cc = Carry bit set to one
+*	d1.w = Error code
+* Possible Errors: E$BPNum, E$BMode
+Seek
+	tst.b PD_CDFC(a1)		* Check if drive is CD (not audio)
+	bne.w ReturnE$BMode
+	move.l R$d1(a5),PD_Cp(a1)
+	rts		* move.l clears the carry bit.
+
+* Read reads the specified number of bytes from the file specified by the path number.
+* Read can be used to read Mode 1 and Mode 2, Form 1 sectors . Read returns only the first 2048 bytes after:
+* - the subheader for Mode 2 Form 1 sectors
+* - the header for Mode 1 sectors
+* Note: It is not allowed to use I$Read to read Mode 2 Form 2 sectors. If an attempt
+*	is made to read a Mode 2 Form 2 sector, an E$Read error will be returned. To
+*	read Mode 2 Form 2 sectors, use SS_Raw or SS_Play.
+* Input: d0.w = Path number
+*	d1.l = Maximum number of bytes to read
+*	(a0) = Pointer to input buffer
+* Output: d1.l = Number of bytes actually read
+* Error Output: cc = Carry bit set to one
+*	d1.w = Error code
+* Possible Errors: E$BPNum, E$BMode, E$Read, E$EOF, E$DevBsy, E$Abort, E$NotRdy, F$Sleep
+*
+* TODO: how to distinguish MODE 1 and MODE 2 sector reads?
+Read
+	tst.b PD_CDFC(a1)		* Check if drive is CD (not audio)
+	bne.w ReturnE$BMode
+
+	move.l PD_Cp(a1),d0
+	andi.l #SectorSizeMask,d0
+	beq.b _Read_SectorAligned
+
+* Data is not aligned with sector, read in PD_BUF instead
+	os9 F$Exit
+	rts
+
+* Directly reads the sector in the user buffer.
+_Read_SectorAligned
+*	movem.l a1/a4/a5/a6,-(sp)
+	move.l PD_Cp(a1),d0
+	lsr.l #8,d0	* Shift by 11 to get the number of sectors from the beginning of the file.
+	lsr.l #3,d0
+	add.l PD_FP(a1),d0
+	move.l d0,PD_PSRT(a1)
+	movea.l PD_PCB(a1),a2
+	move.l a2,PD_PCBptr(a1)
+
+* Setup PCB
+	clr.w PCB_Stat(a2)
+	move.w #S$Wake,PCB_Sig(a2)
+	move.l #1,PCB_Rec(a2)	* 1 record non-RT = whole file?
+	move.l #AllChannelsMask,PCB_Chan(a2)
+*	move.w #AllAChannelsMask,PCB_AChan(a2)
+	clr.w PCB_AChan(a2)		* No audio to process.
+	clr.l PCB_Video(a2)		* Ignore video data.
+	clr.l PCB_Audio(a2)		* Ignore audio data.
+	move.l PD_PCLArr(a1),PCB_Data(a2)
+
+	movea.l R$a0(a5),a0
+	move.l R$d1(a5),d1
+	movea.l PD_PCL(a1),a2
+	bsr.w SetupPCL
+
+	movea.l PD_DTPtr(a1),a3
+	bsr.b AddPCBToScheduler
+
+	bsr.w CallDriverPlay
+
+* Wait until read is done.
+	clr.l d0
+	os9 F$Sleep
+	btst.b #0,PCB_Stat(a2)
+*	movem.l (sp)+,a1/a4/a5/a6
+	rts
+
+ReadLine
+	tst.b PD_CDFC(a1)		* Check if drive is CD (not audio)
+	bne.w ReturnE$BMode
+* TODO
+	os9 F$Exit
+	rts
+
+* SS_Opt Get options section of path descriptor
+* SS_EOF Test for end of file
+* SS_Size Return file size
+* SS_Pos Return file position
+* SS_CDFD Return file descriptor
+* SS_Path Return full pathlist
+* All other codes are passed through CDFM to the CD device driver GetStat.
+GetStat
+* TODO
+	os9 F$Exit
+	rts
+
+SetStat
+* TODO
+	os9 F$Exit
+	rts
+
+Close
+	bsr.s FreePathDescriptor
+	rts
+
+* Frees memory used by the path descriptor.
+* Destroys d0,a2.
+* A1: path desc
+FreePathDescriptor
+	move.l PD_BUF(a1),d0		* movea doesn't write to ccr.
+	beq.b _FreePathDescriptor_NoBuf
+	movea.l d0,a2
+	move.l #SectorDataSize,d0
+	os9 F$SRtMem
+	clr.l PD_BUF(a1)
+
+_FreePathDescriptor_NoBuf
+	move.l PD_PCB(a1),d0		* movea doesn't write to ccr.
+	beq.b _FreePathDescriptor_NoPCBCL
+	movea.l d0,a2
+	move.l #PCBCLAllocSize,d0
+	os9 F$SRtMem
+	clr.l PD_PCB(a1)
+
+_FreePathDescriptor_NoPCBCL
+	rts
+
+* Sets up the given PCL with the given buffer and size, setting the signal to S$Wake.
+* Inputs:
+* d0.l: Buffer size
+* (a0): buffer pointer
+* (a2): PCL pointer
+* Outputs: none
+SetupPCL
+	clr.l PCL_Ctrl(a2)
+	move.w #S$Wake,PCL_Sig(a2)		* TODO: parameter?
+	clr.l PCL_Nxt(a2)
+	move.l a0,PCL_Buf(a2)
+	move.l d0,PCL_BufSz(a2)
+	clr.l PCL_Err(a2)
+	clr.l PCL_Cnt(a2)
+	rts
+
+* Places the given path descriptor in the correct Play list of the scheduler.
+* (a1): Path descriptor pointer
+* (a3): Drive table pointer
+AddPCBToScheduler
+	move.w sr,-(sp)		* Mutex lock basically.
+	ori #$700,sr
+	tst.l V_PLAY(a3)	* Is there a play already running?
+	bne.b _AddPCBToScheduler_Playing
+	clr.l PD_NxtPD(a1)
+	clr.l PD_LstPD(a1)
+	move.w #1,PD_DIRCT(a1)	* Start moving forward (increasing sector addresses)
+	move.l a1,V_PLAY(a3)
+	move.w (sp)+,sr
+	andi.w #ClearCarryMask,sr
+	rts
+
+_AddPCBToScheduler_Playing
+	os9 F$Exit
+	rts
+
+* Input: d0.w = Path number
+*	(a0) = Pointer to play control block (PCB)
+* SS_Play_Impl
+*	bra.b CallDriverPlay
+
+* Calls the PLAY subroutine of the device driver.
+* Destroys d0,a0,a2,a3
+* Inputs: (a1) = Path descriptor
+*	(a4) = Process descriptor pointer
+*	(a6) = System global data storage pointer
+CallDriverPlay
+	movea.l PD_DEV(a1),a2
+	movea.l V$DRIV(a2),a0
+	movea.l V$STAT(a2),a2
+	movea.l M$Exec(a0),a3
+	adda.l a0,a3
+	clr.l d0
+	move.w DriverPlayOffset(a3),d0
+	adda.l d0,a0
+	jsr (a0)
+	rts
+
+DriverPlayOffset	equ	14
+ClearCarryMask	equ $FFFE
+* Size of a sector (including form 2).
+SectorDataSize	equ	2048
+* Mask that gives the offset inside a sector.
+SectorSizeMask	equ	$7FF
+* Mask for all channels
+AllChannelsMask	equ	$FFFFFFFF
+* Mask for all audio channels
+AllAChannelsMask	equ	$FFFF
+* The size to allocate for the PCB, PCL and CIL.
+PCBCLAllocSize	equ	$B6	* PCB_Size+PCLArr_Size+PCL_Size	is not supported because of too many external references.
+
+* Below are custom path descriptor fields defined by me (located after the CDFM ones).
+* Non-zero if the device is opened in raw mode.
+PD_Raw	equ 106	len:1	Keep Last I believe.
+
+	vsect 	Initialized to zero.
+	ends
+
+	ends

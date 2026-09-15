@@ -177,9 +177,9 @@ SetStat
 
 _SetStat_SS_Close
 	move.w PD_CPR(a1),d1
-	cmp.w irqProc(a1),d1
+	cmp.w irqProc(a2),d1
 	bne.s _SetStat_End
-	clr.w irqProc(a1)
+	clr.w irqProc(a2)
 	bra.b _SetStat_End
 
 _SetStat_PT

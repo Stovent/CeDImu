@@ -146,8 +146,8 @@ Play
 	move.l PCB_Rec(a3),d1		Maximum number of records to play (debug only)
 * TODO: remove PCB_Rec, kept for debugging purposes.
 	move.b PD_FNum(a1),d2		File number
-*	move.l PCB_Chan(a3),d3		Channel selection mask
-	move.l PD_CNUM(a1),d3		Channel selection mask
+	move.l PCB_Chan(a3),d3		Channel selection mask
+*	move.l PD_CNUM(a1),d3		Channel selection mask
 * TODO: Audio to audio processor channel selection mask
 	softcdi CdDrive_Play
 

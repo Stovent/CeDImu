@@ -4,6 +4,11 @@
 #include <cstdint>
 #include <span>
 
+inline constexpr uint8_t CDFM_DATA[] = {
+#embed "build/CDFM"
+};
+inline constexpr std::span<const uint8_t> CDFM{CDFM_DATA};
+
 inline constexpr uint8_t CIAPDRIV_DATA[] = {
 #embed "build/CIAPDRIV"
 };
