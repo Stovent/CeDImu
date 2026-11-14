@@ -1,5 +1,5 @@
 	nam cdfm
-	use c:\DEFS\OSKDEFS.D
+	use "OSKDEFS.D"
 	use "softcdi.d"
 	use "softcdi.m"
 
@@ -39,9 +39,9 @@ WriteLine
 	rts
 
 * Allocates memory, init the path descriptor and the device static storage.
-* A1: path desc
-* A2: pointer to device static storage
-* A6: System Globals
+* a1: path desc
+* a2: pointer to device static storage
+* a6: System Globals
 InitPathDescriptor
 	clr.l PD_ErrNo(a1)
 	move.l a6,PD_SysGlob(a1)
@@ -98,7 +98,7 @@ _InitPathDescriptor_CopyCIL
 	rts
 
 _InitPathDescriptor_AllocError
-	bsr.w FreePathDescriptor
+	bsr.w FreePathDescriptor	* Must preserve d1.w
 	ori #1,CCR
 	rts
 
@@ -183,7 +183,96 @@ _Open_Return_E$FNA
 _Open_ReturnError
 	rts
 
+* At P$PIO+6, it holds a pointer to a linked list of sector buffers that contains the content of the directory.
 ChgDir
+	tst.b PD_CDFC(a1)		* Check if drive is CD (not audio)
+	bne.w ReturnE$BMode
+
+	bsr.w InitPathDescriptor
+	bcs.w _ChgDir_ReturnError
+
+	movem.l a1,-(sp)
+
+* First get the path table in a0/d0.l
+	bsr.w GetPathTable
+	bcs.w _ChgDir_ReturnError
+	movea.l a0,a2	* Save the address/size in a2/d2 so F$PrsNam doesn't overwrite it.
+	move.l d0,d2
+
+	movea.l R$a0(a5),a0
+	cmpi.b #'/',(a0)
+	beq.b _ChgDir_Absolute
+	bra.w Panic
+* For now I will assume relative ChgDir is invalid.
+* TODO: relative. I guess we can have a common path that searches the path table, with the relative part having a bit
+* of preprocessing to do to catch up. Or maybe tray absolute as relative from root?
+
+_ChgDir_Absolute
+* Skip the device name.
+	os9 F$PrsNam
+	bcs.b _ChgDir_ReturnError
+	movea.l a1,a0
+	cmp.b #0,d0		* End of pathlist means ChgDir to /cd
+	beq.b _ChgDir_Done
+
+* Ignore the root directory from the path table.
+	move.l #PT_NAME+2,d0	* + 2 because root directory entry is always one byte name + 1 byte alignment.
+	adda.l d0,a2
+	sub.l d0,d2
+	blo.b _ChgDir_ReturnNotFound	* Asserts the path table data is valid.
+	moveq.l #1,d1	* Contains the directory index of the parent (always 1 for the root dir).
+
+* FIXME: what if chgdir /cd/ ?
+* Searches for the directory by incrementing the path table address.
+_ChgDir_AbsoluteLoop
+	os9 F$PrsNam	* a0 have the name and d1 its size.
+	bcs.b _ChgDir_ReturnError
+	movea.l a1,a3	* Save new pathlist pointer
+	movea.l a2,a1
+	adda.l #PT_NAME,a1
+	os9 F$CmpNam
+	bcc.b _ChgDir_Done
+
+	clr.l d3
+	move.b PT_NAMLEN(a2),d3
+	adda.l d3,a2
+	move.l a2,d3
+	btst.l #0,d3	* Align to even address
+	beq.b _ChgDir_AbsoluteLoopEven
+	addq.l #1,a2
+_ChgDir_AbsoluteLoopEven
+	movea.l a3,a0	* Use the new pathlist
+	cmp.b #0,d0		* End of pathlist?
+	bne.b _ChgDir_AbsoluteLoop
+
+_ChgDir_Done
+* a2 contains the path table entry of the requested directory
+	move.l PT_DIRBLK(a2),d1
+
+	move.b R$d0(a5),d0
+	btst.l #2,d0	* Test if execute bit is set
+	beq.b _ChgDir_DIOUpdate
+	move.l d1,DIOExecuteLBN(a4)
+
+_ChgDir_DIOUpdate
+	andi.b #3,d0	* Test if update mode
+	beq.b _ChgDir_End
+	move.l d1,DIOUpdateLBN(a4)
+
+_ChgDir_End
+	movem.l (sp)+,a1
+	bsr.w FreePathDescriptor
+	andi #$FE,ccr
+	rts
+
+_ChgDir_ReturnNotFound
+	move.w #E$PNNF,d1
+*	bra.b _ChgDir_ReturnError
+* d1.w must contain the error code.
+_ChgDir_ReturnError
+	movem.l (sp)+,a1
+	bsr.w FreePathDescriptor	* Must preserve d1.w
+	ori #1,ccr
 	rts
 
 * This function causes the file position pointer to be set to the new value. This does not cause a physical seek of the
@@ -252,19 +341,32 @@ _Read_SectorAligned
 
 	movea.l R$a0(a5),a0
 	move.l R$d1(a5),d1
-	movea.l PD_PCL(a1),a2
+	movea.l PD_PCL(a1),a3
 	bsr.w SetupPCL
 
 	movea.l PD_DTPtr(a1),a3
-	bsr.b AddPCBToScheduler
+	bsr.w AddPCBToScheduler
 
 	bsr.w CallDriverPlay
 
+_Read_WaitForPlayFinished
 * Wait until read is done.
 	clr.l d0
 	os9 F$Sleep
-	btst.b #0,PCB_Stat(a2)
+
+	btst.b #7,PCB_Stat(a2)	* Has error occured?
+	bne.b _Read_ReturnE$Read
+	btst.b #0,PCB_Stat(a2)	* Is play finished?
+	bne.b _Read_WaitForPlayFinished
+
+	movea.l PD_PCL(a1),a3
+	move.l PCL_Cnt(a3),d1	* Load the data read
 *	movem.l (sp)+,a1/a4/a5/a6
+	rts
+
+_Read_ReturnE$Read
+	move.w #E$Read,d1
+	ori #1,ccr
 	rts
 
 ReadLine
@@ -317,40 +419,158 @@ _FreePathDescriptor_NoBuf
 _FreePathDescriptor_NoPCBCL
 	rts
 
+* Reads the sectors starting at the given position in the given buffer/size.
+* TODO: plural?
+* Destroys
+* Inputs:
+* d0.l: buffer size
+* d1.l: lsn
+* (a0): buffer pointer
+* Outputs:
+* ccr/d1.w on error
+ReadSectors
+	rts
+
 * Sets up the given PCL with the given buffer and size, setting the signal to S$Wake.
 * Inputs:
 * d0.l: Buffer size
 * (a0): buffer pointer
-* (a2): PCL pointer
+* (a3): PCL pointer
 * Outputs: none
 SetupPCL
-	clr.l PCL_Ctrl(a2)
-	move.w #S$Wake,PCL_Sig(a2)		* TODO: parameter?
-	clr.l PCL_Nxt(a2)
-	move.l a0,PCL_Buf(a2)
-	move.l d0,PCL_BufSz(a2)
-	clr.l PCL_Err(a2)
-	clr.l PCL_Cnt(a2)
+	clr.l PCL_Ctrl(a3)
+	move.w #S$Wake,PCL_Sig(a3)		* TODO: parameter?
+	clr.l PCL_Nxt(a3)
+	move.l a0,PCL_Buf(a3)
+	move.l d0,PCL_BufSz(a3)
+	clr.l PCL_Err(a3)
+	clr.l PCL_Cnt(a3)
 	rts
 
 * Places the given path descriptor in the correct Play list of the scheduler.
+* TODO: if the play to insert is before the ones in the list, it should be added at the end,
+* and cdfm should detect when the laser changes direction and change PD_DIRCT accordingly.
+* Destroys d0,a0
 * (a1): Path descriptor pointer
 * (a3): Drive table pointer
 AddPCBToScheduler
+	movem.l a2,-(sp)
 	move.w sr,-(sp)		* Mutex lock basically.
 	ori #$700,sr
 	tst.l V_PLAY(a3)	* Is there a play already running?
 	bne.b _AddPCBToScheduler_Playing
 	clr.l PD_NxtPD(a1)
-	clr.l PD_LstPD(a1)
+	move.l a1,PD_LstPD(a1)
 	move.w #1,PD_DIRCT(a1)	* Start moving forward (increasing sector addresses)
 	move.l a1,V_PLAY(a3)
-	move.w (sp)+,sr
+	bra.b _AddPCBToScheduler_Done
+
+_AddPCBToScheduler_Playing
+	tst.w PD_DIRCT(a1)
+	beq.b _AddPCBToScheduler_PlayingBackward
+	movea.l V_PLAY(a3),a0
+
+_AddPCBToScheduler_Loop
+	move.w PD_PROCID(a0),d0
+	cmp.w PD_PROCID(a1),d0	* Each process can do only one request on the disc.
+	beq.b _AddPCBToScheduler_ReturnE$DevBsy
+	move.l PD_PSRT(a0),d0
+	cmp.l PD_PSRT(a1),d0
+	bls.b _AddPCBToScheduler_Insert		* TODO: blo or bls?
+	cmpa.l PD_LstPD(a0),a0
+	beq.b _AddPCBToScheduler_Insert
+	movea.l PD_NxtPD(a0),a0
+	bra.b _AddPCBToScheduler_Loop
+
+_AddPCBToScheduler_Insert
+* a0 now has the path desc right before us in the playlist, put ourselves right after.
+	move.l PD_NxtPD(a0),a2
+	move.l a1,PD_NxtPD(a0)
+	move.l a2,PD_NxtPD(a1)
+* Handle if we are the new last.
+	cmp.l PD_LstPD(a0),a0
+	bne.b _AddPCBToScheduler_NotLast
+	clr.l PD_LstPD(a0)
+	move.l a1,PD_LstPD(a1)
+
+_AddPCBToScheduler_NotLast
+	rts
+
+_AddPCBToScheduler_Done
+	move.w (sp)+,sr		* Mutex unlock basically.
+	movem.l (sp)+,a2
 	andi.w #ClearCarryMask,sr
 	rts
 
-_AddPCBToScheduler_Playing
+_AddPCBToScheduler_ReturnE$DevBsy
+	move.w (sp)+,sr		* Mutex unlock basically.
+	movem.l (sp)+,a2
+	move.w #E$DevBsy,d1
+	ori #1,ccr
+	rts
+
+_AddPCBToScheduler_PlayingBackward
+* I don't support backward playing
 	os9 F$Exit
+	rts
+
+* Inits V_PTAdd/V_PTSiz if not inited, and returns the path table data.
+* Inputs:
+* (a1): pointer to path descriptor
+* (a3): pointer to drive table
+* Output:
+* ccr/d1.w on error.
+* (a0): pointer to path table data.
+* d0.l: size of path table data.
+GetPathTable
+	tst.b V_PTValid(a3)		* Either a disc change or first time accessing it.
+	bne.b _GetPathTable_ReturnSuccess
+	bsr.b FreePathTableIfAllocated	* Invalid PT, delete the old data.
+
+* Read sector 16 to get path table info.
+	move.l #SectorDataSize,d0
+	move.l #16,d1	* LSN of File Structure Volume Descriptor Record
+	movea.l PD_BUF(a1),a0
+	movea.l a0,a2	* a2 will be used later
+	bsr.w ReadSectors
+	bcs.b _GetPathTable_ReturnPropagate
+
+* Save path table info.
+	cmpi.w #DiscLabelRecordTypeVolumeStructureStandardID0,VT_RTP(a2)
+	bne.b Panic
+	move.l VT_PTSZ(a2),d0
+	os9 F$SRqMem
+	bcs.b _GetPathTable_ReturnPropagate
+	move.l VT_PTSZ(a2),V_PTSiz(a3)
+	move.l a2,V_PTAdd(a3)
+	move.b #1,V_PTValid(a3)
+	bsr.w ReadSectors		* Now read the path table data.
+	bcc.b _GetPathTable_ReturnSuccess
+* An error occured during read, clean everything and return error.
+	bsr.b FreePathTableIfAllocated	* Must preserve d1.w
+	ori #1,ccr
+	rts
+
+_GetPathTable_ReturnSuccess
+	movea.l V_PTAdd(a3),a0
+	move.l V_PTSiz(a3),d0
+_GetPathTable_ReturnPropagate
+	rts
+
+* Frees the buffer assotiated with V_PTAdd if it is allocated.
+* Inputs:
+* (a3): pointer to drive table.
+FreePathTableIfAllocated
+	tst.l V_PTAdd(a3)
+	beq.b _FreePathTableIfAllocated_Return
+	move.l V_PTSiz(a3),d0
+	movea.l V_PTAdd(a3),a2
+	os9 F$SRtMem
+	clr.l V_PTSiz(a3)
+	clr.l V_PTAdd(a3)
+	clr.l V_PTValid(a3)
+
+_FreePathTableIfAllocated_Return
 	rts
 
 * Input: d0.w = Path number
@@ -375,7 +595,13 @@ CallDriverPlay
 	jsr (a0)
 	rts
 
+Panic
+	os9 F$Exit
+
 DriverPlayOffset	equ	14
+DIOUpdateLBN	equ	P$DIO+6
+DIOExecuteLBN	equ	DIOUpdateLBN+16
+
 ClearCarryMask	equ $FFFE
 * Size of a sector (including form 2).
 SectorDataSize	equ	2048
@@ -387,6 +613,8 @@ AllChannelsMask	equ	$FFFFFFFF
 AllAChannelsMask	equ	$FFFF
 * The size to allocate for the PCB, PCL and CIL.
 PCBCLAllocSize	equ	$B6	* PCB_Size+PCLArr_Size+PCL_Size	is not supported because of too many external references.
+* The data corresponding to the Disc Label Record Type and the 1st charactere of the Volume Structure Standard ID.
+DiscLabelRecordTypeVolumeStructureStandardID0	equ $0143
 
 * Below are custom path descriptor fields defined by me (located after the CDFM ones).
 * Non-zero if the device is opened in raw mode.

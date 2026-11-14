@@ -1,16 +1,15 @@
 	nam CSD
 	ttl CSD of SoftCDI
-	use c:/DEFS/OSKDEFS.D
+	use OSKDEFS.D
 
 typelang	equ	(CSDData<<8)
 attrrevs	equ	(ReEnt<<8)+$99
 edition		equ	0
 stacksize	equ 0
-entrypt		equ csd
 
-	psect csd,typelang,attrrevs,edition,stacksize,entrypt
+	psect csd,typelang,attrrevs,edition,stacksize,0
 
-dataoffset dc.l $34 	Data files must have this offset.
+dataoffset dc.l csd 	Data files must have this offset.
 csd	dc.b	"0:system:RV=\"1.1\":",$D
 	dc.b	"1:/cd:",$D
 	dc.b	"2:/ap:",$D

@@ -3,6 +3,7 @@
 SoftCDI patches a regular CDI BIOS with custom modules for programs, file managers and device drivers to intercept CDRTOS calls and reimplements the Green Book in software.
 
 The following modules are reimplemented:
+- cdfm
 - ciapdriv
 - csd
 - init
@@ -47,16 +48,14 @@ You also need to set the CMake variable `OS9C` to the root directory of the orig
 
 ## OS9C toolchain
 
-See `The OS-9 guru - chapter 6` and the [OS-9 Assembler/Linker](http://icdia.co.uk/microware/77165106.pdf) for how to use the compiler and conventions.
-`$SOFTCDI` is the path to the repo's directory `CeDImu/src/CDI/SoftCDI`.
+If `LIBCEDIMU_REBUILD_SOFTCDI` is ON, it will rebuilt the CD-I modules from sources.
 
-- Install DOSBox
-- Mount the compiler with `mount c <path to host OS9C>`
-- Mount the destination with `mount d $SOFTCDI`
-- Add the `C:\BIN` directory to MS DOS' PATH.
-- go to `d:` and run `build.bat`.
-- If successful, the host folder `$SOFTCDI/build` contains the compiled modules.
-- On Linux, cd to `$SOFTCDI` and run `generate_headers.sh` to embed the binaries in .h files.
+You need to use this GCC-based toolchain: https://github.com/cdifan/toolchaincdi.
+You also need the original OS9C for DOS toolchain.
+
+Set the CMake variables `OS9C` to the root directory of the DOS toolchain, and `TOOLCHAIN_CDI` to the root of the GCC toolchain.
+
+See `The OS-9 guru - chapter 6` and the [OS-9 Assembler/Linker](http://icdia.co.uk/microware/77165106.pdf) for how to use the compiler and conventions.
 
 ## TODO
 

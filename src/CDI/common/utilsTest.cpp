@@ -5,6 +5,7 @@
 #include "utils.hpp"
 
 #include <array>
+#include <climits>
 
 #define ASSERT(cond) if(!(cond)) return false
 

@@ -1,5 +1,5 @@
 	nam pt2driv
-	use c:\DEFS\OSKDEFS.D
+	use OSKDEFS.D
 	use "softcdi.d"
 	use "softcdi.m"
 

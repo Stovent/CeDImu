@@ -1,6 +1,6 @@
 	nam init
 	ttl init file
-	use c:/DEFS/OSKDEFS.D
+	use OSKDEFS.D
 
 typelang	equ	(Systm<<8)
 attrrevs	equ	(ReEnt<<8)+0
@@ -26,7 +26,7 @@ OnC_D equ 1<<3 on-chip data cache is coherent
 DDIO equ 1<<7 don't disable data caching when in I/O
 
 	opt -l
-	use ./src/systype.d
+	use "systype.d"
 
 CPUTyp	set 68070 cpu type (68008/68000/68010/etc.)
 Level	set 1 OS-9 Level One

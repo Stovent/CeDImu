@@ -1,5 +1,5 @@
 	nam ciapdriv
-	use c:\DEFS\OSKDEFS.D
+	use OSKDEFS.D
 	use "softcdi.d"
 	use "softcdi.m"
 
@@ -45,6 +45,7 @@ _Init_IRQ_NoError
 * Initialize drive table
 	lea DRVBEG(a2),a5
 	clr.l V_LastPos(a5)		Last seek position
+	clr.l V_PTSiz(a5)		Path Table Size
 	clr.l V_PTAdd(a5)		Path Table Address
 	clr.l V_ChanMask(a5)	Channel mask
 	clr.l V_APMask(a5)		Audio channel mask
@@ -52,6 +53,7 @@ _Init_IRQ_NoError
 	clr.b V_Paused(a5)		Drive paused flag
 	move.b #CdDrive_Priority,V_IRQlv(a5)		Hardware interrupt level
 	clr.b V_ROMFlag(a5)		CDROM disc flag
+	clr.b V_PTValid(a5)		Path flag Valid flag
 	clr.l V_SoundMap(a5)	Pointer to current playing soundmap descriptor
 	clr.w V_ASigPrc(a5)		Process identifier for audio signal
 	clr.b V_AudOff(a5)		Flag for turning off audio

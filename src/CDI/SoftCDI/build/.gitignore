@@ -1,11 +1,11 @@
 *
 
 !.gitignore
-!CDFM
-!CIAPDRIV
-!CSD
-!INIT
-!LAUNCHER
-!PT2
-!PT2DRIV
-!VID
+!cdfm
+!ciapdriv
+!csd
+!init
+!launcher
+!pt2
+!pt2driv
+!vid
